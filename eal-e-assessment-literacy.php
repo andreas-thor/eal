@@ -1,11 +1,11 @@
 <?php
 /*
- Plugin Name: E-Assessment Literacy
- Plugin URI: http:///
+ Plugin Name: EAL // E-Assessment Literacy
+ Plugin URI: https://github.com/andreas-thor/eal
  Description: Plugin for E-Assessment Literacy. It delivers several custom post types (items, reviews) and setting pages.
  Version: 1.0
  Author: Andreas Thor
- EMail: thor@hft-leipzig.de
+ EMail: dr.andreas.thor@googlemail.com
  */
 
 
@@ -16,6 +16,7 @@
  
 include_once 'includes/eal_item_sc.php';
 include_once 'includes/eal_item_mc.php';
+include_once 'includes/class.ItemMC.php';
 
 $GLOBALS["eal_itemtypes"] = [
 		'eal_item_sc' => 'Single Choice',
@@ -46,7 +47,7 @@ function set_eal_admin_menu_entries () {
 	remove_menu_page( 'edit.php?post_type=page' );    //Pages
 	remove_menu_page( 'edit-comments.php' );          //Comments
 	remove_menu_page( 'themes.php' );                 //Appearance
-	remove_menu_page( 'plugins.php' );                //Plugins
+// 	remove_menu_page( 'plugins.php' );                //Plugins
 	remove_menu_page( 'users.php' );                  //Users
 	remove_menu_page( 'tools.php' );                  //Tools
 	remove_menu_page( 'options-general.php' );        //Settings	
@@ -106,6 +107,7 @@ function create_eal_page_taxonomies () {
  */
  
 add_action( 'init', 'create_eal_items' );
+add_action ('init', array('ItemMC', 'init'));
 function create_eal_items() {
 	
 	foreach ($GLOBALS["eal_itemtypes"] as $id => $name) {
