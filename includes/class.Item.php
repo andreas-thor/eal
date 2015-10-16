@@ -4,6 +4,18 @@ require_once("class.ItemMC.php");
 
 abstract class Item {
 	
+	
+	function __construct($post_id = NULL) {
+		if (!empty($post_id)) {
+			$this->getPost ($post_id);
+		}
+	}
+	
+	function getPost ($post_id) {
+		
+	}
+	
+	
 	function init($id, $name) {
 	
 		register_post_type( $id,

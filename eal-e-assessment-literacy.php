@@ -107,7 +107,12 @@ function create_eal_page_taxonomies () {
  */
  
 add_action( 'init', 'create_eal_items' );
-add_action ('init', array('ItemMC', 'init'));
+
+//add_action ('init', array('ItemMC', 'init'));
+
+ItemMC::init();
+
+
 function create_eal_items() {
 	
 	foreach ($GLOBALS["eal_itemtypes"] as $id => $name) {
