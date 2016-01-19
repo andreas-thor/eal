@@ -5,6 +5,9 @@ require_once("class.ItemMC.php");
 abstract class Item {
 	
 	
+
+	
+	
 	function __construct($post_id = NULL) {
 		if (!empty($post_id)) {
 			$this->getPost ($post_id);
@@ -16,43 +19,97 @@ abstract class Item {
 	}
 	
 	
-	function init($id, $name) {
 	
-		register_post_type( $id,
+	/*
+	 * #######################################################################
+	 * post type registration; specification of page layout
+	 * #######################################################################
+	 */
+	
+	function CPT_init($name, $label) {
+		
+		register_post_type( $name,
 				array(
 						'labels' => array(
-								'name' => $name,
-								'singular_name' => $name,
-								'add_new' => 'Add ' . $name,
-								'add_new_item' => 'Add New ' . $name,
+								'name' => $label,
+								'singular_name' => $label,
+								'add_new' => 'Add ' . $label,
+								'add_new_item' => 'Add New ' . $label,
 								'edit' => 'Edit',
-								'edit_item' => 'Edit ' . $name,
-								'new_item' => 'New ' . $name,
+								'edit_item' => 'Edit ' . $label,
+								'new_item' => 'New ' . $label,
 								'view' => 'View',
-								'view_item' => 'View ' . $name,
-								'search_items' => 'Search ' . $name,
+								'view_item' => 'View ' . $label,
+								'search_items' => 'Search ' . $label,
 								'not_found' => 'No Items found',
 								'not_found_in_trash' => 'No Items found in Trash',
 								'parent' => 'Parent Item'
 						),
-	
+		
 						'public' => true,
 						'menu_position' => 2,
 						'supports' => array( 'title'), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
 						'taxonomies' => array( 'topic' ),
-						'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
+						// 'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
 						'has_archive' => true,
 						'show_in_menu'    => true,
-						'register_meta_box_cb' => array ('Item', 'addMetaBoxes')
+						'register_meta_box_cb' => array ($name, 'CPT_add_meta_boxes')
 				)
-		);	
+		);
 	}
 	
-    function addMetaBoxes () {
-    	$type = 'eal_item_mc2';
-    	echo ("a");
-    	add_meta_box('mb_' . $type . '_desc', 'Fall- oder Problemvignette', array ('ItemMC', 'addEditor'), $type, 'normal', 'default', ['id' => 'mb_' . $type . '_desc_editor']);
-    }
+	
+	function CPT_add_meta_boxes($name)  {
+		add_meta_box('mb_' . $name . '_desc', 	'Fall- oder Problemvignette',
+				array ($name, 'CPT_add_editor'), $name, 'normal', 'default', ['id' => 'mb_' . $name . '_desc_editor']);
+		add_meta_box('mb_' . $name . '_ques', 	'Aufgabenstellung',
+				array ($name, 'CPT_add_editor'), $type, 'normal', 'default', ['id' => 'mb_' . $name . '_ques_editor']);
+		add_meta_box('mb_' . $name . '_level', 	'Anforderungsstufe',
+				array ($name, 'CPT_add_level'), $type, 'side', 'default', ['id' => 'mb_' . $name . '_level']);
+	}
+	
+	
+	
+	function CPT_add_editor ($post, $vars) {
+	
+		$editor_settings = array(
+				'media_buttons' => false,	// no media buttons
+				'teeny' => true,			// minimal editor
+				'quicktags' => false,		// hides Visual/Text tabs
+				'textarea_rows' => 3,
+				'tinymce' => true
+		);
+	
+		$html = wp_editor(  $post->ID, $vars['args']['id'], $editor_settings );
+		echo $html;
+		// 	echo '<input type="text" name="_location" value="7"  />';
+	}
+	
+	
+	function CPT_add_level ($post, $vars) {
+	
+		$colNames = ["FW"=>"", "KW"=>"", "PW"=>""];
+		$html  = '<table><tr><td></td>';
+		foreach ($colNames as $c=>$v) {
+			$html .= '<td>' . $c . '</td>';
+			$colNames[$c] = get_post_meta($post->ID, $c, true);
+		}
+		
+		$html .= '</tr>';
+			
+		$rowNames = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
+		foreach ($rowNames as $n => $r) {
+			$html .= '<tr><td>' . ($n+1) . ". " . $r . '</td>';
+			foreach ($colNames as $c=>$v) {
+				$html .= '<td align="center"><input type="radio" id="' . $vars['args']['id'] . '_' . $c . '_' . $r . '" name="' . $c . '" value="' . $r . '"' . (($r==$v)?' checked':'') . '></td>';
+			}
+			$html .= '</tr>';
+		}
+		$html .= '</table>';
+		
+		echo $html;	
+	}
+	
 	
 }
 
