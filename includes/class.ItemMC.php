@@ -29,17 +29,55 @@ class ItemMC extends Item {
  				array (get_class(), 'CPT_add_answers'), get_class(), 'normal', 'default', ['id' => 'mb_' . get_class() . '_answers_editor']);
 	}
 
-	
+
 	function CPT_add_answers ($post, $vars) {
 	
-		$value = "read";
+		$answerLine = '<tr>
+				<td><input type="text" value="%s" size="25" /></td>
+				<td><input type="text" value="%d" size="5" /></td>
+				<td><input type="text" value="%d" size="5" /></td>
+				<td>
+					<button type="button" onclick="addAnswer(this);">&nbsp;+&nbsp;</button>
+					&nbsp;&nbsp;
+					<button class="removeanswer" type="button" onclick="removeAnswer(this);">&nbsp;-&nbsp;</button>
+				</td>
+			</tr>';		
 		
-		echo '<label for="myplugin_new_field">';
-		_e( 'Description for this field', 'myplugin_textdomain' );
-		echo '</label> ';
-		echo '<input type="text" id="myplugin_new_field" name="myplugin_new_field" value="' . esc_attr( $value ) . '" size="25" />';
-	
+		
+?>		
+		<script>
+
+			var $ =jQuery.noConflict();
+			
+			function addAnswer (e) { 
+				// add new answer option after current line
+				$(e).parent().parent().after('<?php echo (preg_replace("/\r\n|\r|\n/",'', sprintf($answerLine, '', 0, 0))); ?>' );
+			}
+
+			function removeAnswer (e) {
+				// delete current answer options but make sure that header + at least one option remain
+				if ($(e).parent().parent().parent().children().size() > 2) {
+					$(e).parent().parent().remove();
+				}
+			}
+			
+		</script>
+			
+<?php	
+
+		printf ('<table>');
+		printf ('<tr align="left"><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>', 'Antwort-Text', 'Ausgew&auml;hlt', 'Nicht ausgew&auml;hlt', 'Aktionen');
+		foreach (array(1, 2, 3, 4) as $value) { 
+			printf($answerLine, $value, 1, -1);
+		}
+		printf ('</table>');
 	}
+	
+	
+	
+	
+
+	
 	
 	
 	function CPT_add_editor ($post, $vars) {
@@ -108,6 +146,7 @@ class ItemMC extends Item {
 // 	}
 		
 
+	
 
 
 ?>
