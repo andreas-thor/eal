@@ -172,6 +172,9 @@ function create_eal_items() {
 	ItemSC::CPT_init();
 	ItemMC::CPT_init();
 	
+	add_action ('save_post', array ('itemmc', 'CPT_save_post'), 10, 2);
+	
+	
 	
 	foreach ($GLOBALS["eal_itemtypes"] as $id => $name) {
 		

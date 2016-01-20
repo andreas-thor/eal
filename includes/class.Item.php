@@ -4,17 +4,20 @@ require_once("class.ItemMC.php");
 
 abstract class Item {
 	
-	
 
 	
 	
 	function __construct($post_id = NULL) {
+		
+		echo ("<script>console.log('CONSTRUCT ITEM');</script>");
+		
 		if (!empty($post_id)) {
 			$this->getPost ($post_id);
 		}
 	}
 	
 	function getPost ($post_id) {
+		echo ("<script>console.log('GETPOST ITEM');</script>");
 		
 	}
 	
@@ -56,19 +59,29 @@ abstract class Item {
 						'register_meta_box_cb' => array ($name, 'CPT_add_meta_boxes')
 				)
 		);
+		
+		// add_action('save_post',  'CPT_save_post', 10, 2);
+		
 	}
 	
 	
 	function CPT_add_meta_boxes($name)  {
+		
+		echo ("<script>console.log('addmeta');</script>");
+		
 		add_meta_box('mb_' . $name . '_desc', 	'Fall- oder Problemvignette',
-				array ($name, 'CPT_add_editor'), $name, 'normal', 'default', ['id' => 'mb_' . $name . '_desc_editor']);
+				array ($name, 'CPT_add_editor'), $name, 'normal', 'default', ['value' => 'DEFAULT Vignette', 'id' => 'mb_' . $name . '_desc_editor']);
 		add_meta_box('mb_' . $name . '_ques', 	'Aufgabenstellung',
-				array ($name, 'CPT_add_editor'), $type, 'normal', 'default', ['id' => 'mb_' . $name . '_ques_editor']);
+				array ($name, 'CPT_add_editor'), $type, 'normal', 'default', ['value' => 'DEFAULT Aufgabenstellung', 'id' => 'mb_' . $name . '_ques_editor']);
 		add_meta_box('mb_' . $name . '_level', 	'Anforderungsstufe',
 				array ($name, 'CPT_add_level'), $type, 'side', 'default', ['id' => 'mb_' . $name . '_level']);
 	}
 	
 	
+	public function CPT_save_post ($post_id) {
+	
+		echo ("<script>console.log('SAVE Item');</script>");
+	}
 	
 	function CPT_add_editor ($post, $vars) {
 	
@@ -80,7 +93,7 @@ abstract class Item {
 				'tinymce' => true
 		);
 	
-		$html = wp_editor(  $post->ID, $vars['args']['id'], $editor_settings );
+		$html = wp_editor(   $vars['args']['value'], $vars['args']['id'], $editor_settings );
 		echo $html;
 		// 	echo '<input type="text" name="_location" value="7"  />';
 	}

@@ -9,21 +9,59 @@ class ItemMC extends Item {
 	
 	function __construct  ($post_id = NULL) {
 		
+		add_action( 'edit_post', 'CPT_save_post');
+		wp_die ('AAA');
+		
+		echo ("<script>console.log('CONSTRUCT');</script>");
+		if ( !empty($post_id)) $this->getPost ($post_id);
 		
 	}
 	
 	function getPost ($post_id) {
 		
-		return false;
+		echo ("<script>console.log('GETPOST');</script>");
+		
+		$p = get_post ($post_id);
+		$p->post_title = 'Gesetzt';
+		echo ("HIER:");
+		echo ($p->post_title);
+		return $p->ID;
 	}
 	
 	
 	public function CPT_init() {
 		parent::CPT_init(get_class(), "MC Question");
+		
+		add_action ('save_post', array (get_class(), 'CPT_save_post'), 10, 2);
+		add_action ('save_post_itemmc', array (get_class(), 'CPT_save_post'), 10, 2 );
+		add_action ('publish_post_itemmc', array (get_class(), 'CPT_save_post'), 10, 2 );
+		add_action ('pre_post_update', array (get_class(), 'CPT_save_post'), 10, 2 );
+		add_action ('edit_page_form', array (get_class(), 'CPT_save_post'), 10, 2 );
+		
+	}
+	
+	
+	
+	public function CPT_save_post ($post_id, $post) {
+
+		wp_die ('DIE');
+		echo ("<script>alert('SAVE');</script>");
+		
+		if($_POST['post_type'] != get_class()) {
+			echo ("AAAAAAA");
+			return;
+			
+		}
+		
+		echo ("BBBBBBB");
+		update_post_meta($post_ID, 'my_metadata', $_POST['title']);
+		
+		
 	}
 	
 	
 	function CPT_add_meta_boxes()  {
+		
 		parent::CPT_add_meta_boxes(get_class());
  		add_meta_box('mb_' . get_class() . '_answers', 	'Antwortoptionen',
  				array (get_class(), 'CPT_add_answers'), get_class(), 'normal', 'default', ['id' => 'mb_' . get_class() . '_answers_editor']);
@@ -32,6 +70,10 @@ class ItemMC extends Item {
 
 	function CPT_add_answers ($post, $vars) {
 	
+		
+		echo ("<script>console.log('ANSWERS');</script>");
+		
+		
 		$answerLine = '<tr>
 				<td><input type="text" value="%s" size="25" /></td>
 				<td><input type="text" value="%d" size="5" /></td>

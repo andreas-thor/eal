@@ -22,6 +22,10 @@ class ItemSC extends Item {
 		parent::CPT_init(get_class(), 'SC Question');
 	}
 	
+	public function CPT_save_post ($ID = false, $post = false) {
+		
+	}
+	
 	function CPT_add_meta_boxes()  {
  		parent::CPT_add_meta_boxes(get_class());
 	}
