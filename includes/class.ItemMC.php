@@ -51,7 +51,7 @@ class ItemMC extends Item {
 		);
 		
 		dbDelta (
-				"CREATE TABLE {$wpdb->prefix}eal_itemmc_answer (
+			"CREATE TABLE {$wpdb->prefix}eal_itemmc_answer (
 				item_id bigint(20) unsigned NOT NULL,
 				id smallint unsigned NOT NULL,
 				answer text,
@@ -73,7 +73,6 @@ class ItemMC extends Item {
 		
 		
 		
-				add_action ('save_post', array ($name, 'CPT_save_post'), 10, 2);
 // 				add_action ("save_post_$name", array ($name, 'CPT_save_post'), 10, 2 );
 //  				add_action ("publish_post_$name", array ($name, 'CPT_save_post'), 10, 2 );
 //  				add_action ("pre_post_update", array ($name, 'CPT_save_post'), 10, 2 );
@@ -82,7 +81,15 @@ class ItemMC extends Item {
 		
 	}
 	
-	
+	/**
+	 * 
+save_post 
+    Runs whenever a post or page is created or updated, which could be from an import, post/page edit form, xmlrpc, or post by email. 
+    Action function arguments: post ID and post object. Runs after the data is saved to the database. 
+    TODO: Note that post ID may reference a post revision and not the last saved post. Use wp_is_post_revision() to get the ID of the real post. 
+	 * @param unknown $post_id
+	 * @param unknown $post
+	 */
 	
 	public static function CPT_save_post ($post_id, $post) { // $post_id, $post) {
 
@@ -95,22 +102,13 @@ class ItemMC extends Item {
 		$item = parent::CPT_save_post($post_id, $post);
 		global $wpdb;
 		
-		$itemmc = array (
-			array(
-				'answer' => implode(",", $_POST['answer'])
-			),
-			array(
-				'%s'
-			)
-		);
-		
 		$wpdb->replace(
 				$wpdb->prefix . 'eal_itemmc',
-				array_merge($item[0], $itemmc[0]),
-				array_merge($item[1], $itemmc[1])
+				$item[0],
+				$item[1]
 			);
 		
-		
+		/** TODO: Sanitize all values */
 		/** TODO: DELETE all answers; INSERT new answers */
 		
 		if (isset($_POST['answer'])) {
@@ -151,6 +149,13 @@ class ItemMC extends Item {
 		
 	}
 	
+	public static function CPT_delete_post ($post_id)  {
+		global $wpdb;
+		
+		$wpdb->delete( $wpdb->prefix . 'eal_itemmc', array( 'id' => $post_id ), array( '%d' ) );
+		
+	}
+	
 	
 	static function CPT_add_meta_boxes($name=null)  {
 		
@@ -179,8 +184,8 @@ class ItemMC extends Item {
 			</tr>';		
 		
 		
-?>		
-		<script>
+?>
+<script>
 
 			var $ =jQuery.noConflict();
 			
@@ -197,7 +202,7 @@ class ItemMC extends Item {
 			}
 			
 		</script>
-			
+
 <?php	
 
 		printf ('<table>');
@@ -225,7 +230,62 @@ class ItemMC extends Item {
 	
 	
 	
-
+	static function CPT_updated_messages( $messages ) {
+	
+		global $post, $post_ID;
+		$messages['itemmc'] = array(
+				0 => '',
+				1 => sprintf( __('MC Question updated. <a href="%s">View MC Question</a>'), esc_url( get_permalink($post_ID) ) ),
+				2 => __('Custom field updated.'),
+				3 => __('Custom field deleted.'),
+				4 => __('MC Question updated.'),
+				5 => isset($_GET['revision']) ? sprintf( __('Product restored to revision from %s'), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+				6 => sprintf( __('MC Question published. <a href="%s">View MC Question</a>'), esc_url( get_permalink($post_ID) ) ),
+				7 => __('MC Question saved.'),
+				8 => sprintf( __('MC Question submitted. <a target="_blank" href="%s">MC Question product</a>'), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
+				9 => sprintf( __('MC Question scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">MC Question product</a>'), date_i18n( __( 'M j, Y @ G:i' ), strtotime( $post->post_date ) ), esc_url( get_permalink($post_ID) ) ),
+				10 => sprintf( __('MC Question draft updated. <a target="_blank" href="%s">MC Question product</a>'), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
+		);
+		return $messages;
+	}
+	
+	
+	static function CPT_contextual_help( $contextual_help, $screen_id, $screen ) {
+		
+		
+		$screen->add_help_tab( array(
+				'id' => 'you_custom_id', // unique id for the tab
+				'title' => 'Custom Help', // unique visible title for the tab
+				'content' => '<h3>Help Title</h3><p>Help content</p>', //actual help text
+		));
+		
+		$screen->add_help_tab( array(
+				'id' => 'you_custom_id_2', // unique id for the second tab
+				'title' => 'Custom Help 2', // unique visible title for the second tab
+				'content' => '<h3>Help Title 2</h3><p>Help content</p>', //actual help text
+		));
+		
+		
+		
+		
+// 		if ( 'itemmc' == $screen->id ) {
+	
+// 			$contextual_help = '<h2>Products</h2>
+//     <p>Products show the details of the items that we sell on the website. You can see a list of them on this page in reverse chronological order - the latest one we added is first.</p>
+//     <p>You can view/edit the details of each product by clicking on its name, or you can perform bulk actions using the dropdown menu and selecting multiple items.</p>
+// 		<h1>Hallo</h1><h2>jhjh</h2><p>jkjkj</p>
+		
+// 		';
+	
+// 		} elseif ( 'edit-itemmc' == $screen->id ) {
+	
+// 			$contextual_help = '<h2>Editing products</h2>
+//     <p>This page allows you to view/modify product details. Please make sure to fill out the available boxes with the appropriate details (product image, price, brand) and <strong>not</strong> add these details to the product description.</p>';
+	
+// 		}
+		return $contextual_help;
+	}	
+	
 	
 }
 

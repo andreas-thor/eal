@@ -60,10 +60,17 @@ abstract class Item {
 				)
 		);
 		
+		add_action ("save_post", array ($name, 'CPT_save_post'), 10, 2);
+		add_action ('delete_post', array ($name, 'CPT_delete_post'), 10);
+		
+		add_filter( 'post_updated_messages', array ($name, 'CPT_updated_messages') );
+		add_action( 'contextual_help', array ($name, 'CPT_contextual_help' ), 10, 3);
 
 
 		
 	}
+	
+	
 	
 	
 	static function CPT_add_meta_boxes($name)  {
@@ -95,6 +102,10 @@ abstract class Item {
 				'%d','%s','%s','%s','%d','%d','%d'
 			)
 		);
+	}
+	
+	public static function CPT_delete_post ($post_id)  {
+	
 	}
 	
 	static function CPT_add_editor ($post, $vars) {

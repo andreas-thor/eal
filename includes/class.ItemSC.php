@@ -26,6 +26,11 @@ class ItemSC extends Item {
 		
 	}
 	
+	public static function CPT_delete_post ($post_id)  {
+	
+	}
+	
+	
 	static function CPT_add_meta_boxes($name=null)  {
  		parent::CPT_add_meta_boxes(get_class());
 	}
@@ -40,8 +45,13 @@ class ItemSC extends Item {
 	
 	
 	
+ 	static function CPT_updated_messages( $messages ) {
+		
+ 	}
 
-	
+	static function CPT_contextual_help( $contextual_help, $screen_id, $screen ) {
+		
+	}
 }
 
 	
