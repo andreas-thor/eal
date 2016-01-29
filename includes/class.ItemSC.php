@@ -18,23 +18,23 @@ class ItemSC extends Item {
 	}
 	
 	
-	public function CPT_init() {
+	public static function CPT_init($name=null, $label=null) {
 		parent::CPT_init(get_class(), 'SC Question');
 	}
 	
-	public function CPT_save_post ($ID = false, $post = false) {
+	public static function CPT_save_post ($ID = false, $post = false) {
 		
 	}
 	
-	function CPT_add_meta_boxes()  {
+	static function CPT_add_meta_boxes($name=null)  {
  		parent::CPT_add_meta_boxes(get_class());
 	}
 	
-	function CPT_add_editor ($post, $vars) {
+	static function CPT_add_editor ($post, $vars) {
 		parent::CPT_add_editor($post, $vars);
 	}
 	
-	function CPT_add_level ($post, $vars) {
+	static function CPT_add_level ($post, $vars) {
 		parent::CPT_add_level($post, $vars);
 	}
 	

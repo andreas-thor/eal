@@ -107,6 +107,9 @@ function create_eal_page_taxonomies () {
  * - eal_item_mcnm: Multiple Choice M out of N
  */
  
+
+register_activation_hook( __FILE__, array ('itemmc', 'CPT_createDBTable') );
+
 add_action( 'init', 'create_eal_items' );
 
 //add_action ('init', array('ItemMC', 'init'));
@@ -172,7 +175,7 @@ function create_eal_items() {
 	ItemSC::CPT_init();
 	ItemMC::CPT_init();
 	
-	add_action ('save_post', array ('itemmc', 'CPT_save_post'), 10, 2);
+	// add_action ('save_post', array ('itemmc', 'CPT_save_post'), 10, 2);
 	
 	
 	

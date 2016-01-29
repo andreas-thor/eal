@@ -29,7 +29,7 @@ abstract class Item {
 	 * #######################################################################
 	 */
 	
-	function CPT_init($name, $label) {
+	static function CPT_init($name, $label) {
 		
 		register_post_type( $name,
 				array(
@@ -60,30 +60,44 @@ abstract class Item {
 				)
 		);
 		
-		// add_action('save_post',  'CPT_save_post', 10, 2);
+
+
 		
 	}
 	
 	
-	function CPT_add_meta_boxes($name)  {
+	static function CPT_add_meta_boxes($name)  {
 		
 		echo ("<script>console.log('addmeta');</script>");
-		
-		add_meta_box('mb_' . $name . '_desc', 	'Fall- oder Problemvignette',
-				array ($name, 'CPT_add_editor'), $name, 'normal', 'default', ['value' => 'DEFAULT Vignette', 'id' => 'mb_' . $name . '_desc_editor']);
-		add_meta_box('mb_' . $name . '_ques', 	'Aufgabenstellung',
-				array ($name, 'CPT_add_editor'), $type, 'normal', 'default', ['value' => 'DEFAULT Aufgabenstellung', 'id' => 'mb_' . $name . '_ques_editor']);
-		add_meta_box('mb_' . $name . '_level', 	'Anforderungsstufe',
-				array ($name, 'CPT_add_level'), $type, 'side', 'default', ['id' => 'mb_' . $name . '_level']);
+
+		add_meta_box('mb_description', 	'Fall- oder Problemvignette1',
+				array ($name, 'CPT_add_editor'), $name, 'normal', 'default', ['value' => 'DEFAULT Vignette', 'id' => 'item_description']);
+		add_meta_box('mb_question', 	'Aufgabenstellung2',
+				array ($name, 'CPT_add_editor'), $name, 'normal', 'default', ['value' => 'DEFAULT Aufgabenstellung', 'id' => 'item_question']);
+		add_meta_box('mb_item_level', 	'Anforderungsstufe3',
+				array ($name, 'CPT_add_level'), $name, 'side', 'default', ['id' => 'item_level']);
 	}
 	
 	
-	public function CPT_save_post ($post_id) {
+	public static function CPT_save_post ($post_id, $post)  {
 	
-		echo ("<script>console.log('SAVE Item');</script>");
+		return array (
+			array(
+				'id' => $post_id,
+				'title' => $post->post_title, // isset($_POST['post_title']) ? $_POST['post_title'] : null,
+				'description' => isset($_POST['item_description']) ? $_POST['item_description'] : null,
+				'question' => isset ($_POST['item_question']) ? $_POST['item_question'] : null,
+				'level_FW' => isset ($_POST['item_level_FW']) ? $_POST['item_level_FW'] : null,
+				'level_KW' => isset ($_POST['item_level_KW']) ? $_POST['item_level_KW'] : null,
+				'level_PW' => isset ($_POST['item_level_PW']) ? $_POST['item_level_PW'] : null,
+			),
+			array(
+				'%d','%s','%s','%s','%d','%d','%d'
+			)
+		);
 	}
 	
-	function CPT_add_editor ($post, $vars) {
+	static function CPT_add_editor ($post, $vars) {
 	
 		$editor_settings = array(
 				'media_buttons' => false,	// no media buttons
@@ -99,7 +113,7 @@ abstract class Item {
 	}
 	
 	
-	function CPT_add_level ($post, $vars) {
+	static function CPT_add_level ($post, $vars) {
 	
 		$colNames = ["FW"=>"", "KW"=>"", "PW"=>""];
 		$html  = '<table><tr><td></td>';
@@ -114,7 +128,7 @@ abstract class Item {
 		foreach ($rowNames as $n => $r) {
 			$html .= '<tr><td>' . ($n+1) . ". " . $r . '</td>';
 			foreach ($colNames as $c=>$v) {
-				$html .= '<td align="center"><input type="radio" id="' . $vars['args']['id'] . '_' . $c . '_' . $r . '" name="' . $c . '" value="' . $r . '"' . (($r==$v)?' checked':'') . '></td>';
+				$html .= '<td align="center"><input type="radio" id="' . $vars['args']['id'] . '_' . $c . '_' . $r . '" name="' . $vars['args']['id'] . '_' . $c . '" value="' . ($n+1) . '"' . (($r==$v)?' checked':'') . '></td>';
 			}
 			$html .= '</tr>';
 		}
