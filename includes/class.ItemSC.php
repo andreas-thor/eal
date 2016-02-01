@@ -30,8 +30,11 @@ class ItemSC extends Item {
 	
 	}
 	
+	public static function CPT_load_post ($post_id)  {
 	
-	static function CPT_add_meta_boxes($name=null)  {
+	}
+	
+	static function CPT_add_meta_boxes($name=null, $item=null)  {
  		parent::CPT_add_meta_boxes(get_class());
 	}
 	

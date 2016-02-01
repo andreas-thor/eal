@@ -7,26 +7,41 @@ require_once("class.CustomPostType.php");
 class ItemMC extends Item {
 	
 	
-	function __construct  ($post_id = NULL) {
+// 	function __construct  ($post_id = NULL) {
 		
-		add_action( 'edit_post', 'CPT_save_post');
-		wp_die ('AAA');
+// 		add_action( 'edit_post', 'CPT_save_post');
+// 		wp_die ('AAA');
 		
-		echo ("<script>console.log('CONSTRUCT');</script>");
-		if ( !empty($post_id)) $this->getPost ($post_id);
+// 		echo ("<script>console.log('CONSTRUCT');</script>");
+// 		if ( !empty($post_id)) $this->getPost ($post_id);
 		
+// 	}
+	
+// 	function getPost ($post_id) {
+		
+// 		echo ("<script>console.log('GETPOST');</script>");
+		
+// 		$p = get_post ($post_id);
+// 		$p->post_title = 'Gesetzt';
+// 		echo ("HIER:");
+// 		echo ($p->post_title);
+// 		return $p->ID;
+// 	}
+	
+	
+	static function getItem ($post) {
+		global $wpdb;
+		return $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_itemmc WHERE id = {$post->ID}", ARRAY_A);
 	}
 	
-	function getPost ($post_id) {
-		
-		echo ("<script>console.log('GETPOST');</script>");
-		
-		$p = get_post ($post_id);
-		$p->post_title = 'Gesetzt';
-		echo ("HIER:");
-		echo ($p->post_title);
-		return $p->ID;
+	
+	static function getAnswers ($post) {
+	
+		global $wpdb;
+		return $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_itemmc_answer WHERE item_id = {$post->ID}", ARRAY_A);
 	}
+	
+	
 	
 	public function CPT_createDBTable() {
 		
@@ -111,23 +126,51 @@ save_post
 		/** TODO: Sanitize all values */
 		/** TODO: DELETE all answers; INSERT new answers */
 		
+		
+		
+		
+		
 		if (isset($_POST['answer'])) {
+		
+			
+
+			
+			$values = array();
+			$insert = array();
+			$kmax = 0;
 			
 			foreach ($_POST['answer'] as $k => $v) {
-				$wpdb->replace(
-					$wpdb->prefix . 'eal_itemmc_answer',
-					array (
-						'item_id' => $post_id,
-						'id' => $k+1,	
-						'answer' => $v,
-						'positive' => $_POST['positive'][$k], 
-						'negative' => $_POST['negative'][$k]
-					), 
-					array(
-						'%d','%d','%s','%d','%d'							
-					)
-				);
+				array_push($values, $post_id, $k+1, $v, $_POST['positive'][$k], $_POST['negative'][$k]);
+				array_push($insert, "(%d, %d, %s, %d, %d)");
+				$kmax = $k+1;
+				
 			}
+			
+			$query = "REPLACE INTO {$wpdb->prefix}eal_itemmc_answer (item_id, id, answer, positive, negative) VALUES ";
+			$query .= implode(', ', $insert);
+			$wpdb->query( $wpdb->prepare("$query ", $values));
+			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_itemmc_answer WHERE item_id=%d AND id>%d", array ($post_id, $kmax)));
+				
+			
+// 			foreach ($_POST['answer'] as $k => $v) {
+
+								
+// 				$wpdb->replace(
+// 					$wpdb->prefix . 'eal_itemmc_answer',
+// 					array (
+// 						'item_id' => $post_id,
+// 						'id' => $k+1,	
+// 						'answer' => $v,
+// 						'positive' => $_POST['positive'][$k], 
+// 						'negative' => $_POST['negative'][$k]
+// 					), 
+// 					array(
+// 						'%d','%d','%s','%d','%d'							
+// 					)
+// 				);
+				
+				
+// 			}
 			
 		}
 		
@@ -157,12 +200,29 @@ save_post
 	}
 	
 	
-	static function CPT_add_meta_boxes($name=null)  {
+	public static function CPT_load_post ($post)  {
+	
+// 		echo '<h2>This is ye olde edit_form_advanced!</h2>';
+		$post->post_title = 'in Load gesetzt';
+		$post->FW = 7;
+// 		die();
+	}
+	
+	
+	static function CPT_add_meta_boxes($name=null, $item=null)  {
+		
+		global $post;
+		global $myitemc;
+// 		echo ($post->post_title);
 		
 		$name = get_class();
-		parent::CPT_add_meta_boxes($name);
- 		add_meta_box('mb_' . $name . '_answers', 	'Antwortoptionen',
- 				array (get_class(), 'CPT_add_answers'), $name, 'normal', 'default', ['id' => 'mb_' . $name . '_answers_editor']);
+		$item = self::getItem($post);
+		parent::CPT_add_meta_boxes($name, $item);
+ 		
+ 		
+		$answers = self::getAnswers($post);
+ 		add_meta_box('mb_' . $name . '_answers', 	"Antwortoptionen",
+ 				array (get_class(), 'CPT_add_answers'), $name, 'normal', 'default', ['answers' => $answers, 'id' => 'mb_' . $name . '_answers_editor']);
 	}
 
 
@@ -207,8 +267,8 @@ save_post
 
 		printf ('<table>');
 		printf ('<tr align="left"><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>', 'Antwort-Text', 'Ausgew&auml;hlt', 'Nicht ausgew&auml;hlt', 'Aktionen');
-		foreach (array(1, 2, 3, 4) as $value) { 
-			printf($answerLine, $value, 1, -1);
+		foreach ($vars['args']['answers'] as $answer) { 
+			printf($answerLine, $answer['answer'], $answer['positive'], $answer['negative']);
 		}
 		printf ('</table>');
 	}
@@ -261,8 +321,8 @@ save_post
 		
 		$screen->add_help_tab( array(
 				'id' => 'you_custom_id_2', // unique id for the second tab
-				'title' => 'Custom Help 2', // unique visible title for the second tab
-				'content' => '<h3>Help Title 2</h3><p>Help content</p>', //actual help text
+				'title' => 'Vignette', // unique visible title for the second tab
+				'content' => '<h3>Vignette</h3><p>Verwenden Sie Vignetten zur Kontextualisierung und/oder zur Anwendungsorientierung des Items.</p>', //actual help text
 		));
 		
 		
