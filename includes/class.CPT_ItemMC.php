@@ -44,9 +44,10 @@ class CPT_ItemMC extends CPT_Item {
 	}
 	
 	
-	public static function CPT_init($name=null, $label=null) {
-		parent::CPT_init(get_class(), 'MC Question');
+	public static function CPT_init($eal_posttype=null, $label=null, $classname=null) {
+		parent::CPT_init("itemmc", 'MC Question', get_class());
 	}
+	
 	
 	
 	/**
@@ -111,13 +112,14 @@ save_post
 	}
 	
 	
-	static function CPT_add_meta_boxes($name=null, $item=null)  {
+	static function CPT_add_meta_boxes($eal_posttype=null, $classname=null)  {
 		
 		self::CPT_load_post();
-		$name = get_class();
-		parent::CPT_add_meta_boxes($name);
+		$eal_posttype = 'itemmc';
+		$classname = get_class();
+		parent::CPT_add_meta_boxes($eal_posttype, $classname);
  		
- 		add_meta_box('mb_' . $name . '_answers', "Antwortoptionen",	array (get_class(), 'CPT_add_answers'), $name, 'normal', 'default');
+ 		add_meta_box("mb_{$eal_posttype}_answers", "Antwortoptionen",	array ($classname, 'CPT_add_answers'), $eal_posttype, 'normal', 'default');
 	}
 
 

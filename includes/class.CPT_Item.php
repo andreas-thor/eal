@@ -12,9 +12,9 @@ abstract class CPT_Item {
 	 * #######################################################################
 	 */
 	
-	static function CPT_init($name, $label) {
+	static function CPT_init($eal_posttype, $label, $classname) {
 		
-		register_post_type( $name,
+		register_post_type( $eal_posttype,
 				array(
 						'labels' => array(
 								'name' => $label,
@@ -39,26 +39,26 @@ abstract class CPT_Item {
 						// 'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
 						'has_archive' => true,
 						'show_in_menu'    => true,
-						'register_meta_box_cb' => array ($name, 'CPT_add_meta_boxes')
+						'register_meta_box_cb' => array ($classname, 'CPT_add_meta_boxes')
 				)
 		);
 		
-		add_action ("save_post", array ($name, 'CPT_save_post'), 10, 2);
-		add_action ('delete_post', array ($name, 'CPT_delete_post'), 10);
-		add_action ('the_post', array ($name, 'CPT_load_post'), 10);
+		add_action ("save_post_{$eal_posttype}", array ($classname, 'CPT_save_post'), 10, 2);
+		add_action ('delete_post', array ($classname, 'CPT_delete_post'), 10);
+		add_action ('the_post', array ($classname, 'CPT_load_post'), 10);
 
-		echo ("<script>console.log('init: ${name}');</script>");
+		echo ("<script>console.log('init: {$classname}');</script>");
 		
 		
-		add_filter("manage_" . strtolower($name) ."_posts_columns" , array ($name, 'CPT_set_table_columns'));
-		add_action("manage_" . strtolower($name) ."_posts_custom_column" , array ($name, 'CPT_fill_table_columns'), 10, 2 );
+		add_filter("manage_{$eal_posttype}_posts_columns" , array ($classname, 'CPT_set_table_columns'));
+		add_action("manage_{$eal_posttype}_posts_custom_column" , array ($classname, 'CPT_fill_table_columns'), 10, 2 );
 		
 		
 // 		add_action ("load-$name", array ($name, 'CPT_load_post'), 10);
 // 		add_action ("edit_form_advanced", array ($name, 'CPT_load_post'), 10);
 		
-		add_filter('post_updated_messages', array ($name, 'CPT_updated_messages') );
-		add_action('contextual_help', array ($name, 'CPT_contextual_help' ), 10, 3);
+		add_filter('post_updated_messages', array ($classname, 'CPT_updated_messages') );
+		add_action('contextual_help', array ($classname, 'CPT_contextual_help' ), 10, 3);
 
 		/* hide shortlink block */
 		add_filter('get_sample_permalink_html', '__return_empty_string', 10, 5);
@@ -71,11 +71,11 @@ abstract class CPT_Item {
 	
 
 	
-	static function CPT_add_meta_boxes($name)  {
+	static function CPT_add_meta_boxes($eal_posttype=null, $classname=null)  {
 		
-		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($name, 'CPT_add_description'), $name, 'normal', 'default' );
-		add_meta_box('mb_question', 'Aufgabenstellung', array ($name, 'CPT_add_question'), $name, 'normal', 'default');
-		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($name, 'CPT_add_level'), $name, 'side', 'default');
+		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($classname, 'CPT_add_description'), $eal_posttype, 'normal', 'default' );
+		add_meta_box('mb_question', 'Aufgabenstellung', array ($classname, 'CPT_add_question'), $eal_posttype, 'normal', 'default');
+		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($classname, 'CPT_add_level'), $eal_posttype, 'side', 'default');
 	}
 	
 	

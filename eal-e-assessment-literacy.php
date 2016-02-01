@@ -14,6 +14,14 @@
  * All ids must be less than 20 characters!
  */
  
+
+// TODO: disable post revisions
+// TODO: sort by FW/KW/PW
+// TODO: add another properties to list?
+// TODO: expand quickedit
+// TODO: Bulk operations
+
+
 include_once 'includes/eal_item_sc.php';
 include_once 'includes/eal_item_mc.php';
 include_once 'includes/class.CPT_ItemSC.php';
@@ -108,7 +116,8 @@ function create_eal_page_taxonomies () {
  */
  
 
-register_activation_hook( __FILE__, array ('itemmc', 'CPT_createDBTable') );
+register_activation_hook( __FILE__, array ('cpt_itemsc', 'CPT_createDBTable') );
+register_activation_hook( __FILE__, array ('cpt_itemmc', 'CPT_createDBTable') );
 
 add_action( 'init', 'create_eal_items' );
 

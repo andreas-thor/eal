@@ -17,11 +17,18 @@ class EAL_ItemSC extends EAL_Item {
 		if (get_post_status($post->ID)=='auto-draft') {
 			
 			$this->title = '';
-			$this->description = 'non';
+			$this->description = '';
 			$this->question = '';
 			$this->level_FW = 0;
 			$this->level_PW = 0;
 			$this->level_KW = 0;
+			
+			$this->answers = array (
+					array ('answer' => '', 'points' => 1),
+					array ('answer' => '', 'points' => 0),
+					array ('answer' => '', 'points' => 0),
+					array ('answer' => '', 'points' => 0)
+			);
 			
 		} else {
 			
@@ -34,6 +41,11 @@ class EAL_ItemSC extends EAL_Item {
 			$this->level_PW = $res['level_PW'];
 			$this->level_KW = $res['level_KW'];
 			
+			$this->answers = array();
+			$res = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_itemsc_answer WHERE item_id = {$post->ID} ORDER BY id", ARRAY_A);
+			foreach ($res as $a) {
+				array_push ($this->answers, array ('answer' => $a['answer'], 'points' => $a['points']));
+			}
 		}
 	}
 	

@@ -17,11 +17,12 @@ class EAL_ItemMC extends EAL_Item {
 		if (get_post_status($post->ID)=='auto-draft') {
 			
 			$this->title = '';
-			$this->description = 'non';
+			$this->description = '';
 			$this->question = '';
 			$this->level_FW = 0;
 			$this->level_PW = 0;
 			$this->level_KW = 0;
+			
 			$this->answers = array (
 					array ('answer' => '', 'positive' => 1, 'negative' => 0), 
 					array ('answer' => '', 'positive' => 1, 'negative' => 0),
