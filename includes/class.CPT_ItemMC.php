@@ -1,46 +1,10 @@
 <?php
 
-require_once("class.Item.php");
-require_once("class.CustomPostType.php");
+require_once("class.CPT_Item.php");
+// require_once("class.CustomPostType.php");
+require_once("class.EAL_ItemMC.php");
 
-
-class ItemMC extends Item {
-	
-	
-// 	function __construct  ($post_id = NULL) {
-		
-// 		add_action( 'edit_post', 'CPT_save_post');
-// 		wp_die ('AAA');
-		
-// 		echo ("<script>console.log('CONSTRUCT');</script>");
-// 		if ( !empty($post_id)) $this->getPost ($post_id);
-		
-// 	}
-	
-// 	function getPost ($post_id) {
-		
-// 		echo ("<script>console.log('GETPOST');</script>");
-		
-// 		$p = get_post ($post_id);
-// 		$p->post_title = 'Gesetzt';
-// 		echo ("HIER:");
-// 		echo ($p->post_title);
-// 		return $p->ID;
-// 	}
-	
-	
-	static function getItem ($post) {
-		global $wpdb;
-		return $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_itemmc WHERE id = {$post->ID}", ARRAY_A);
-	}
-	
-	
-	static function getAnswers ($post) {
-	
-		global $wpdb;
-		return $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_itemmc_answer WHERE item_id = {$post->ID}", ARRAY_A);
-	}
-	
+class CPT_ItemMC extends CPT_Item {
 	
 	
 	public function CPT_createDBTable() {
@@ -81,20 +45,9 @@ class ItemMC extends Item {
 	
 	
 	public static function CPT_init($name=null, $label=null) {
-		$name = get_class();
-		parent::CPT_init($name, 'MC Question');
-		
-// 		add_action("save_post_$name",  array ($name, 'CPT_save_post'), 10, 2);
-		
-		
-		
-// 				add_action ("save_post_$name", array ($name, 'CPT_save_post'), 10, 2 );
-//  				add_action ("publish_post_$name", array ($name, 'CPT_save_post'), 10, 2 );
-//  				add_action ("pre_post_update", array ($name, 'CPT_save_post'), 10, 2 );
-//  				add_action ("edit_page_form", array ($name, 'CPT_save_post'), 10, 2 );		
-		
-		
+		parent::CPT_init(get_class(), 'MC Question');
 	}
+	
 	
 	/**
 	 * 
@@ -108,12 +61,6 @@ save_post
 	
 	public static function CPT_save_post ($post_id, $post) { // $post_id, $post) {
 
-// 		global $post;
-// 		$post = get_post ($post_id);
-// 		update_post_meta($post->ID, 'my_metadata1', $post_id);
-// 		update_post_meta($post->ID, 'my_metadata2', $_POST['item_description']);
-// 		update_post_meta($post->ID, 'my_metadata3', $_POST['item_question']);
-		
 		$item = parent::CPT_save_post($post_id, $post);
 		global $wpdb;
 		
@@ -127,13 +74,7 @@ save_post
 		/** TODO: DELETE all answers; INSERT new answers */
 		
 		
-		
-		
-		
 		if (isset($_POST['answer'])) {
-		
-			
-
 			
 			$values = array();
 			$insert = array();
@@ -151,86 +92,38 @@ save_post
 			$wpdb->query( $wpdb->prepare("$query ", $values));
 			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_itemmc_answer WHERE item_id=%d AND id>%d", array ($post_id, $kmax)));
 				
-			
-// 			foreach ($_POST['answer'] as $k => $v) {
-
-								
-// 				$wpdb->replace(
-// 					$wpdb->prefix . 'eal_itemmc_answer',
-// 					array (
-// 						'item_id' => $post_id,
-// 						'id' => $k+1,	
-// 						'answer' => $v,
-// 						'positive' => $_POST['positive'][$k], 
-// 						'negative' => $_POST['negative'][$k]
-// 					), 
-// 					array(
-// 						'%d','%d','%s','%d','%d'							
-// 					)
-// 				);
-				
-				
-// 			}
-			
 		}
 		
-		
-		
-// 		wp_mail( "thor@hft-leipzig.de", "save Post", $post_id);
-// 		wp_die ('DIE');#
-// 		echo ("<script>alert('SAVE');</script>");
-		
-// 		if($_POST['post_type'] != get_class()) {
-// 			echo ("AAAAAAA");
-// 			return;
-			
-// 		}
-		
-// 		echo ("BBBBBBB");
-// 		update_post_meta($post_ID, 'my_metadata', $_POST['title']);
-		
-		
 	}
+	
 	
 	public static function CPT_delete_post ($post_id)  {
 		global $wpdb;
-		
-		$wpdb->delete( $wpdb->prefix . 'eal_itemmc', array( 'id' => $post_id ), array( '%d' ) );
-		
+		$wpdb->delete( '{$wpdb->prefix}eal_itemmc', array( 'id' => $post_id ), array( '%d' ) );
+		$wpdb->delete( '{$wpdb->prefix}eal_itemmc_answer', array( 'item_id' => $post_id ), array( '%d' ) );
 	}
 	
 	
-	public static function CPT_load_post ($post)  {
+	public static function CPT_load_post ()  {
 	
-// 		echo '<h2>This is ye olde edit_form_advanced!</h2>';
-		$post->post_title = 'in Load gesetzt';
-		$post->FW = 7;
-// 		die();
+		global $post, $item;
+		$item = new EAL_ItemMC($post);
 	}
 	
 	
 	static function CPT_add_meta_boxes($name=null, $item=null)  {
 		
-		global $post;
-		global $myitemc;
-// 		echo ($post->post_title);
-		
+		self::CPT_load_post();
 		$name = get_class();
-		$item = self::getItem($post);
-		parent::CPT_add_meta_boxes($name, $item);
+		parent::CPT_add_meta_boxes($name);
  		
- 		
-		$answers = self::getAnswers($post);
- 		add_meta_box('mb_' . $name . '_answers', 	"Antwortoptionen",
- 				array (get_class(), 'CPT_add_answers'), $name, 'normal', 'default', ['answers' => $answers, 'id' => 'mb_' . $name . '_answers_editor']);
+ 		add_meta_box('mb_' . $name . '_answers', "Antwortoptionen",	array (get_class(), 'CPT_add_answers'), $name, 'normal', 'default');
 	}
 
 
 	static function CPT_add_answers ($post, $vars) {
 	
-		
-		echo ("<script>console.log('ANSWERS');</script>");
-		
+		global $item;
 		
 		$answerLine = '<tr>
 				<td><input type="text" name="answer[]" value="%s" size="25" /></td>
@@ -245,7 +138,7 @@ save_post
 		
 		
 ?>
-<script>
+		<script>
 
 			var $ =jQuery.noConflict();
 			
@@ -264,29 +157,23 @@ save_post
 		</script>
 
 <?php	
-
+		
 		printf ('<table>');
 		printf ('<tr align="left"><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>', 'Antwort-Text', 'Ausgew&auml;hlt', 'Nicht ausgew&auml;hlt', 'Aktionen');
-		foreach ($vars['args']['answers'] as $answer) { 
-			printf($answerLine, $answer['answer'], $answer['positive'], $answer['negative']);
+		foreach ($item->answers as $a) { 
+			printf($answerLine, $a['answer'], $a['positive'], $a['negative']);
 		}
 		printf ('</table>');
 	}
 	
 	
 	
+
 	
 
 	
 	
 	
-	static function CPT_add_editor ($post, $vars) {
-		parent::CPT_add_editor($post, $vars);
-	}
-	
-	static function CPT_add_level ($post, $vars) {
-		parent::CPT_add_level($post, $vars);
-	}
 	
 	
 	

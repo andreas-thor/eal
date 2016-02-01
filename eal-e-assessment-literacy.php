@@ -16,8 +16,8 @@
  
 include_once 'includes/eal_item_sc.php';
 include_once 'includes/eal_item_mc.php';
-include_once 'includes/class.ItemSC.php';
-include_once 'includes/class.ItemMC.php';
+include_once 'includes/class.CPT_ItemSC.php';
+include_once 'includes/class.CPT_ItemMC.php';
 
 $GLOBALS["eal_itemtypes"] = [
 		'eal_item_sc' => 'Single Choice',
@@ -172,8 +172,8 @@ function create_eal_items() {
 // 		}
 // 	}
 		
-	ItemSC::CPT_init();
-	ItemMC::CPT_init();
+	CPT_ItemSC::CPT_init();
+	CPT_ItemMC::CPT_init();
 	
 	// add_action ('save_post', array ('itemmc', 'CPT_save_post'), 10, 2);
 	
