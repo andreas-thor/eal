@@ -26,6 +26,7 @@ include_once 'includes/eal_item_sc.php';
 include_once 'includes/eal_item_mc.php';
 include_once 'includes/class.CPT_ItemSC.php';
 include_once 'includes/class.CPT_ItemMC.php';
+include_once 'includes/class.CPT_Review.php';
 
 $GLOBALS["eal_itemtypes"] = [
 		'eal_item_sc' => 'Single Choice',
@@ -57,9 +58,9 @@ function set_eal_admin_menu_entries () {
 	remove_menu_page( 'edit-comments.php' );          //Comments
 	remove_menu_page( 'themes.php' );                 //Appearance
 // 	remove_menu_page( 'plugins.php' );                //Plugins
-	remove_menu_page( 'users.php' );                  //Users
+// 	remove_menu_page( 'users.php' );                  //Users
 	remove_menu_page( 'tools.php' );                  //Tools
-	remove_menu_page( 'options-general.php' );        //Settings	
+// 	remove_menu_page( 'options-general.php' );        //Settings	
 
 	add_menu_page('eal_page_items', 'Items', 'administrator', 'eal_page_items', 'create_eal_page_items', '', 1);
 	add_menu_page('eal_page_taxonomies', 'Taxonomies', 'administrator', 'eal_page_taxonomies', 'create_eal_page_taxonomies', '', 30);
@@ -183,6 +184,7 @@ function create_eal_items() {
 		
  	CPT_ItemSC::CPT_init();
 	CPT_ItemMC::CPT_init();
+	CPT_Review::CPT_init();
 	
 	// add_action ('save_post', array ('itemmc', 'CPT_save_post'), 10, 2);
 	
