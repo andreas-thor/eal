@@ -18,8 +18,8 @@
 // TODO: disable post revisions
 // TODO: sort by FW/KW/PW
 // TODO: add another properties to list?
-// TODO: expand quickedit
-// TODO: Bulk operations
+// TODO: expand quickedit?
+// TODO: Bulk operations (export)
 
 
 include_once 'includes/eal_item_sc.php';
@@ -116,8 +116,8 @@ function create_eal_page_taxonomies () {
  */
  
 
-register_activation_hook( __FILE__, array ('cpt_itemsc', 'CPT_createDBTable') );
-register_activation_hook( __FILE__, array ('cpt_itemmc', 'CPT_createDBTable') );
+register_activation_hook( __FILE__, array ('eal_itemsc', 'createDBTable') );
+register_activation_hook( __FILE__, array ('eal_itemmc', 'createDBTable') );
 
 add_action( 'init', 'create_eal_items' );
 
@@ -181,7 +181,7 @@ function create_eal_items() {
 // 		}
 // 	}
 		
-	CPT_ItemSC::CPT_init();
+ 	CPT_ItemSC::CPT_init();
 	CPT_ItemMC::CPT_init();
 	
 	// add_action ('save_post', array ('itemmc', 'CPT_save_post'), 10, 2);

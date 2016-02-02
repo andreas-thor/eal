@@ -43,15 +43,29 @@ abstract class CPT_Item {
 				)
 		);
 		
-		add_action ("save_post_{$eal_posttype}", array ($classname, 'CPT_save_post'), 10, 2);
-		add_action ('delete_post', array ($classname, 'CPT_delete_post'), 10);
-		add_action ('the_post', array ($classname, 'CPT_load_post'), 10);
-
-		echo ("<script>console.log('init: {$classname}');</script>");
+		// TODO: Note that post ID may reference a post revision and not the last saved post. Use wp_is_post_revision() to get the ID of the real post.
+		add_action ("save_post_{$eal_posttype}", array ("eal_{$eal_posttype}", 'save'), 10, 2);
+		
+		// TODO: Delete post hook 
+		add_action ('XXX', array ("eal_{$eal_posttype}", 'save'), 10);
+		
+		
 		
 		
 		add_filter("manage_{$eal_posttype}_posts_columns" , array ($classname, 'CPT_set_table_columns'));
 		add_action("manage_{$eal_posttype}_posts_custom_column" , array ($classname, 'CPT_fill_table_columns'), 10, 2 );
+		add_filter("manage_edit-{$eal_posttype}_sortable_columns", array ($classname, 'CPT_set_table_columns_sortable')); 		
+		add_filter("xxxposts_clauses", array ($classname, 'CPT_set_table_order'), 1, 2 );
+		
+		
+		
+		
+// 		add_action("pre_get_posts", array ($classname, 'CPT_set_table_order'));
+		
+// 		if ( is_admin() ) {
+// 			add_filter( 'request', array( $classname, 'CPT_set_table_order' ) );
+// 		}
+		
 		
 		
 // 		add_action ("load-$name", array ($name, 'CPT_load_post'), 10);
@@ -65,11 +79,51 @@ abstract class CPT_Item {
 		add_filter('pre_get_shortlink', '__return_empty_string' );
 		
 		
-		
+	
+		add_filter('posts_join', array ('CPT_Item', 'AIOThemes_joinPOSTMETA_to_WPQuery'));
+		add_filter( 'posts_fields', array ('CPT_Item', 'filter_posts_fields'), 10, 1 );
+		add_filter( 'posts_orderby', array ('CPT_Item', 'edit_posts_orderby'), 10, 1 );
+
 		
 	}
 	
+	static function edit_posts_orderby($orderby_statement) {
+		
+		global $wp_query;
+		echo ("<script>console.log('edit_posts_orderby " . print_r($wp_query->get( 'orderby' ), true) . "');</script>");
 
+		if ($wp_query->get( 'orderby' ) == "FW") $orderby_statement = "level_FW " . $wp_query->get( 'order' );
+		if ($wp_query->get( 'orderby' ) == "PW") $orderby_statement = "level_PW " . $wp_query->get( 'order' );
+		if ($wp_query->get( 'orderby' ) == "KW") $orderby_statement = "level_KW " . $wp_query->get( 'order' );
+		
+// 		$orderby_statement = "level_KW DESC";
+		return $orderby_statement;
+	}
+	
+	
+	// define the posts_fields callback
+	static function filter_posts_fields( $array ) {
+		// make filter magic happen here...
+		global $wp_query, $wpdb;
+		echo ("<script>console.log('filter_posts_fields in " . print_r($array, true) . "');</script>");
+		$array .= ", {$wpdb->prefix}eal_itemmc.*";
+		echo ("<script>console.log('filter_posts_fields in " . print_r($array, true) . "');</script>");
+		return $array;
+// 		return array_merge ($array, array ("{$wpdb->prefix}eal_itemmc.*"));
+	}
+		
+	static function AIOThemes_joinPOSTMETA_to_WPQuery($join) {
+		global $wp_query, $wpdb;
+	
+// 		if (!empty($wp_query->query_vars['s'])) {
+			$join .= " JOIN {$wpdb->prefix}eal_itemmc ON {$wpdb->prefix}eal_itemmc.id = {$wpdb->posts}.ID";
+				
+// 		}
+	
+		return $join;
+	}
+	
+	
 	
 	static function CPT_add_meta_boxes($eal_posttype=null, $classname=null)  {
 		
@@ -79,23 +133,7 @@ abstract class CPT_Item {
 	}
 	
 	
-	public static function CPT_save_post ($post_id, $post)  {
-	
-		return array (
-			array(
-				'id' => $post_id,
-				'title' => $post->post_title, // isset($_POST['post_title']) ? $_POST['post_title'] : null,
-				'description' => isset($_POST['item_description']) ? $_POST['item_description'] : null,
-				'question' => isset ($_POST['item_question']) ? $_POST['item_question'] : null,
-				'level_FW' => isset ($_POST['item_level_FW']) ? $_POST['item_level_FW'] : null,
-				'level_KW' => isset ($_POST['item_level_KW']) ? $_POST['item_level_KW'] : null,
-				'level_PW' => isset ($_POST['item_level_PW']) ? $_POST['item_level_PW'] : null,
-			),
-			array(
-				'%d','%s','%s','%s','%d','%d','%d'
-			)
-		);
-	}
+
 	
 	
 	
@@ -159,23 +197,67 @@ abstract class CPT_Item {
 	
 	
 	static function CPT_set_table_columns($columns) {
-		echo ("<script>console.log('CPT_set_table_columns in " . get_class() . "');</script>");
-		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW'));
+		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte'));
 	
 	}
 	
+	static function CPT_set_table_columns_sortable($columns) {
+		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte'));
+	}
 	
 	static function CPT_fill_table_columns( $column, $post_id ) {
-		echo ("<script>console.log('CPT_fill_table_columns for columm $column and postId {$post_id} ');</script>");
 	
-		global $post, $item;
-	
+		global $post;
 		switch ( $column ) {
-			case 'FW': echo ($item->level_FW); break;
-			case 'PW': echo ($item->level_PW); break;
-			case 'KW': echo ($item->level_KW); break;
+			case 'FW': echo ($post->level_FW); break;
+			case 'PW': echo ($post->level_PW); break;
+			case 'KW': echo ($post->level_KW); break;
+			case 'Punkte': echo ($post->points); break;
 		}
 	}
+	
+
+
+// 	static function CPT_set_table_order ($vars) {
+
+// 			// Don't do anything if we are not on the Contact Custom Post Type
+// 		if ( 'itemmc' != $vars['post_type'] ) return $vars;
+		 
+// 		// Don't do anything if no orderby parameter is set
+// 		if ( ! isset( $vars['orderby'] ) ) return $vars;
+		 
+// 		// Check if the orderby parameter matches one of our sortable columns
+// 		if ( $vars['orderby'] == 'Punkte' OR
+// 				$vars['orderby'] == 'PW' ) {
+// 					// Add orderby meta_value and meta_key parameters to the query
+// 					$vars = array_merge( $vars, array(
+// 							'meta_key' => $vars['orderby'],
+// 							'orderby' => 'meta_value',
+// 					));
+// 				}
+				 
+// 				return $vars;
+// 	}
+	
+// 	static function CPT_set_table_order ($query) {
+// 		echo ("<script>console.log('CPT_set_table_order1 in " . get_class() . "');</script>");
+// 		if( ! is_admin() ) return;
+// 		echo ("<script>console.log('CPT_set_table_order2 in " . $query->get( 'post_type') . "');</script>");
+		
+// 		$orderby = $query->get( 'orderby');
+		
+// 		if( 'PW' == $orderby ) {
+// 			$query->set('meta_key', 'Punkte');
+// 			$query->set('orderby','meta_value_num');
+// 		}
+		
+		
+		
+		
+// 	}
+	
+	
+
 
 	
 }

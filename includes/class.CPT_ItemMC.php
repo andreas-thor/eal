@@ -7,41 +7,7 @@ require_once("class.EAL_ItemMC.php");
 class CPT_ItemMC extends CPT_Item {
 	
 	
-	public function CPT_createDBTable() {
-		
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		
-		global $wpdb;
-		$charset_collate = $wpdb->get_charset_collate();
-		
-		dbDelta (
-			"CREATE TABLE {$wpdb->prefix}eal_itemmc (
-				id bigint(20) unsigned NOT NULL,
-				title text,
-				description text, 
-				question text,
-				answer text,
-				level tinyint unsigned,
-				level_FW tinyint unsigned,
-				level_KW tinyint unsigned,
-				level_PW tinyint unsigned,
-				PRIMARY KEY  (id)
-			) $charset_collate;"
-		);
-		
-		dbDelta (
-			"CREATE TABLE {$wpdb->prefix}eal_itemmc_answer (
-				item_id bigint(20) unsigned NOT NULL,
-				id smallint unsigned NOT NULL,
-				answer text,
-				positive smallint,
-				negative smallint,
-				KEY  (item_id),
-				PRIMARY KEY  (item_id, id)
-			) $charset_collate;"
-		);
-		
-	}
+
 	
 	
 	public static function CPT_init($eal_posttype=null, $label=null, $classname=null) {
@@ -50,75 +16,32 @@ class CPT_ItemMC extends CPT_Item {
 	
 	
 	
-	/**
-	 * 
-save_post 
-    Runs whenever a post or page is created or updated, which could be from an import, post/page edit form, xmlrpc, or post by email. 
-    Action function arguments: post ID and post object. Runs after the data is saved to the database. 
-    TODO: Note that post ID may reference a post revision and not the last saved post. Use wp_is_post_revision() to get the ID of the real post. 
-	 * @param unknown $post_id
-	 * @param unknown $post
-	 */
-	
-	public static function CPT_save_post ($post_id, $post) { // $post_id, $post) {
 
-		$item = parent::CPT_save_post($post_id, $post);
-		global $wpdb;
-		
-		$wpdb->replace(
-				$wpdb->prefix . 'eal_itemmc',
-				$item[0],
-				$item[1]
-			);
-		
-		/** TODO: Sanitize all values */
-		/** TODO: DELETE all answers; INSERT new answers */
-		
-		
-		if (isset($_POST['answer'])) {
-			
-			$values = array();
-			$insert = array();
-			$kmax = 0;
-			
-			foreach ($_POST['answer'] as $k => $v) {
-				array_push($values, $post_id, $k+1, $v, $_POST['positive'][$k], $_POST['negative'][$k]);
-				array_push($insert, "(%d, %d, %s, %d, %d)");
-				$kmax = $k+1;
-				
-			}
-			
-			$query = "REPLACE INTO {$wpdb->prefix}eal_itemmc_answer (item_id, id, answer, positive, negative) VALUES ";
-			$query .= implode(', ', $insert);
-			$wpdb->query( $wpdb->prepare("$query ", $values));
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_itemmc_answer WHERE item_id=%d AND id>%d", array ($post_id, $kmax)));
-				
-		}
-		
-	}
+	
+
+
+	public static function CPT_load_post_short ()  {
+	
+// 		global $post, $item;
+// 		if ($post->post_type != 'itemmc') return;
 	
 	
-	public static function CPT_delete_post ($post_id)  {
-		global $wpdb;
-		$wpdb->delete( '{$wpdb->prefix}eal_itemmc', array( 'id' => $post_id ), array( '%d' ) );
-		$wpdb->delete( '{$wpdb->prefix}eal_itemmc_answer', array( 'item_id' => $post_id ), array( '%d' ) );
-	}
+// 		print_r($post);
 	
-	
-	public static function CPT_load_post ()  {
-	
-		global $post, $item;
-		$item = new EAL_ItemMC($post);
+// 		$item = new EAL_ItemMC($post);
 	}
 	
 	
 	static function CPT_add_meta_boxes($eal_posttype=null, $classname=null)  {
 		
-		self::CPT_load_post();
 		$eal_posttype = 'itemmc';
 		$classname = get_class();
+		
+		global $item;
+		$item = new EAL_ItemMC();
+		$item->load();
 		parent::CPT_add_meta_boxes($eal_posttype, $classname);
- 		
+		
  		add_meta_box("mb_{$eal_posttype}_answers", "Antwortoptionen",	array ($classname, 'CPT_add_answers'), $eal_posttype, 'normal', 'default');
 	}
 
@@ -171,8 +94,60 @@ save_post
 	
 	
 
+	static function CPT_set_table_order ($pieces) {
 	
-
+// 		echo ("<script>console.log('CPT_set_table_order1 in " . print_r($pieces, true) . "');</script>");
+		return ;
+		
+		if ($query->get( 'post_type') != 'itemmc') return $pieces;
+// 		echo ("<script>console.log('CPT_set_table_order2 in " .  print_r($query, true) . "');</script>");
+		
+		return $pieces;
+		
+		global $wpdb;
+	
+		/**
+		 * We only want our code to run in the main WP query
+		 * AND if an orderby query variable is designated.
+		 */
+		if ( $query->is_main_query() && ( $orderby = $query->get( 'orderby' ) ) ) {
+	
+			// Get the order query variable - ASC or DESC
+			$order = strtoupper( $query->get( 'order' ) );
+	
+			// Make sure the order setting qualifies. If not, set default as ASC
+			if ( ! in_array( $order, array( 'ASC', 'DESC' ) ) )
+				$order = 'ASC';
+	
+			switch( $orderby ) {
+	
+				// If we're ordering by release_date
+				case 'PW':
+	
+					/**
+					 * We have to join the postmeta table to
+					 * include our release date in the query.
+					 */
+					
+					if (!isset ($pieces['join'])) $pieces['join'] = ""; 
+					$pieces['join'] .= " JOIN {$wpdb->prefix}eal_itemmc ON {$wpdb->prefix}eal_itemmc.id = {$wpdb->posts}.ID";
+	
+					// Then tell the query to order by our custom field.
+					// The STR_TO_DATE function converts the custom field
+					// to a DATE type from a string type for
+					// comparison purposes. '%m/%d/%Y' tells the query
+					// the string is in a month/day/year format.
+					$pieces['orderby'] = "{$wpdb->prefix}eal_itemmc.level_PW $order" . (isset($pieces['orderby']) ? ", {$pieces['orderby']}" : "");
+	
+					break;
+	
+			}
+	
+		}
+	
+		return $pieces;
+	
+	}
 	
 	
 	
