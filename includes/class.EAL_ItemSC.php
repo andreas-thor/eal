@@ -58,7 +58,18 @@ class EAL_ItemSC extends EAL_Item {
 		}
 	}
 	
+	public function loadById ($item_id, $eal_posttype="itemsc") {
+		
+		parent::loadById($item_id, $eal_posttype);
 	
+		global $wpdb;
+		$this->answers = array();
+		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_itemsc_answer WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
+		foreach ($sqlres as $a) {
+			array_push ($this->answers, array ('answer' => $a['answer'], 'points' => $a['points']));
+		}
+		
+	}
 	
 	
 	

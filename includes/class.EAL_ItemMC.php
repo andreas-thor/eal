@@ -58,6 +58,18 @@ class EAL_ItemMC extends EAL_Item {
 	}
 	
 	
+	public function loadById ($item_id, $eal_posttype="itemmc") {
+	
+		parent::loadById($item_id, $eal_posttype);
+		
+		global $wpdb;
+		$this->answers = array();
+		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_itemmc_answer WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
+		foreach ($sqlres as $a) {
+			array_push ($this->answers, array ('answer' => $a['answer'], 'positive' => $a['positive'], 'negative' => $a['negative']));
+		}
+	}
+	
 	
 	public static function save ($post_id, $post) {
 	
@@ -125,6 +137,19 @@ class EAL_ItemMC extends EAL_Item {
 	
 	}
 	
+	
+	
+	public function getPreviewHTML () {
+	
+		$res  = "<h1>{$this->title}</h1>";
+		$res .= "<div>{$this->description}</div>";
+		$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}<ul style='list-style: none;margin-top:1em;'>";
+		foreach ($this->answers as $a) {
+			$res .= "<li><input type='checkbox'>{$a['answer']}</input></li>";
+		}
+		$res .= "</ul></div>";
+		return $res;
+	}
 	
 	
 	public static function createDBTable() {

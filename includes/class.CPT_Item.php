@@ -173,31 +173,36 @@ abstract class CPT_Item {
 	
 		global $item;
 		
-		$colNames = ["FW"=>$item->level_FW, "KW"=>$item->level_KW, "PW"=>$item->level_PW];
+		$html = self::generateLevelHTML(["FW"=>$item->level_FW, "KW"=>$item->level_KW, "PW"=>$item->level_PW]);
+		
+		echo $html;	
+	}
+	
+	
+	static function generateLevelHTML ($colNames, $prefix="item", $disabled="") {
+		
 		$html  = '<table><tr><td></td>';
 		foreach ($colNames as $c => $v) {
 			$html .= '<td>' . $c . '</td>';
 		}
 		
 		$html .= '</tr>';
-			
 		
 		foreach (EAL_Item::$levels as $n => $r) {
 			$html .= '<tr><td>' . ($n+1) . ". " . $r . '</td>';
 			foreach ($colNames as $c=>$v) {
-				$html .= '<td align="center"><input type="radio" id="item_level_' . $c . '_' . $r . '" name="item_level_' . $c . '" value="' . ($n+1) . '"' . (($v==$n+1)?' checked':'') . '></td>';
+				$html .= "<td align='center'><input type='radio' id='{$prefix}_level_{$c}_{$r}' name='{$prefix}_level_{$c}' value='" . ($n+1) . "' " . (($v==$n+1)?' checked':'') . " {$disabled}></td>";
 			}
 			$html .= '</tr>';
 		}
 		$html .= '</table>';
 		
-		
-		echo $html;	
+		return $html;
 	}
 	
 	
 	static function CPT_set_table_columns($columns) {
-		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte'));
+		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
 	
 	}
 	
@@ -213,6 +218,7 @@ abstract class CPT_Item {
 			case 'PW': echo ($post->level_PW); break;
 			case 'KW': echo ($post->level_KW); break;
 			case 'Punkte': echo ($post->points); break;
+			case 'Reviews': echo ("<a href='post-new.php?post_type=review&item_id={$post->ID}'>Add</a>"); break; 
 		}
 	}
 	

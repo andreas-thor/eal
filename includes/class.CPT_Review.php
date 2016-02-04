@@ -33,7 +33,7 @@ class CPT_Review {
 		
 						'public' => true,
 						'menu_position' => 2,
-						'supports' => array( 'title'), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
+						'supports' =>  array(  'title' ), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
 						'taxonomies' => array( 'topic' ),
 						// 'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
 						'has_archive' => true,
@@ -44,10 +44,10 @@ class CPT_Review {
 		
 		add_filter('post_updated_messages', array ($classname, 'CPT_updated_messages') );
 		
-		add_filter( 'title_edit_pre', array ($classname, 'filter_function_name'), 10, 2 );
+// 		add_filter( 'title_edit_pre', array ($classname, 'filter_function_name'), 10, 2 );
 		
 		
-		add_filter( 'YYwp_title', array ($classname, 'wpdocs_filter_wp_title'), 10, 2 );
+// 		add_filter( 'YYwp_title', array ($classname, 'wpdocs_filter_wp_title'), 10, 2 );
 		
 	}
 	
@@ -88,76 +88,137 @@ class CPT_Review {
 		$eal_posttype="review";
 		$classname="cpt_review";
 
+		global $item;
+		$item = new EAL_ItemMC();
+		$item->loadById(isset ($_POST['item_id']) ? $_POST['item_id'] : $_GET['item_id']);
 		
-		
-		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($classname, 'CPT_add_description'), $eal_posttype, 'normal', 'default' );
-		add_meta_box('mb_question', 'Aufgabenstellung', array ($classname, 'CPT_add_question'), $eal_posttype, 'normal', 'default');
-		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($classname, 'CPT_add_level'), $eal_posttype, 'side', 'default');
+		add_meta_box('mb_item', 'Item', array ($classname, 'CPT_add_item'), $eal_posttype, 'normal', 'default' );
+		add_meta_box('mb_review_item', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($classname, 'CPT_add_review'), $eal_posttype, 'normal', 'default' );
+		add_meta_box('mb_review_level', 'Anforderungsstufe', array ($classname, 'CPT_add_level'), $eal_posttype, 'normal', 'default');
+		add_meta_box('mb_review_score', 'Revisionsurteil', array ($classname, 'CPT_add_score'), $eal_posttype, 'side', 'default');
+		add_meta_box('mb_review_feedback', 'Feedback', array ($classname, 'CPT_add_feedback'), $eal_posttype, 'normal', 'default');
 	}
 	
 	
-
-	
-	
-	
-	static function CPT_add_description ($post, $vars) {
+	static function CPT_add_item ($post, $vars) {
 	
 		global $item;
-		$editor_settings = array(
-				'media_buttons' => false,	// no media buttons
-				'teeny' => true,			// minimal editor
-				'quicktags' => false,		// hides Visual/Text tabs
-				'textarea_rows' => 3,
-				'tinymce' => true
-		);
-	
-		$html = wp_editor(wpautop(stripslashes("")) , 'item_description', $editor_settings );
+		$html = $item->getPreviewHTML();
 		echo $html;
 	}
 	
 	
-	static function CPT_add_question ($post, $vars) {
 	
-		global $item;
-		$editor_settings = array(
-				'media_buttons' => false,	// no media buttons
-				'teeny' => true,			// minimal editor
-				'quicktags' => false,		// hides Visual/Text tabs
-				'textarea_rows' => 3,
-				'tinymce' => true
-		);
+	static function generate3HTML($name) {
+		
+		return "
+				<input type='radio' id='{$name}_0' name='{$name}' value='0'>gut<br/>
+				<input type='radio' id='{$name}_1' name='{$name}' value='1'>Korrektur<br/>
+				<input type='radio' id='{$name}_2' name='{$name}' value='2'>ungeeignet
+				";
+		
+	}
 	
-		$html = wp_editor(wpautop(stripslashes("")) , 'item_question', $editor_settings );
-		echo $html;
-	}	
-	
+	static function CPT_add_review ($post, $vars) {
+		
+		
+		$html = "
+			<table>
+			<tr>
+				<th></th>
+				<th style='padding-left:1em'>fachl. Richtigkeit</th>
+				<th style='padding-left:1em'>Relevanz bzgl. LO</th>
+				<th style='padding-left:1em'>Formulierung</th>
+			</tr>
+			<tr><td colspan=4> &nbsp;</td></tr>
+			<tr>
+				<td valign='top'>Fall- oder Problemvignette</td>
+				<td style='padding-left:1em'>" . self::generate3HTML("11") . "</td>
+				<td style='padding-left:1em'>" . self::generate3HTML("12") . "</td>
+				<td style='padding-left:1em'>" . self::generate3HTML("13") . "</td>
+			</tr>
+			<tr><td colspan=4> &nbsp;</td></tr>
+			<tr>
+				<td valign='top'>Aufgabenstellung</td>
+				<td style='padding-left:1em'>" . self::generate3HTML("21") . "</td>
+				<td style='padding-left:1em'>" . self::generate3HTML("22") . "</td>
+				<td style='padding-left:1em'>" . self::generate3HTML("23") . "</td>
+			</tr>
+			<tr><td colspan=4> &nbsp;</td></tr>
+			<tr>
+				<td valign='top'>Antwortoptionen</td>
+				<td style='padding-left:1em'>" . self::generate3HTML("31") . "</td>
+				<td style='padding-left:1em'>" . self::generate3HTML("32") . "</td>
+				<td style='padding-left:1em'>" . self::generate3HTML("33") . "</td>
+			</tr>
+			</table>			
+				
+			";
+		
+		echo ($html);
+	}
 	
 	static function CPT_add_level ($post, $vars) {
 	
 		global $item;
+	
 		
-		$colNames = ["FW"=>1, "KW"=>2, "PW"=>3];
-		$html  = '<table><tr><td></td>';
-		foreach ($colNames as $c => $v) {
-			$html .= '<td>' . $c . '</td>';
-		}
+		$html_item = CPT_Item::generateLevelHTML(["FW"=>$item->level_FW, "KW"=>$item->level_KW, "PW"=>$item->level_PW], "item", "disabled");
+		$html_review = CPT_Item::generateLevelHTML(["FW"=>0, "KW"=>0, "PW"=>0], "review", "");
 		
-		$html .= '</tr>';
-			
-		$rowNames = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
-		foreach ($rowNames as $n => $r) {
-			$html .= '<tr><td>' . ($n+1) . ". " . $r . '</td>';
-			foreach ($colNames as $c=>$v) {
-				$html .= '<td align="center"><input type="radio" id="item_level_' . $c . '_' . $r . '" name="item_level_' . $c . '" value="' . ($n+1) . '"' . (($v==$n+1)?' checked':'') . '></td>';
-			}
-			$html .= '</tr>';
-		}
-		$html .= '</table>';
-		
-		
-		echo $html;	
+	
+		$html = "<table><tr>
+			<th align='left'>Einordnung Autor</th>
+			<th style='padding-left:3em;'></th>
+			<th align='left'>Einordnung Review</th>
+		</tr><tr>
+			<td style='border-style:solid; border-width:1px;'>{$html_item}</td>
+			<td style='padding-left:3em;'></td>
+			<td style='border-style:solid; border-width:1px;''>{$html_review}</td>
+		</tr></table>";
+		echo $html;
 	}
 	
+	
+	
+	static function CPT_add_score ($post, $vars) {
+	
+		global $item;
+		
+		
+		$html = "<table>
+			<tr><td><input type='radio' id='feedback_0' name='feedback' value='0'>Item akzeptiert</td></tr>
+			<tr><td><input type='radio' id='feedback_0' name='feedback' value='1'>Item &uuml;berarbeiten</td></tr> 
+			<tr><td><input type='radio' id='feedback_0' name='feedback' value='2'>Item abgelehnt</td></tr>
+				</table>
+			";
+		
+		echo $html;
+	}
+	
+	
+	static function CPT_add_feedback ($post, $vars) {
+	
+		global $item;
+	
+	
+		
+	
+	
+		$editor_settings = array(
+				'media_buttons' => false,	// no media buttons
+				'teeny' => true,			// minimal editor
+				'quicktags' => false,		// hides Visual/Text tabs
+				'textarea_rows' => 3,
+				'tinymce' => true
+		);
+	
+		$html = wp_editor(wpautop(stripslashes("")) , 'review_feedback', $editor_settings );
+		echo $html;
+	}
+	
+	
+
 	
 
 	

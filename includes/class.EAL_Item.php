@@ -64,7 +64,23 @@ class EAL_Item {
 		
 	}
 	
+	
+	public function loadById ($item_id, $eal_posttype) {
+		global $wpdb;
+		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$eal_posttype} WHERE id = {$item_id}", ARRAY_A);
+		$this->id = $sqlres['id'];
+		$this->title = $sqlres['title'];
+		$this->description = $sqlres['description'];
+		$this->question = $sqlres['question'];
+		$this->level_FW = $sqlres['level_FW'];
+		$this->level_PW = $sqlres['level_PW'];
+		$this->level_KW = $sqlres['level_KW'];
+	}
+	
+	
 	public function getPoints() { return -1; }
+	
+	public function getPreviewHTML () { return "<h1>getPreviewHTML () not implemented</h1>"; }
 }
 
 ?>
