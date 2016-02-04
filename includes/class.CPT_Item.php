@@ -37,7 +37,7 @@ abstract class CPT_Item {
 						'supports' => array( 'title'), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
 						'taxonomies' => array( 'topic' ),
 						// 'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
-						'has_archive' => true,
+						'has_archive' => false, // false to allow for single view
 						'show_in_menu'    => true,
 						'register_meta_box_cb' => array ($classname, 'CPT_add_meta_boxes')
 				)
@@ -181,8 +181,8 @@ abstract class CPT_Item {
 		
 		$html .= '</tr>';
 			
-		$rowNames = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
-		foreach ($rowNames as $n => $r) {
+		
+		foreach (EAL_Item::$levels as $n => $r) {
 			$html .= '<tr><td>' . ($n+1) . ". " . $r . '</td>';
 			foreach ($colNames as $c=>$v) {
 				$html .= '<td align="center"><input type="radio" id="item_level_' . $c . '_' . $r . '" name="item_level_' . $c . '" value="' . ($n+1) . '"' . (($v==$n+1)?' checked':'') . '></td>';

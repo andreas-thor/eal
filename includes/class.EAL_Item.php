@@ -11,6 +11,7 @@ class EAL_Item {
 	public $level_PW;
 	public $level_KW;
 	
+	public static $levels = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	
 	/**
 	 * Create new item from _POST
