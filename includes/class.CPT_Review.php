@@ -1,5 +1,6 @@
 <?php
 
+include ("class.EAL_Review.php");
 
 class CPT_Review {
 	
@@ -33,7 +34,7 @@ class CPT_Review {
 		
 						'public' => true,
 						'menu_position' => 2,
-						'supports' =>  array(  'title' ), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
+						'supports' =>  false, // array(  'title' ), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
 						'taxonomies' => array( 'topic' ),
 						// 'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
 						'has_archive' => true,
@@ -41,6 +42,13 @@ class CPT_Review {
 						'register_meta_box_cb' => array ($classname, 'CPT_add_meta_boxes')
 				)
 		);
+		
+		
+		// TODO: Note that post ID may reference a post revision and not the last saved post. Use wp_is_post_revision() to get the ID of the real post.
+		add_action ("save_post_{$eal_posttype}", array ("eal_{$eal_posttype}", 'save'), 10, 2);
+
+		// TODO: delete review
+		
 		
 		add_filter('post_updated_messages', array ($classname, 'CPT_updated_messages') );
 		
@@ -84,87 +92,84 @@ class CPT_Review {
 	
 	
 	static function CPT_add_meta_boxes()  {
+		
+		echo ("<script>console.log('CPT_add_meta_boxesn " . get_class() . " with POST[item_id] == " . ($_POST['item_id']) . "');</script>");
+		echo ("<script>console.log('CPT_add_meta_boxesn " . get_class() . " with  GET[item_id] == " . ($_GET['item_id']) . "');</script>");
+		
+		
 		echo ("Hier");
 		$eal_posttype="review";
 		$classname="cpt_review";
 
-		global $item;
-		$item = new EAL_ItemMC();
-		$item->loadById(isset ($_POST['item_id']) ? $_POST['item_id'] : $_GET['item_id']);
+		global $review;
+		$review = new EAL_Review();
+		$review->load();
+		
+// 		global $item;
+// 		$item = new EAL_ItemMC();
+// 		$item->loadById(isset ($_POST['item_id']) ? $_POST['item_id'] : $_GET['item_id']);
 		
 		add_meta_box('mb_item', 'Item', array ($classname, 'CPT_add_item'), $eal_posttype, 'normal', 'default' );
-		add_meta_box('mb_review_item', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($classname, 'CPT_add_review'), $eal_posttype, 'normal', 'default' );
+		
+		
+		add_meta_box('mb_review_score', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($classname, 'CPT_add_score'), $eal_posttype, 'normal', 'default' );
 		add_meta_box('mb_review_level', 'Anforderungsstufe', array ($classname, 'CPT_add_level'), $eal_posttype, 'normal', 'default');
-		add_meta_box('mb_review_score', 'Revisionsurteil', array ($classname, 'CPT_add_score'), $eal_posttype, 'side', 'default');
 		add_meta_box('mb_review_feedback', 'Feedback', array ($classname, 'CPT_add_feedback'), $eal_posttype, 'normal', 'default');
+		add_meta_box('mb_review_overall', 'Revisionsurteil', array ($classname, 'CPT_add_overall'), $eal_posttype, 'side', 'default');
 	}
 	
 	
 	static function CPT_add_item ($post, $vars) {
 	
-		global $item;
-		$html = $item->getPreviewHTML();
-		echo $html;
+		global $review;
+		$item = $review->getItem();
+		if (!is_null($item)) {
+			$html = $item->getPreviewHTML();
+			echo $html;
+		}
 	}
 	
 	
 	
-	static function generate3HTML($name) {
-		
-		return "
-				<input type='radio' id='{$name}_0' name='{$name}' value='0'>gut<br/>
-				<input type='radio' id='{$name}_1' name='{$name}' value='1'>Korrektur<br/>
-				<input type='radio' id='{$name}_2' name='{$name}' value='2'>ungeeignet
-				";
-		
-	}
+
 	
-	static function CPT_add_review ($post, $vars) {
+	static function CPT_add_score ($post, $vars) {
+		
+		$values = ["gut", "Korrektur", "ungeeignet"];
 		
 		
-		$html = "
-			<table>
-			<tr>
-				<th></th>
-				<th style='padding-left:1em'>fachl. Richtigkeit</th>
-				<th style='padding-left:1em'>Relevanz bzgl. LO</th>
-				<th style='padding-left:1em'>Formulierung</th>
-			</tr>
-			<tr><td colspan=4> &nbsp;</td></tr>
-			<tr>
-				<td valign='top'>Fall- oder Problemvignette</td>
-				<td style='padding-left:1em'>" . self::generate3HTML("11") . "</td>
-				<td style='padding-left:1em'>" . self::generate3HTML("12") . "</td>
-				<td style='padding-left:1em'>" . self::generate3HTML("13") . "</td>
-			</tr>
-			<tr><td colspan=4> &nbsp;</td></tr>
-			<tr>
-				<td valign='top'>Aufgabenstellung</td>
-				<td style='padding-left:1em'>" . self::generate3HTML("21") . "</td>
-				<td style='padding-left:1em'>" . self::generate3HTML("22") . "</td>
-				<td style='padding-left:1em'>" . self::generate3HTML("23") . "</td>
-			</tr>
-			<tr><td colspan=4> &nbsp;</td></tr>
-			<tr>
-				<td valign='top'>Antwortoptionen</td>
-				<td style='padding-left:1em'>" . self::generate3HTML("31") . "</td>
-				<td style='padding-left:1em'>" . self::generate3HTML("32") . "</td>
-				<td style='padding-left:1em'>" . self::generate3HTML("33") . "</td>
-			</tr>
-			</table>			
+		$html_head = "<tr><th></th>";
+		foreach (EAL_Review::$dimension2 as $k2 => $v2) {
+			$html_head .= "<th style='padding:0.5em'>{$v2}</th>";
+		}
+		$html_head .= "</tr>";
 				
-			";
-		
-		echo ($html);
+		$html_rows = "";
+		foreach (EAL_Review::$dimension1 as $k1 => $v1) {
+			$html_rows .= "<tr><td valign='top'style='padding:0.5em'>{$v1}</td>";
+			foreach (EAL_Review::$dimension2 as $k2 => $v2) {
+				$html_rows .= "<td style='padding:0.5em; border-style:solid; border-width:1px;'>";
+				foreach ($values as $k3 => $v3) {
+					$html_rows .= "<input type='radio' id='{$k1}_{$k2}_{k3}' name='review_{$k1}_{$k2}' value='" . ($k3+1) . "'>{$v3}<br/>";
+				}
+				$html_rows .= "</td>";
+			}
+			$html_rows .= "</tr>";
+		}
+				
+		echo ("<table>{$html_head}{$html_rows}</table>");
+			
 	}
+	
+	
 	
 	static function CPT_add_level ($post, $vars) {
 	
-		global $item;
+		global $review;
 	
 		
-		$html_item = CPT_Item::generateLevelHTML(["FW"=>$item->level_FW, "KW"=>$item->level_KW, "PW"=>$item->level_PW], "item", "disabled");
-		$html_review = CPT_Item::generateLevelHTML(["FW"=>0, "KW"=>0, "PW"=>0], "review", "");
+		$html_item = CPT_Item::generateLevelHTML(["FW"=>$review->getItem()->level_FW, "KW"=>$review->getItem()->level_KW, "PW"=>$review->getItem()->level_PW], "item", "disabled");
+		$html_review = CPT_Item::generateLevelHTML(["FW"=>$review->level_FW, "KW"=>$review->level_KW, "PW"=>$review->level_PW], "review", "");
 		
 	
 		$html = "<table><tr>
@@ -180,30 +185,11 @@ class CPT_Review {
 	}
 	
 	
-	
-	static function CPT_add_score ($post, $vars) {
-	
-		global $item;
-		
-		
-		$html = "<table>
-			<tr><td><input type='radio' id='feedback_0' name='feedback' value='0'>Item akzeptiert</td></tr>
-			<tr><td><input type='radio' id='feedback_0' name='feedback' value='1'>Item &uuml;berarbeiten</td></tr> 
-			<tr><td><input type='radio' id='feedback_0' name='feedback' value='2'>Item abgelehnt</td></tr>
-				</table>
-			";
-		
-		echo $html;
-	}
-	
+
 	
 	static function CPT_add_feedback ($post, $vars) {
 	
-		global $item;
-	
-	
-		
-	
+		global $review;
 	
 		$editor_settings = array(
 				'media_buttons' => false,	// no media buttons
@@ -213,12 +199,27 @@ class CPT_Review {
 				'tinymce' => true
 		);
 	
-		$html = wp_editor(wpautop(stripslashes("")) , 'review_feedback', $editor_settings );
+		$html = wp_editor(wpautop(stripslashes($review->feedback)) , 'review_feedback', $editor_settings );
 		echo $html;
 	}
 	
 	
 
+	static function CPT_add_overall ($post, $vars) {
+	
+		global $review;
+	
+	
+		$html = "<table>
+			<tr><td><input type='radio' id='review_overall_0' name='review_overall' value='1' " . (($review->overall==1) ? "checked" : ""). ">Item akzeptiert</td></tr>
+			<tr><td><input type='radio' id='review_overall_1' name='review_overall' value='2' " . (($review->overall==2) ? "checked" : ""). ">Item &uuml;berarbeiten</td></tr>
+			<tr><td><input type='radio' id='review_overall_2' name='review_overall' value='3' " . (($review->overall==3) ? "checked" : ""). ">Item abgelehnt</td></tr>
+				</table>
+			";
+	
+		echo $html;
+	}
+	
 	
 
 	
