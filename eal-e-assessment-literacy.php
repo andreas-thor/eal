@@ -22,16 +22,18 @@
 // TODO: Bulk operations (export)
 
 
-include_once 'includes/eal_item_sc.php';
-include_once 'includes/eal_item_mc.php';
+// include_once 'includes/eal_item_sc.php';
+// include_once 'includes/eal_item_mc.php';
+
+
 include_once 'includes/class.CPT_ItemSC.php';
 include_once 'includes/class.CPT_ItemMC.php';
 include_once 'includes/class.CPT_Review.php';
 
-$GLOBALS["eal_itemtypes"] = [
-		'eal_item_sc' => 'Single Choice',
-		'eal_item_mc' => 'Multiple Choice'
-];
+// $GLOBALS["eal_itemtypes"] = [
+// 		'eal_item_sc' => 'Single Choice',
+// 		'eal_item_mc' => 'Multiple Choice'
+// ];
 
 
 
@@ -62,22 +64,22 @@ function set_eal_admin_menu_entries () {
 	remove_menu_page( 'tools.php' );                  //Tools
 // 	remove_menu_page( 'options-general.php' );        //Settings	
 
-	add_menu_page('eal_page_items', 'Items', 'administrator', 'eal_page_items', 'create_eal_page_items', '', 1);
-	add_menu_page('eal_page_taxonomies', 'Taxonomies', 'administrator', 'eal_page_taxonomies', 'create_eal_page_taxonomies', '', 30);
-	add_submenu_page( 'eal_page_taxonomies', 'Topic', 'Topic', 'edit_others_posts', 'edit-tags.php?taxonomy=topic');
+// 	add_menu_page('eal_page_items', 'Items', 'administrator', 'eal_page_items', 'create_eal_page_items', '', 1);
+// 	add_menu_page('eal_page_taxonomies', 'Taxonomies', 'administrator', 'eal_page_taxonomies', 'create_eal_page_taxonomies', '', 30);
+// 	add_submenu_page( 'eal_page_taxonomies', 'Topic', 'Topic', 'edit_others_posts', 'edit-tags.php?taxonomy=topic');
 
 }
 
 
 // highlight the proper top level menu
-add_action('parent_file', 'set_eal_taxonomies_menu_correction');
-function set_eal_taxonomies_menu_correction($parent_file) {
-	global $current_screen;
-	$taxonomy = $current_screen->taxonomy;
-	if ($taxonomy == 'topic')
-		$parent_file = 'eal_page_taxonomies';
-	return $parent_file;
-}
+// add_action('parent_file', 'set_eal_taxonomies_menu_correction');
+// function set_eal_taxonomies_menu_correction($parent_file) {
+// 	global $current_screen;
+// 	$taxonomy = $current_screen->taxonomy;
+// 	if ($taxonomy == 'topic')
+// 		$parent_file = 'eal_page_taxonomies';
+// 	return $parent_file;
+// }
 
 
 /**
@@ -133,6 +135,11 @@ add_action( 'init', 'create_eal_items' );
 function create_eal_items() {
 	
 
+	CPT_ItemSC::CPT_init();
+	CPT_ItemMC::CPT_init();
+	CPT_Review::CPT_init();
+	
+	
 // 		$book = new CustomPostType( 'Book' );
 // 		$book->add_taxonomy( 'xas', array ('hierarchical' => true) );
 // 		$book->add_taxonomy( 'author' );
@@ -183,51 +190,49 @@ function create_eal_items() {
 // 		}
 // 	}
 		
- 	CPT_ItemSC::CPT_init();
-	CPT_ItemMC::CPT_init();
-	CPT_Review::CPT_init();
+ 	
 	
 	// add_action ('save_post', array ('itemmc', 'CPT_save_post'), 10, 2);
 	
 	
 	
-	foreach ($GLOBALS["eal_itemtypes"] as $id => $name) {
+// 	foreach ($GLOBALS["eal_itemtypes"] as $id => $name) {
 		
-// 		$currentmenupos++;
-		register_post_type( $id,
-				array(
-						'labels' => array(
-								'name' => $name,
-								'singular_name' => $name,
-								'add_new' => 'Add ' . $name,
-								'add_new_item' => 'Add New ' . $name,
-								'edit' => 'Edit',
-								'edit_item' => 'Edit ' . $name,
-								'new_item' => 'New ' . $name,
-								'view' => 'View',
-								'view_item' => 'View ' . $name,
-								'search_items' => 'Search ' . $name,
-								'not_found' => 'No Items found',
-								'not_found_in_trash' => 'No Items found in Trash',
-								'parent' => 'Parent Item'
-						),
+// // 		$currentmenupos++;
+// 		register_post_type( $id,
+// 				array(
+// 						'labels' => array(
+// 								'name' => $name,
+// 								'singular_name' => $name,
+// 								'add_new' => 'Add ' . $name,
+// 								'add_new_item' => 'Add New ' . $name,
+// 								'edit' => 'Edit',
+// 								'edit_item' => 'Edit ' . $name,
+// 								'new_item' => 'New ' . $name,
+// 								'view' => 'View',
+// 								'view_item' => 'View ' . $name,
+// 								'search_items' => 'Search ' . $name,
+// 								'not_found' => 'No Items found',
+// 								'not_found_in_trash' => 'No Items found in Trash',
+// 								'parent' => 'Parent Item'
+// 						),
 	
-						'public' => true,
-						'menu_position' => 2,
-						'supports' => array( 'title'), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
-						'taxonomies' => array( 'topic' ),
-						'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
-						'has_archive' => true,
-						'show_in_menu'    => true,
-						'register_meta_box_cb' => $id . '_add_meta_boxes'
-				)
-		);
+// 						'public' => true,
+// 						'menu_position' => 2,
+// 						'supports' => array( 'title'), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
+// 						'taxonomies' => array( 'topic' ),
+// 						'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
+// 						'has_archive' => true,
+// 						'show_in_menu'    => true,
+// 						'register_meta_box_cb' => $id . '_add_meta_boxes'
+// 				)
+// 		);
 		
-		add_action ('save_post_' . $id, $id . "_save_post");
+// 		add_action ('save_post_' . $id, $id . "_save_post");
 		
 		
 		
-	}
+// 	}
 }
 
 

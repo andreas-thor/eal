@@ -213,12 +213,24 @@ abstract class CPT_Item {
 	static function CPT_fill_table_columns( $column, $post_id ) {
 	
 		global $post;
+		
 		switch ( $column ) {
 			case 'FW': echo ($post->level_FW); break;
 			case 'PW': echo ($post->level_PW); break;
 			case 'KW': echo ($post->level_KW); break;
 			case 'Punkte': echo ($post->points); break;
-			case 'Reviews': echo ("<a href='post-new.php?post_type=review&item_id={$post->ID}'>Add</a>"); break; 
+			case 'Reviews': 
+				
+				
+				global $wpdb;
+				$sqlres = $wpdb->get_col( "SELECT id FROM {$wpdb->prefix}eal_review WHERE item_id = {$post->ID}");
+				foreach ($sqlres as $pos => $review_id) {
+					echo ("<a href='post.php?post=${review_id}&action=edit'>&nbsp;#${pos}&nbsp;</a>&nbsp;&nbsp;");
+				}
+				
+				
+				echo ("<a href='post-new.php?post_type=review&item_id={$post->ID}'>Add</a>"); 
+				break; 
 		}
 	}
 	

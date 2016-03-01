@@ -26,7 +26,7 @@ class EAL_Review {
 	public function init ($post_id, $post) {
 	
 		$this->id = $post_id;
-		$this->item_id = isset ($_POST['item_id']) ? $_POST['item_id'] : null;
+		$this->item_id = isset ($_GET['item_id']) ? $_GET['item_id'] : (isset ($_POST['item_id']) ? $_POST['item_id'] : null);
 		$this->item = null;	
 		
 		$this->score = array();
@@ -88,7 +88,7 @@ class EAL_Review {
 		} else {
 				
 			global $wpdb;
-			$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$eal_posttype} WHERE id = {$post->ID}", ARRAY_A);
+			$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_review WHERE id = {$post->ID}", ARRAY_A);
 			$this->id = $sqlres['id'];
 			$this->item_id = $sqlres['item_id'];
 			$this->item = null; // lazy loading
@@ -187,6 +187,7 @@ class EAL_Review {
 				level_PW tinyint unsigned,
 				feedback text,
 				overall tinyint unsigned,
+				KEY  (item_id),
 				PRIMARY KEY  (id)
 		) {$wpdb->get_charset_collate()};"
 		);

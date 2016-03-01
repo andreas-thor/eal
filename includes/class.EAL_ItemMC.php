@@ -141,10 +141,10 @@ class EAL_ItemMC extends EAL_Item {
 	
 	public function getPreviewHTML () {
 	
-		echo ("<script>console.log('__getPreviewHTML in " . get_class() . " with id== " . ($this->id) . "');</script>");
+// 		echo ("<script>console.log('__getPreviewHTML in " . get_class() . " with id== " . ($this->id) . "');</script>");
 		
 		$res  = "<h1>{$this->title}</h1>";
-		$res .= "<input type='hidden' id='item_id' value='{$this->id}'>";
+		$res .= "<input type='hidden' id='item_id' name='item_id' value='{$this->id}'>";
 		$res .= "<div>{$this->description}</div>";
 		$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}<ul style='list-style: none;margin-top:1em;'>";
 		foreach ($this->answers as $a) {

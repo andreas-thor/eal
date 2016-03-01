@@ -1,5 +1,8 @@
 <?php
 
+// TODO: Delete Review (in POst Tabelle) --> löschen in Review-Tabelle
+
+
 include ("class.EAL_Review.php");
 
 class CPT_Review {
@@ -35,10 +38,10 @@ class CPT_Review {
 						'public' => true,
 						'menu_position' => 2,
 						'supports' =>  false, // array(  'title' ), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
-						'taxonomies' => array( 'topic' ),
+						'taxonomies' => array(  ),
 						// 'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
 						'has_archive' => true,
-						'show_in_menu'    => true,
+						'show_in_menu'    => false,
 						'register_meta_box_cb' => array ($classname, 'CPT_add_meta_boxes')
 				)
 		);
@@ -135,6 +138,8 @@ class CPT_Review {
 	
 	static function CPT_add_score ($post, $vars) {
 		
+		global $review;
+		
 		$values = ["gut", "Korrektur", "ungeeignet"];
 		
 		
@@ -150,7 +155,7 @@ class CPT_Review {
 			foreach (EAL_Review::$dimension2 as $k2 => $v2) {
 				$html_rows .= "<td style='padding:0.5em; border-style:solid; border-width:1px;'>";
 				foreach ($values as $k3 => $v3) {
-					$html_rows .= "<input type='radio' id='{$k1}_{$k2}_{k3}' name='review_{$k1}_{$k2}' value='" . ($k3+1) . "'>{$v3}<br/>";
+					$html_rows .= "<input type='radio' id='{$k1}_{$k2}_{k3}' name='review_{$k1}_{$k2}' value='" . ($k3+1) . "' " . (($review->score[$k1][$k2]==$k3+1)?"checked":"") . ">{$v3}<br/>";
 				}
 				$html_rows .= "</td>";
 			}
@@ -211,10 +216,13 @@ class CPT_Review {
 	
 	
 		$html = "<table>
-			<tr><td><input type='radio' id='review_overall_0' name='review_overall' value='1' " . (($review->overall==1) ? "checked" : ""). ">Item akzeptiert</td></tr>
+			<tr><td>
+				<input type='hidden' id='item_id' name='item_id' value='{$review->item_id}'>
+				<input type='radio' id='review_overall_0' name='review_overall' value='1' " . (($review->overall==1) ? "checked" : ""). ">Item akzeptiert</td></tr>
 			<tr><td><input type='radio' id='review_overall_1' name='review_overall' value='2' " . (($review->overall==2) ? "checked" : ""). ">Item &uuml;berarbeiten</td></tr>
 			<tr><td><input type='radio' id='review_overall_2' name='review_overall' value='3' " . (($review->overall==3) ? "checked" : ""). ">Item abgelehnt</td></tr>
 				</table>
+				
 			";
 	
 		echo $html;
