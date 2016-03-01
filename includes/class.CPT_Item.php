@@ -4,7 +4,7 @@ require_once("class.CPT_ItemMC.php");
 
 abstract class CPT_Item {
 	
-
+	
 	
 	/*
 	 * #######################################################################
@@ -80,7 +80,7 @@ abstract class CPT_Item {
 		
 		
 	
-		add_filter('posts_join', array ('CPT_Item', 'AIOThemes_joinPOSTMETA_to_WPQuery'));
+ 		add_filter('posts_join', array ('CPT_Item', 'AIOThemes_joinPOSTMETA_to_WPQuery'));
 		add_filter( 'posts_fields', array ('CPT_Item', 'filter_posts_fields'), 10, 1 );
 		add_filter( 'posts_orderby', array ('CPT_Item', 'edit_posts_orderby'), 10, 1 );
 
@@ -181,7 +181,7 @@ abstract class CPT_Item {
 	
 	static function generateLevelHTML ($colNames, $prefix="item", $disabled="") {
 		
-		$html  = '<table><tr><td></td>';
+		$html  = "<table style='font-size:100%'><tr><td></td>";
 		foreach ($colNames as $c => $v) {
 			$html .= '<td>' . $c . '</td>';
 		}
@@ -191,7 +191,7 @@ abstract class CPT_Item {
 		foreach (EAL_Item::$levels as $n => $r) {
 			$html .= '<tr><td>' . ($n+1) . ". " . $r . '</td>';
 			foreach ($colNames as $c=>$v) {
-				$html .= "<td align='center'><input type='radio' id='{$prefix}_level_{$c}_{$r}' name='{$prefix}_level_{$c}' value='" . ($n+1) . "' " . (($v==$n+1)?' checked':'') . " {$disabled}></td>";
+				$html .= "<td align='center'><input type='radio' id='{$prefix}_level_{$c}_{$r}' name='{$prefix}_level_{$c}' value='" . ($n+1) . "' " . (($v==$n+1)?'checked':$disabled) . "></td>";
 			}
 			$html .= '</tr>';
 		}
@@ -223,13 +223,13 @@ abstract class CPT_Item {
 				
 				
 				global $wpdb;
-				$sqlres = $wpdb->get_col( "SELECT id FROM {$wpdb->prefix}eal_review WHERE item_id = {$post->ID}");
+				$sqlres = $wpdb->get_col( "SELECT id FROM {$wpdb->prefix}eal_{self::$type}_review WHERE item_id = {$post->ID}");
 				foreach ($sqlres as $pos => $review_id) {
 					echo ("<a href='post.php?post=${review_id}&action=edit'>&nbsp;#${pos}&nbsp;</a>&nbsp;&nbsp;");
 				}
 				
 				
-				echo ("<a href='post-new.php?post_type=review&item_id={$post->ID}'>Add</a>"); 
+				echo ("<a href='post-new.php?post_type=review&item_id={$post->ID}&item_type={self::$type}'>Add</a>"); 
 				break; 
 		}
 	}

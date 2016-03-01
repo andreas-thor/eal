@@ -1,6 +1,8 @@
 <?php
 
 class EAL_Item {
+
+	public $type;	// will be set in subclasses (EAL_ItemMC, EAL_ItemSC, ...)
 	
 	public $id;
 	public $title;
@@ -32,7 +34,7 @@ class EAL_Item {
 	
 	
 	
-	public function load ($eal_posttype) {
+	public function load () {
 		
 		global $post;
 		
@@ -51,7 +53,7 @@ class EAL_Item {
 		} else {
 				
 			global $wpdb;
-			$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$eal_posttype} WHERE id = {$post->ID}", ARRAY_A);
+			$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE id = {$post->ID}", ARRAY_A);
 			$this->id = $sqlres['id'];
 			$this->title = $sqlres['title'];
 			$this->description = $sqlres['description'];
@@ -65,9 +67,9 @@ class EAL_Item {
 	}
 	
 	
-	public function loadById ($item_id, $eal_posttype) {
+	public function loadById ($item_id) {
 		global $wpdb;
-		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$eal_posttype} WHERE id = {$item_id}", ARRAY_A);
+		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE id = {$item_id}", ARRAY_A);
 		$this->id = $sqlres['id'];
 		$this->title = $sqlres['title'];
 		$this->description = $sqlres['description'];
@@ -81,6 +83,58 @@ class EAL_Item {
 	public function getPoints() { return -1; }
 	
 	public function getPreviewHTML () { return "<h1>getPreviewHTML () not implemented</h1>"; }
+	
+	
+	
+	public static function createTableItem($tabname) {
+	
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		global $wpdb;
+		dbDelta (
+				"CREATE TABLE {$tabname} (
+				id bigint(20) unsigned NOT NULL,
+				title text,
+				description text,
+				question text,
+				answer text,
+				level tinyint unsigned,
+				level_FW tinyint unsigned,
+				level_KW tinyint unsigned,
+				level_PW tinyint unsigned,
+				points smallint,
+				PRIMARY KEY  (id)
+			) {$wpdb->get_charset_collate()};"
+		);
+	}
+	
+	public static function createTableReview($tabname) {
+	
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		global $wpdb;
+		
+		$sqlScore = "";
+		foreach (EAL_Review::$dimension1 as $k1 => $v1) {
+			foreach (EAL_Review::$dimension2 as $k2 => $v2) {
+				$sqlScore .= "{$k1}_{$k2} tinyint unsigned, \n";
+			}
+		}
+	
+		dbDelta (
+			"CREATE TABLE {$tabname} (
+				id bigint(20) unsigned NOT NULL,
+				item_id bigint(20) unsigned NOT NULL, {$sqlScore}
+				level_FW tinyint unsigned,
+				level_KW tinyint unsigned,
+				level_PW tinyint unsigned,
+				feedback text,
+				overall tinyint unsigned,
+				KEY  (item_id),
+				PRIMARY KEY  (id)
+			) {$wpdb->get_charset_collate()};"
+		);
+	}
+	
+	
 }
 
 ?>

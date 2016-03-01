@@ -162,7 +162,7 @@ class CPT_Review {
 			$html_rows .= "</tr>";
 		}
 				
-		echo ("<table>{$html_head}{$html_rows}</table>");
+		echo ("<table style='font-size:100%'>{$html_head}{$html_rows}</table>");
 			
 	}
 	
@@ -177,7 +177,7 @@ class CPT_Review {
 		$html_review = CPT_Item::generateLevelHTML(["FW"=>$review->level_FW, "KW"=>$review->level_KW, "PW"=>$review->level_PW], "review", "");
 		
 	
-		$html = "<table><tr>
+		$html = "<table style='font-size:100%'><tr>
 			<th align='left'>Einordnung Autor</th>
 			<th style='padding-left:3em;'></th>
 			<th align='left'>Einordnung Review</th>
@@ -218,6 +218,7 @@ class CPT_Review {
 		$html = "<table>
 			<tr><td>
 				<input type='hidden' id='item_id' name='item_id' value='{$review->item_id}'>
+				<input type='hidden' id='item_type' name='item_type' value='{$review->item_type}'>
 				<input type='radio' id='review_overall_0' name='review_overall' value='1' " . (($review->overall==1) ? "checked" : ""). ">Item akzeptiert</td></tr>
 			<tr><td><input type='radio' id='review_overall_1' name='review_overall' value='2' " . (($review->overall==2) ? "checked" : ""). ">Item &uuml;berarbeiten</td></tr>
 			<tr><td><input type='radio' id='review_overall_2' name='review_overall' value='3' " . (($review->overall==3) ? "checked" : ""). ">Item abgelehnt</td></tr>

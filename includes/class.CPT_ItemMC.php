@@ -7,6 +7,7 @@ require_once("class.EAL_ItemMC.php");
 class CPT_ItemMC extends CPT_Item {
 	
 	
+	public static $type = "itemmc";
 
 	
 	
@@ -33,6 +34,8 @@ class CPT_ItemMC extends CPT_Item {
 	
 	
 	static function CPT_add_meta_boxes($eal_posttype=null, $classname=null)  {
+		
+		global $post;
 		
 		$eal_posttype = 'itemmc';
 		$classname = get_class();

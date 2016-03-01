@@ -7,6 +7,11 @@ class EAL_ItemMC extends EAL_Item {
 	public $answers = array();
 	
 	
+	function __construct() {
+		$this->type = "itemmc";
+	}
+	
+	
 	/**
 	 * Create new item from _POST
 	 * @param unknown $post_id
@@ -30,11 +35,11 @@ class EAL_ItemMC extends EAL_Item {
 	 * @param string $eal_posttype
 	 */
 	
-	public function load ($eal_posttype="itemmc") {
+	public function load () {
 		
 		global $post;
-		if ($post->post_type != $eal_posttype) return;
-		parent::load($eal_posttype);
+		if ($post->post_type != $this->type) return;
+		parent::load();
 		
 		if (get_post_status($post->ID)=='auto-draft') {
 			
@@ -49,7 +54,7 @@ class EAL_ItemMC extends EAL_Item {
 			
 			global $wpdb;
 			$this->answers = array();
-			$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_itemmc_answer WHERE item_id = {$post->ID} ORDER BY id", ARRAY_A);
+			$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_{$this->type}_answer WHERE item_id = {$post->ID} ORDER BY id", ARRAY_A);
 			foreach ($sqlres as $a) {
 				array_push ($this->answers, array ('answer' => $a['answer'], 'positive' => $a['positive'], 'negative' => $a['negative']));
 			}
@@ -58,13 +63,13 @@ class EAL_ItemMC extends EAL_Item {
 	}
 	
 	
-	public function loadById ($item_id, $eal_posttype="itemmc") {
+	public function loadById ($item_id) {
 	
-		parent::loadById($item_id, $eal_posttype);
+		parent::loadById($item_id);
 		
 		global $wpdb;
 		$this->answers = array();
-		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_itemmc_answer WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
+		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_{$this->type}_answer WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
 		foreach ($sqlres as $a) {
 			array_push ($this->answers, array ('answer' => $a['answer'], 'positive' => $a['positive'], 'negative' => $a['negative']));
 		}
@@ -78,7 +83,7 @@ class EAL_ItemMC extends EAL_Item {
 		$item->init($post_id, $post);
 		
 		$wpdb->replace(
-				"{$wpdb->prefix}eal_itemmc",
+				"{$wpdb->prefix}eal_{$item->type}",
 				array(
 						'id' => $item->id,
 						'title' => $item->title,
@@ -106,14 +111,14 @@ class EAL_ItemMC extends EAL_Item {
 			
 				
 			// replace answers
-			$query = "REPLACE INTO {$wpdb->prefix}eal_itemmc_answer (item_id, id, answer, positive, negative) VALUES ";
+			$query = "REPLACE INTO {$wpdb->prefix}eal_{$item->type}_answer (item_id, id, answer, positive, negative) VALUES ";
 			$query .= implode(', ', $insert);
 			$wpdb->query( $wpdb->prepare("$query ", $values));
 			
 		}
 
 		// delete remaining answers
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_itemmc_answer WHERE item_id=%d AND id>%d", array ($post_id, count($item->answers))));
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$item->type}_answer WHERE item_id=%d AND id>%d", array ($post_id, count($item->answers))));
 		
 	}
 	
@@ -123,6 +128,7 @@ class EAL_ItemMC extends EAL_Item {
 		global $wpdb;
 		$wpdb->delete( '{$wpdb->prefix}eal_itemmc', array( 'id' => $post_id ), array( '%d' ) );
 		$wpdb->delete( '{$wpdb->prefix}eal_itemmc_answer', array( 'item_id' => $post_id ), array( '%d' ) );
+		$wpdb->delete( '{$wpdb->prefix}eal_itemmc_review', array( 'item_id' => $post_id ), array( '%d' ) );
 	}
 	
 	
@@ -139,44 +145,61 @@ class EAL_ItemMC extends EAL_Item {
 	
 	
 	
-	public function getPreviewHTML () {
-	
-// 		echo ("<script>console.log('__getPreviewHTML in " . get_class() . " with id== " . ($this->id) . "');</script>");
 		
+
+
+	
+	public function getPreviewHTML () {
+		 
 		$res  = "<h1>{$this->title}</h1>";
-		$res .= "<input type='hidden' id='item_id' name='item_id' value='{$this->id}'>";
+		$res .= "<input type='hidden' id='item_id' name='item_id'  value='{$this->id}'>";
 		$res .= "<div>{$this->description}</div>";
-		$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}<ul style='list-style: none;margin-top:1em;'>";
+		 
+		$answerLine = '<tr align="left">
+                           <td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
+                           <td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
+                           <td>%s</td>
+                    </tr>';
+		 
+		//           $res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}<ul style='list-style: none;margin-top:1em;'>";
+		$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}";
+		 
+		$res .= "<table style='font-size: 100%'>";
+		 
+		 
 		foreach ($this->answers as $a) {
-			$res .= "<li><input type='checkbox'>{$a['answer']}</input></li>";
+			//                  $res .= "<li><input type='checkbox' " . (($a['positive']>$a['negative']) ? 'checked' : '') . ">{$a['answer']}</input></li>";
+			$res .= sprintf($answerLine,
+					$a['positive'], ($a['positive']>$a['negative'] ? 'bold' : 'normal'),
+					$a['negative'], ($a['negative']>$a['positive'] ? 'bold' : 'normal'),
+					$a['answer']);
 		}
-		$res .= "</ul></div>";
+	
+		//           $res .= "</ul></div>";
+		$res .= "</table></div>";
+		 
+		
+		// 		$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}<ul style='list-style: none;margin-top:1em;'>";
+		// 		foreach ($this->answers as $a) {
+		// 			$res .= "<li><input type='checkbox'>{$a['answer']}</input></li>";
+		// 		}
+		// 		$res .= "</ul></div>";
+		
 		return $res;
 	}
 	
 	
-	public static function createDBTable() {
+	
+	
+	
+	public static function createTables () {
 	
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-	
+		
 		global $wpdb;
-	
-		dbDelta (
-				"CREATE TABLE {$wpdb->prefix}eal_itemmc (
-				id bigint(20) unsigned NOT NULL,
-				title text,
-				description text,
-				question text,
-				answer text,
-				level tinyint unsigned,
-				level_FW tinyint unsigned,
-				level_KW tinyint unsigned,
-				level_PW tinyint unsigned,
-				points smallint,
-				PRIMARY KEY  (id)
-		) {$wpdb->get_charset_collate()};"
-		);
-	
+		EAL_Item::createTableItem("{$wpdb->prefix}eal_itemmc");
+		EAL_Item::createTableReview("{$wpdb->prefix}eal_itemmc_review");
+		
 		dbDelta (
 				"CREATE TABLE {$wpdb->prefix}eal_itemmc_answer (
 				item_id bigint(20) unsigned NOT NULL,
@@ -186,8 +209,10 @@ class EAL_ItemMC extends EAL_Item {
 				negative smallint,
 				KEY  (item_id),
 				PRIMARY KEY  (item_id, id)
-		) {$wpdb->get_charset_collate()};"
+			) {$wpdb->get_charset_collate()};"
 		);
+		
+		
 	
 	}
 	

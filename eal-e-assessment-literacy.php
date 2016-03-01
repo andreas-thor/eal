@@ -119,9 +119,8 @@ function create_eal_page_taxonomies () {
  */
  
 
-register_activation_hook( __FILE__, array ('eal_itemsc', 'createDBTable') );
-register_activation_hook( __FILE__, array ('eal_itemmc', 'createDBTable') );
-register_activation_hook( __FILE__, array ('eal_review', 'createDBTable') );
+register_activation_hook( __FILE__, array ('eal_itemsc', 'createTables') );
+register_activation_hook( __FILE__, array ('eal_itemmc', 'createTables') );
 
 add_action( 'init', 'create_eal_items' );
 

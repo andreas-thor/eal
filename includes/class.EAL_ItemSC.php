@@ -6,6 +6,12 @@ class EAL_ItemSC extends EAL_Item {
 	
 	public $answers;
 	
+	
+	function __construct() {
+		$this->type = "itemsc";
+	}
+	
+	
 	/**
 	 * Create new item from _POST
 	 * @param unknown $post_id
@@ -31,11 +37,10 @@ class EAL_ItemSC extends EAL_Item {
 	 * @param string $eal_posttype
 	 */
 	
-	public function load ($eal_posttype="itemsc") {
-	
-		global $post;
-		if ($post->post_type != $eal_posttype) return;
+	public function load () {
 
+		global $post;
+		if ($post->post_type != $this->type) return;
 		parent::load($eal_posttype);
 	
 		if (get_post_status($post->ID)=='auto-draft') {
@@ -51,20 +56,20 @@ class EAL_ItemSC extends EAL_Item {
 				
 			global $wpdb;
 			$this->answers = array();
-			$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_itemsc_answer WHERE item_id = {$post->ID} ORDER BY id", ARRAY_A);
+			$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_{$this->type}_answer WHERE item_id = {$post->ID} ORDER BY id", ARRAY_A);
 			foreach ($sqlres as $a) {
 				array_push ($this->answers, array ('answer' => $a['answer'], 'points' => $a['points']));
 			}
 		}
 	}
 	
-	public function loadById ($item_id, $eal_posttype="itemsc") {
+	public function loadById ($item_id) {
 		
-		parent::loadById($item_id, $eal_posttype);
+		parent::loadById($item_id);
 	
 		global $wpdb;
 		$this->answers = array();
-		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_itemsc_answer WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
+		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_{$this->type}_answer WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
 		foreach ($sqlres as $a) {
 			array_push ($this->answers, array ('answer' => $a['answer'], 'points' => $a['points']));
 		}
@@ -80,7 +85,7 @@ class EAL_ItemSC extends EAL_Item {
 		$item->init($post_id, $post);
 		
 		$wpdb->replace(
-				"{$wpdb->prefix}eal_itemsc",
+				"{$wpdb->prefix}eal_{$item->type}",
 				array(
 						'id' => $item->id,
 						'title' => $item->title,
@@ -107,13 +112,13 @@ class EAL_ItemSC extends EAL_Item {
 			}
 	
 			// replace answers
-			$query = "REPLACE INTO {$wpdb->prefix}eal_itemsc_answer (item_id, id, answer, points) VALUES ";
+			$query = "REPLACE INTO {$wpdb->prefix}eal_{$item->type}_answer (item_id, id, answer, points) VALUES ";
 			$query .= implode(', ', $insert);
 			$wpdb->query( $wpdb->prepare("$query ", $values));
 		}
 	
 		// delete remaining answers
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_itemsc_answer WHERE item_id=%d AND id>%d", array ($post_id, count($item->answers))));
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$item->type}_answer WHERE item_id=%d AND id>%d", array ($post_id, count($item->answers))));
 	
 	}
 	
@@ -124,6 +129,7 @@ class EAL_ItemSC extends EAL_Item {
 		global $wpdb;
 		$wpdb->delete( '{$wpdb->prefix}eal_itemsc', array( 'id' => $post_id ), array( '%d' ) );
 		$wpdb->delete( '{$wpdb->prefix}eal_itemsc_answer', array( 'item_id' => $post_id ), array( '%d' ) );
+		$wpdb->delete( '{$wpdb->prefix}eal_itemsc_review', array( 'item_id' => $post_id ), array( '%d' ) );
 	}
 	
 	
@@ -138,28 +144,14 @@ class EAL_ItemSC extends EAL_Item {
 	}
 	
 	
-	public static function createDBTable() {
+	public static function createTables() {
 	
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-	
+		
 		global $wpdb;
-	
-		dbDelta (
-			"CREATE TABLE {$wpdb->prefix}eal_itemsc (
-				id bigint(20) unsigned NOT NULL,
-				title text,
-				description text,
-				question text,
-				answer text,
-				level tinyint unsigned,
-				level_FW tinyint unsigned,
-				level_KW tinyint unsigned,
-				level_PW tinyint unsigned,
-				points smallint,
-				PRIMARY KEY  (id)
-			) {$wpdb->get_charset_collate()};"
-		);
-	
+		EAL_Item::createTableItem("{$wpdb->prefix}eal_itemsc");
+		EAL_Item::createTableReview("{$wpdb->prefix}eal_itemsc_review");
+		
 		dbDelta (
 			"CREATE TABLE {$wpdb->prefix}eal_itemsc_answer (
 				item_id bigint(20) unsigned NOT NULL,
