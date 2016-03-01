@@ -7,17 +7,79 @@ require_once("class.EAL_ItemMC.php");
 class CPT_ItemMC extends CPT_Item {
 	
 	
-	public static $type = "itemmc";
+	public function init() {
 
-	
-	
-	public static function CPT_init($eal_posttype=null, $label=null, $classname=null) {
-		parent::CPT_init("itemmc", 'MC Question', get_class());
+		$this->type = "itemmc";
+		$this->label = "MC Question NEU";
+		parent::init();
 	}
 	
 	
-	
+	public function WPCB_register_meta_box_cb () {
+		
+		global $item;
+		$item = new EAL_ItemMC();
+		$item->load();
+		
+		
+		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($this, 'WPCB_mb_description'), $this->type, 'normal', 'default' );
+		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_question'), $this->type, 'normal', 'default');
+		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default');
+		
+		
+// 		parent::CPT_add_meta_boxes($eal_posttype, $classname);
+		
+		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($this, 'WPCB_mb_answers'), $this->type, 'normal', 'default');
+		
+	}
 
+	
+	
+	public function WPCB_mb_answers ($post, $vars) {
+	
+		global $item;
+	
+		$answerLine = '<tr>
+				<td><input type="text" name="answer[]" value="%s" size="25" /></td>
+				<td><input type="text" name="positive[]" value="%d" size="5" /></td>
+				<td><input type="text" name="negative[]" value="%d" size="5" /></td>
+				<td>
+					<button type="button" onclick="addAnswer(this);">&nbsp;+&nbsp;</button>
+					&nbsp;&nbsp;
+					<button class="removeanswer" type="button" onclick="removeAnswer(this);">&nbsp;-&nbsp;</button>
+				</td>
+			</tr>';
+	
+	
+		?>
+			<script>
+	
+				var $ =jQuery.noConflict();
+				
+				function addAnswer (e) { 
+					// add new answer option after current line
+					$(e).parent().parent().after('<?php echo (preg_replace("/\r\n|\r|\n/",'', sprintf($answerLine, '', 0, 0))); ?>' );
+				}
+	
+				function removeAnswer (e) {
+					// delete current answer options but make sure that header + at least one option remain
+					if ($(e).parent().parent().parent().children().size() > 2) {
+						$(e).parent().parent().remove();
+					}
+				}
+				
+			</script>
+	
+	<?php	
+			
+			printf ('<table>');
+			printf ('<tr align="left"><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>', 'Antwort-Text', 'Ausgew&auml;hlt', 'Nicht ausgew&auml;hlt', 'Aktionen');
+			foreach ($item->answers as $a) { 
+				printf($answerLine, $a['answer'], $a['positive'], $a['negative']);
+			}
+			printf ('</table>');
+		}	
+	
 	
 
 
@@ -33,66 +95,23 @@ class CPT_ItemMC extends CPT_Item {
 	}
 	
 	
-	static function CPT_add_meta_boxes($eal_posttype=null, $classname=null)  {
+// 	public function CPT_add_meta_boxes($eal_posttype=null, $classname=null)  {
 		
-		global $post;
+// 		global $post;
 		
-		$eal_posttype = 'itemmc';
-		$classname = get_class();
+// 		$eal_posttype = 'itemmc';
+// 		$classname = get_class();
 		
-		global $item;
-		$item = new EAL_ItemMC();
-		$item->load();
-		parent::CPT_add_meta_boxes($eal_posttype, $classname);
+// 		global $item;
+// 		$item = new EAL_ItemMC();
+// 		$item->load();
+// 		parent::CPT_add_meta_boxes($eal_posttype, $classname);
 		
- 		add_meta_box("mb_{$eal_posttype}_answers", "Antwortoptionen",	array ($classname, 'CPT_add_answers'), $eal_posttype, 'normal', 'default');
-	}
+//  		add_meta_box("mb_{$eal_posttype}_answers", "Antwortoptionen",	array ($classname, 'CPT_add_answers'), $eal_posttype, 'normal', 'default');
+// 	}
 
 
-	static function CPT_add_answers ($post, $vars) {
-	
-		global $item;
-		
-		$answerLine = '<tr>
-				<td><input type="text" name="answer[]" value="%s" size="25" /></td>
-				<td><input type="text" name="positive[]" value="%d" size="5" /></td>
-				<td><input type="text" name="negative[]" value="%d" size="5" /></td>
-				<td>
-					<button type="button" onclick="addAnswer(this);">&nbsp;+&nbsp;</button>
-					&nbsp;&nbsp;
-					<button class="removeanswer" type="button" onclick="removeAnswer(this);">&nbsp;-&nbsp;</button>
-				</td>
-			</tr>';		
-		
-		
-?>
-		<script>
 
-			var $ =jQuery.noConflict();
-			
-			function addAnswer (e) { 
-				// add new answer option after current line
-				$(e).parent().parent().after('<?php echo (preg_replace("/\r\n|\r|\n/",'', sprintf($answerLine, '', 0, 0))); ?>' );
-			}
-
-			function removeAnswer (e) {
-				// delete current answer options but make sure that header + at least one option remain
-				if ($(e).parent().parent().parent().children().size() > 2) {
-					$(e).parent().parent().remove();
-				}
-			}
-			
-		</script>
-
-<?php	
-		
-		printf ('<table>');
-		printf ('<tr align="left"><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>', 'Antwort-Text', 'Ausgew&auml;hlt', 'Nicht ausgew&auml;hlt', 'Aktionen');
-		foreach ($item->answers as $a) { 
-			printf($answerLine, $a['answer'], $a['positive'], $a['negative']);
-		}
-		printf ('</table>');
-	}
 	
 	
 	
@@ -156,25 +175,7 @@ class CPT_ItemMC extends CPT_Item {
 	
 	
 	
-	
-	static function CPT_updated_messages( $messages ) {
-	
-		global $post, $post_ID;
-		$messages['itemmc'] = array(
-				0 => '',
-				1 => sprintf( __('MC Question updated. <a href="%s">View MC Question</a>'), esc_url( get_permalink($post_ID) ) ),
-				2 => __('Custom field updated.'),
-				3 => __('Custom field deleted.'),
-				4 => __('MC Question updated.'),
-				5 => isset($_GET['revision']) ? sprintf( __('Product restored to revision from %s'), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
-				6 => sprintf( __('MC Question published. <a href="%s">View MC Question</a>'), esc_url( get_permalink($post_ID) ) ),
-				7 => __('MC Question saved.'),
-				8 => sprintf( __('MC Question submitted. <a target="_blank" href="%s">MC Question product</a>'), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
-				9 => sprintf( __('MC Question scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">MC Question product</a>'), date_i18n( __( 'M j, Y @ G:i' ), strtotime( $post->post_date ) ), esc_url( get_permalink($post_ID) ) ),
-				10 => sprintf( __('MC Question draft updated. <a target="_blank" href="%s">MC Question product</a>'), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
-		);
-		return $messages;
-	}
+
 	
 	
 	static function CPT_contextual_help( $contextual_help, $screen_id, $screen ) {

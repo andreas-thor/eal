@@ -104,15 +104,16 @@ class CPT_Review {
 		$eal_posttype="review";
 		$classname="cpt_review";
 
-		global $review;
+		global $review, $item;
 		$review = new EAL_Review();
 		$review->load();
+		$item = $review->getItem();
 		
 // 		global $item;
 // 		$item = new EAL_ItemMC();
 // 		$item->loadById(isset ($_POST['item_id']) ? $_POST['item_id'] : $_GET['item_id']);
 		
-		add_meta_box('mb_item', 'Item', array ($classname, 'CPT_add_item'), $eal_posttype, 'normal', 'default' );
+		add_meta_box('mb_item', $item->title, array ($classname, 'CPT_add_item'), $eal_posttype, 'normal', 'default' );
 		
 		
 		add_meta_box('mb_review_score', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($classname, 'CPT_add_score'), $eal_posttype, 'normal', 'default' );
@@ -124,8 +125,7 @@ class CPT_Review {
 	
 	static function CPT_add_item ($post, $vars) {
 	
-		global $review;
-		$item = $review->getItem();
+		global $item;
 		if (!is_null($item)) {
 			$html = $item->getPreviewHTML();
 			echo $html;
@@ -173,8 +173,8 @@ class CPT_Review {
 		global $review;
 	
 		
-		$html_item = CPT_Item::generateLevelHTML(["FW"=>$review->getItem()->level_FW, "KW"=>$review->getItem()->level_KW, "PW"=>$review->getItem()->level_PW], "item", "disabled");
-		$html_review = CPT_Item::generateLevelHTML(["FW"=>$review->level_FW, "KW"=>$review->level_KW, "PW"=>$review->level_PW], "review", "");
+		$html_item = CPT_Item::generateLevelHTML($review->getItem()->level, "item", "disabled");
+		$html_review = CPT_Item::generateLevelHTML($review->level, "review", "");
 		
 	
 		$html = "<table style='font-size:100%'><tr>

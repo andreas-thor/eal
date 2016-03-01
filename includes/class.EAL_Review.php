@@ -10,9 +10,7 @@ class EAL_Review {
 	public $item;
 	public $score;
 	
-	public $level_FW;
-	public $level_PW;
-	public $level_KW;
+	public $level;
 	
 	public $feedback;
 	public $overall;
@@ -24,7 +22,7 @@ class EAL_Review {
 	
 	
 	function __construct () {
-		
+		$this->level = ["FW" => null, "KW" => null, "PW" => null];
 	}
 	
 	
@@ -48,9 +46,9 @@ class EAL_Review {
 			}
 		}
 		
-		$this->level_FW = isset ($_POST['review_level_FW']) ? $_POST['review_level_FW'] : null;
-		$this->level_KW = isset ($_POST['review_level_KW']) ? $_POST['review_level_KW'] : null;
-		$this->level_PW = isset ($_POST['review_level_PW']) ? $_POST['review_level_PW'] : null;
+		$this->level["FW"] = isset ($_POST['review_level_FW']) ? $_POST['review_level_FW'] : null;
+		$this->level["KW"] = isset ($_POST['review_level_KW']) ? $_POST['review_level_KW'] : null;
+		$this->level["PW"] = isset ($_POST['review_level_PW']) ? $_POST['review_level_PW'] : null;
 		$this->feedback = isset ($_POST['review_feedback']) ? $_POST['review_feedback'] : null;
 		$this->overall  = isset ($_POST['review_overall'])  ? $_POST['review_overall']  : null;
 		
@@ -62,13 +60,13 @@ class EAL_Review {
 		
 		if (is_null($this->item)) { 
 		
-// 					if ($this->item_type == "itemmc") {
+			if ($this->item_type == "itemmc") {
 				$this->item = new EAL_ItemMC();
-// 			}
+			}
 			
-// 			if ($this->item_type == "itemsc") {
-// 				$this->item = new EAL_ItemSC();
-// 			}
+			if ($this->item_type == "itemsc") {
+				$this->item = new EAL_ItemSC();
+			}
 				
 			$this->item->loadById($this->item_id);
 		}
@@ -97,9 +95,9 @@ class EAL_Review {
 				}
 			}
 			
-			$this->level_FW = 0;
-			$this->level_PW = 0;
-			$this->level_KW = 0;
+			$this->level["FW"] = 0;
+			$this->level["KW"] = 0;
+			$this->level["PW"] = 0;
 			$this->feedback = '';
 			$this->overall = 0;
 				
@@ -119,9 +117,9 @@ class EAL_Review {
 				}
 			}
 
-			$this->level_FW = $sqlres['level_FW'];
-			$this->level_PW = $sqlres['level_PW'];
-			$this->level_KW = $sqlres['level_KW'];
+			$this->level["FW"] = $sqlres['level_FW'];
+			$this->level["KW"] = $sqlres['level_KW'];
+			$this->level["PW"] = $sqlres['level_PW'];
 			$this->feedback = $sqlres['feedback'];
 			$this->overall = $sqlres['overall'];;
 				
@@ -154,9 +152,9 @@ class EAL_Review {
 					array(
 						'id' => $review->id,
 						'item_id' => $review->item_id,
-						'level_FW' => $review->level_FW,
-						'level_KW' => $review->level_KW,
-						'level_PW' => $review->level_PW,
+						'level_FW' => $review->level["FW"],
+						'level_KW' => $review->level["KW"],
+						'level_PW' => $review->level["PW"],
 						'feedback' => $review->feedback,
 						'overall'  => $review->overall
 					),

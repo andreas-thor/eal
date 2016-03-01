@@ -1,5 +1,7 @@
 <?php
 
+
+
 class EAL_Item {
 
 	public $type;	// will be set in subclasses (EAL_ItemMC, EAL_ItemSC, ...)
@@ -9,11 +11,14 @@ class EAL_Item {
 	public $description;
 	public $question;
 	
-	public $level_FW;
-	public $level_PW;
-	public $level_KW;
+	public $level;
 	
-	public static $levels = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
+	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
+	
+	
+	function __construct() {
+		$this->level = ["FW" => null, "KW" => null, "PW" => null];
+	}
 	
 	/**
 	 * Create new item from _POST
@@ -26,9 +31,10 @@ class EAL_Item {
 		$this->title = $post->post_title;
 		$this->description = isset($_POST['item_description']) ? $_POST['item_description'] : null;
 		$this->question = isset ($_POST['item_question']) ? $_POST['item_question'] : null;
-		$this->level_FW = isset ($_POST['item_level_FW']) ? $_POST['item_level_FW'] : null;
-		$this->level_KW = isset ($_POST['item_level_KW']) ? $_POST['item_level_KW'] : null;
-		$this->level_PW = isset ($_POST['item_level_PW']) ? $_POST['item_level_PW'] : null;
+
+		$this->level["FW"] = isset ($_POST['item_level_FW']) ? $_POST['item_level_FW'] : null;
+		$this->level["KW"] = isset ($_POST['item_level_KW']) ? $_POST['item_level_KW'] : null;
+		$this->level["PW"] = isset ($_POST['item_level_PW']) ? $_POST['item_level_PW'] : null;
 	}
 	
 	
@@ -46,9 +52,9 @@ class EAL_Item {
 			$this->title = '';
 			$this->description = '';
 			$this->question = '';
-			$this->level_FW = 0;
-			$this->level_PW = 0;
-			$this->level_KW = 0;
+			$this->level["FW"] = 0;
+			$this->level["KW"] = 0;
+			$this->level["PW"] = 0;
 				
 		} else {
 				
@@ -58,9 +64,9 @@ class EAL_Item {
 			$this->title = $sqlres['title'];
 			$this->description = $sqlres['description'];
 			$this->question = $sqlres['question'];
-			$this->level_FW = $sqlres['level_FW'];
-			$this->level_PW = $sqlres['level_PW'];
-			$this->level_KW = $sqlres['level_KW'];
+			$this->level["FW"] = $sqlres['level_FW'];
+			$this->level["KW"] = $sqlres['level_KW'];
+			$this->level["PW"] = $sqlres['level_PW'];
 				
 		}
 		
@@ -74,9 +80,9 @@ class EAL_Item {
 		$this->title = $sqlres['title'];
 		$this->description = $sqlres['description'];
 		$this->question = $sqlres['question'];
-		$this->level_FW = $sqlres['level_FW'];
-		$this->level_PW = $sqlres['level_PW'];
-		$this->level_KW = $sqlres['level_KW'];
+		$this->level["FW"] = $sqlres['level_FW'];
+		$this->level["KW"] = $sqlres['level_KW'];
+		$this->level["PW"] = $sqlres['level_PW'];
 	}
 	
 	
@@ -91,7 +97,7 @@ class EAL_Item {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		global $wpdb;
 		dbDelta (
-				"CREATE TABLE {$tabname} (
+			"CREATE TABLE {$tabname} (
 				id bigint(20) unsigned NOT NULL,
 				title text,
 				description text,

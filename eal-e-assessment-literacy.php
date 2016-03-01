@@ -133,9 +133,10 @@ add_action( 'init', 'create_eal_items' );
 
 function create_eal_items() {
 	
-
-	CPT_ItemSC::CPT_init();
-	CPT_ItemMC::CPT_init();
+	(new CPT_ItemSC())->init();
+	(new CPT_ItemMC())->init();
+// 	CPT_ItemSC::init();
+// 	CPT_ItemMC::init();
 	CPT_Review::CPT_init();
 	
 	

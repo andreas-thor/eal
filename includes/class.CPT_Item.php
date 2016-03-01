@@ -5,6 +5,8 @@ require_once("class.CPT_ItemMC.php");
 abstract class CPT_Item {
 	
 	
+	public $type;
+	public $label;
 	
 	/*
 	 * #######################################################################
@@ -12,21 +14,23 @@ abstract class CPT_Item {
 	 * #######################################################################
 	 */
 	
-	static function CPT_init($eal_posttype, $label, $classname) {
+	public function init() {
 		
-		register_post_type( $eal_posttype,
+		$classname = get_called_class();
+		
+		register_post_type( $this->type,
 				array(
 						'labels' => array(
-								'name' => $label,
-								'singular_name' => $label,
-								'add_new' => 'Add ' . $label,
-								'add_new_item' => 'Add New ' . $label,
+								'name' => $this->label,
+								'singular_name' => $this->label,
+								'add_new' => 'Add ' . $this->label,
+								'add_new_item' => 'Add New ' . $this->label,
 								'edit' => 'Edit',
-								'edit_item' => 'Edit ' . $label,
-								'new_item' => 'New ' . $label,
+								'edit_item' => 'Edit ' . $this->label,
+								'new_item' => 'New ' . $this->label,
 								'view' => 'View',
-								'view_item' => 'View ' . $label,
-								'search_items' => 'Search ' . $label,
+								'view_item' => 'View ' . $this->label,
+								'search_items' => 'Search ' . $this->label,
 								'not_found' => 'No Items found',
 								'not_found_in_trash' => 'No Items found in Trash',
 								'parent' => 'Parent Item'
@@ -39,22 +43,31 @@ abstract class CPT_Item {
 						// 'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
 						'has_archive' => false, // false to allow for single view
 						'show_in_menu'    => true,
-						'register_meta_box_cb' => array ($classname, 'CPT_add_meta_boxes')
+						'register_meta_box_cb' => array ($this, 'WPCB_register_meta_box_cb')
 				)
 		);
+
+		
 		
 		// TODO: Note that post ID may reference a post revision and not the last saved post. Use wp_is_post_revision() to get the ID of the real post.
-		add_action ("save_post_{$eal_posttype}", array ("eal_{$eal_posttype}", 'save'), 10, 2);
+		add_action ("save_post_{$this->type}", array ("eal_{$this->type}", 'save'), 10, 2);
 		
 		// TODO: Delete post hook 
-		add_action ('XXX', array ("eal_{$eal_posttype}", 'save'), 10);
+		
+		// Manage table of items (what columns to show; what columns are sortable 		
+		add_filter("manage_{$this->type}_posts_columns" , array ($this, 'WPCB_manage_posts_columns'));
+		add_filter("manage_edit-{$this->type}_sortable_columns", array ($this, 'WPCB_manage_edit_sortable_columns')); 		
+		add_action("manage_{$this->type}_posts_custom_column" , array ($this, 'WPCB_manage_posts_custom_column'), 10, 2 );
+		
+	
+		add_filter('posts_join', array ($this, 'WPCB_posts_join'));
+		add_filter('posts_fields', array ($this, 'WPCB_posts_fields'), 10, 1 );
+		add_filter('posts_orderby', array ($this, 'WPCB_posts_orderby'), 10, 1 );
 		
 		
 		
 		
-		add_filter("manage_{$eal_posttype}_posts_columns" , array ($classname, 'CPT_set_table_columns'));
-		add_action("manage_{$eal_posttype}_posts_custom_column" , array ($classname, 'CPT_fill_table_columns'), 10, 2 );
-		add_filter("manage_edit-{$eal_posttype}_sortable_columns", array ($classname, 'CPT_set_table_columns_sortable')); 		
+		
 		add_filter("xxxposts_clauses", array ($classname, 'CPT_set_table_order'), 1, 2 );
 		
 		
@@ -71,7 +84,7 @@ abstract class CPT_Item {
 // 		add_action ("load-$name", array ($name, 'CPT_load_post'), 10);
 // 		add_action ("edit_form_advanced", array ($name, 'CPT_load_post'), 10);
 		
-		add_filter('post_updated_messages', array ($classname, 'CPT_updated_messages') );
+		add_filter('post_updated_messages', array ($this, 'WPCB_post_updated_messages') );
 		add_action('contextual_help', array ($classname, 'CPT_contextual_help' ), 10, 3);
 
 		/* hide shortlink block */
@@ -80,64 +93,24 @@ abstract class CPT_Item {
 		
 		
 	
- 		add_filter('posts_join', array ('CPT_Item', 'AIOThemes_joinPOSTMETA_to_WPQuery'));
-		add_filter( 'posts_fields', array ('CPT_Item', 'filter_posts_fields'), 10, 1 );
-		add_filter( 'posts_orderby', array ('CPT_Item', 'edit_posts_orderby'), 10, 1 );
-
+ 	
 		
 	}
 	
-	static function edit_posts_orderby($orderby_statement) {
-		
-		global $wp_query;
-		echo ("<script>console.log('edit_posts_orderby " . print_r($wp_query->get( 'orderby' ), true) . "');</script>");
-
-		if ($wp_query->get( 'orderby' ) == "FW") $orderby_statement = "level_FW " . $wp_query->get( 'order' );
-		if ($wp_query->get( 'orderby' ) == "PW") $orderby_statement = "level_PW " . $wp_query->get( 'order' );
-		if ($wp_query->get( 'orderby' ) == "KW") $orderby_statement = "level_KW " . $wp_query->get( 'order' );
-		
-// 		$orderby_statement = "level_KW DESC";
-		return $orderby_statement;
-	}
 	
+	abstract public function WPCB_register_meta_box_cb ();
 	
-	// define the posts_fields callback
-	static function filter_posts_fields( $array ) {
-		// make filter magic happen here...
-		global $wp_query, $wpdb;
-		echo ("<script>console.log('filter_posts_fields in " . print_r($array, true) . "');</script>");
-		$array .= ", {$wpdb->prefix}eal_itemmc.*";
-		echo ("<script>console.log('filter_posts_fields in " . print_r($array, true) . "');</script>");
-		return $array;
-// 		return array_merge ($array, array ("{$wpdb->prefix}eal_itemmc.*"));
-	}
-		
-	static function AIOThemes_joinPOSTMETA_to_WPQuery($join) {
-		global $wp_query, $wpdb;
-	
-// 		if (!empty($wp_query->query_vars['s'])) {
-			$join .= " JOIN {$wpdb->prefix}eal_itemmc ON {$wpdb->prefix}eal_itemmc.id = {$wpdb->posts}.ID";
-				
-// 		}
-	
-		return $join;
-	}
+	abstract public function WPCB_mb_answers ($post, $vars); 
 	
 	
 	
-	static function CPT_add_meta_boxes($eal_posttype=null, $classname=null)  {
-		
-		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($classname, 'CPT_add_description'), $eal_posttype, 'normal', 'default' );
-		add_meta_box('mb_question', 'Aufgabenstellung', array ($classname, 'CPT_add_question'), $eal_posttype, 'normal', 'default');
-		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($classname, 'CPT_add_level'), $eal_posttype, 'side', 'default');
-	}
 	
 	
 
+
 	
 	
-	
-	static function CPT_add_description ($post, $vars) {
+	public function WPCB_mb_description ($post, $vars) {
 	
 		global $item;
 		$editor_settings = array(
@@ -153,7 +126,7 @@ abstract class CPT_Item {
 	}
 	
 	
-	static function CPT_add_question ($post, $vars) {
+	public function WPCB_mb_question ($post, $vars) {
 	
 		global $item;
 		$editor_settings = array(
@@ -169,28 +142,51 @@ abstract class CPT_Item {
 	}	
 	
 	
-	static function CPT_add_level ($post, $vars) {
+	public function WPCB_mb_level ($post, $vars) {
 	
 		global $item;
-		
-		$html = self::generateLevelHTML(["FW"=>$item->level_FW, "KW"=>$item->level_KW, "PW"=>$item->level_PW]);
-		
+		$html = self::generateLevelHTML($item->level);
 		echo $html;	
 	}
 	
 	
-	static function generateLevelHTML ($colNames, $prefix="item", $disabled="") {
+	
+
+	public function WPCB_post_updated_messages ( $messages ) {
+	
+		global $post, $post_ID;
+		$messages[$this->type] = array(
+				0 => '',
+				1 => sprintf( __("{$this->label} updated. <a href='%s'>View {$this->label}</a>"), esc_url( get_permalink($post_ID) ) ),
+				2 => __('Custom field updated.'),
+				3 => __('Custom field deleted.'),
+				4 => __("{$this->label} updated."),
+				5 => isset($_GET['revision']) ? sprintf( __("{$this->label} restored to revision from %s"), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+				6 => sprintf( __("{$this->label} published. <a href='%s'>View {$this->label}</a>"), esc_url( get_permalink($post_ID) ) ),
+				7 => __("{$this->label} saved."),
+				8 => sprintf( __("{$this->label} submitted. <a target='_blank' href='%s'>Preview {$this->label}</a>"), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
+				9 => sprintf( __("{$this->label} scheduled for: <strong>%1$s</strong>. <a target='_blank' href='%2$s'>View {$this->label}</a>"), date_i18n( __( 'M j, Y @ G:i' ), strtotime( $post->post_date ) ), esc_url( get_permalink($post_ID) ) ),
+				10 => sprintf( __("{$this->label} draft updated. <a target='_blank' href='%s'>Preview {$this->label}</a>"), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
+		);
+		return $messages;
+	}	
+	
+	
+	
+	
+	
+	static function generateLevelHTML ($level, $prefix="item", $disabled="") {
 		
 		$html  = "<table style='font-size:100%'><tr><td></td>";
-		foreach ($colNames as $c => $v) {
+		foreach ($level as $c => $v) {
 			$html .= '<td>' . $c . '</td>';
 		}
 		
 		$html .= '</tr>';
 		
-		foreach (EAL_Item::$levels as $n => $r) {
+		foreach (EAL_Item::$level_label as $n => $r) {
 			$html .= '<tr><td>' . ($n+1) . ". " . $r . '</td>';
-			foreach ($colNames as $c=>$v) {
+			foreach ($level as $c=>$v) {
 				$html .= "<td align='center'><input type='radio' id='{$prefix}_level_{$c}_{$r}' name='{$prefix}_level_{$c}' value='" . ($n+1) . "' " . (($v==$n+1)?'checked':$disabled) . "></td>";
 			}
 			$html .= '</tr>';
@@ -201,16 +197,16 @@ abstract class CPT_Item {
 	}
 	
 	
-	static function CPT_set_table_columns($columns) {
+	public function WPCB_manage_posts_columns($columns) {
 		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
-	
 	}
 	
-	static function CPT_set_table_columns_sortable($columns) {
+	public function WPCB_manage_edit_sortable_columns ($columns) {
 		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte'));
 	}
 	
-	static function CPT_fill_table_columns( $column, $post_id ) {
+	
+	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
 	
 		global $post;
 		
@@ -223,19 +219,60 @@ abstract class CPT_Item {
 				
 				
 				global $wpdb;
-				$sqlres = $wpdb->get_col( "SELECT id FROM {$wpdb->prefix}eal_{self::$type}_review WHERE item_id = {$post->ID}");
+				$sqlres = $wpdb->get_col( "SELECT id FROM {$wpdb->prefix}eal_{$this->type}_review WHERE item_id = {$post->ID}");
 				foreach ($sqlres as $pos => $review_id) {
-					echo ("<a href='post.php?post=${review_id}&action=edit'>&nbsp;#${pos}&nbsp;</a>&nbsp;&nbsp;");
+					echo ("<a href='post.php?post=${review_id}&item_type={$this->type}&action=edit'>&nbsp;#${pos}&nbsp;</a>&nbsp;&nbsp;");
 				}
 				
 				
-				echo ("<a href='post-new.php?post_type=review&item_id={$post->ID}&item_type={self::$type}'>Add</a>"); 
+				echo ("<a href='post-new.php?post_type=review&item_id={$post->ID}&item_type={$this->type}'>Add</a>"); 
 				break; 
 		}
 	}
+
+	public function WPCB_posts_join ($join) {
+		global $wp_query, $wpdb;
+		if ($wp_query->query["post_type"] == $this->type) {
+			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} ON {$wpdb->prefix}eal_{$this->type}.id = {$wpdb->posts}.ID";
+		}
+		return $join;
+	}
+	
+	
+	// define the posts_fields callback
+	public function WPCB_posts_fields ( $array ) {
+		// make filter magic happen here...
+		global $wp_query, $wpdb;
+		if ($wp_query->query["post_type"] == $this->type) {
+			$array .= ", {$wpdb->prefix}eal_{$this->type}.*";
+		}
+		return $array;
+		// 		return array_merge ($array, array ("{$wpdb->prefix}eal_itemmc.*"));
+	}
 	
 
+	public function WPCB_posts_orderby($orderby_statement) {
+	
+		global $wp_query;
+		if ($wp_query->query["post_type"] == $this->type) {
+			if ($wp_query->get( 'orderby' ) == "FW") $orderby_statement = "level_FW " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "PW") $orderby_statement = "level_PW " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "KW") $orderby_statement = "level_KW " . $wp_query->get( 'order' );
+		}
+	
+		// 		$orderby_statement = "level_KW DESC";
+		return $orderby_statement;
+	}
+	
+	
 
+	
+
+	
+	
+	
+	
+	
 // 	static function CPT_set_table_order ($vars) {
 
 // 			// Don't do anything if we are not on the Contact Custom Post Type
@@ -269,7 +306,15 @@ abstract class CPT_Item {
 // 			$query->set('orderby','meta_value_num');
 // 		}
 		
-		
+
+	// 	public function CPT_add_meta_boxes($eal_posttype=null, $classname=null)  {
+	
+	// 		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($classname, 'CPT_add_description'), $eal_posttype, 'normal', 'default' );
+	// 		add_meta_box('mb_question', 'Aufgabenstellung', array ($classname, 'CPT_add_question'), $eal_posttype, 'normal', 'default');
+	// 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($classname, 'CPT_add_level'), $eal_posttype, 'side', 'default');
+	// 	}
+	
+			
 		
 		
 // 	}

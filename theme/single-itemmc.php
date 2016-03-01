@@ -42,9 +42,9 @@ get_header();
 <div class="sidebar">
 	<ul>
 
-	<li>FW: <?= EAL_Item::$levels[$item->level_FW-1] ?></li>
-	<li>KW: <?= EAL_Item::$levels[$item->level_KW-1] ?></li>
-	<li>PW: <?= EAL_Item::$levels[$item->level_PW-1] ?></li>
+	<li>FW: <?= EAL_Item::$level_label[$item->level["FW"]-1] ?></li>
+	<li>KW: <?= EAL_Item::$level_label[$item->level["KW"]-1] ?></li>
+	<li>PW: <?= EAL_Item::$level_label[$item->level["PW"]-1] ?></li>
 
 	
 	<form action="wp-admin/post-new.php?post_type=review" method="post" autocomplete="off"> 

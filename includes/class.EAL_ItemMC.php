@@ -8,6 +8,7 @@ class EAL_ItemMC extends EAL_Item {
 	
 	
 	function __construct() {
+		parent::__construct();
 		$this->type = "itemmc";
 	}
 	
@@ -89,9 +90,9 @@ class EAL_ItemMC extends EAL_Item {
 						'title' => $item->title,
 						'description' => $item->description,
 						'question' => $item->question,
-						'level_FW' => $item->level_FW,
-						'level_KW' => $item->level_KW,
-						'level_PW' => $item->level_PW,
+						'level_FW' => $item->level["FW"],
+						'level_KW' => $item->level["KW"],
+						'level_PW' => $item->level["PW"],
 						'points'   => $item->getPoints()
 				),
 				array('%d','%s','%s','%s','%d','%d','%d','%d')
