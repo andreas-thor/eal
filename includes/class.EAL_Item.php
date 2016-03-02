@@ -2,7 +2,7 @@
 
 
 
-class EAL_Item {
+abstract class EAL_Item {
 
 	public $type;	// will be set in subclasses (EAL_ItemMC, EAL_ItemSC, ...)
 	
@@ -43,8 +43,6 @@ class EAL_Item {
 	public function load () {
 		
 		global $post;
-		
-		echo ("<script>console.log('__construct in " . get_class() . " with status== " . (get_post_status($post->ID)) . "');</script>");
 		
 		if (get_post_status($post->ID)=='auto-draft') {
 				
@@ -88,7 +86,7 @@ class EAL_Item {
 	
 	public function getPoints() { return -1; }
 	
-	public function getPreviewHTML () { return "<h1>getPreviewHTML () not implemented</h1>"; }
+	abstract public function getPreviewHTML ();
 	
 	
 	
@@ -119,8 +117,8 @@ class EAL_Item {
 		global $wpdb;
 		
 		$sqlScore = "";
-		foreach (EAL_Review::$dimension1 as $k1 => $v1) {
-			foreach (EAL_Review::$dimension2 as $k2 => $v2) {
+		foreach (EAL_Item_Review::$dimension1 as $k1 => $v1) {
+			foreach (EAL_Item_Review::$dimension2 as $k2 => $v2) {
 				$sqlScore .= "{$k1}_{$k2} tinyint unsigned, \n";
 			}
 		}

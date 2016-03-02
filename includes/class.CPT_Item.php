@@ -1,7 +1,5 @@
 <?php
 
-require_once("class.CPT_ItemMC.php");
-
 abstract class CPT_Item {
 	
 	
@@ -221,11 +219,11 @@ abstract class CPT_Item {
 				global $wpdb;
 				$sqlres = $wpdb->get_col( "SELECT id FROM {$wpdb->prefix}eal_{$this->type}_review WHERE item_id = {$post->ID}");
 				foreach ($sqlres as $pos => $review_id) {
-					echo ("<a href='post.php?post=${review_id}&item_type={$this->type}&action=edit'>&nbsp;#${pos}&nbsp;</a>&nbsp;&nbsp;");
+					echo ("<a href='post.php?post=${review_id}&action=edit'>&nbsp;#${pos}&nbsp;</a>&nbsp;&nbsp;");
 				}
 				
 				
-				echo ("<a href='post-new.php?post_type=review&item_id={$post->ID}&item_type={$this->type}'>Add</a>"); 
+				echo ("<a href='post-new.php?post_type={$this->type}_review&item_id={$post->ID}'>Add</a>"); 
 				break; 
 		}
 	}

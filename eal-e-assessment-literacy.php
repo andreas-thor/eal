@@ -26,9 +26,14 @@
 // include_once 'includes/eal_item_mc.php';
 
 
-include_once 'includes/class.CPT_ItemSC.php';
-include_once 'includes/class.CPT_ItemMC.php';
-include_once 'includes/class.CPT_Review.php';
+require_once 'includes/class.CPT_Item.php';
+require_once 'includes/class.CPT_ItemSC.php';
+require_once 'includes/class.CPT_ItemMC.php';
+
+require_once 'includes/class.CPT_Item.Review.php';
+require_once 'includes/class.CPT_ItemSC.Review.php';
+require_once 'includes/class.CPT_ItemMC.Review.php';
+
 
 // $GLOBALS["eal_itemtypes"] = [
 // 		'eal_item_sc' => 'Single Choice',
@@ -121,6 +126,8 @@ function create_eal_page_taxonomies () {
 
 register_activation_hook( __FILE__, array ('eal_itemsc', 'createTables') );
 register_activation_hook( __FILE__, array ('eal_itemmc', 'createTables') );
+register_activation_hook( __FILE__, array ('eal_itemsc_review', 'createTables') );
+register_activation_hook( __FILE__, array ('eal_itemmc_review', 'createTables') );
 
 add_action( 'init', 'create_eal_items' );
 
@@ -135,9 +142,12 @@ function create_eal_items() {
 	
 	(new CPT_ItemSC())->init();
 	(new CPT_ItemMC())->init();
-// 	CPT_ItemSC::init();
+	(new CPT_ItemSC_Review())->init();
+	(new CPT_ItemMC_Review())->init();
+	
+	// 	CPT_ItemSC::init();
 // 	CPT_ItemMC::init();
-	CPT_Review::CPT_init();
+// 	CPT_Item_Review::CPT_init();
 	
 	
 // 		$book = new CustomPostType( 'Book' );

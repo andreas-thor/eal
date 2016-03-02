@@ -1,17 +1,17 @@
 <?php
 
-class EAL_Review {
+
+abstract class EAL_Item_Review {
 
 	public static $item_types = ["itemmc", "itemsc"];
 	
+	public $type;	// will be set in subclasses (EAL_ItemMC, EAL_ItemSC, ...)
+	
 	public $id;
 	public $item_id;
-	public $item_type;
 	public $item;
 	public $score;
-	
 	public $level;
-	
 	public $feedback;
 	public $overall;
 	
@@ -35,7 +35,6 @@ class EAL_Review {
 	
 		$this->id = $post_id;
 		$this->item_id = isset ($_GET['item_id']) ? $_GET['item_id'] : (isset ($_POST['item_id']) ? $_POST['item_id'] : null);
-		$this->item_type = isset ($_GET['item_type']) ? $_GET['item_type'] : (isset ($_POST['item_type']) ? $_POST['item_type'] : null);
 		$this->item = null;	
 		
 		$this->score = array();
@@ -54,34 +53,17 @@ class EAL_Review {
 		
 	}
 	
-	public function getItem () {
-		
-		if (is_null($this->item_id)) return null;
-		
-		if (is_null($this->item)) { 
-		
-			if ($this->item_type == "itemmc") {
-				$this->item = new EAL_ItemMC();
-			}
-			
-			if ($this->item_type == "itemsc") {
-				$this->item = new EAL_ItemSC();
-			}
-				
-			$this->item->loadById($this->item_id);
-		}
-		return $this->item;
-		
-	}
+	
+	abstract public function getItem ();
 	
 	
 	public function load () {
 		
-		global $post;
+		global $post, $wpdb;
 		
-		$this->item_type = isset ($_POST['item_type']) ? $_POST['item_type'] : $_GET['item_type'];
+		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE id = {$post->ID}", ARRAY_A);
 		
-		if (get_post_status($post->ID)=='auto-draft') {
+		if ($sqlres == null) {
 				
 			$this->id = $post->ID;
 			$this->item_id = isset ($_POST['item_id']) ? $_POST['item_id'] : $_GET['item_id'];
@@ -103,8 +85,6 @@ class EAL_Review {
 				
 		} else {
 				
-			global $wpdb;
-			$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->item_type}_review WHERE id = {$post->ID}", ARRAY_A);
 			$this->id = $sqlres['id'];
 			$this->item_id = $sqlres['item_id'];
 			$this->item = null; // lazy loading
@@ -128,49 +108,46 @@ class EAL_Review {
 	}
 	
 	
-	
-	public static function save ($post_id, $post) {
+
+	public function save ($post_id, $post) {
 	
 		global $wpdb;
-		$review = new EAL_Review();
-		$review->init($post_id, $post);
 	
-		
+		$this->init($post_id, $post);
+	
 		$replaceScore = array ();
 		$replaceType = array ();
 		foreach (self::$dimension1 as $k1 => $v1) {
 			foreach (self::$dimension2 as $k2 => $v2) {
-				$replaceScore["{$k1}_{$k2}"] = $review->score[$k1][$k2];
+				$replaceScore["{$k1}_{$k2}"] = $this->score[$k1][$k2];
 				array_push($replaceType, "%d");
 			}
 		}
-		
-		
+	
+	
 		$wpdb->replace(
-				"{$wpdb->prefix}eal_{$review->item_type}_review",
+				"{$wpdb->prefix}eal_{$this->type}",
 				array_merge (
-					array(
-						'id' => $review->id,
-						'item_id' => $review->item_id,
-						'level_FW' => $review->level["FW"],
-						'level_KW' => $review->level["KW"],
-						'level_PW' => $review->level["PW"],
-						'feedback' => $review->feedback,
-						'overall'  => $review->overall
-					),
-					$replaceScore
-				), 
-				array_merge (
-					array('%d','%d','%d','%d','%d','%s','%d'),
-					$replaceType
-				)
-		);
+						array(
+								'id' => $this->id,
+								'item_id' => $this->item_id,
+								'level_FW' => $this->level["FW"],
+								'level_KW' => $this->level["KW"],
+								'level_PW' => $this->level["PW"],
+								'feedback' => $this->feedback,
+								'overall'  => $this->overall
+						),
+						$replaceScore
+						),
+						array_merge (
+								array('%d','%d','%d','%d','%d','%s','%d'),
+								$replaceType
+								)
+						);
 	
 	
 	
 	}
-	
-	
 	
 	
 	
@@ -182,7 +159,32 @@ class EAL_Review {
 	
 	
 
+	public static function createTableReview($tabname) {
 	
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		global $wpdb;
+	
+		$sqlScore = "";
+		foreach (EAL_Item_Review::$dimension1 as $k1 => $v1) {
+			foreach (EAL_Item_Review::$dimension2 as $k2 => $v2) {
+				$sqlScore .= "{$k1}_{$k2} tinyint unsigned, \n";
+			}
+		}
+	
+		dbDelta (
+			"CREATE TABLE [$tabname} (
+				id bigint(20) unsigned NOT NULL,
+				item_id bigint(20) unsigned NOT NULL, {$sqlScore}
+				level_FW tinyint unsigned,
+				level_KW tinyint unsigned,
+				level_PW tinyint unsigned,
+				feedback text,
+				overall tinyint unsigned,
+				KEY  (item_id),
+				PRIMARY KEY  (id)
+			) {$wpdb->get_charset_collate()};"
+		);
+	}
 	
 	
 

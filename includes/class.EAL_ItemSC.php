@@ -145,13 +145,32 @@ class EAL_ItemSC extends EAL_Item {
 	}
 	
 	
+	public function getPreviewHTML () {
+			
+		$res  = "<div>{$this->description}</div>";
+		$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}";
+		$res .= "<table style='font-size: 100%'>";
+		
+		foreach ($this->answers as $a) {
+			$res .= sprintf('<tr align="left"><td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td><td>%s</td></tr>', 
+					$a['points'],	// input value 
+					($a['points']>0 ? 'bold' : 'normal'),	// font-weight
+					$a['answer']);	// cell value
+		}
+	
+		$res .= "</table></div>";
+	
+		return $res;
+	}
+	
+	
+	
 	public static function createTables() {
 	
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		
 		global $wpdb;
 		EAL_Item::createTableItem("{$wpdb->prefix}eal_itemsc");
-		EAL_Item::createTableReview("{$wpdb->prefix}eal_itemsc_review");
 		
 		dbDelta (
 			"CREATE TABLE {$wpdb->prefix}eal_itemsc_answer (

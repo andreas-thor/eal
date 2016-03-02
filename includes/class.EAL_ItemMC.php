@@ -152,9 +152,7 @@ class EAL_ItemMC extends EAL_Item {
 	
 	public function getPreviewHTML () {
 		 
-		$res  = "<h1>{$this->title}</h1>";
-		$res .= "<input type='hidden' id='item_id' name='item_id'  value='{$this->id}'>";
-		$res .= "<div>{$this->description}</div>";
+		$res = "<div>{$this->description}</div>";
 		 
 		$answerLine = '<tr align="left">
                            <td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
@@ -199,7 +197,6 @@ class EAL_ItemMC extends EAL_Item {
 		
 		global $wpdb;
 		EAL_Item::createTableItem("{$wpdb->prefix}eal_itemmc");
-		EAL_Item::createTableReview("{$wpdb->prefix}eal_itemmc_review");
 		
 		dbDelta (
 				"CREATE TABLE {$wpdb->prefix}eal_itemmc_answer (

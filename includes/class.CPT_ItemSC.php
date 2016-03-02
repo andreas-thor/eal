@@ -1,7 +1,6 @@
 <?php
 
 require_once("class.CPT_Item.php");
-// require_once("class.CustomPostType.php");
 require_once("class.EAL_ItemSC.php");
 
 
