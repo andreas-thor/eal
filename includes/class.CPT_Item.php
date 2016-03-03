@@ -90,10 +90,52 @@ abstract class CPT_Item {
 		add_filter('pre_get_shortlink', '__return_empty_string' );
 		
 		
-	
+		add_action( 'restrict_manage_posts', array($this, 'pippin_add_taxonomy_filters') );
  	
 		
 	}
+	
+	
+	
+	public function getTopicTermOption ($term, $level) {
+	
+		$result  = "<option value='{$term->slug}' " . (($_GET[$tax_slug] == $term->slug) ? " selected='selected'" : "") . ">";
+		$result .= str_repeat ("&nbsp;", $level*2) . "+ " . $term->name;  
+		$result .= " ({$term->count})</option>";
+		
+		foreach (get_terms ('topic', array ('parent'=> $term->term_id)) as $t) {
+			$result .= $this->getTopicTermOption ($t, $level+1);
+		}
+		return $result;
+	}
+	
+	
+	public function pippin_add_taxonomy_filters() {
+		global $typenow;
+	
+		// an array of all the taxonomyies you want to display. Use the taxonomy name or slug
+		$taxonomies = array('topic');
+	
+		// must set this to the post type you want the filter(s) displayed on
+		if( $typenow == $this->type ){
+	
+			foreach ($taxonomies as $tax_slug) {
+				$tax_obj = get_taxonomy($tax_slug);
+				$tax_name = $tax_obj->labels->name;
+				$terms = get_terms($tax_slug, array ('parent' => 0));
+				if(count($terms) > 0) {
+					echo "<select name='$tax_slug' id='$tax_slug' class='postform'>";
+					echo "<option value=''>Show All $tax_name</option>";
+					foreach ($terms as $term) {
+						echo $this->getTopicTermOption ($term, 0);
+// 						echo '<option value='. $term->slug, $_GET[$tax_slug] == $term->slug ? ' selected="selected"' : '','>' . $term->name .' (' . $term->count .')</option>';
+					}
+					echo "</select>";
+				}
+			}
+		}
+	}
+	
 	
 	
 	abstract public function WPCB_register_meta_box_cb ();
@@ -196,12 +238,23 @@ abstract class CPT_Item {
 	
 	
 	public function WPCB_manage_posts_columns($columns) {
-		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
+		return array_merge($columns, array('Topic2' => 'Topic2', 'FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
 	}
 	
 	public function WPCB_manage_edit_sortable_columns ($columns) {
-		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte'));
+		return array_merge($columns, array('Topic2' => 'Topic2', 'FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
 	}
+	
+	
+	public function getTopicTerm ($term, $level) {
+		
+		$result = str_repeat ("&nbsp;", $level*2) . "+ " . $term->name;
+		foreach (get_terms ('topic', array ('parent'=> $term->term_id)) as $t) {
+			$result .= "<br/>" . $this->getTopicTerm ($t, $level+1);
+		}
+		return $result;
+	}
+	
 	
 	
 	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
@@ -213,11 +266,69 @@ abstract class CPT_Item {
 			case 'PW': echo ($post->level_PW); break;
 			case 'KW': echo ($post->level_KW); break;
 			case 'Punkte': echo ($post->points); break;
+			case 'Topic2': 
+				
+				$rootterms = get_terms ('topic', array ('parent'=>0));
+				foreach ($rootterms as $rt) {
+					echo $this->getTopicTerm($rt, 0);
+				}
+				
+				
+				
+				
+// 				$all = get_the_terms ($post_id, 'topic');
+// 				if (isset ($all) && (is_array($all))) {
+// 					foreach ($all as $pos => $term) {
+// 						$res = $term->name;
+// 						$parent_id = $term->parent;
+// 						while (isset($parent_id)) {
+// 							$parent = get_term ($parent_id, 'topic');
+// 							$res = $parent->name . " -- " . $res;
+// 							$parent_id = $parent->parent;
+// 						}
+// 						echo ($res . "<br/>");
+// 					}
+					
+					
+// 				}
+				
+// 				$args = array(
+// 						'show_option_all'    => '',
+// 						'orderby'            => 'name',
+// 						'order'              => 'ASC',
+// 						'style'              => 'list',
+// 						'show_count'         => 0,
+// 						'hide_empty'         => 0,
+// 						'use_desc_for_title' => 1,
+// 						'child_of'           => 0,
+// 						'feed'               => '',
+// 						'feed_type'          => '',
+// 						'feed_image'         => '',
+// 						'exclude'            => '',
+// 						'exclude_tree'       => '',
+// 						'include'            => '',
+// 						'hierarchical'       => 1,
+// 						'title_li'           => __( 'Categories' ),
+// 						'show_option_none'   => __( '' ),
+// 						'number'             => null,
+// 						'echo'               => 0,
+// 						'depth'              => 0,
+// 						'current_category'   => 0,
+// 						'pad_counts'         => 0,
+// 						'taxonomy'           => 'topic',
+// 						'walker'             => null
+// 				);
+				$s = wp_list_categories( $args );
+				
+				
+				
+				break;
 			case 'Reviews': 
 				
 				
 				global $wpdb;
 				$sqlres = $wpdb->get_col( "SELECT id FROM {$wpdb->prefix}eal_{$this->type}_review WHERE item_id = {$post->ID}");
+				echo (count($sqlres) . "<br/>");
 				foreach ($sqlres as $pos => $review_id) {
 					echo ("<a href='post.php?post=${review_id}&action=edit'>&nbsp;#${pos}&nbsp;</a>&nbsp;&nbsp;");
 				}
