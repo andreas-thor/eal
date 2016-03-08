@@ -10,7 +10,7 @@ class CPT_ItemSC extends CPT_Item {
 	
 	public function init() {
 		$this->type = "itemsc";
-		$this->label = "SC Question NEU";
+		$this->label = "Single Choice";
 		parent::init();
 	}
 	

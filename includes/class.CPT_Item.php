@@ -65,7 +65,6 @@ abstract class CPT_Item {
 		
 		
 		
-		
 		add_filter("xxxposts_clauses", array ($classname, 'CPT_set_table_order'), 1, 2 );
 		
 		
@@ -96,6 +95,7 @@ abstract class CPT_Item {
 	}
 	
 	
+
 	
 	public function getTopicTermOption ($term, $level) {
 	
@@ -111,6 +111,7 @@ abstract class CPT_Item {
 	
 	
 	public function pippin_add_taxonomy_filters() {
+
 		global $typenow;
 	
 		// an array of all the taxonomyies you want to display. Use the taxonomy name or slug
@@ -238,19 +239,20 @@ abstract class CPT_Item {
 	
 	
 	public function WPCB_manage_posts_columns($columns) {
-		return array_merge($columns, array('Topic2' => 'Topic2', 'FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
+		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
 	}
 	
 	public function WPCB_manage_edit_sortable_columns ($columns) {
-		return array_merge($columns, array('Topic2' => 'Topic2', 'FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
+		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
 	}
 	
 	
 	public function getTopicTerm ($term, $level) {
 		
-		$result = str_repeat ("&nbsp;", $level*2) . "+ " . $term->name;
+// 		$result = str_repeat ("&nbsp;", $level*2) . "+ " . $term->name;
+		$result = "&nbsp;&gt;&gt;&nbsp;" . $term->name;
 		foreach (get_terms ('topic', array ('parent'=> $term->term_id)) as $t) {
-			$result .= "<br/>" . $this->getTopicTerm ($t, $level+1);
+			$result .= /*"<br/>" . */ $this->getTopicTerm ($t, $level+1);
 		}
 		return $result;
 	}
@@ -268,6 +270,7 @@ abstract class CPT_Item {
 			case 'Punkte': echo ($post->points); break;
 			case 'Topic2': 
 				
+//				die nächsten drei Zeilen passen				
 				$rootterms = get_terms ('topic', array ('parent'=>0));
 				foreach ($rootterms as $rt) {
 					echo $this->getTopicTerm($rt, 0);
@@ -318,7 +321,8 @@ abstract class CPT_Item {
 // 						'taxonomy'           => 'topic',
 // 						'walker'             => null
 // 				);
-				$s = wp_list_categories( $args );
+
+// 				$s = wp_list_categories( $args );
 				
 				
 				
@@ -327,14 +331,37 @@ abstract class CPT_Item {
 				
 				
 				global $wpdb;
-				$sqlres = $wpdb->get_col( "SELECT id FROM {$wpdb->prefix}eal_{$this->type}_review WHERE item_id = {$post->ID}");
-				echo (count($sqlres) . "<br/>");
-				foreach ($sqlres as $pos => $review_id) {
-					echo ("<a href='post.php?post=${review_id}&action=edit'>&nbsp;#${pos}&nbsp;</a>&nbsp;&nbsp;");
+				$sqlres = $wpdb->get_results( "
+						SELECT R.id as review_id, P.post_modified as last_changed
+						FROM {$wpdb->prefix}eal_{$this->type}_review AS R 
+						JOIN {$wpdb->prefix}posts AS P ON (R.id = P.ID)						
+						WHERE R.item_id = {$post->ID}
+						ORDER BY R.id
+						");
+				
+ 				echo ("<div onclick=\"this.nextSibling.style.display = (this.nextSibling.style.display == 'none') ? 'block' : 'none';\">" . count($sqlres) . " review(s)</div>");
+// 				echo ("<div onclick=\"alert('a');\">" . count($sqlres) . " review(s)</div>");
+				
+				echo ("<div style='display:none'>");
+				foreach ($sqlres as $pos => $sqlrow) {
+					echo ("
+						<a href='post.php?post={$sqlrow->review_id}&action=edit'>
+							&nbsp;#" . ($pos+1) . "&nbsp;{$sqlrow->last_changed}
+						</a><br/>
+					");
 				}
 				
+				echo ("</div>");
+// 				echo ("<a href='post-new.php?post_type={$this->type}_review&item_id={$post->ID}'>Add</a>");
 				
-				echo ("<a href='post-new.php?post_type={$this->type}_review&item_id={$post->ID}'>Add</a>"); 
+// 				echo ("<form name='addreview_{$post->ID}' action='post-new.php?post_type={$this->type}_review&item_id={$post->ID}' method='get'>");
+// 				echo ("<input type='hidden' name='post_type' value='{$this->type}_review'/>");
+// 				echo ("<button type='submit' class='button button-primary button-large' name='item_id' value='{$post->ID}'>Add</button>");
+// 				echo ("</form>");				
+				
+				echo ("<input type='button' class='button button-primary button-large' value='Add' onclick=\"window.location='post-new.php?post_type={$this->type}_review&item_id={$post->ID}';\"/>");
+				
+				
 				break; 
 		}
 	}
@@ -353,7 +380,7 @@ abstract class CPT_Item {
 		// make filter magic happen here...
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
-			$array .= ", {$wpdb->prefix}eal_{$this->type}.*";
+			$array .= ", {$wpdb->prefix}eal_{$this->type}.*, (select count(*) from {$wpdb->prefix}eal_{$this->type}_review where {$wpdb->prefix}eal_{$this->type}.id = {$wpdb->prefix}eal_{$this->type}_review.item_id) as reviews ";
 		}
 		return $array;
 		// 		return array_merge ($array, array ("{$wpdb->prefix}eal_itemmc.*"));
@@ -367,6 +394,7 @@ abstract class CPT_Item {
 			if ($wp_query->get( 'orderby' ) == "FW") $orderby_statement = "level_FW " . $wp_query->get( 'order' );
 			if ($wp_query->get( 'orderby' ) == "PW") $orderby_statement = "level_PW " . $wp_query->get( 'order' );
 			if ($wp_query->get( 'orderby' ) == "KW") $orderby_statement = "level_KW " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Reviews") $orderby_statement = "reviews " . $wp_query->get( 'order' );
 		}
 	
 		// 		$orderby_statement = "level_KW DESC";

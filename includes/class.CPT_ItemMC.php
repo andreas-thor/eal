@@ -9,7 +9,7 @@ class CPT_ItemMC extends CPT_Item {
 	public function init() {
 
 		$this->type = "itemmc";
-		$this->label = "MC Question NEU";
+		$this->label = "Multiple Choice";
 		parent::init();
 	}
 	
