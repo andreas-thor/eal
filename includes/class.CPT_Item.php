@@ -1,10 +1,9 @@
 <?php
 
-abstract class CPT_Item {
+require_once("class.CPT_Object.php");
+
+abstract class CPT_Item extends CPT_Object{
 	
-	
-	public $type;
-	public $label;
 	
 	/*
 	 * #######################################################################
@@ -12,55 +11,16 @@ abstract class CPT_Item {
 	 * #######################################################################
 	 */
 	
-	public function init() {
+	public function init($args = array()) {
 		
+		parent::init();
+
 		$classname = get_called_class();
 		
-		register_post_type( $this->type,
-				array(
-						'labels' => array(
-								'name' => $this->label,
-								'singular_name' => $this->label,
-								'add_new' => 'Add ' . $this->label,
-								'add_new_item' => 'Add New ' . $this->label,
-								'edit' => 'Edit',
-								'edit_item' => 'Edit ' . $this->label,
-								'new_item' => 'New ' . $this->label,
-								'view' => 'View',
-								'view_item' => 'View ' . $this->label,
-								'search_items' => 'Search ' . $this->label,
-								'not_found' => 'No Items found',
-								'not_found_in_trash' => 'No Items found in Trash',
-								'parent' => 'Parent Item'
-						),
-		
-						'public' => true,
-						'menu_position' => 2,
-						'supports' => array( 'title'), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
-						'taxonomies' => array( 'topic' ),
-						// 'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
-						'has_archive' => false, // false to allow for single view
-						'show_in_menu'    => true,
-						'register_meta_box_cb' => array ($this, 'WPCB_register_meta_box_cb')
-				)
-		);
-
-		
-		
-		// TODO: Note that post ID may reference a post revision and not the last saved post. Use wp_is_post_revision() to get the ID of the real post.
-		add_action ("save_post_{$this->type}", array ("eal_{$this->type}", 'save'), 10, 2);
 		
 		// TODO: Delete post hook 
 		
-		// Manage table of items (what columns to show; what columns are sortable 		
-		add_filter("manage_{$this->type}_posts_columns" , array ($this, 'WPCB_manage_posts_columns'));
-		add_filter("manage_edit-{$this->type}_sortable_columns", array ($this, 'WPCB_manage_edit_sortable_columns')); 		
-		add_action("manage_{$this->type}_posts_custom_column" , array ($this, 'WPCB_manage_posts_custom_column'), 10, 2 );
-		
-	
-		add_filter('posts_join', array ($this, 'WPCB_posts_join'));
-		add_filter('posts_fields', array ($this, 'WPCB_posts_fields'), 10, 1 );
-		add_filter('posts_orderby', array ($this, 'WPCB_posts_orderby'), 10, 1 );
+
 		
 		
 		
@@ -93,6 +53,71 @@ abstract class CPT_Item {
  	
 		
 	}
+	
+	
+	
+	public function WPCB_register_meta_box_cb () {
+	
+		global $item;
+		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_description', 'value' => $item->description) );
+		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_question', 'value' => $item->question));
+		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $item->level));
+		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($this, 'WPCB_mb_answers'), $this->type, 'normal', 'default');
+	}
+	
+	
+	public function WPCB_manage_posts_columns($columns) {
+		return array_merge(parent::WPCB_manage_posts_columns($columns), array('Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
+	}
+	
+	public function WPCB_manage_edit_sortable_columns ($columns) {
+		return array_merge(parent::WPCB_manage_edit_sortable_columns($columns) , array('Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
+	}
+	
+	
+	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
+	
+		parent::WPCB_manage_posts_custom_column($column, $post_id);
+		
+		global $post;
+	
+		switch ( $column ) {
+			case 'Punkte': echo ($post->points); break;
+			
+			case 'Reviews':
+	
+				global $wpdb;
+				$sqlres = $wpdb->get_results( "
+						SELECT R.id as review_id, P.post_modified as last_changed
+						FROM {$wpdb->prefix}eal_{$this->type}_review AS R
+						JOIN {$wpdb->prefix}posts AS P ON (R.id = P.ID)
+						WHERE R.item_id = {$post->ID}
+						ORDER BY R.id
+						");
+	
+				echo ("<div onclick=\"this.nextSibling.style.display = (this.nextSibling.style.display == 'none') ? 'block' : 'none';\">" . count($sqlres) . " review(s)</div>");
+				echo ("<div style='display:none'>");
+				foreach ($sqlres as $pos => $sqlrow) {
+					echo ("<a href='post.php?post={$sqlrow->review_id}&action=edit'>&nbsp;#" . ($pos+1) . "&nbsp;{$sqlrow->last_changed}</a><br/>");
+				}
+	
+				echo ("</div>");
+				echo ("<h1><a class='page-title-action' href='post-new.php?post_type={$this->type}_review&item_id={$post->ID}'>Add&nbsp;New&nbsp;Review</a></h1>");
+				break;
+		}
+	}
+	
+
+	
+	// define the posts_fields callback
+	public function WPCB_posts_fields ( $array ) {
+		global $wp_query, $wpdb;
+		if ($wp_query->query["post_type"] == $this->type) {
+			$array = parent::WPCB_posts_fields($array) . ", (select count(*) from {$wpdb->prefix}eal_{$this->type}_review where {$wpdb->prefix}eal_{$this->type}.id = {$wpdb->prefix}eal_{$this->type}_review.item_id) as reviews ";
+		}
+		return $array;
+	}
+	
 	
 	
 
@@ -139,7 +164,6 @@ abstract class CPT_Item {
 	
 	
 	
-	abstract public function WPCB_register_meta_box_cb ();
 	
 	abstract public function WPCB_mb_answers ($post, $vars); 
 	
@@ -151,44 +175,39 @@ abstract class CPT_Item {
 
 	
 	
-	public function WPCB_mb_description ($post, $vars) {
+// 	public function WPCB_mb_description ($post, $vars) {
 	
-		global $item;
-		$editor_settings = array(
-				'media_buttons' => false,	// no media buttons
-				'teeny' => true,			// minimal editor
-				'quicktags' => false,		// hides Visual/Text tabs
-				'textarea_rows' => 3,
-				'tinymce' => true
-		);
+// 		global $item;
+// 		$editor_settings = array(
+// 				'media_buttons' => false,	// no media buttons
+// 				'teeny' => true,			// minimal editor
+// 				'quicktags' => false,		// hides Visual/Text tabs
+// 				'textarea_rows' => 3,
+// 				'tinymce' => true
+// 		);
 	
-		$html = wp_editor(wpautop(stripslashes($item->description)) , 'item_description', $editor_settings );
-		echo $html;
-	}
-	
-	
-	public function WPCB_mb_question ($post, $vars) {
-	
-		global $item;
-		$editor_settings = array(
-				'media_buttons' => false,	// no media buttons
-				'teeny' => true,			// minimal editor
-				'quicktags' => false,		// hides Visual/Text tabs
-				'textarea_rows' => 3,
-				'tinymce' => true
-		);
-	
-		$html = wp_editor(wpautop(stripslashes($item->question)) , 'item_question', $editor_settings );
-		echo $html;
-	}	
+// 		$html = wp_editor(wpautop(stripslashes($item->description)) , 'item_description', $editor_settings );
+// 		echo $html;
+// 	}
 	
 	
-	public function WPCB_mb_level ($post, $vars) {
+// 	public function WPCB_mb_question ($post, $vars) {
 	
-		global $item;
-		$html = self::generateLevelHTML($item->level);
-		echo $html;	
-	}
+// 		global $item;
+// 		$editor_settings = array(
+// 				'media_buttons' => false,	// no media buttons
+// 				'teeny' => true,			// minimal editor
+// 				'quicktags' => false,		// hides Visual/Text tabs
+// 				'textarea_rows' => 3,
+// 				'tinymce' => true
+// 		);
+	
+// 		$html = wp_editor(wpautop(stripslashes($item->question)) , 'item_question', $editor_settings );
+// 		echo $html;
+// 	}	
+	
+	
+
 	
 	
 	
@@ -216,192 +235,9 @@ abstract class CPT_Item {
 	
 	
 	
-	static function generateLevelHTML ($level, $prefix="item", $disabled="") {
-		
-		$html  = "<table style='font-size:100%'><tr><td></td>";
-		foreach ($level as $c => $v) {
-			$html .= '<td>' . $c . '</td>';
-		}
-		
-		$html .= '</tr>';
-		
-		foreach (EAL_Item::$level_label as $n => $r) {
-			$html .= '<tr><td>' . ($n+1) . ". " . $r . '</td>';
-			foreach ($level as $c=>$v) {
-				$html .= "<td align='center'><input type='radio' id='{$prefix}_level_{$c}_{$r}' name='{$prefix}_level_{$c}' value='" . ($n+1) . "' " . (($v==$n+1)?'checked':$disabled) . "></td>";
-			}
-			$html .= '</tr>';
-		}
-		$html .= '</table>';
-		
-		return $html;
-	}
-	
-	
-	public function WPCB_manage_posts_columns($columns) {
-		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
-	}
-	
-	public function WPCB_manage_edit_sortable_columns ($columns) {
-		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
-	}
-	
-	
-	public function getTopicTerm ($term, $level) {
-		
-// 		$result = str_repeat ("&nbsp;", $level*2) . "+ " . $term->name;
-		$result = "&nbsp;&gt;&gt;&nbsp;" . $term->name;
-		foreach (get_terms ('topic', array ('parent'=> $term->term_id)) as $t) {
-			$result .= /*"<br/>" . */ $this->getTopicTerm ($t, $level+1);
-		}
-		return $result;
-	}
-	
-	
-	
-	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
-	
-		global $post;
-		
-		switch ( $column ) {
-			case 'FW': echo ($post->level_FW); break;
-			case 'PW': echo ($post->level_PW); break;
-			case 'KW': echo ($post->level_KW); break;
-			case 'Punkte': echo ($post->points); break;
-			case 'Topic2': 
-				
-//				die nächsten drei Zeilen passen				
-				$rootterms = get_terms ('topic', array ('parent'=>0));
-				foreach ($rootterms as $rt) {
-					echo $this->getTopicTerm($rt, 0);
-				}
-				
-				
-				
-				
-// 				$all = get_the_terms ($post_id, 'topic');
-// 				if (isset ($all) && (is_array($all))) {
-// 					foreach ($all as $pos => $term) {
-// 						$res = $term->name;
-// 						$parent_id = $term->parent;
-// 						while (isset($parent_id)) {
-// 							$parent = get_term ($parent_id, 'topic');
-// 							$res = $parent->name . " -- " . $res;
-// 							$parent_id = $parent->parent;
-// 						}
-// 						echo ($res . "<br/>");
-// 					}
-					
-					
-// 				}
-				
-// 				$args = array(
-// 						'show_option_all'    => '',
-// 						'orderby'            => 'name',
-// 						'order'              => 'ASC',
-// 						'style'              => 'list',
-// 						'show_count'         => 0,
-// 						'hide_empty'         => 0,
-// 						'use_desc_for_title' => 1,
-// 						'child_of'           => 0,
-// 						'feed'               => '',
-// 						'feed_type'          => '',
-// 						'feed_image'         => '',
-// 						'exclude'            => '',
-// 						'exclude_tree'       => '',
-// 						'include'            => '',
-// 						'hierarchical'       => 1,
-// 						'title_li'           => __( 'Categories' ),
-// 						'show_option_none'   => __( '' ),
-// 						'number'             => null,
-// 						'echo'               => 0,
-// 						'depth'              => 0,
-// 						'current_category'   => 0,
-// 						'pad_counts'         => 0,
-// 						'taxonomy'           => 'topic',
-// 						'walker'             => null
-// 				);
 
-// 				$s = wp_list_categories( $args );
-				
-				
-				
-				break;
-			case 'Reviews': 
-				
-				
-				global $wpdb;
-				$sqlres = $wpdb->get_results( "
-						SELECT R.id as review_id, P.post_modified as last_changed
-						FROM {$wpdb->prefix}eal_{$this->type}_review AS R 
-						JOIN {$wpdb->prefix}posts AS P ON (R.id = P.ID)						
-						WHERE R.item_id = {$post->ID}
-						ORDER BY R.id
-						");
-				
- 				echo ("<div onclick=\"this.nextSibling.style.display = (this.nextSibling.style.display == 'none') ? 'block' : 'none';\">" . count($sqlres) . " review(s)</div>");
-// 				echo ("<div onclick=\"alert('a');\">" . count($sqlres) . " review(s)</div>");
-				
-				echo ("<div style='display:none'>");
-				foreach ($sqlres as $pos => $sqlrow) {
-					echo ("
-						<a href='post.php?post={$sqlrow->review_id}&action=edit'>
-							&nbsp;#" . ($pos+1) . "&nbsp;{$sqlrow->last_changed}
-						</a><br/>
-					");
-				}
-				
-				echo ("</div>");
-// 				echo ("<a href='post-new.php?post_type={$this->type}_review&item_id={$post->ID}'>Add</a>");
-				
-// 				echo ("<form name='addreview_{$post->ID}' action='post-new.php?post_type={$this->type}_review&item_id={$post->ID}' method='get'>");
-// 				echo ("<input type='hidden' name='post_type' value='{$this->type}_review'/>");
-// 				echo ("<button type='submit' class='button button-primary button-large' name='item_id' value='{$post->ID}'>Add</button>");
-// 				echo ("</form>");				
-				
-				echo ("<input type='button' class='button button-primary button-large' value='Add' onclick=\"window.location='post-new.php?post_type={$this->type}_review&item_id={$post->ID}';\"/>");
-				
-				
-				break; 
-		}
-	}
-
-	public function WPCB_posts_join ($join) {
-		global $wp_query, $wpdb;
-		if ($wp_query->query["post_type"] == $this->type) {
-			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} ON {$wpdb->prefix}eal_{$this->type}.id = {$wpdb->posts}.ID";
-		}
-		return $join;
-	}
-	
-	
-	// define the posts_fields callback
-	public function WPCB_posts_fields ( $array ) {
-		// make filter magic happen here...
-		global $wp_query, $wpdb;
-		if ($wp_query->query["post_type"] == $this->type) {
-			$array .= ", {$wpdb->prefix}eal_{$this->type}.*, (select count(*) from {$wpdb->prefix}eal_{$this->type}_review where {$wpdb->prefix}eal_{$this->type}.id = {$wpdb->prefix}eal_{$this->type}_review.item_id) as reviews ";
-		}
-		return $array;
-		// 		return array_merge ($array, array ("{$wpdb->prefix}eal_itemmc.*"));
-	}
 	
 
-	public function WPCB_posts_orderby($orderby_statement) {
-	
-		global $wp_query;
-		if ($wp_query->query["post_type"] == $this->type) {
-			if ($wp_query->get( 'orderby' ) == "FW") $orderby_statement = "level_FW " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "PW") $orderby_statement = "level_PW " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "KW") $orderby_statement = "level_KW " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "Reviews") $orderby_statement = "reviews " . $wp_query->get( 'order' );
-		}
-	
-		// 		$orderby_statement = "level_KW DESC";
-		return $orderby_statement;
-	}
-	
-	
 
 	
 
@@ -457,6 +293,65 @@ abstract class CPT_Item {
 // 	}
 	
 	
+	
+
+// 	case 'Topic2':
+	
+// 		//				die nächsten drei Zeilen passen
+// 		$rootterms = get_terms ('topic', array ('parent'=>0));
+// 		foreach ($rootterms as $rt) {
+// 			echo $this->getTopicTerm($rt, 0);
+// 		}
+	
+	
+	
+	
+		// 				$all = get_the_terms ($post_id, 'topic');
+		// 				if (isset ($all) && (is_array($all))) {
+		// 					foreach ($all as $pos => $term) {
+		// 						$res = $term->name;
+		// 						$parent_id = $term->parent;
+		// 						while (isset($parent_id)) {
+		// 							$parent = get_term ($parent_id, 'topic');
+		// 							$res = $parent->name . " -- " . $res;
+		// 							$parent_id = $parent->parent;
+		// 						}
+		// 						echo ($res . "<br/>");
+		// 					}
+			
+			
+		// 				}
+	
+		// 				$args = array(
+		// 						'show_option_all'    => '',
+		// 						'orderby'            => 'name',
+		// 						'order'              => 'ASC',
+		// 						'style'              => 'list',
+		// 						'show_count'         => 0,
+		// 						'hide_empty'         => 0,
+		// 						'use_desc_for_title' => 1,
+		// 						'child_of'           => 0,
+		// 						'feed'               => '',
+		// 						'feed_type'          => '',
+		// 						'feed_image'         => '',
+		// 						'exclude'            => '',
+		// 						'exclude_tree'       => '',
+		// 						'include'            => '',
+		// 						'hierarchical'       => 1,
+		// 						'title_li'           => __( 'Categories' ),
+		// 						'show_option_none'   => __( '' ),
+		// 						'number'             => null,
+		// 						'echo'               => 0,
+		// 						'depth'              => 0,
+		// 						'current_category'   => 0,
+		// 						'pad_counts'         => 0,
+		// 						'taxonomy'           => 'topic',
+		// 						'walker'             => null
+		// 				);
+	
+		// 				$s = wp_list_categories( $args );
+	
+// 		break;
 
 
 	

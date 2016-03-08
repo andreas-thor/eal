@@ -109,33 +109,34 @@ abstract class EAL_Item_Review {
 	
 	
 
-	public function save ($post_id, $post) {
+	public static function save ($post_id, $post) {
 	
 		global $wpdb;
-	
-		$this->init($post_id, $post);
+		global $review;
+		
+		$review->init($post_id, $post);
 	
 		$replaceScore = array ();
 		$replaceType = array ();
 		foreach (self::$dimension1 as $k1 => $v1) {
 			foreach (self::$dimension2 as $k2 => $v2) {
-				$replaceScore["{$k1}_{$k2}"] = $this->score[$k1][$k2];
+				$replaceScore["{$k1}_{$k2}"] = $review->score[$k1][$k2];
 				array_push($replaceType, "%d");
 			}
 		}
 	
 	
 		$wpdb->replace(
-				"{$wpdb->prefix}eal_{$this->type}",
+				"{$wpdb->prefix}eal_{$review->type}",
 				array_merge (
 						array(
-								'id' => $this->id,
-								'item_id' => $this->item_id,
-								'level_FW' => $this->level["FW"],
-								'level_KW' => $this->level["KW"],
-								'level_PW' => $this->level["PW"],
-								'feedback' => $this->feedback,
-								'overall'  => $this->overall
+								'id' => $review->id,
+								'item_id' => $review->item_id,
+								'level_FW' => $review->level["FW"],
+								'level_KW' => $review->level["KW"],
+								'level_PW' => $review->level["PW"],
+								'feedback' => $review->feedback,
+								'overall'  => $review->overall
 						),
 						$replaceScore
 						),
@@ -144,7 +145,6 @@ abstract class EAL_Item_Review {
 								$replaceType
 								)
 						);
-	
 	
 	
 	}

@@ -6,10 +6,11 @@ require_once("class.EAL_ItemMC.php");
 class CPT_ItemMC extends CPT_Item {
 	
 	
-	public function init() {
+	public function init($args = array()) {
 
 		$this->type = "itemmc";
 		$this->label = "Multiple Choice";
+		$this->menu_pos = 6;
 		parent::init();
 	}
 	
@@ -19,16 +20,7 @@ class CPT_ItemMC extends CPT_Item {
 		global $item;
 		$item = new EAL_ItemMC();
 		$item->load();
-		
-		
-		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($this, 'WPCB_mb_description'), $this->type, 'normal', 'default' );
-		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_question'), $this->type, 'normal', 'default');
-		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default');
-		
-		
-// 		parent::CPT_add_meta_boxes($eal_posttype, $classname);
-		
-		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($this, 'WPCB_mb_answers'), $this->type, 'normal', 'default');
+		parent::WPCB_register_meta_box_cb();
 		
 	}
 

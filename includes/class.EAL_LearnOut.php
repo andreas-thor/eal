@@ -30,10 +30,10 @@ class EAL_LearnOut {
 	
 		$this->id = $post_id;
 		$this->title = $post->post_title;
-		$this->description = isset($_POST['item_description']) ? $_POST['item_description'] : null;
-		$this->level["FW"] = isset ($_POST['item_level_FW']) ? $_POST['item_level_FW'] : null;
-		$this->level["KW"] = isset ($_POST['item_level_KW']) ? $_POST['item_level_KW'] : null;
-		$this->level["PW"] = isset ($_POST['item_level_PW']) ? $_POST['item_level_PW'] : null;
+		$this->description = isset($_POST['learnout_description']) ? $_POST['learnout_description'] : null;
+		$this->level["FW"] = isset ($_POST['learnout_level_FW']) ? $_POST['learnout_level_FW'] : null;
+		$this->level["KW"] = isset ($_POST['learnout_level_KW']) ? $_POST['learnout_level_KW'] : null;
+		$this->level["PW"] = isset ($_POST['learnout_level_PW']) ? $_POST['learnout_level_PW'] : null;
 	}
 	
 	
@@ -93,13 +93,33 @@ class EAL_LearnOut {
 				description text,
 				level_FW tinyint unsigned,
 				level_KW tinyint unsigned,
-				level_PW tinyint unsigned,
-				points smallint,
+				level_PW tinyint unsigned
 				PRIMARY KEY  (id)
 			) {$wpdb->get_charset_collate()};"
 		);
 	}
 	
+	
+	public static function save ($post_id, $post) {
+	
+		global $wpdb;
+		$item = new EAL_LearnOut();
+		$item->init($post_id, $post);
+	
+		$wpdb->replace(
+			"{$wpdb->prefix}eal_{$item->type}",
+			array(
+					'id' => $item->id,
+					'title' => $item->title,
+					'description' => $item->description,
+					'level_FW' => $item->level["FW"],
+					'level_KW' => $item->level["KW"],
+					'level_PW' => $item->level["PW"]
+			),
+			array('%d','%s','%s','%d','%d','%d')
+		);
+	
+	}
 	
 	
 	

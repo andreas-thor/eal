@@ -7,7 +7,7 @@ require_once("class.EAL_ItemMC.Review.php");
 
 class CPT_ItemMC_Review extends CPT_Item_Review {
 	
-	public function init() {
+	public function init($args = array()) {
 	
 		$this->type = "itemmc_review";
 		$this->label = "MC Question Review";
@@ -20,19 +20,10 @@ class CPT_ItemMC_Review extends CPT_Item_Review {
 		global $review;
 		$review = new EAL_ItemMC_Review();
 		$review->load();
-		
-		add_meta_box('mb_item', $review->getItem()->title, array ($this, 'WPCB_mb_item'), $this->type, 'normal', 'default' );
-		add_meta_box('mb_score', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($this, 'WPCB_mb_score'), $this->type, 'normal', 'default' );
-		add_meta_box('mb_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'normal', 'default');
-		add_meta_box('mb_feedback', 'Feedback', array ($this, 'WPCB_mb_feedback'), $this->type, 'normal', 'default');
-		add_meta_box('mb_overall', 'Revisionsurteil', array ($this, 'WPCB_mb_overall'), $this->type, 'side', 'default');
-		
+		parent::WPCB_register_meta_box_cb();
 	}
 		
 	
-	public function WPCB_save_post($post_id, $post) {
-		(new EAL_ItemMC_Review())->save($post_id, $post);
-	}
 }
 
 ?>

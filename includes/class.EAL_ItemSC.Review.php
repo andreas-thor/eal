@@ -11,6 +11,15 @@ class EAL_ItemSC_Review extends EAL_Item_Review {
 		$this->type = "itemsc_review";
 	}
 	
+	
+	public static function save ($post_id, $post) {
+	
+		global $review;
+		$review = new EAL_ItemSC_Review();
+		parent::save($post_id, $post);
+	}
+	
+	
 	public function getItem () {
 	
 		if (is_null($this->item_id)) return null;

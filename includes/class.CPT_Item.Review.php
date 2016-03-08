@@ -2,57 +2,25 @@
 
 // TODO: Delete Review (in POst Tabelle) --> löschen in Review-Tabelle
 
-
+require_once("class.CPT_Object.php");
 require_once ("class.EAL_Item.Review.php");
 
-abstract class CPT_Item_Review {
+abstract class CPT_Item_Review extends CPT_Object {
 	
 
-	public $type;
-	public $label;
-	
 	/*
 	 * #######################################################################
 	 * post type registration; specification of page layout
 	 * #######################################################################
 	 */
 	
-	public function init() {
+	public function init($args = array()) {
 
-		$classname = get_called_class();
-		
-		register_post_type( $this->type,
-				array(
-						'labels' => array(
-								'name' => $this->label,
-								'singular_name' => $this->label,
-								'add_new' => 'Add ' . $this->label,
-								'add_new_item' => 'Add New ' . $this->label,
-								'edit' => 'Edit',
-								'edit_item' => 'Edit ' . $this->label,
-								'new_item' => 'New ' . $this->label,
-								'view' => 'View',
-								'view_item' => 'View ' . $this->label,
-								'search_items' => 'Search ' . $this->label,
-								'not_found' => 'No Items found',
-								'not_found_in_trash' => 'No Items found in Trash',
-								'parent' => 'Parent Item'
-						),
-		
-						'public' => true,
-						'menu_position' => 2,
-						'supports' =>  false, // array(  'title' ), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
-						'taxonomies' => array(  ),
-						// 'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
-						'has_archive' => true,
-						'show_in_menu'    => false,
-						'register_meta_box_cb' => array ($this, 'WPCB_register_meta_box_cb')
-				)
-		);
+		$this->menu_pos = -1;
+		parent::init(array ('supports' => false, 'taxonomies' => array()));
 		
 		
-		// TODO: Note that post ID may reference a post revision and not the last saved post. Use wp_is_post_revision() to get the ID of the real post.
-		add_action ("save_post_{$this->type}", array ($this, 'WPCB_save_post'), 10, 2);
+		
 
 		// TODO: delete review
 		
@@ -61,9 +29,17 @@ abstract class CPT_Item_Review {
 	
 	
 	
-	abstract public function WPCB_register_meta_box_cb ();
+	public function WPCB_register_meta_box_cb () {
 	
-	abstract public function WPCB_save_post($post_id, $post);
+		global $review;
+		add_meta_box('mb_item', $review->getItem()->title, array ($this, 'WPCB_mb_item'), $this->type, 'normal', 'default' );
+		add_meta_box('mb_score', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($this, 'WPCB_mb_score'), $this->type, 'normal', 'default' );
+		add_meta_box('mb_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'normal', 'default');
+		add_meta_box('mb_feedback', 'Feedback', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'review_feedback', 'value' => $review->feedback));
+		add_meta_box('mb_overall', 'Revisionsurteil', array ($this, 'WPCB_mb_overall'), $this->type, 'side', 'default');
+	}
+	
+	
 	
 	
 	
@@ -118,40 +94,33 @@ abstract class CPT_Item_Review {
 	
 		global $review;
 	
-		$html_item = CPT_Item::generateLevelHTML($review->getItem()->level, "item", "disabled");
-		$html_review = CPT_Item::generateLevelHTML($review->level, "review", "");
-	
-		$html = "<table style='font-size:100%'><tr>
-			<th align='left'>Einordnung Autor</th>
-			<th style='padding-left:3em;'></th>
-			<th align='left'>Einordnung Review</th>
-		</tr><tr>
-			<td style='border-style:solid; border-width:1px;'>{$html_item}</td>
-			<td style='padding-left:3em;'></td>
-			<td style='border-style:solid; border-width:1px;''>{$html_review}</td>
-		</tr></table>";
-
-		echo $html;
+		echo ("	<table style='font-size:100%'>
+				<tr><th align='left'>Einordnung Autor</th><th style='padding-left:3em;'></th><th align='left'>Einordnung Review</th></tr>
+				<tr><td style='border-style:solid; border-width:1px;'>");
+		parent::WPCB_mb_level($post, array ('args' => array ('level' => $review->getItem()->level, 'disabled' => 'disabled')));
+		echo ("	</td><td style='padding-left:3em;'></td><td style='border-style:solid; border-width:1px;''>");
+		parent::WPCB_mb_level($post, array ('args' => array ('level' => $review->level, 'prefix' => 'review')));
+		echo ("</td></tr></table>");
 	}
 	
 	
 
 	
-	public function WPCB_mb_feedback ($post, $vars) {
+// 	public function WPCB_mb_feedback ($post, $vars) {
 	
-		global $review;
+// 		global $review;
 	
-		$editor_settings = array(
-				'media_buttons' => false,	// no media buttons
-				'teeny' => true,			// minimal editor
-				'quicktags' => false,		// hides Visual/Text tabs
-				'textarea_rows' => 3,
-				'tinymce' => true
-		);
+// 		$editor_settings = array(
+// 				'media_buttons' => false,	// no media buttons
+// 				'teeny' => true,			// minimal editor
+// 				'quicktags' => false,		// hides Visual/Text tabs
+// 				'textarea_rows' => 3,
+// 				'tinymce' => true
+// 		);
 	
-		$html = wp_editor(wpautop(stripslashes($review->feedback)) , 'review_feedback', $editor_settings );
-		echo $html;
-	}
+// 		$html = wp_editor(wpautop(stripslashes($review->feedback)) , 'review_feedback', $editor_settings );
+// 		echo $html;
+// 	}
 	
 	
 

@@ -1,0 +1,7 @@
+Das Relationale Modell
+	Primärschlüssel
+	Fremdschlüssel
+		Löschregeln
+	Attribute
+		Wertebereich
+	
