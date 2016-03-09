@@ -13,7 +13,11 @@ abstract class EAL_Item {
 	
 	public $level;
 	
+	public $learnout;
+	public $learnout_id;
+	
 	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
+	public static $level_type = ["FW", "KW", "PW"];
 	
 	
 	function __construct() {
@@ -35,6 +39,9 @@ abstract class EAL_Item {
 		$this->level["FW"] = isset ($_POST['item_level_FW']) ? $_POST['item_level_FW'] : null;
 		$this->level["KW"] = isset ($_POST['item_level_KW']) ? $_POST['item_level_KW'] : null;
 		$this->level["PW"] = isset ($_POST['item_level_PW']) ? $_POST['item_level_PW'] : null;
+		
+		$this->$learnout_id = isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : (isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : null);
+		$this->$learnout = null;
 	}
 	
 	
@@ -53,6 +60,9 @@ abstract class EAL_Item {
 			$this->level["FW"] = 0;
 			$this->level["KW"] = 0;
 			$this->level["PW"] = 0;
+			$this->learnout_id = isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : $_GET['learnout_id'];
+			$this->learnout = null;
+				
 				
 		} else {
 				
@@ -65,6 +75,8 @@ abstract class EAL_Item {
 			$this->level["FW"] = $sqlres['level_FW'];
 			$this->level["KW"] = $sqlres['level_KW'];
 			$this->level["PW"] = $sqlres['level_PW'];
+			$this->learnout_id = $sqlres['learnout_id'];
+			$this->learnout = null; // lazy loading
 				
 		}
 		
@@ -106,6 +118,7 @@ abstract class EAL_Item {
 				level_KW tinyint unsigned,
 				level_PW tinyint unsigned,
 				points smallint,
+				learnout_id bigint(20) unsigned NOT NULL,
 				PRIMARY KEY  (id)
 			) {$wpdb->get_charset_collate()};"
 		);

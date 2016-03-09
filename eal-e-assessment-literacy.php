@@ -112,19 +112,6 @@ function set_eal_admin_menu_entries () {
   	 
 }
 
-echo ("<option value='{$term->term_id}'>{$term->name} ({$term->count})</option>");
-
-function getTopicTermOption ($term, $level) {
-
-	$result  = "<option value='{$term->term_id}'>";
-	$result .= str_repeat ("&nbsp;", $level*2) . $term->name;
-	$result .= "</option>";
-
-	foreach (get_terms ('topic', array ('parent'=> $term->term_id, 'hide_empty' => false)) as $t) {
-		$result .= getTopicTermOption ($t, $level+1);
-	}
-	return $result;
-}
 
 
 
@@ -176,17 +163,21 @@ function WPCB_import_topics () {
 						<tr class="user-first-name-wrap">
 							<th><label>Parent</label></th>
 							<td>
-								<select name='topicroot' class='postform'>
-									<option value='0'>None</option>
-<?php 	
-										$terms = get_terms('topic', array ('parent' => 0, 'hide_empty' => false));
-										if(count($terms) > 0) {
-											foreach ($terms as $term) {
-												echo getTopicTermOption ($term, 0);
-											}
-										}
-?>					
-								</select>
+<?php  
+								wp_dropdown_categories(array(
+									'show_option_none' =>  __("None"),
+									'option_none_value' => 0, 
+									'taxonomy'        =>  'topic',
+									'name'            =>  'topicroot',
+									'value_field'	  =>  'id',
+									'orderby'         =>  'name',
+									'selected'        =>  '',
+									'hierarchical'    =>  true,
+									'depth'           =>  0,
+									'show_count'      =>  false, // Show # listings in parens
+									'hide_empty'      =>  false, // Don't show businesses w/o listings
+								));
+?>
 							</td>
 						</tr>
 						<tr>
@@ -207,17 +198,23 @@ function WPCB_import_topics () {
 						<tr class="user-first-name-wrap">
 							<th><label>Parent</label></th>
 							<td>
-								<select name='topicroot' class='postform'>
-									<option value='0'>None</option>
-<?php 	
-										$terms = get_terms('topic', array ('parent' => 0, 'hide_empty' => false));
-										if(count($terms) > 0) {
-											foreach ($terms as $term) {
-												echo getTopicTermOption ($term, 0);
-											}
-										}
-?>					
-								</select>
+<?php  
+								wp_dropdown_categories(array(
+									'show_option_none' =>  __("None"),
+									'option_none_value' => 0, 
+									'taxonomy'        =>  'topic',
+									'name'            =>  'topicroot',
+									'value_field'	  =>  'id',
+									'orderby'         =>  'name',
+									'selected'        =>  '',
+									'hierarchical'    =>  true,
+									'depth'           =>  0,
+									'show_count'      =>  false, // Show # listings in parens
+									'hide_empty'      =>  false, // Don't show businesses w/o listings
+								));
+?>
+								
+								
 							</td>
 						</tr>
 						<tr>

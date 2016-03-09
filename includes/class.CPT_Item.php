@@ -49,9 +49,7 @@ abstract class CPT_Item extends CPT_Object{
 		add_filter('pre_get_shortlink', '__return_empty_string' );
 		
 		
-		add_action( 'restrict_manage_posts', array($this, 'pippin_add_taxonomy_filters') );
  	
-		
 	}
 	
 	
@@ -122,46 +120,7 @@ abstract class CPT_Item extends CPT_Object{
 	
 
 	
-	public function getTopicTermOption ($term, $level) {
-	
-		$result  = "<option value='{$term->slug}' " . (($_GET[$tax_slug] == $term->slug) ? " selected='selected'" : "") . ">";
-		$result .= str_repeat ("&nbsp;", $level*2) . "+ " . $term->name;  
-		$result .= " ({$term->count})</option>";
-		
-		foreach (get_terms ('topic', array ('parent'=> $term->term_id)) as $t) {
-			$result .= $this->getTopicTermOption ($t, $level+1);
-		}
-		return $result;
-	}
-	
-	
-	public function pippin_add_taxonomy_filters() {
 
-		global $typenow;
-	
-		// an array of all the taxonomyies you want to display. Use the taxonomy name or slug
-		$taxonomies = array('topic');
-	
-		// must set this to the post type you want the filter(s) displayed on
-		if( $typenow == $this->type ){
-	
-			foreach ($taxonomies as $tax_slug) {
-				$tax_obj = get_taxonomy($tax_slug);
-				$tax_name = $tax_obj->labels->name;
-				$terms = get_terms($tax_slug, array ('parent' => 0));
-				if(count($terms) > 0) {
-					echo "<select name='$tax_slug' id='$tax_slug' class='postform'>";
-					echo "<option value=''>Show All $tax_name</option>";
-					foreach ($terms as $term) {
-						echo $this->getTopicTermOption ($term, 0);
-// 						echo '<option value='. $term->slug, $_GET[$tax_slug] == $term->slug ? ' selected="selected"' : '','>' . $term->name .' (' . $term->count .')</option>';
-					}
-					echo "</select>";
-				}
-			}
-		}
-	}
-	
 	
 	
 	

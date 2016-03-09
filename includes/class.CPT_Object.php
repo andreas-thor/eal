@@ -60,6 +60,9 @@ abstract class CPT_Object {
 		add_filter('posts_join', array ($this, 'WPCB_posts_join'));
 		add_filter('posts_fields', array ($this, 'WPCB_posts_fields'), 10, 1 );
 		add_filter('posts_orderby', array ($this, 'WPCB_posts_orderby'), 10, 1 );
+		add_filter('posts_where', array ($this, 'WPCB_posts_where'), 10, 1 );
+		
+		add_action( 'restrict_manage_posts', array ($this, 'WPCB_restrict_manage_posts') );
 		
 		
 	}		
@@ -125,9 +128,9 @@ abstract class CPT_Object {
 		global $post;
 	
 		switch ( $column ) {
-			case 'FW': echo ($post->level_FW); break;
-			case 'PW': echo ($post->level_PW); break;
-			case 'KW': echo ($post->level_KW); break;
+			case 'FW': echo (($post->level_FW > 0) ? EAL_Item::$level_label[$post->level_FW-1] : ''); break;
+			case 'PW': echo (($post->level_PW > 0) ? EAL_Item::$level_label[$post->level_PW-1] : ''); break;
+			case 'KW': echo (($post->level_KW > 0) ? EAL_Item::$level_label[$post->level_KW-1] : ''); break;
 		}
 	}
 
@@ -184,8 +187,56 @@ abstract class CPT_Object {
 	}
 	
 	
-
+	public function WPCB_posts_where($where) {
 	
+		global $wp_query, $wpdb;
+		if ($wp_query->query["post_type"] == $this->type) {
+			foreach (EAL_Item::$level_type as $lt) {
+				if (isset($_REQUEST["level_{$lt}"]) && ($_REQUEST["level_{$lt}"] != '0')) {
+					$where .= " AND ({$wpdb->prefix}eal_{$this->type}.level_{$lt} = {$_REQUEST["level_{$lt}"]})";
+				}
+			}
+		}
+		
+		return $where;
+	}
+	
+	
+	public function WPCB_restrict_manage_posts() {
+	
+		global $typenow, $wp_query;
+	
+		// an array of all the taxonomyies you want to display. Use the taxonomy name or slug
+		$taxonomies = array('topic');
+	
+		// must set this to the post type you want the filter(s) displayed on
+		if( $typenow == $this->type ){
+	
+			wp_dropdown_categories(array(
+					'show_option_all' =>  __("Show All Topics"),
+					'taxonomy'        =>  'topic',
+					'name'            =>  'topic',
+					'orderby'         =>  'name',
+					'selected'        =>  isset($wp_query->query['topic']) ? $wp_query->query['topic'] :'',
+					'hierarchical'    =>  true,
+					'depth'           =>  0,
+					'value_field'	  =>  'slug',
+					'show_count'      =>  true, // Show # listings in parens
+					'hide_empty'      =>  false, // Don't show businesses w/o listings
+			));
+				
+			
+			foreach (EAL_Item::$level_type as $lt) {
+				$selected = (isset($_REQUEST["level_{$lt}"]) && ($_REQUEST["level_{$lt}"] != '0')) ? $_REQUEST["level_{$lt}"] : 0;
+				echo ("<select class='postform' name='level_{$lt}'>");
+				echo ("<option value='0'>All {$lt}</option>");
+				foreach(array (1, 2, 3, 4, 5, 6) as $v) {
+					echo ("<option value='${v}' " . (($v==$selected)?'selected':'') . ">" . EAL_Item::$level_label[$v-1] . "</option>");
+				}
+				echo ("</select>");
+			}
+		}
+	}
 	
 	
 	

@@ -40,6 +40,43 @@ class CPT_LearnOut extends CPT_Object {
 
 	
 
+	public function WPCB_manage_posts_columns($columns) {
+		return array_merge(parent::WPCB_manage_posts_columns($columns), array('Items' => 'Items'));
+	}
+	
+	public function WPCB_manage_edit_sortable_columns ($columns) {
+		return array_merge(parent::WPCB_manage_edit_sortable_columns($columns) , array('Items' => 'Items'));
+	}
+	
+	
+	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
+	
+		parent::WPCB_manage_posts_custom_column($column, $post_id);
+	
+		global $post;
+	
+		switch ( $column ) {
+			case 'Items': 
+	
+				echo ("-1");
+				echo ("<h1><a class='page-title-action' href='post-new.php?post_type=itemsc&lo_id={$post->ID}'>Add&nbsp;New&nbsp;SC</a></h1>");
+				echo ("<h1><a class='page-title-action' href='post-new.php?post_type=itemmc&lo_id={$post->ID}'>Add&nbsp;New&nbsp;MC</a></h1>");
+				break;
+		}
+	}
+	
+	
+	
+	// define the posts_fields callback
+	public function WPCB_posts_fields ( $array ) {
+		global $wp_query, $wpdb;
+		if ($wp_query->query["post_type"] == $this->type) {
+			$array = parent::WPCB_posts_fields($array) . ", (-9) as reviews ";
+		}
+		return $array;
+	}
+	
+	
 	
 	
 }
