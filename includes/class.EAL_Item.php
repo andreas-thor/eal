@@ -12,7 +12,6 @@ abstract class EAL_Item {
 	public $question;
 	
 	public $level;
-	
 	public $learnout;
 	public $learnout_id;
 	
@@ -40,8 +39,8 @@ abstract class EAL_Item {
 		$this->level["KW"] = isset ($_POST['item_level_KW']) ? $_POST['item_level_KW'] : null;
 		$this->level["PW"] = isset ($_POST['item_level_PW']) ? $_POST['item_level_PW'] : null;
 		
-		$this->$learnout_id = isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : (isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : null);
-		$this->$learnout = null;
+		$this->learnout_id = isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : (isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : null);
+		$this->learnout = null;
 	}
 	
 	
@@ -57,10 +56,12 @@ abstract class EAL_Item {
 			$this->title = '';
 			$this->description = '';
 			$this->question = '';
+			
 			$this->level["FW"] = 0;
 			$this->level["KW"] = 0;
 			$this->level["PW"] = 0;
-			$this->learnout_id = isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : $_GET['learnout_id'];
+			
+			$this->learnout_id = isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : (isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : null);
 			$this->learnout = null;
 				
 				
@@ -68,13 +69,16 @@ abstract class EAL_Item {
 				
 			global $wpdb;
 			$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE id = {$post->ID}", ARRAY_A);
+			
 			$this->id = $sqlres['id'];
 			$this->title = $sqlres['title'];
 			$this->description = $sqlres['description'];
 			$this->question = $sqlres['question'];
+			
 			$this->level["FW"] = $sqlres['level_FW'];
 			$this->level["KW"] = $sqlres['level_KW'];
 			$this->level["PW"] = $sqlres['level_PW'];
+			
 			$this->learnout_id = $sqlres['learnout_id'];
 			$this->learnout = null; // lazy loading
 				
@@ -86,15 +90,32 @@ abstract class EAL_Item {
 	public function loadById ($item_id) {
 		global $wpdb;
 		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE id = {$item_id}", ARRAY_A);
+		
 		$this->id = $sqlres['id'];
 		$this->title = $sqlres['title'];
 		$this->description = $sqlres['description'];
 		$this->question = $sqlres['question'];
+		
 		$this->level["FW"] = $sqlres['level_FW'];
 		$this->level["KW"] = $sqlres['level_KW'];
 		$this->level["PW"] = $sqlres['level_PW'];
+		
+		$this->learnout_id = $sqlres['learnout_id'];
+		$this->learnout = null;
 	}
 	
+	
+	public function getLearnOut () {
+		
+		if (is_null ($this->learnout_id )) return null;
+		
+		if (is_null ($this->learnout)) {
+			$this->learnout = new EAL_LearnOut();
+			$this->learnout->loadById($this->learnout_id);
+		}
+		
+		return $this->learnout;
+	}
 	
 	public function getPoints() { return -1; }
 	
@@ -118,7 +139,7 @@ abstract class EAL_Item {
 				level_KW tinyint unsigned,
 				level_PW tinyint unsigned,
 				points smallint,
-				learnout_id bigint(20) unsigned NOT NULL,
+				learnout_id bigint(20) unsigned,
 				PRIMARY KEY  (id)
 			) {$wpdb->get_charset_collate()};"
 		);

@@ -59,8 +59,8 @@ class CPT_LearnOut extends CPT_Object {
 			case 'Items': 
 	
 				echo ("-1");
-				echo ("<h1><a class='page-title-action' href='post-new.php?post_type=itemsc&lo_id={$post->ID}'>Add&nbsp;New&nbsp;SC</a></h1>");
-				echo ("<h1><a class='page-title-action' href='post-new.php?post_type=itemmc&lo_id={$post->ID}'>Add&nbsp;New&nbsp;MC</a></h1>");
+				echo ("<h1><a class='page-title-action' href='post-new.php?post_type=itemsc&learnout_id={$post->ID}'>Add&nbsp;New&nbsp;SC</a></h1>");
+				echo ("<h1><a class='page-title-action' href='post-new.php?post_type=itemmc&learnout_id={$post->ID}'>Add&nbsp;New&nbsp;MC</a></h1>");
 				break;
 		}
 	}

@@ -122,6 +122,27 @@ class EAL_LearnOut {
 	}
 	
 	
+	public static function getListOfLearningOutcomes ($learnout_id) {
+		
+		global $wpdb;
+		$sqlres = $wpdb->get_results( "
+				SELECT L.id, L.title
+				FROM {$wpdb->prefix}eal_learnout L
+				JOIN {$wpdb->prefix}posts P
+				ON (L.id = P.id)
+				WHERE P.post_status = 'publish'
+				ORDER BY id
+				");
+		
+		$html .= "<select align='right' name='learnout_id'>";
+		$html .= "<option value='0'" . (($learnout_id == 0) ? " selected" : "") . ">None</option>";
+		foreach ($sqlres as $pos => $sqlrow) {
+			$html .= "<option value='{$sqlrow->id}'" . (($learnout_id==$sqlrow->id) ? " selected" : "") . ">{$sqlrow->title}</option>";
+		}
+		$html .= "</select>";
+		
+		return $html;
+	}
 	
 }
 

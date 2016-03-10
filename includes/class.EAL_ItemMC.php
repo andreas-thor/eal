@@ -93,9 +93,10 @@ class EAL_ItemMC extends EAL_Item {
 						'level_FW' => $item->level["FW"],
 						'level_KW' => $item->level["KW"],
 						'level_PW' => $item->level["PW"],
-						'points'   => $item->getPoints()
+						'points'   => $item->getPoints(),
+						'learnout_id' => $item->learnout_id
 				),
-				array('%d','%s','%s','%s','%d','%d','%d','%d')
+				array('%d','%s','%s','%s','%d','%d','%d','%d','%d')
 		);
 		
 		

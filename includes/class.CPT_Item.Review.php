@@ -32,7 +32,7 @@ abstract class CPT_Item_Review extends CPT_Object {
 	public function WPCB_register_meta_box_cb () {
 	
 		global $review;
-		add_meta_box('mb_item', $review->getItem()->title, array ($this, 'WPCB_mb_item'), $this->type, 'normal', 'default' );
+		add_meta_box('mb_item', 'Item: ' . $review->getItem()->title, array ($this, 'WPCB_mb_item'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_score', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($this, 'WPCB_mb_score'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'normal', 'default');
 		add_meta_box('mb_feedback', 'Feedback', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'review_feedback', 'value' => $review->feedback));

@@ -87,6 +87,7 @@ abstract class CPT_Object {
 	public function WPCB_mb_level ($post, $vars) {
 	
 		$level = $vars['args']['level'];
+		$default = isset ($vars['args']['default']) ? $vars['args']['default'] : array ("FW"=>0, "KW"=>0, "PW"=>0);
 		$prefix = isset ($vars['args']['prefix']) ? $vars['args']['prefix'] : "item"; 
 		$disabled = isset ($vars['args']['disabled']) ? $vars['args']['disabled'] : "";
 		
@@ -97,10 +98,12 @@ abstract class CPT_Object {
 		
 		$html .= '</tr>';
 		
-		foreach (EAL_Item::$level_label as $n => $r) {
+		foreach (EAL_Item::$level_label as $n => $r) {	// n=0..5, $r=Erinnern...Erschaffen 
 			$html .= '<tr><td>' . ($n+1) . ". " . $r . '</td>';
-			foreach ($level as $c=>$v) {
-				$html .= "<td align='center'><input type='radio' id='{$prefix}_level_{$c}_{$r}' name='{$prefix}_level_{$c}' value='" . ($n+1) . "' " . (($v==$n+1)?'checked':$disabled) . "></td>";
+			foreach ($level as $c=>$v) {	// c=FW,KW,PW; v=1..6
+				$bgcolor = ($default[$c]==$n+1) ? '#E0E0E0' : 'transparent'; 
+				$html .= "<td valign='bottom' align='left' style='padding:3px; padding-left:5px; background-color:{$bgcolor}'>";
+				$html .= "<input type='radio' id='{$prefix}_level_{$c}_{$r}' name='{$prefix}_level_{$c}' value='" . ($n+1) . "' " . (($v==$n+1)?'checked':$disabled) . "></td>";
 			}
 			$html .= '</tr>';
 		}
