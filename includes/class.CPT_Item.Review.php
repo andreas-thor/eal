@@ -34,7 +34,7 @@ abstract class CPT_Item_Review extends CPT_Object {
 		global $review;
 		add_meta_box('mb_item', 'Item: ' . $review->getItem()->title, array ($this, 'WPCB_mb_item'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_score', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($this, 'WPCB_mb_score'), $this->type, 'normal', 'default' );
-		add_meta_box('mb_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'normal', 'default');
+		add_meta_box('mb_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'normal', 'default', array ('level' => $review->level, 'prefix' => 'review', 'default' => $review->getItem()->level, 'background' => 1 ));
 		add_meta_box('mb_feedback', 'Feedback', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'review_feedback', 'value' => $review->feedback));
 		add_meta_box('mb_overall', 'Revisionsurteil', array ($this, 'WPCB_mb_overall'), $this->type, 'side', 'default');
 	}
@@ -70,10 +70,25 @@ abstract class CPT_Item_Review extends CPT_Object {
 			$html_head .= "<th style='padding:0.5em'>{$v2}</th>";
 		}
 		$html_head .= "</tr>";
-				
+			
+		
+?>
+		<script>
+			var $ = jQuery.noConflict();
+			
+			function setRowGood (e) {
+				$(e).parent().parent().find("input").each ( function() {
+ 					if (this.value==1) this.checked = true;
+				});
+			}
+		</script>
+
+
+<?php 
+		
 		$html_rows = "";
 		foreach (EAL_Item_Review::$dimension1 as $k1 => $v1) {
-			$html_rows .= "<tr><td valign='top'style='padding:0.5em'>{$v1}</td>";
+			$html_rows .= "<tr><td valign='top'style='padding:0.5em'>{$v1}<br/><a onclick=\"setRowGood(this);\">(alle gut)</a></td>";
 			foreach (EAL_Item_Review::$dimension2 as $k2 => $v2) {
 				$html_rows .= "<td style='padding:0.5em; border-style:solid; border-width:1px;'>";
 				foreach ($values as $k3 => $v3) {
@@ -90,18 +105,21 @@ abstract class CPT_Item_Review extends CPT_Object {
 	
 	
 	
-	public function WPCB_mb_level ($post, $vars) {
+// 	public function WPCB_mb_level ($post, $vars) {
 	
-		global $review;
+// 		global $review;
 	
-		echo ("	<table style='font-size:100%'>
-				<tr><th align='left'>Einordnung Autor</th><th style='padding-left:3em;'></th><th align='left'>Einordnung Review</th></tr>
-				<tr><td style='border-style:solid; border-width:1px;'>");
-		parent::WPCB_mb_level($post, array ('args' => array ('level' => $review->getItem()->level, 'disabled' => 'disabled')));
-		echo ("	</td><td style='padding-left:3em;'></td><td style='border-style:solid; border-width:1px;''>");
-		parent::WPCB_mb_level($post, array ('args' => array ('level' => $review->level, 'prefix' => 'review')));
-		echo ("</td></tr></table>");
-	}
+// 		echo ("	<table style='font-size:100%'>
+// 				<tr><th align='left'>Einordnung Autor</th><th style='padding-left:3em;'></th><th align='left'>Einordnung Review</th></tr>
+// 				<tr><td style='border-style:solid; border-width:1px;'>");
+// 		parent::WPCB_mb_level($post, array ('args' => array ('level' => $review->getItem()->level, 'disabled' => 'disabled')));
+// 		echo ("	</td><td style='padding-left:3em;'></td><td style='border-style:solid; border-width:1px;''>");
+// 		parent::WPCB_mb_level($post, array ('args' => array ('level' => $review->level, 'prefix' => 'review')));
+		
+// 		parent::WPCB_mb_level($post, array ('args' => array ('level' => $review->level, 'prefix' => 'review', 'default' => $review->getItem()->level, 'background' => 1 )));
+		
+// 		echo ("</td></tr></table>");
+// 	}
 	
 	
 
@@ -127,21 +145,27 @@ abstract class CPT_Item_Review extends CPT_Object {
 	public function WPCB_mb_overall ($post, $vars) {
 	
 		global $review;
-	
-	
-		$html = "
-				<input type='hidden' id='item_id' name='item_id'  value='{$review->item_id}'>
-				<table style='font-size:100%'>
-			<tr><td>
-				<input type='radio' id='review_overall_0' name='review_overall' value='1' " . (($review->overall==1) ? "checked" : ""). ">Item akzeptiert</td></tr>
-			<tr><td><input type='radio' id='review_overall_1' name='review_overall' value='2' " . (($review->overall==2) ? "checked" : ""). ">Item &uuml;berarbeiten</td></tr>
-			<tr><td><input type='radio' id='review_overall_2' name='review_overall' value='3' " . (($review->overall==3) ? "checked" : ""). ">Item abgelehnt</td></tr>
-				</table>
-		
-				
-			";
-	
-		echo $html;
+?>
+		<script>
+			var $ = jQuery.noConflict();
+			
+			function setAccept () {
+				if (confirm('Sollen alle Bewertungen auf "gut" gesetzt werden?')) {
+					$(document).find("#mb_score").find("input").each ( function() {
+	 					if (this.value==1) this.checked = true;
+					});
+				}
+			}
+		</script>
+
+
+<?php 
+		printf ("<input type='hidden' id='item_id' name='item_id'  value='%d'>", $review->item_id);
+		print  ("<table style='font-size:100%'>");
+		printf ("<tr><td><input type='radio' id='review_overall_0' name='review_overall' value='1' %s onclick='setAccept();'>Item akzeptiert</td></tr>", (($review->overall==1) ? "checked" : ""));
+		printf ("<tr><td><input type='radio' id='review_overall_1' name='review_overall' value='2' %s>Item &uuml;berarbeiten</td></tr>", (($review->overall==2) ? "checked" : ""));
+		printf ("<tr><td><input type='radio' id='review_overall_2' name='review_overall' value='3' %s>Item abgelehnt</td></tr>", (($review->overall==3) ? "checked" : ""));
+		print  ("</table>");
 	}
 	
 	

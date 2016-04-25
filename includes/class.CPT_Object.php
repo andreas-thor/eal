@@ -36,7 +36,7 @@ abstract class CPT_Object {
 		
 					'public' => true,
 					'menu_position' => $this->menu_pos,
-					'supports' => array( 'title'), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
+					'supports' => array( 'title', 'revisions'), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
 					'taxonomies' => array( 'topic' ),
 					// 'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
 					'has_archive' => false, // false to allow for single view
@@ -87,31 +87,64 @@ abstract class CPT_Object {
 	public function WPCB_mb_level ($post, $vars) {
 	
 		$level = $vars['args']['level'];
-		$default = isset ($vars['args']['default']) ? $vars['args']['default'] : array ("FW"=>0, "KW"=>0, "PW"=>0);
 		$prefix = isset ($vars['args']['prefix']) ? $vars['args']['prefix'] : "item"; 
-		$disabled = isset ($vars['args']['disabled']) ? $vars['args']['disabled'] : "";
 		
-		$html  = "<table style='font-size:100%'><tr><td></td>";
+		$default = isset ($vars['args']['default']) ? $vars['args']['default'] : array ("FW"=>0, "KW"=>0, "PW"=>0);	// default ("expected") levels
+		$disabled = isset ($vars['args']['disabled']) ? $vars['args']['disabled'] : "";		// disable change
+		$alert = isset ($vars['args']['alert']) ? $vars['args']['alert'] : 0;	// alert if selection does not macth default
+		$background = isset ($vars['args']['background']) ? $vars['args']['background'] : 0;	// show default with different background color
+		
+?>
+		<script>
+			var $ =jQuery.noConflict();
+			
+			function disableOtherLevels (e, doAlert, levIT, levLO, levLOs) {
+				// uncheck all other radio input in the table
+				$(e).parent().parent().parent().parent().find("input").each ( function () {
+ 					if (e.id != this.id) this.checked = false;
+				});
+
+				if (doAlert == 0) return;
+				
+				if (levIT == levLO) return;
+
+				if (levLO == 0) {
+					alert (unescape ("Learning Outcome hat keine Anforderungsstufe f%FCr diese Wissensdimension."));
+					return;
+				}
+				
+				if (levIT > levLO) {
+					alert ("Learning Outcome hat niedrigere Anforderungsstufe! (" + levLOs + ")");
+				} else {
+					alert (unescape ("Learning Outcome hat h%F6here Anforderungsstufe! (") + levLOs + ")");
+				}	
+				
+			}
+		</script>
+<?php
+		
+		echo ("<table style='font-size:100%'><tr><td></td>");
 		foreach ($level as $c => $v) {
-			$html .= '<td>' . $c . '</td>';
+			printf ('<td>%s</td>', $c);
 		}
 		
-		$html .= '</tr>';
+		printf ('</tr>');
 		
 		foreach (EAL_Item::$level_label as $n => $r) {	// n=0..5, $r=Erinnern...Erschaffen 
-			$html .= '<tr><td>' . ($n+1) . ". " . $r . '</td>';
+			printf ('<tr><td>%d. %s</td>', $n+1, $r);
 			foreach ($level as $c=>$v) {	// c=FW,KW,PW; v=1..6
-				$bgcolor = ($default[$c]==$n+1) ? '#E0E0E0' : 'transparent'; 
-				$html .= "<td valign='bottom' align='left' style='padding:3px; padding-left:5px; background-color:{$bgcolor}'>";
-				$html .= "<input type='radio' id='{$prefix}_level_{$c}_{$r}' name='{$prefix}_level_{$c}' value='" . ($n+1) . "' " . (($v==$n+1)?'checked':$disabled) . "></td>";
+				$bgcolor = (($default[$c]==$n+1) && ($background==1)) ? '#E0E0E0' : 'transparent'; 
+				printf ("<td valign='bottom' align='left' style='padding:3px; padding-left:5px; background-color:%s'>", $bgcolor);
+				printf ("<input type='radio' id='%s' name='%s' value='%d' %s onclick=\"disableOtherLevels(this, %d, %d, %d, '%s');\"></td>", 
+					"{$prefix}_level_{$c}_{$r}", "{$prefix}_level_{$c}", $n+1, (($v==$n+1)?'checked':$disabled), $alert, $n+1, $default[$c], (($default[$c]>0) ? EAL_Item::$level_label[$default[$c]-1] : "")); 
 			}
-			$html .= '</tr>';
+			printf ('</tr>');
 		}
-		$html .= '</table>';
+		printf ('</table>');
 		
 		
 		
-		echo $html;
+// 		echo $html;
 	}
 	
 	

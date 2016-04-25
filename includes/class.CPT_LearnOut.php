@@ -38,6 +38,46 @@ class CPT_LearnOut extends CPT_Object {
 		
 	}	
 
+	public function WPCB_mb_editor ($post, $vars) {
+	
+		parent::WPCB_mb_editor ($post, $vars);
+		
+?>
+		<script>
+			var $ = jQuery.noConflict();
+			
+			function addTermToEditor (t) {
+				$(document).find("#mb_description").find("textarea").each ( function() {
+ 					tinyMCE.activeEditor.execCommand( 'mceInsertContent', false, t );
+				});
+			}
+		</script>
+
+
+<?php		
+		
+		$verbs = array ( 
+			1 => array ("auflisten", "auswählen", "beschriften", "identifizieren", "nennen"),
+			2 => array ("begründen", "Beispiele geben", "beschreiben", "erklären", "klassifizieren", "konvertieren", "schätzen", "transferieren", "übersetzen", "verallgemeinern", "zusammenfassen"),
+			3 => array ("ändern", "anwenden", "beantragen", "berechnen", "bestimmen", "durchführen", "prüfen", "testen",  "übertragen", "verwenden", "vorbereiten", "zeigen"),
+			4 => array ()	
+		);
+
+		foreach ($verbs as $level => $terms) {
+			printf ("<div style='margin:10px'>");
+			foreach ($terms as $t) {
+				printf ("<a style='margin:3px' class='button' onclick=\"addTermToEditor('%s');\">%s</a>", htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1'), htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1'));
+			}
+			printf ("</div>");
+		}
+		
+// 		echo ("<div style='margin:10px'>");
+// 		echo ('<a class="button" onclick="addTermToEditor(\'erschaffen\');">erschaffen</a>');
+// 		echo ('<a class="button">erschaffen</a>');
+// 		echo ('<a class="button">erschaffen</a>');
+// 		echo ("</div>");
+		
+	}
 	
 
 	public function WPCB_manage_posts_columns($columns) {
