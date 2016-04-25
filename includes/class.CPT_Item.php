@@ -62,13 +62,42 @@ abstract class CPT_Item extends CPT_Object{
 		add_meta_box('mb_learnout', 'Learning Outcome', array ($this, 'WPCB_mb_learnout'), $this->type, 'normal', 'default', array ('learnout' => $item->getLearnOut()));
 		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_description', 'value' => $item->description) );
 		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_question', 'value' => $item->question));
-		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $item->level, 'default' => (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level), 'alert' => 1 ));
+		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $item->level, 'default' => (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level) ));
 		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($this, 'WPCB_mb_answers'), $this->type, 'normal', 'default');
 	}
 	
 	
 
 	abstract public function WPCB_mb_answers ($post, $vars);
+	
+	
+	public function WPCB_mb_level ($post, $vars) {
+		
+?>
+		<script>
+			function checkLOLevel (e, levIT, levITs, levLO, levLOs) {
+				if (levIT == levLO) return;
+
+				if (levLO == 0) {
+					alert (unescape ("Learning Outcome hat keine Anforderungsstufe f%FCr diese Wissensdimension."));
+					return;
+				}
+				
+				if (levIT > levLO) {
+					alert ("Learning Outcome hat niedrigere Anforderungsstufe! (" + levLOs + ")");
+				} else {
+					alert (unescape ("Learning Outcome hat h%F6here Anforderungsstufe! (") + levLOs + ")");
+				}	
+				
+			}
+		</script>
+<?php		
+		
+		$vars['args']['callback'] = 'checkLOLevel';
+		parent::WPCB_mb_level($post, $vars);
+		
+	}
+	
 	
 	
 	public function WPCB_mb_learnout ($post, $vars) {

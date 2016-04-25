@@ -60,26 +60,42 @@ class CPT_LearnOut extends CPT_Object {
 			1 => array ("auflisten", "auswählen", "beschriften", "identifizieren", "nennen"),
 			2 => array ("begründen", "Beispiele geben", "beschreiben", "erklären", "klassifizieren", "konvertieren", "schätzen", "transferieren", "übersetzen", "verallgemeinern", "zusammenfassen"),
 			3 => array ("ändern", "anwenden", "beantragen", "berechnen", "bestimmen", "durchführen", "prüfen", "testen",  "übertragen", "verwenden", "vorbereiten", "zeigen"),
-			4 => array ()	
+			4 => array ("analysieren", "gegenüberstellen", "kategorisieren", "priorisieren", "strukturieren", "unterscheiden", "unterteilen", "vergleichen", "vorhersagen"),
+			5 => array ("bewerten", "diskutieren", "entscheiden", "interpretieren", "kritisieren", "verteidigen"),
+			6 => array ("aufbauen", "erstellen", "gestalten", "kombinieren", "konzipieren", "modellieren", "produzieren", "überarbeiten", "umgestalten")
 		);
 
+		printf("<div id='eal_superverbs' style='margin:10px'>");
 		foreach ($verbs as $level => $terms) {
-			printf ("<div style='margin:10px'>");
+			printf ("<div>");
 			foreach ($terms as $t) {
 				printf ("<a style='margin:3px' class='button' onclick=\"addTermToEditor('%s');\">%s</a>", htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1'), htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1'));
 			}
 			printf ("</div>");
 		}
-		
-// 		echo ("<div style='margin:10px'>");
-// 		echo ('<a class="button" onclick="addTermToEditor(\'erschaffen\');">erschaffen</a>');
-// 		echo ('<a class="button">erschaffen</a>');
-// 		echo ('<a class="button">erschaffen</a>');
-// 		echo ("</div>");
-		
+		printf ("</div>");
 	}
 	
 
+	public function WPCB_mb_level ($post, $vars) {
+	
+?>
+	<script>
+		var $ =jQuery.noConflict();
+		
+		function showSuperVerbs (e, levIT, levITs, levLO, levLOs) {
+			$(document).find("#eal_superverbs").find("div").hide();
+			$(document).find("#eal_superverbs").find("div:eq(" + (levIT-1) + ")").show();
+		}
+	</script>
+<?php		
+			
+			$vars['args']['callback'] = 'showSuperVerbs';
+			parent::WPCB_mb_level($post, $vars);
+			
+		}
+		
+	
 	public function WPCB_manage_posts_columns($columns) {
 		return array_merge(parent::WPCB_manage_posts_columns($columns), array('Items' => 'Items'));
 	}
