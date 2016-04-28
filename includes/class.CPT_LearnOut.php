@@ -32,22 +32,63 @@ class CPT_LearnOut extends CPT_Object {
 		$learnout->load();
 	
 	
+		global $post;
+		
 		add_meta_box('mb_description', 'Beschreibung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'learnout_description', 'value' => $learnout->description) );
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $learnout->level, 'prefix' => 'learnout'));
+		
+		// term selections --> show buttons for text modules 	
+?>
+<script>
+
+	function showTermButtons (j) {
+		j("#eal_topicterms").empty()		
+		// search all checked terms incl. their ancestors
+		j("#topic-all").find ("input[type='checkbox']").filter(":checked").parentsUntil(j( "#topic-all" )).filter ("li").children("label").each (function (i, e) {
+			// add term button
+			j("#eal_topicterms").append ("<a style='margin:3px' class='button' onclick=\"addTermToEditor('" + e.childNodes[1].textContent + "');\">" + e.childNodes[1].textContent + "</a>");
+		})
+	}
+		
+	function codeAddress() {
+	
+		var j = jQuery.noConflict();
+		showTermButtons(j)	
+	
+		// add "on change" handler to all terms (input-checkbox); both in tab "All" as well "Must used"
+		j("#topic-all").add(j("#topic-pop")).change(function() { showTermButtons (j); });
+	}
+	
+	window.onload = codeAddress;
+</script>
+<?php	
 		
 		
 	}	
 
+	
+	function wpdocs_theme_name_scripts() {
+		wp_enqueue_script( 'script-name', get_template_directory_uri() . '/js/example.js', array(), '1.0.0', true );
+	}
+	
+	
 	public function WPCB_mb_editor ($post, $vars) {
 	
+		global $learnout;
 		parent::WPCB_mb_editor ($post, $vars);
+
 		
+		printf("<div id='eal_topicterms' style='margin:10px'></div>");
+		
+		
+		// Verb button click --> insert verb into current position of editor
 ?>
 		<script>
-			var $ = jQuery.noConflict();
+			
 			
 			function addTermToEditor (t) {
-				$(document).find("#mb_description").find("textarea").each ( function() {
+				var j = jQuery.noConflict();
+				j(document).find("#mb_description").find("textarea").each ( function() {
  					tinyMCE.activeEditor.execCommand( 'mceInsertContent', false, t );
 				});
 			}
@@ -67,7 +108,8 @@ class CPT_LearnOut extends CPT_Object {
 
 		printf("<div id='eal_superverbs' style='margin:10px'>");
 		foreach ($verbs as $level => $terms) {
-			printf ("<div>");
+			// show only verbs that matches the current LO level
+			printf ("<div style='display:%s'>", (($learnout->level["FW"]==$level) || ($learnout->level["PW"]==$level) || ($learnout->level["KW"]==$level)) ? 'block' : 'none');
 			foreach ($terms as $t) {
 				printf ("<a style='margin:3px' class='button' onclick=\"addTermToEditor('%s');\">%s</a>", htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1'), htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1'));
 			}
@@ -79,21 +121,26 @@ class CPT_LearnOut extends CPT_Object {
 
 	public function WPCB_mb_level ($post, $vars) {
 	
+				
 ?>
-	<script>
-		var $ =jQuery.noConflict();
-		
-		function showSuperVerbs (e, levIT, levITs, levLO, levLOs) {
-			$(document).find("#eal_superverbs").find("div").hide();
-			$(document).find("#eal_superverbs").find("div:eq(" + (levIT-1) + ")").show();
-		}
-	</script>
+		<script>
+			
+			
+			function showSuperVerbs (e, levIT, levITs, levLO, levLOs) {
+				var j = jQuery.noConflict();
+				j(document).find("#eal_superverbs").find("div").hide();
+				j(document).find("#eal_superverbs").find("div:eq(" + (levIT-1) + ")").show();
+			}
+		</script>
 <?php		
+		
+		// callback javascript function is called when a new level is clicked --> matching verbs are shown
+		$vars['args']['callback'] = 'showSuperVerbs';
+		parent::WPCB_mb_level($post, $vars);
 			
-			$vars['args']['callback'] = 'showSuperVerbs';
-			parent::WPCB_mb_level($post, $vars);
+		
 			
-		}
+	}
 		
 	
 	public function WPCB_manage_posts_columns($columns) {

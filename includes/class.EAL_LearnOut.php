@@ -47,7 +47,7 @@ class EAL_LearnOut {
 				
 			$this->id = $post->ID;
 			$this->title = '';
-			$this->description = '';
+			$this->description = 'Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage ...';
 			$this->level["FW"] = 0;
 			$this->level["KW"] = 0;
 			$this->level["PW"] = 0;

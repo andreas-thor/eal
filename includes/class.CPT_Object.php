@@ -96,11 +96,11 @@ abstract class CPT_Object {
 		
 ?>
 		<script>
-			var $ =jQuery.noConflict();
 			
 			function disableOtherLevels (e) {
+	 			var j = jQuery.noConflict();
 				// uncheck all other radio input in the table
-				$(e).parent().parent().parent().parent().find("input").each ( function () {
+				j(e).parent().parent().parent().parent().find("input").each ( function () {
  					if (e.id != this.id) this.checked = false;
 				});
 			}

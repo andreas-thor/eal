@@ -440,13 +440,6 @@ function create_eal_taxonomies () {
 }
 
 
-// add_action ('add_meta_boxes_eal_item_mc', 'create_eal_edit_forms');
-// function create_eal_edit_forms() {
-	
-// 	add_meta_box('wpt_events_location', 'Description', 'desc_editor', 'eal_item_sc', 'normal', 'default');
-
-// }
-
 
 
 

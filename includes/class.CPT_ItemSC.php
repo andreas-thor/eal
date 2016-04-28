@@ -13,6 +13,10 @@ class CPT_ItemSC extends CPT_Item {
 		$this->label = "Single Choice";
 		$this->menu_pos = 5;
 		parent::init();
+		
+		add_action ("save_post_revision", array ("eal_{$this->type}", 'save'), 10, 2);
+		
+		
 	}
 	
 	
@@ -30,6 +34,9 @@ class CPT_ItemSC extends CPT_Item {
 	
 		global $item;
 	
+		$b = get_taxonomy( 'topic' );
+		
+		
 		$answerLine = '<tr>
 				<td><input type="text" name="answer[]" value="%s" size="25" /></td>
 				<td><input type="text" name="points[]" value="%d" size="5" /></td>
