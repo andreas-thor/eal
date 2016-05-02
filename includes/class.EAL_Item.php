@@ -173,6 +173,77 @@ abstract class EAL_Item {
 	}
 	
 	
+
+	
+	public function compareTitle (EAL_Item $comp) {
+		return array ("id" => 'title', 'name' => 'Titel', 'diff' => $this->compareText ($this->title, $comp->title));
+	}
+	
+	public function compareDescription (EAL_Item $comp) {
+		return array ("id" => 'description', 'name' => 'Fall- oder Problemvignette', 'diff' => $this->compareText ($this->description, $comp->description));
+	}
+	
+	public function compareQuestion (EAL_Item $comp) {
+		return array ("id" => 'question', 'name' => 'Aufgabenstellung', 'diff' => $this->compareText ($this->question, $comp->question));
+	}
+	
+	public function compareLevel (EAL_Item $comp) {
+		$diff  = "<table class='diff'>";
+		$diff .= "<colgroup><col class='content diffsplit left'><col class='content diffsplit middle'><col class='content diffsplit right'></colgroup>";
+		$diff .= "<tbody><tr>";
+		$diff .= "<td align='left'><div>{$this->compareLevel1($this->level, $comp->level, "deleted")}</div></td><td></td>";
+		$diff .= "<td><div>{$this->compareLevel1($comp->level, $this->level, "added")}</div></td>";
+		$diff .= "</tr></tbody></table>";
+		return array ("id" => 'level', 'name' => 'Anforderungsstufe', 'diff' => $diff);
+	}
+	
+
+	
+	
+	private function compareLevel1 ($old, $new, $class) {
+		$res = "<table border='1' style='width:1%'><tr><td></td>";
+		foreach ($old as $c => $v) {
+			$res .= sprintf ('<td>%s</td>', $c);
+		}
+		$res .= sprintf ('</tr>');
+		
+		foreach (EAL_Item::$level_label as $n => $r) {	// n=0..5, $r=Erinnern...Erschaffen
+			$res .= sprintf ('<tr><td align="left">%d.&nbsp;%s</td>', $n+1, $r);
+			foreach ($old as $c=>$v) {	// c=FW,KW,PW; v=1..6
+				$bgcolor = (($v==$n+1)&& ($new[$c]!=$n+1)) ? "class='diff-{$class}line'" : "";
+				$res .= sprintf ("<td align='left' style='padding:3px; padding-left:5px;' %s>", $bgcolor);
+				$res .= sprintf ("<input type='radio' %s></td>", (($v==$n+1)?'checked':'disabled'));
+		
+			}
+			$res .= '</tr>';
+		}
+		$res .= sprintf ('</table>');
+		return $res;
+	}
+	
+	
+	private function compareText ($old, $new) {
+	
+		$old = normalize_whitespace (strip_tags ($old));
+		$new = normalize_whitespace (strip_tags ($new));
+		$args = array(
+				'title'           => '',
+				'title_left'      => '',
+				'title_right'     => '',
+				'show_split_view' => true
+		);
+	
+		$diff = wp_text_diff($old, $new, $args);
+	
+		if (!$diff) {
+			$diff  = "<table class='diff'><colgroup><col class='content diffsplit left'><col class='content diffsplit middle'><col class='content diffsplit right'></colgroup><tbody><tr>";
+			$diff .= "<td>{$old}</td><td></td><td>{$new}</td>";
+			$diff .= "</tr></tbody></table>";
+		}
+	
+		return $diff;
+	
+	}
 }
 
 ?>

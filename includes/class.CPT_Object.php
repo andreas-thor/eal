@@ -93,7 +93,7 @@ abstract class CPT_Object {
 		$disabled = isset ($vars['args']['disabled']) ? $vars['args']['disabled'] : "";		// disable change
 		$callback = isset ($vars['args']['callback']) ? $vars['args']['callback'] : "";		// callback javascript function
 		$background = isset ($vars['args']['background']) ? $vars['args']['background'] : 0;	// show default with different background color
-		
+		$print = isset ($vars['args']['print']) ? $vars['args']['print'] : 1;	// echo/print HTML code; return otherwise
 ?>
 		<script>
 			
@@ -107,34 +107,40 @@ abstract class CPT_Object {
 		</script>
 <?php
 		
-		echo ("<table style='font-size:100%'><tr><td></td>");
+	
+		$res = "<table style='font-size:100%'><tr><td></td>";
+		
 		foreach ($level as $c => $v) {
-			printf ('<td>%s</td>', $c);
+			$res .= sprintf ('<td>%s</td>', $c);
 		}
 		
-		printf ('</tr>');
+		$res .= sprintf ('</tr>');
 		
 		foreach (EAL_Item::$level_label as $n => $r) {	// n=0..5, $r=Erinnern...Erschaffen 
-			printf ('<tr><td>%d. %s</td>', $n+1, $r);
+			$res .= sprintf ('<tr><td>%d. %s</td>', $n+1, $r);
 			foreach ($level as $c=>$v) {	// c=FW,KW,PW; v=1..6
 				$bgcolor = (($default[$c]==$n+1) && ($background==1)) ? '#E0E0E0' : 'transparent'; 
-				printf ("<td valign='bottom' align='left' style='padding:3px; padding-left:5px; background-color:%s'>", $bgcolor);
-				printf ("<input type='radio' id='%s' name='%s' value='%d' %s onclick=\"disableOtherLevels(this);",
+				$res .= sprintf ("<td valign='bottom' align='left' style='padding:3px; padding-left:5px; background-color:%s'>", $bgcolor);
+				$res .= sprintf ("<input type='radio' id='%s' name='%s' value='%d' %s onclick=\"disableOtherLevels(this);",
 					"{$prefix}_level_{$c}_{$r}", "{$prefix}_level_{$c}", $n+1, (($v==$n+1)?'checked':$disabled)); 	
 				
 				if ($callback != "") {
-					printf ("%s (this, %d, '%s', %d, 's');",
+					$res .= sprintf ("%s (this, %d, '%s', %d, 's');",
 						$callback, $n+1, EAL_Item::$level_label[$n], $default[$c], (($default[$c]>0) ? EAL_Item::$level_label[$default[$c]-1] : ""));
 				}
-				printf ("\"></td>"); 
+				$res .= sprintf ("\"></td>"); 
 					 
 			}
-			printf ('</tr>');
+			$res .= sprintf ('</tr>');
 		}
-		printf ('</table>');
+		$res .= sprintf ('</table>');
 		
 		
-		
+		if ($print==1) {
+			echo $res;
+		} else {
+			return $res;
+		}
 // 		echo $html;
 	}
 	

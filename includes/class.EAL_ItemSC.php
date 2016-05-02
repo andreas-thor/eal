@@ -190,6 +190,42 @@ class EAL_ItemSC extends EAL_Item {
 	
 	}
 	
+	public function compareAnswers (EAL_ItemSC $comp) {
+	
+		$diff  = "<table class='diff'>";
+		$diff .= "<colgroup><col class='content diffsplit left'><col class='content diffsplit middle'><col class='content diffsplit right'></colgroup>";
+		$diff .= "<tbody><tr>";
+		$diff .= "<td><div>{$this->compareAnswers1($this->answers, $comp->answers, "deleted")}</div></td><td></td>";
+		$diff .= "<td><div>{$this->compareAnswers1($comp->answers, $this->answers, "added")}</div></td>";
+		$diff .= "</tr></tbody></table>";
+	
+	
+		return array ("id" => 'answers', 'name' => 'Antwortoptionen', 'diff' => $diff);
+	
+	}
+	
+	private function compareAnswers1 ($old, $new, $class) {
+	
+		$res = "<table >";
+		
+		foreach ($old as $i => $a) {
+			$bgcolor = ($new[$i]['points'] != $a['points']) ? "class='diff-{$class}line'" : "";
+			$res .= "<tr align='left'><td  style='border-style:dotted; border-width:1px; width:1%' align='left' {$bgcolor}>";
+			$res .= "{$a['points']}</td>";
+// 			$res .= "<input type='text' value='{$a['points']}' size='1' readonly {$bgcolor}></td>";
+			
+			$bgcolor = ($new[$i]['answer'] != $a['answer']) ? "class='diff-{$class}line'" : "";
+			$res .= "<td style='width:99%' align='left' {$bgcolor}>{$a['answer']}</td></tr>";
+					
+		}
+		
+		$res .= "</table></div>";
+		
+		return $res;	
+	
+	
+	}
+	
 }
 
 ?>

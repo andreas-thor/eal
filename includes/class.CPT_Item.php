@@ -94,7 +94,7 @@ abstract class CPT_Item extends CPT_Object{
 <?php		
 		
 		$vars['args']['callback'] = 'checkLOLevel';
-		parent::WPCB_mb_level($post, $vars);
+		return parent::WPCB_mb_level($post, $vars);
 		
 	}
 	

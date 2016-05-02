@@ -15,9 +15,55 @@ class CPT_ItemSC extends CPT_Item {
 		parent::init();
 		
 		add_action ("save_post_revision", array ("eal_{$this->type}", 'save'), 10, 2);
+		add_filter('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
+	}
+	
+	
+	
+	
+	public function WPCB_wp_get_revision_ui_diff ($diff, $compare_from, $compare_to) {
+
+		$eal_From = new EAL_ItemSC();
+		$eal_From->loadById($compare_from->ID);
 		
+		$eal_To = new EAL_ItemSC();
+		$eal_To->loadById($compare_to->ID);
+		
+		$diff[0] = $eal_From->compareTitle ($eal_To);
+		$diff[1] = $eal_From->compareDescription ($eal_To);
+		$diff[2] = $eal_From->compareQuestion ($eal_To);
+		$diff[3] = $eal_From->compareLevel ($eal_To);
+		$diff[4] = $eal_From->compareAnswers ($eal_To);
+		
+		
+// 		$args = array(
+// 				'title'           => '',
+// 				'title_left'      => '',
+// 				'title_right'     => '',
+// 				'show_split_view' => true
+// 		);
+		
+// 		$diff2 = wp_text_diff( 'Hallo', 'Hallo', $args);
+		
+// 		if ( ! $diff2  ) {
+// 			// It's a better user experience to still show the Title, even if it didn't change.
+// 			// No, you didn't see this.
+// 			$diff2 = '<table class="diff"><colgroup><col class="content diffsplit left"><col class="content diffsplit middle"><col class="content diffsplit right"></colgroup><tbody><tr>';
+// 			$diff2 .= '<td>Hallo</td><td></td><td>Hallo</td>';
+// 			$diff2 .= '</tr></tbody>';
+// 			$diff2 .= '</table>';
+// 		}
+		
+// 		$b = array (1 => array ("id" => 'post_title_2', 'name' => 'mein p1', 'diff' => $diff2));
+// 		return array_merge ($diff, $b);
+
+		return $diff;
 		
 	}
+	
+
+
+	
 	
 	
 	public function WPCB_register_meta_box_cb () {
