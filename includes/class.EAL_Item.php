@@ -201,17 +201,17 @@ abstract class EAL_Item {
 	
 	
 	private function compareLevel1 ($old, $new, $class) {
-		$res = "<table border='1' style='width:1%'><tr><td></td>";
+		$res = "<table style='width:1%'><tr><td></td>";
 		foreach ($old as $c => $v) {
 			$res .= sprintf ('<td>%s</td>', $c);
 		}
 		$res .= sprintf ('</tr>');
 		
 		foreach (EAL_Item::$level_label as $n => $r) {	// n=0..5, $r=Erinnern...Erschaffen
-			$res .= sprintf ('<tr><td align="left">%d.&nbsp;%s</td>', $n+1, $r);
+			$res .= sprintf ('<tr><td style="padding:0px 5px 0px 5px;" align="left">%d.&nbsp;%s</td>', $n+1, $r);
 			foreach ($old as $c=>$v) {	// c=FW,KW,PW; v=1..6
 				$bgcolor = (($v==$n+1)&& ($new[$c]!=$n+1)) ? "class='diff-{$class}line'" : "";
-				$res .= sprintf ("<td align='left' style='padding:3px; padding-left:5px;' %s>", $bgcolor);
+				$res .= sprintf ("<td align='left' style='padding:0px 5px 0px 5px;' %s>", $bgcolor);
 				$res .= sprintf ("<input type='radio' %s></td>", (($v==$n+1)?'checked':'disabled'));
 		
 			}

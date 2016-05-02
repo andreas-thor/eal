@@ -48,10 +48,15 @@ abstract class CPT_Item extends CPT_Object{
 		add_filter('get_sample_permalink_html', '__return_empty_string', 10, 5);
 		add_filter('pre_get_shortlink', '__return_empty_string' );
 		
+		add_action ("save_post_revision", array ("eal_{$this->type}", 'save'), 10, 2);
+		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
+		
 		
  	
 	}
 	
+	
+
 	
 	
 	public function WPCB_register_meta_box_cb () {

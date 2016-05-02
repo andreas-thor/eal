@@ -15,6 +15,26 @@ class CPT_ItemMC extends CPT_Item {
 	}
 	
 	
+
+	public function WPCB_wp_get_revision_ui_diff ($diff, $compare_from, $compare_to) {
+	
+		if (get_post ($compare_from->post_parent)->post_type != "itemmc") return $diff;
+		
+		$eal_From = new EAL_ItemMC();
+		$eal_From->loadById($compare_from->ID);
+		$eal_To = new EAL_ItemMC();
+		$eal_To->loadById($compare_to->ID);
+	
+		$diff[0] = $eal_From->compareTitle ($eal_To);
+		$diff[1] = $eal_From->compareDescription ($eal_To);
+		$diff[2] = $eal_From->compareQuestion ($eal_To);
+		$diff[3] = $eal_From->compareLevel ($eal_To);
+		$diff[4] = $eal_From->compareAnswers ($eal_To);
+	
+		return $diff;
+	}	
+	
+	
 	public function WPCB_register_meta_box_cb () {
 		
 		global $item;

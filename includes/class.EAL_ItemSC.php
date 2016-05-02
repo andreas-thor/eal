@@ -81,6 +81,8 @@ class EAL_ItemSC extends EAL_Item {
 	
 	public static function save ($post_id, $post) {
 	
+		if ($_POST["post_type"]!="itemsc") return;
+		
 		global $wpdb;
 		$item = new EAL_ItemSC();
 		$item->init($post_id, $post);
@@ -210,20 +212,16 @@ class EAL_ItemSC extends EAL_Item {
 		
 		foreach ($old as $i => $a) {
 			$bgcolor = ($new[$i]['points'] != $a['points']) ? "class='diff-{$class}line'" : "";
-			$res .= "<tr align='left'><td  style='border-style:dotted; border-width:1px; width:1%' align='left' {$bgcolor}>";
+			$res .= "<tr align='left' ><td  style='border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px' align='left' {$bgcolor}>";
 			$res .= "{$a['points']}</td>";
-// 			$res .= "<input type='text' value='{$a['points']}' size='1' readonly {$bgcolor}></td>";
-			
 			$bgcolor = ($new[$i]['answer'] != $a['answer']) ? "class='diff-{$class}line'" : "";
-			$res .= "<td style='width:99%' align='left' {$bgcolor}>{$a['answer']}</td></tr>";
+			$res .= "<td style='width:99%; padding:0; padding-left:10px' align='left' {$bgcolor}>{$a['answer']}</td></tr>";
 					
 		}
 		
 		$res .= "</table></div>";
 		
 		return $res;	
-	
-	
 	}
 	
 }
