@@ -51,18 +51,30 @@ abstract class CPT_Item extends CPT_Object{
 		add_action ("save_post_revision", array ("eal_{$this->type}", 'save'), 10, 2);
 		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
 		
+		add_filter('post_row_actions', array ($this ,'WPCB_post_row_actions'), 10, 2);
+		
 		
  	
 	}
 	
 	
+	public function WPCB_post_row_actions($actions, $post){
 
+		
+		if ($post->post_type != $this->type) return $actions;
+		
+		// remove Quick Edit
+		unset ($actions['inline hide-if-no-js']);	
+		// add "Add Review"
+		$actions['add review'] = "<a href='post-new.php?post_type={$this->type}_review&item_id={$post->ID}'>Add&nbsp;New&nbsp;Review</a>";
+		return $actions;
+	}
 	
 	
 	public function WPCB_register_meta_box_cb () {
 	
-		global $item;
-		
+		global $item, $post;
+		$post->post_title .= "\x03";	// we add ASCII 03 to modify the title
 		
 		add_meta_box('mb_learnout', 'Learning Outcome', array ($this, 'WPCB_mb_learnout'), $this->type, 'normal', 'default', array ('learnout' => $item->getLearnOut()));
 		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_description', 'value' => $item->description) );
@@ -153,14 +165,19 @@ abstract class CPT_Item extends CPT_Object{
 						ORDER BY R.id
 						");
 	
-				echo ("<div onclick=\"this.nextSibling.style.display = (this.nextSibling.style.display == 'none') ? 'block' : 'none';\">" . count($sqlres) . " review(s)</div>");
-				echo ("<div style='display:none'>");
-				foreach ($sqlres as $pos => $sqlrow) {
-					echo ("<a href='post.php?post={$sqlrow->review_id}&action=edit'>&nbsp;#" . ($pos+1) . "&nbsp;{$sqlrow->last_changed}</a><br/>");
+				$c = count($sqlres); 
+				if ($c>0) {
+					printf ("<div class='page-title-action' onclick=\"this.nextSibling.style.display = (this.nextSibling.style.display == 'none') ? 'block' : 'none';\">%d review%s</div>", $c, $c>1 ? "s" : "");
+					echo ("<div style='display:none'>");
+					foreach ($sqlres as $pos => $sqlrow) {
+						echo ("<a href='post.php?post={$sqlrow->review_id}&action=edit'>&nbsp;#" . ($pos+1) . "&nbsp;{$sqlrow->last_changed}</a><br/>");
+					}
+		
+					echo ("</div>");
+					
+					/* Add New Review link is in the short actions now */
+// 					echo ("<h1><a class='page-title-action' href='post-new.php?post_type={$this->type}_review&item_id={$post->ID}'>Add&nbsp;New&nbsp;Review</a></h1>");
 				}
-	
-				echo ("</div>");
-				echo ("<h1><a class='page-title-action' href='post-new.php?post_type={$this->type}_review&item_id={$post->ID}'>Add&nbsp;New&nbsp;Review</a></h1>");
 				break;
 		}
 	}

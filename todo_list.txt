@@ -1,0 +1,37 @@
+
+
+Feedback Demo EAL (14.03.2016)
+
+DONE * Anforderungsstufe: default nur ein Punkt anklickbar (ggf. per User-Einstellung 3 – erstmal nur 1)
+
+DONE * Bei Item: Anforderungsstufe des Learning Outcomes nicht vorgeben; aber Popup, wenn andere Stufe gewählt (gelb wenn einfachere; rot wenn schwierigere)
+
+
+* Textbausteine für Learning Outcome
+	DONE * Einleitungssatz vorgeben: „Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage …“
+	DONE * Drop-down-Liste für Superverben je nach Anforderungsstufe
+	DONE * Auswahl des Topics – Einsetzen der Begriffe in Text
+
+* Bei Review: 
+	DONE * Bewertung Anforderungsstufe mit grauer Hinterlegung (statt nebeneinander)
+	DONE nach Confirm: * Wenn Item Akzeptiert als Gesamturteil, dann alle 9 Teilurteile auf „gut“ 
+	DONE pro Zeile: * Möglichkeit für Shortcuts (alle einer Spalte auf „gut“ setzen); ggf. zweite Spalte extra
+
+* Bei Item ein LO inline erstellen (analog zu Topic)
+	* „Add New“ öffnet Kurzdialog mit Titel
+	* Angabe zu Topics und Anforderungsstufe werden übernommen
+	* Beschreibung muss dann später hinzugefügt werden
+
+	
+Item Revisions
+	DONE * Anzeige / Vergleich Revisionen
+	* Zurücksetzen auf früherere Version (--> unklar was passiert)
+	* Zuordnen Review zu spezifischer Revision 
+	
+
+Import / Export von Aufgaben zu 
+* QTI-Format?
+* Ilias 4 (Norbert) und Ilias5 (HfTL)
+* ... weitere 
+
+

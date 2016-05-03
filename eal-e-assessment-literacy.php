@@ -113,6 +113,25 @@ function set_eal_admin_menu_entries () {
 }
 
 
+add_action('admin_footer-edit.php', 'custom_bulk_admin_footer');
+
+function custom_bulk_admin_footer() {
+
+	global $post_type;
+
+	if (($post_type == 'itemsc') || ($post_type == 'itemmc')) {
+		?>
+    <script type="text/javascript">
+      jQuery(document).ready(function() {
+        jQuery('<option>').val('export').text('<?php _e('Export')?>').appendTo("select[name='action']");
+        jQuery('<option>').val('export').text('<?php _e('Export')?>').appendTo("select[name='action2']");
+      });
+    </script>
+    <?php
+  }
+}
+
+
 
 
 function WPCB_import_topics () {

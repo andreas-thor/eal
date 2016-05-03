@@ -64,10 +64,7 @@ abstract class CPT_Object {
 		
 		add_action( 'restrict_manage_posts', array ($this, 'WPCB_restrict_manage_posts') );
 		
-		
 	}		
-	
-	
 	
 	
 	public function WPCB_mb_editor ($post, $vars) {

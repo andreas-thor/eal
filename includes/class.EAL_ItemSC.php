@@ -87,10 +87,6 @@ class EAL_ItemSC extends EAL_Item {
 		$item = new EAL_ItemSC();
 		$item->init($post_id, $post);
 		
-		
-		$q = wp_is_post_revision( $post_id );
-		$q2 = wp_get_post_revision( $post_id );
-		
 		$wpdb->replace(
 				"{$wpdb->prefix}eal_{$item->type}",
 				array(

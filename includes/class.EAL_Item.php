@@ -31,7 +31,7 @@ abstract class EAL_Item {
 	public function init ($post_id, $post) {
 	
 		$this->id = $post_id;
-		$this->title = $post->post_title;
+		$this->title = trim ($post->post_title, "\x03");	// we remove the ASCII-03 character (we added this during loaded to make Wordpress save a revision even if the title does not change)
 		$this->description = isset($_POST['item_description']) ? $_POST['item_description'] : null;
 		$this->question = isset ($_POST['item_question']) ? $_POST['item_question'] : null;
 
@@ -81,7 +81,6 @@ abstract class EAL_Item {
 			
 			$this->learnout_id = $sqlres['learnout_id'];
 			$this->learnout = null; // lazy loading
-				
 		}
 		
 	}
@@ -208,7 +207,10 @@ abstract class EAL_Item {
 		$res .= sprintf ('</tr>');
 		
 		foreach (EAL_Item::$level_label as $n => $r) {	// n=0..5, $r=Erinnern...Erschaffen
-			$res .= sprintf ('<tr><td style="padding:0px 5px 0px 5px;" align="left">%d.&nbsp;%s</td>', $n+1, $r);
+			$bgcolor = (($new["FW"]!=$n+1) &&  ($old["FW"]==$n+1)) || (($new["KW"]!=$n+1) && ($old["KW"]==$n+1)) || (($new["PW"]!=$n+1) && ($old["PW"]==$n+1)) ? "class='diff-{$class}line'" : "";
+			// || (($new["FW"]==$n+1) &&  ($old["FW"]!=$n+1)) || (($new["KW"]==$n+1) && ($old["KW"]!=$n+1)) || (($new["PW"]==$n+1) && ($old["PW"]!=$n+1))
+			
+			$res .= sprintf ('<tr><td style="padding:0px 5px 0px 5px;" align="left" %s>%d.&nbsp;%s</td>', $bgcolor, $n+1, $r);
 			foreach ($old as $c=>$v) {	// c=FW,KW,PW; v=1..6
 				$bgcolor = (($v==$n+1)&& ($new[$c]!=$n+1)) ? "class='diff-{$class}line'" : "";
 				$res .= sprintf ("<td align='left' style='padding:0px 5px 0px 5px;' %s>", $bgcolor);
