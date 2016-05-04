@@ -132,6 +132,20 @@ function custom_bulk_admin_footer() {
 }
 
 
+add_action('load-edit.php', 'custom_bulk_action');
+
+function custom_bulk_action() {
+
+	$wp_list_table = _get_list_table('WP_Posts_List_Table');
+	if ($wp_list_table->current_action() == 'export') {
+		foreach ($_REQUEST['post'] as $post_id) {
+			$a = 1;
+		}
+	}
+
+
+}
+
 
 
 function WPCB_import_topics () {
