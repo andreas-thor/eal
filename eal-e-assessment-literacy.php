@@ -102,14 +102,16 @@ function set_eal_admin_menu_entries () {
 
 // 	add_menu_page('eal_page_items', 'Items', 'administrator', 'eal_page_items', 'create_eal_page_items', '', 1);
  	
-	add_menu_page('eal_page_taxonomies', 'Taxonomies', 'administrator', 'eal_page_taxonomies', '', '', 30);
+	add_menu_page('eal_page_taxonomies', 'Taxonomies', 'administrator', 'eal_page_taxonomies', '', 'dashicons-tag', 30);
  	
  	
     	add_submenu_page( 'eal_page_taxonomies', 'Topic', 'Topic', 'edit_others_posts', 'edit-tags.php?taxonomy=topic');
     	add_submenu_page( 'eal_page_taxonomies', 'Import', 'Import', 'edit_others_posts', 'import-tags', 'WPCB_import_topics');
    	
    	
-  	 
+    	$c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
+    add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', '', 'dashicons-cart', 30);
+    	 
 }
 
 
@@ -138,9 +140,14 @@ function custom_bulk_action() {
 
 	$wp_list_table = _get_list_table('WP_Posts_List_Table');
 	if ($wp_list_table->current_action() == 'export') {
-		foreach ($_REQUEST['post'] as $post_id) {
-			$a = 1;
-		}
+		
+		$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
+		$b_new = array_unique (array_merge ($b_old, $_REQUEST['post']));
+		$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new, $b_old );
+		$z = 1;
+// 		foreach ($_REQUEST['post'] as $post_id) {
+// 			$a = 1;
+// 		}
 	}
 
 
