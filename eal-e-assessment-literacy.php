@@ -25,6 +25,7 @@
 // include_once 'includes/eal_item_sc.php';
 // include_once 'includes/eal_item_mc.php';
 
+require_once 'includes/class.CPT_Item_Table.php';
 
 require_once 'includes/class.CPT_Item.php';
 require_once 'includes/class.CPT_ItemSC.php';
@@ -109,9 +110,10 @@ function set_eal_admin_menu_entries () {
     	add_submenu_page( 'eal_page_taxonomies', 'Import', 'Import', 'edit_others_posts', 'import-tags', 'WPCB_import_topics');
    	
    	
-    	$c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
-    add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', '', 'dashicons-cart', 30);
-    	 
+    $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
+    add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', 'WPCB_page_itembasket', 'dashicons-cart', 30);
+    
+    
 }
 
 
@@ -140,19 +142,43 @@ function custom_bulk_action() {
 
 	$wp_list_table = _get_list_table('WP_Posts_List_Table');
 	if ($wp_list_table->current_action() == 'export') {
-		
 		$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
 		$b_new = array_unique (array_merge ($b_old, $_REQUEST['post']));
 		$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new, $b_old );
-		$z = 1;
-// 		foreach ($_REQUEST['post'] as $post_id) {
-// 			$a = 1;
-// 		}
 	}
 
 
 }
 
+function WPCB_page_itembasket () {
+?>	
+	<div class="wrap">
+	
+		<h1>Item Basket</h1>
+<?php 
+
+$myListTable = new CPT_Item_Table();
+
+
+
+// echo '<div class="wrap"><h2>My List Table Test</h2>';
+$myListTable->prepare_items();
+
+?>
+<form method="post">
+<input type="hidden" name="page" value="my_list_test" />
+<?php $myListTable->search_box('search', 'search_id'); ?>
+</form>
+<?php 
+
+$myListTable->display();
+
+// echo '</div>';
+
+
+?>		</div>
+<?php 		
+}
 
 
 function WPCB_import_topics () {
