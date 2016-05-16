@@ -1,6 +1,41 @@
 
+Feedback Demo EAL (12.05.2016)
+==============================
+
+
+* Bei Erstellung neuen Items mit LO
+	* Topic wird automatisch von LO übernommen (als Voreinstellung)
+	
+* Item Revisions
+	DONE * Anzeige / Vergleich Revisionen
+	* Zurücksetzen auf früherere Version (--> unklar was passiert)
+	* Zuordnen Review zu spezifischer Revision
+	* Löschen der Reviews (es gibt kein Trash) 
+
+* Klausurerstellung
+	* Basket-Befüllung auch via LO --> kopiert alle Items des LO in Basket
+		* Darstellung der Items mit Typ, FW/KW/PW, Schwierigkeitsgrad, Trennschärfe, Varianz, ...
+	* Darstellung des IST-Zustands der Items
+		* Matrix "LO x Item Type" mit jeweiliger Anzahl in Zelle
+		* SOLL-Zustand durch verkleinern der Werte erreichbar 
+
+	
+* Bei Item ein LO inline erstellen (analog zu Topic)
+	* „Add New“ öffnet Kurzdialog mit Titel
+	* Angabe zu Topics und Anforderungsstufe werden übernommen
+	* Beschreibung muss dann später hinzugefügt werden
+
+
+* Import / Export von Aufgaben zu 
+	* QTI-Format?
+	* Ilias 4 (Norbert) und Ilias5 (HfTL)
+	 
+
+
+
 
 Feedback Demo EAL (14.03.2016)
+==============================
 
 DONE * Anforderungsstufe: default nur ein Punkt anklickbar (ggf. per User-Einstellung 3 – erstmal nur 1)
 
@@ -17,21 +52,9 @@ DONE * Bei Item: Anforderungsstufe des Learning Outcomes nicht vorgeben; aber Po
 	DONE nach Confirm: * Wenn Item Akzeptiert als Gesamturteil, dann alle 9 Teilurteile auf „gut“ 
 	DONE pro Zeile: * Möglichkeit für Shortcuts (alle einer Spalte auf „gut“ setzen); ggf. zweite Spalte extra
 
-* Bei Item ein LO inline erstellen (analog zu Topic)
-	* „Add New“ öffnet Kurzdialog mit Titel
-	* Angabe zu Topics und Anforderungsstufe werden übernommen
-	* Beschreibung muss dann später hinzugefügt werden
-
 	
-Item Revisions
-	DONE * Anzeige / Vergleich Revisionen
-	* Zurücksetzen auf früherere Version (--> unklar was passiert)
-	* Zuordnen Review zu spezifischer Revision 
 	
-
-Import / Export von Aufgaben zu 
-* QTI-Format?
-* Ilias 4 (Norbert) und Ilias5 (HfTL)
-* ... weitere 
+	
+	
 
 

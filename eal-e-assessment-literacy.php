@@ -110,8 +110,21 @@ function set_eal_admin_menu_entries () {
     	add_submenu_page( 'eal_page_taxonomies', 'Import', 'Import', 'edit_others_posts', 'import-tags', 'WPCB_import_topics');
    	
    	
+    	
+    if ($_REQUEST['action'] == 'removefrombasket') {
+    	$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
+        	if ($_REQUEST['itemid']!=null) {
+    		$b_new = array_diff ($b_old, [$_REQUEST['itemid']]);
+    	}
+        if ($_REQUEST['itemids']!=null) {
+    		$b_new = array_diff ($b_old, $_REQUEST['itemids']);
+    	}
+    	$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new, $b_old );
+    }    	
+    	
+    	
     $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
-    add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', 'WPCB_page_itembasket', 'dashicons-cart', 30);
+    add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', 'WPCB_page_itembasket', 'dashicons-cart', 31);
     
     
 }
@@ -166,17 +179,13 @@ $myListTable->prepare_items();
 
 ?>
 <form method="post">
-<input type="hidden" name="page" value="my_list_test" />
-<?php $myListTable->search_box('search', 'search_id'); ?>
-</form>
+<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
 <?php 
-
-$myListTable->display();
-
-// echo '</div>';
-
-
-?>		</div>
+	$myListTable->search_box('search', 'search_id'); 
+	$myListTable->display();
+	?>
+</form>
+	</div>
 <?php 		
 }
 
