@@ -144,11 +144,11 @@ class CPT_LearnOut extends CPT_Object {
 		
 	
 	public function WPCB_manage_posts_columns($columns) {
-		return array_merge(parent::WPCB_manage_posts_columns($columns), array('Items' => 'Items'));
+		return array_merge(parent::WPCB_manage_posts_columns($columns), array('SC' => 'Single Choice', 'MC' => 'Multiple Choice'));
 	}
 	
 	public function WPCB_manage_edit_sortable_columns ($columns) {
-		return array_merge(parent::WPCB_manage_edit_sortable_columns($columns) , array('Items' => 'Items'));
+		return array_merge(parent::WPCB_manage_edit_sortable_columns($columns) , array('SC' => 'SC', 'MC' => 'MC'));
 	}
 	
 	
@@ -159,11 +159,27 @@ class CPT_LearnOut extends CPT_Object {
 		global $post;
 	
 		switch ( $column ) {
-			case 'Items': 
-	
-				echo ("-1");
-				echo ("<h1><a class='page-title-action' href='post-new.php?post_type=itemsc&learnout_id={$post->ID}'>Add&nbsp;New&nbsp;SC</a></h1>");
-				echo ("<h1><a class='page-title-action' href='post-new.php?post_type=itemmc&learnout_id={$post->ID}'>Add&nbsp;New&nbsp;MC</a></h1>");
+			case 'SC': 
+// 				echo ("{$post->SC} SC Items");
+// 				echo ("<h1><a class='page-title-action' href='post-new.php?post_type=itemsc&learnout_id={$post->ID}'>Show All {$post->SC} SC Items</a></h1>");
+// 				echo ("<a class='page-title-action' href='post-new.php?post_type=itemsc&learnout_id={$post->ID}'>Add&nbsp;New&nbsp;SC</a>");
+				
+				echo ("{$post->SC} SC Items");
+				echo ("<div class='row-actions'>");
+				if ($post->SC > 0) {
+					echo ("<span class='view'><a href='edit.php?post_type=itemsc&learnout_id={$post->ID}' title='Show All'>Show All</a> |</span>");
+				}
+				echo ("<span class='edit'><a href='post-new.php?post_type=itemsc&learnout_id={$post->ID}' title='Add New SC'>Add New SC</a></span>");
+				echo ("<span class='inline hide-if-no-js'></span></div>");
+				break;
+			case 'MC':
+				echo ("{$post->MC} MC Items");
+				echo ("<div class='row-actions'>");
+				if ($post->MC > 0) {
+					echo ("<span class='view'><a href='edit.php?post_type=itemmc&learnout_id={$post->ID}' title='Show All'>Show All</a> |</span>");
+				}
+				echo ("<span class='edit'><a href='post-new.php?post_type=itemmc&learnout_id={$post->ID}' title='Add New MC'>Add New MC</a></span>");
+				echo ("<span class='inline hide-if-no-js'></span></div>");
 				break;
 		}
 	}
@@ -174,9 +190,28 @@ class CPT_LearnOut extends CPT_Object {
 	public function WPCB_posts_fields ( $array ) {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
-			$array = parent::WPCB_posts_fields($array) . ", (-9) as reviews ";
+			$array = parent::WPCB_posts_fields($array) 
+			. ", (SELECT COUNT(*) FROM {$wpdb->prefix}eal_itemsc X JOIN {$wpdb->prefix}posts Y ON (X.id= Y.ID) WHERE Y.post_parent = 0 AND X.learnout_id = {$wpdb->posts}.ID) AS SC" 
+			. ", (SELECT COUNT(*) FROM {$wpdb->prefix}eal_itemmc X JOIN {$wpdb->prefix}posts Y ON (X.id= Y.ID) WHERE Y.post_parent = 0 AND X.learnout_id = {$wpdb->posts}.ID) AS MC" 
+			. ", (-9) as reviews ";
 		}
 		return $array;
+	}
+	
+	
+	public function WPCB_posts_orderby($orderby_statement) {
+	
+		global $wp_query;
+		
+		$orderby_statement = parent::WPCB_posts_orderby($orderby_statement);
+		
+		if ($wp_query->query["post_type"] == $this->type) {
+			if ($wp_query->get( 'orderby' ) == "SC") $orderby_statement = "SC " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "MC") $orderby_statement = "MC " . $wp_query->get( 'order' );
+		}
+	
+		// 		$orderby_statement = "level_KW DESC";
+		return $orderby_statement;
 	}
 	
 	

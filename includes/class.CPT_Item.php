@@ -133,15 +133,15 @@ abstract class CPT_Item extends CPT_Object{
 	}
 	
 	
-	
+
 	
 	
 	public function WPCB_manage_posts_columns($columns) {
-		return array_merge(parent::WPCB_manage_posts_columns($columns), array('Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
+		return array_merge(parent::WPCB_manage_posts_columns($columns), array('Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO'));
 	}
 	
 	public function WPCB_manage_edit_sortable_columns ($columns) {
-		return array_merge(parent::WPCB_manage_edit_sortable_columns($columns) , array('Punkte' => 'Punkte', 'Reviews' => 'Reviews'));
+		return array_merge(parent::WPCB_manage_edit_sortable_columns($columns) , array('Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO'));
 	}
 	
 	
@@ -153,6 +153,8 @@ abstract class CPT_Item extends CPT_Object{
 	
 		switch ( $column ) {
 			case 'Punkte': echo ($post->points); break;
+			
+			case 'LO': echo ($post->LOTitle); break;
 			
 			case 'Reviews':
 	
@@ -188,14 +190,55 @@ abstract class CPT_Item extends CPT_Object{
 	public function WPCB_posts_fields ( $array ) {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
-			$array = parent::WPCB_posts_fields($array) . ", (select count(*) from {$wpdb->prefix}eal_{$this->type}_review where {$wpdb->prefix}eal_{$this->type}.id = {$wpdb->prefix}eal_{$this->type}_review.item_id) as reviews ";
+			$array = parent::WPCB_posts_fields($array) 
+				. ", (select count(*) from {$wpdb->prefix}eal_{$this->type}_review where {$wpdb->prefix}eal_{$this->type}.id = {$wpdb->prefix}eal_{$this->type}_review.item_id) as reviews"
+				. ", {$wpdb->prefix}eal_learnout.title AS LOTitle";
 		}
 		return $array;
 	}
 	
 	
+	public function WPCB_posts_join ($join) {
+		global $wp_query, $wpdb;
+	
+		$join = parent::WPCB_posts_join($join);
+	
+		if ($wp_query->query["post_type"] == $this->type) {
+			$join .= " LEFT OUTER JOIN {$wpdb->prefix}eal_learnout ON ({$wpdb->prefix}eal_learnout.id = {$wpdb->prefix}eal_{$this->type}.learnout_id)";
+		}
+		return $join;
+	}
+	
 	
 
+	public function WPCB_posts_orderby($orderby_statement) {
+	
+		global $wp_query;
+	
+		$orderby_statement = parent::WPCB_posts_orderby($orderby_statement);
+	
+		if ($wp_query->query["post_type"] == $this->type) {
+			if ($wp_query->get( 'orderby' ) == "LO") $orderby_statement = "LOTitle " . $wp_query->get( 'order' );
+		}
+	
+		return $orderby_statement;
+	}	
+	
+	public function WPCB_posts_where($where) {
+	
+		global $wp_query, $wpdb;
+		
+		$where = parent::WPCB_posts_where($where);
+		
+		if ($wp_query->query["post_type"] == $this->type) {
+			if (isset($_REQUEST["learnout_id"])) {
+					$where .= " AND {$wpdb->prefix}eal_learnout.id = {$_REQUEST['learnout_id']}";
+			}
+		}
+	
+		return $where;
+	}
+	
 	
 
 	

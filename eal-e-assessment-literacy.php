@@ -136,7 +136,7 @@ function custom_bulk_admin_footer() {
 
 	global $post_type;
 
-	if (($post_type == 'itemsc') || ($post_type == 'itemmc')) {
+	if (($post_type == 'itemsc') || ($post_type == 'itemmc') || ($post_type == 'learnout')) {
 		?>
     <script type="text/javascript">
       jQuery(document).ready(function() {
@@ -153,11 +153,32 @@ add_action('load-edit.php', 'custom_bulk_action');
 
 function custom_bulk_action() {
 
+	global $wpdb;
 	$wp_list_table = _get_list_table('WP_Posts_List_Table');
+	
 	if ($wp_list_table->current_action() == 'export') {
+
+		$postids = $_REQUEST['post'];
+		
+		if (($_REQUEST['post_type'] == 'learnout')) {
+
+			// get all items of the learning outcomes
+			$postids = array ();
+			foreach (array('itemsc', 'itemmc') as $itemtype) {
+				$postids=array_merge ($postids, $wpdb->get_col( "
+						SELECT      P.id
+						FROM        {$wpdb->prefix}eal_{$itemtype} E
+						JOIN		{$wpdb->prefix}posts P
+						ON			(P.ID = E.ID)
+						WHERE		P.post_parent = 0
+						AND			E.learnout_id IN (" . join(", ", $_REQUEST['post']) . ")"
+				));
+			}
+		}
+		
 		$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
-		$b_new = array_unique (array_merge ($b_old, $_REQUEST['post']));
-		$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new, $b_old );
+		$b_new = array_unique (array_merge ($b_old, $postids));
+		$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new);
 	}
 
 

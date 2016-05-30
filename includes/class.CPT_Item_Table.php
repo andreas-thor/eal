@@ -66,7 +66,7 @@ class CPT_Item_Table extends WP_List_Table {
 			
 			$row = array ('ID' => $item_id); 
 						
-					if ($post->post_type == 'itemsc') {
+				if ($post->post_type == 'itemsc') {
 				$item = new EAL_ItemSC();
 				$row['type'] = 'Single Choice';
 			}
@@ -148,9 +148,9 @@ class CPT_Item_Table extends WP_List_Table {
 	
 			case 'removefrombasket':
 				
-// 				$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
-// 				$b_new = array_diff ($b_old, $_REQUEST['itemids']);
-// 				$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new, $b_old );
+				$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
+				$b_new = array_diff ($b_old, $_REQUEST['itemids']);
+				$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new );
 				break;
 	
 			case 'exportILIAS5':

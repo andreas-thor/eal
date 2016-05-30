@@ -183,7 +183,7 @@ abstract class CPT_Object {
 	public function WPCB_posts_join ($join) {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
-			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} ON {$wpdb->prefix}eal_{$this->type}.id = {$wpdb->posts}.ID";
+			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} ON ({$wpdb->prefix}eal_{$this->type}.id = {$wpdb->posts}.ID)";
 		}
 		return $join;
 	}

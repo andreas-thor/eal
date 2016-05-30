@@ -13,8 +13,9 @@ Feedback Demo EAL (12.05.2016)
 	* Löschen der Reviews (es gibt kein Trash) 
 
 * Klausurerstellung
-	* Basket-Befüllung auch via LO --> kopiert alle Items des LO in Basket
-		* Darstellung der Items mit Typ, FW/KW/PW, Schwierigkeitsgrad, Trennschärfe, Varianz, ...
+	* DONE Bei Liste der LO auch Anzahl der SC/MC anzeigen (inkl. Link zu den Items == Item-Table mit Filter auf LO)?
+	* DONE Basket-Befüllung auch via LO --> kopiert alle Items des LO in Basket
+	* Darstellung der Items mit Typ, FW/KW/PW, Schwierigkeitsgrad, Trennschärfe, Varianz, ...
 	* Darstellung des IST-Zustands der Items
 		* Matrix "LO x Item Type" mit jeweiliger Anzahl in Zelle
 		* SOLL-Zustand durch verkleinern der Werte erreichbar 
