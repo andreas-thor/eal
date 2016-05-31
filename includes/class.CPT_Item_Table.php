@@ -3,6 +3,7 @@
 require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 require_once ("class.EAL_ItemSC.php");
 require_once ("class.EAL_ItemMC.php");
+require_once ("class.EXP_Ilias.php");
 
 class CPT_Item_Table extends WP_List_Table {
 
@@ -66,7 +67,7 @@ class CPT_Item_Table extends WP_List_Table {
 			
 			$row = array ('ID' => $item_id); 
 						
-				if ($post->post_type == 'itemsc') {
+			if ($post->post_type == 'itemsc') {
 				$item = new EAL_ItemSC();
 				$row['type'] = 'Single Choice';
 			}
@@ -154,8 +155,16 @@ class CPT_Item_Table extends WP_List_Table {
 				break;
 	
 			case 'exportILIAS5':
+				
+				EXP_Ilias::generateExport($_REQUEST['itemids']);
+				
+				
+				
 				echo (implode (',', $_REQUEST['itemids']) . ' sollen in das ILIAS-Format exportiert werden.');
-// 				echo ("<script>window.open('http://www.colorado.edu/conflict/peace/download/peace_essay.ZIP');</script>");
+				echo ("</br><a href='". plugins_url('download.php', __FILE__) . "?itemids=" . implode (',', $_REQUEST['itemids']) . "'>Download (" . count($_REQUEST['itemids']) . " Items)</a>");
+				
+// 				echo (plugins_url('download.php', __FILE__));
+				// 				echo ("<script>window.open('http://www.colorado.edu/conflict/peace/download/peace_essay.ZIP');</script>");
 // 				echo ("<script>document.location = 'data:application/octet-stream,field1%2Cfield2%0Afoo%2Cbar%0Agoo%2Cgai%0A';</script>");
 				
 				
@@ -171,6 +180,13 @@ class CPT_Item_Table extends WP_List_Table {
 		return;
 	}
 	
+	
+	public function exportILIAS5 () {
+		
+		
+		
+		
+	}
 }
 
 ?>
