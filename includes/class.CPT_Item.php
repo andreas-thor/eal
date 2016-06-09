@@ -309,6 +309,55 @@ abstract class CPT_Item extends CPT_Object{
 	
 	
 
+
+	function import_items () {
+	
+	
+		if ($_POST['action']=='Upload') {
+			//	checks for errors and that file is uploaded
+			if (($_FILES['uploadedfile']['error'] == UPLOAD_ERR_OK) && (is_uploaded_file($_FILES['uploadedfile']['tmp_name']))) {
+	
+				// TODO: check file format parameter (ILIAS5, ...)							
+				EXP_Ilias::import($_FILES['uploadedfile']);
+				
+			}
+		}
+	
+	
+		?>
+	
+			<div class="wrap">
+			
+				<h1>Items</h1>
+				
+				<h2>UploadXXX Items</h2>
+				<form  enctype="multipart/form-data" action="admin.php?page=import-items" method="post">
+					<table class="form-table">
+						<tbody>
+							<tr class="user-first-name-wrap">
+								<th><label>File</label></th>
+								<td><input class="menu-name regular-text menu-item-textbox input-with-default-title" name="uploadedfile" type="file" size="30" accept="text/*"></td>
+							</tr>
+							<tr class="user-first-name-wrap">
+								<th><label>Format</label></th>
+								<td><select name="format"><option>ILIAS5</option></select></td>
+							</tr>
+							<tr>
+								<th>
+									<input type="submit" name="action" class="button button-primary" value="Upload">
+								</th>
+								<td></td>
+							</tr>
+						</tbody>
+					</table>
+				</form>
+			</div>	
+				
+	
+	<?php 
+		
+	}
+		
 	
 
 

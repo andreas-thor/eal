@@ -10,7 +10,7 @@ class CPT_ItemMC extends CPT_Item {
 
 		$this->type = "itemmc";
 		$this->label = "Multiple Choice";
-		$this->menu_pos = 6;
+		$this->menu_pos = 0;
 		parent::init();
 	}
 	

@@ -26,10 +26,17 @@ Feedback Demo EAL (12.05.2016)
 	* Angabe zu Topics und Anforderungsstufe werden übernommen
 	* Beschreibung muss dann später hinzugefügt werden
 
+* Export von Aufgaben 
+	* Ilias 5
+	* Ilias 4
+	* Standard (QTI)
 
-* Import / Export von Aufgaben zu 
-	* QTI-Format?
-	* Ilias 4 (Norbert) und Ilias5 (HfTL)
+* Import von Aufgaben  
+	* Ilias 5
+	* Ilias 4
+	* Standard (QTI)
+	
+	
 	 
 
 

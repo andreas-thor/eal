@@ -11,7 +11,7 @@ class CPT_ItemSC extends CPT_Item {
 	public function init($args = array()) {
 		$this->type = "itemsc";
 		$this->label = "Single Choice";
-		$this->menu_pos = 5;
+		$this->menu_pos = 0;
 		parent::init();
 		
 	}

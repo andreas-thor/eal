@@ -103,11 +103,20 @@ function set_eal_admin_menu_entries () {
 
 // 	add_menu_page('eal_page_items', 'Items', 'administrator', 'eal_page_items', 'create_eal_page_items', '', 1);
  	
-	add_menu_page('eal_page_taxonomies', 'Taxonomies', 'administrator', 'eal_page_taxonomies', '', 'dashicons-tag', 30);
+//  	add_menu_page('My Page Title', 'My Menu Title', 'manage_options', 'my-menu', 'my_menu_output' );
  	
  	
-    	add_submenu_page( 'eal_page_taxonomies', 'Topic', 'Topic', 'edit_others_posts', 'edit-tags.php?taxonomy=topic');
-    	add_submenu_page( 'eal_page_taxonomies', 'Import', 'Import', 'edit_others_posts', 'import-tags', 'WPCB_import_topics');
+ 	
+ 	add_menu_page('eal_page_items', 'Items', 'edit_others_posts', 'eal_page_items', 'create_eal_page_items', 'dashicons-admin-post', 1);
+ 	add_submenu_page('eal_page_items', 'All Items', 'All Items', 'edit_others_posts', 'eal_page_items' );
+ 	add_submenu_page( 'eal_page_items', 'Single Choice', 'Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
+ 	add_submenu_page( 'eal_page_items', 'Multiple Choice', 'Multiple Choice', 'edit_others_posts', 'edit.php?post_type=itemmc');
+ 	add_submenu_page( 'eal_page_items', 'Import', 'Import', 'edit_others_posts', 'import-items', array ('CPT_Item', 'import_items'));
+ 	
+ 	
+	add_menu_page('eal_page_taxonomies', 'Taxonomies', 'edit_others_posts', 'eal_page_taxonomies', '', 'dashicons-networking', 30);
+   	add_submenu_page( 'eal_page_taxonomies', 'Topic', 'Topic', 'edit_others_posts', 'edit-tags.php?taxonomy=topic');
+   	add_submenu_page( 'eal_page_taxonomies', 'Import', 'Import', 'edit_others_posts', 'import-topics', 'WPCB_import_topics');
    	
    	
     	
@@ -329,6 +338,9 @@ function WPCB_import_topics () {
 
 
 
+
+
+
 // highlight the proper top level menu
 // add_action('parent_file', 'set_eal_taxonomies_menu_correction');
 // function set_eal_taxonomies_menu_correction($parent_file) {
@@ -351,13 +363,11 @@ function create_eal_page_items () {
 	$html  = '
 		<div class="wrap">
 			<form action="options.php" method="post" name="options">
-				<h2>Items';
-	
-	foreach ($GLOBALS["eal_itemtypes"] as $id => $name) {
-		$html .= '<a class="add-new-h2" href="post-new.php?post_type=' . $id . '">Add ' . $name . '</a>';
-	}
-	
-	$html.= '	</h2>
+				<h1>All Items
+					<a class="add-new-h2" href="edit.php?post_type=itemsc">All Single Choice</a>
+					<a class="add-new-h2" href="edit.php?post_type=itemmc">All Multiple Choice</a>
+					<a class="add-new-h2" href="admin.php?page=import-items">Import Items</a>
+				</h1>
 			</form>
 		</div>';
 			

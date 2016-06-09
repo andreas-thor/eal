@@ -7,6 +7,41 @@ require_once ("class.EAL_ItemMC.php");
 
 class EXP_Ilias {
 
+	
+	
+	public static function import ($file) {
+		
+		$zip = new ZipArchive;
+		if (substr ($file['name'], -4) != ".zip") {
+			// TODO: error handling
+			echo "Error! File is not a zip file";
+			return;
+		}
+		
+		$name = substr ($file['name'], 0, strlen ($file['name'])-4); // remove extension ".zip"
+		$res = $zip->open($file['tmp_name']);
+		if ($res === TRUE) {
+			
+			$file_qpl = $zip->getFromName("{$name}/{$name}.xml");
+			$file_qti = $zip->getFromName("{$name}/{str_replace('_qpl_', '_qti_', $name)}.xml");
+				
+			
+			
+			echo 'ok';
+			for ($i = 0; $i < $zip->numFiles; $i++) {
+     			
+				$filename = $zip->getNameIndex($i);
+			    echo $filename;
+ }
+			$zip->close();
+		} else {
+			echo 'Fehler, Code:' . $res;
+		}
+		
+	}
+	
+	
+	
 
 	public static function generateExport ($itemids) {
 
@@ -71,31 +106,40 @@ class EXP_Ilias {
 			
 			if ($post->post_type == 'itemsc') {
 				$item = new EAL_ItemSC();
-				$qtype = "SINGLE CHOICE QUESTION";
+				$item_data = array (
+					"questiontype" => "SINGLE CHOICE QUESTION",
+					"ident" => "MCSR",
+					"rcardinality" => "Single"
+				);
 			}
 			if ($post->post_type == 'itemmc') {
 				$item = new EAL_ItemMC();
-				$qtype = "MULTIPLE CHOICE QUESTION";
+				$item_data = array (
+					"questiontype" => "MULTIPLE CHOICE QUESTION",
+					"ident" => "MCMR",
+					"rcardinality" => "Multiple"
+				);
 			}
 			
 			$item->loadById($item_id);
 
 			$xml_IT = $dom->createElement("item");
-			$xml_IT->setAttribute("ident", "il_0_qst_{$itemid}");
+			$xml_IT->setAttribute("ident", "il_0_qst_{$item_id}");
 			$xml_IT->setAttribute("title", $item->title);
 			$xml_IT->setAttribute("maxattempts", 1);
 			
-			$xml_IT->appendChild ($dom->createElement("qticomment", "07"));
+			$xml_IT->appendChild ($dom->createElement("qticomment", "[EALID:{$item_id}]"));
 			$xml_IT->appendChild ($dom->createElement("duration", "P0Y0M0DT0H1M0S"));
 				
 			/* QTI Metadata*/
 			$xml_QM = $dom->createElement("qtimetadata");
 			$meta = array (
 				"ILIAS_VERSION" => "5.0.8 2015-11-24",
-				"QUESTIONTYPE" => $qtype,
+				"QUESTIONTYPE" => $item_data["questiontype"],
 				"AUTHOR" => get_the_author_meta ('login', get_post_field( 'post_author', $post->ID )), 
 				"additional_cont_edit_mode" => "default",
-				"externalId" => "il_0_qst_{$itemid}",
+				"externalId" => "il_0_qst_{$item_id}",
+				"ealid" => $item_id,
 				"thumb_size" => "",
 				"feedback_setting" => 1
 			);
@@ -114,11 +158,11 @@ class EXP_Ilias {
 			$xml_PR->setAttribute("label", $item->title);
 			$xml_FL = $dom->createElement("flow");
 
-			$xml_FL->appendChild (EXP_Ilias::createMaterialElement($dom, "text/html", $item->description));
+			$xml_FL->appendChild (EXP_Ilias::createMaterialElement($dom, "text/html", $item->description . "<hr/>" . $item->question));
 			
 			$xml_RL = $dom->createElement("response_lid");
-			$xml_RL->setAttribute("ident", "MCMR");
-			$xml_RL->setAttribute("rcardinality", "Multiple");
+			$xml_RL->setAttribute("ident", $item_data["ident"]);
+			$xml_RL->setAttribute("rcardinality", $item_data["rcardinality"]);
 				
 			$xml_RC = $dom->createElement("render_choice");
 			$xml_RC->setAttribute("shuffle", "Yes");
@@ -151,7 +195,7 @@ class EXP_Ilias {
 					$xml_CV = $dom->createElement("conditionvar");
 					$xml_NO = $dom->createElement("not");
 					$xml_VE = $dom->createElement("varequal", $number);
-					$xml_VE->setAttribute ("respident", "MCMR");
+					$xml_VE->setAttribute ("respident", $item_data["ident"]);
 					
 					if ($checked==1) {
 						$xml_CV->appendChild ($xml_VE);

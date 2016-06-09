@@ -36,10 +36,11 @@ abstract class CPT_Object {
 		
 					'public' => true,
 					'menu_position' => $this->menu_pos,
+					'menu_icon' => 'dashicons-welcome-learn-more', 
 					'supports' => array( 'title', 'revisions'), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
 					'taxonomies' => array( 'topic' ),
-					// 'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
 					'has_archive' => false, // false to allow for single view
+					'show_ui' => true,
 					'show_in_menu'    => $this->menu_pos > 0,
 					'register_meta_box_cb' => array ($this, 'WPCB_register_meta_box_cb')
 				), 
