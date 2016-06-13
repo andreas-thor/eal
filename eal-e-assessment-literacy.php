@@ -36,6 +36,7 @@ require_once 'includes/class.CPT_ItemSC.Review.php';
 require_once 'includes/class.CPT_ItemMC.Review.php';
 
 require_once 'includes/class.CPT_LearnOut.php';
+require_once 'includes/class.PAG_Basket.php';
 
 
 // $GLOBALS["eal_itemtypes"] = [
@@ -133,11 +134,15 @@ function set_eal_admin_menu_entries () {
     	
     	
     $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
-    add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', 'WPCB_page_itembasket', 'dashicons-cart', 31);
+    add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', array ('PAG_Basket', 'page_itembasket'), 'dashicons-cart', 31);
+    add_submenu_page( 'eal_page_itembasket', 'IST Blueprint', 'IST Blueprint', 'edit_others_posts', 'ist-blueprint', array ('PAG_Basket', 'page_ist_blueprint'));
     
     
 }
 
+
+// register AJAX-PHP-function
+add_action( 'wp_ajax_load_items', array ('PAG_Basket', 'load_items_callback') );
 
 add_action('admin_footer-edit.php', 'custom_bulk_admin_footer');
 
@@ -193,31 +198,9 @@ function custom_bulk_action() {
 
 }
 
-function WPCB_page_itembasket () {
-?>	
-	<div class="wrap">
-	
-		<h1>Item Basket</h1>
-<?php 
-
-$myListTable = new CPT_Item_Table();
 
 
 
-// echo '<div class="wrap"><h2>My List Table Test</h2>';
-$myListTable->prepare_items();
-
-?>
-<form method="post">
-<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
-<?php 
-	$myListTable->search_box('search', 'search_id'); 
-	$myListTable->display();
-	?>
-</form>
-	</div>
-<?php 		
-}
 
 
 function WPCB_import_topics () {

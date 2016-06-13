@@ -44,6 +44,17 @@ abstract class EAL_Item {
 	}
 	
 	
+	public function setPOST () {
+		
+		$_POST['post_type'] = $this->type;
+		$_POST['item_description'] = $this->description;
+		$_POST['item_question'] = $this->question;
+		$_POST['item_level_FW'] = $this->level["FW"];
+		$_POST['item_level_KW'] = $this->level["KW"];
+		$_POST['item_level_PW'] = $this->level["PW"];
+		$_POST['learnout_id'] = $this->learnout_id;
+	}
+	
 	
 	
 	public function load () {

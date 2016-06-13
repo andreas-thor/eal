@@ -29,8 +29,21 @@ class EAL_ItemSC extends EAL_Item {
 			}
 		}
 		
-		print_r ($this->answers);
+// 		print_r ($this->answers);
 	}
+	
+	public function setPOST () {
+	
+		parent::setPOST();
+	
+		$_POST['answer'] = array();
+		$_POST['points'] = array();
+		foreach ($this->answers as $v) {
+			array_push ($_POST['answer'], $v['answer']);
+			array_push ($_POST['points'], $v['points']);
+		}
+	}
+	
 	
 	
 	/**

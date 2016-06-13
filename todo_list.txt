@@ -32,8 +32,9 @@ Feedback Demo EAL (12.05.2016)
 	* Standard (QTI)
 
 * Import von Aufgaben  
-	* Ilias 5
-	* Ilias 4
+	* Bilder / Objekte!!
+	* DONE Ilias 5
+	* DONE Ilias 4
 	* Standard (QTI)
 	
 	

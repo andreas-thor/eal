@@ -31,6 +31,21 @@ class EAL_ItemMC extends EAL_Item {
 	}
 	
 	
+	public function setPOST () {
+		
+		parent::setPOST();
+		
+		
+		$_POST['answer'] = array();
+		$_POST['positive'] = array();
+		$_POST['negative'] = array();
+		foreach ($this->answers as $v) {
+			array_push ($_POST['answer'], $v['answer']);
+			array_push ($_POST['positive'], $v['positive']);
+			array_push ($_POST['negative'], $v['negative']);
+		}
+	}
+	
 	/**
 	 * Create new Item or load existing item from database
 	 * @param string $eal_posttype
