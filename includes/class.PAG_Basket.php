@@ -6,33 +6,26 @@ class PAG_Basket {
 	
 	
 	
-	
-	
-	
-	
-	public static function load_items_callback() {
+	private static function getValuesByKey ($name, $item, $parent) {
 		
-// 		global $wpdb; // this is how you get access to the database
-	
-		$items = array ();
-		$itemids = get_user_meta(get_current_user_id(), 'itembasket', true);
-		foreach ($itemids as $item_id) {
-			$post = get_post($item_id);
-			if ($post == null) continue;
-				
-			$row = array ('ID' => $item_id);
+		if (($name == null) || ($name=="none")) return [0];
 		
-			if ($post->post_type == 'itemsc') {
-				$item = new EAL_ItemSC();
+		if ($name == "type") return [$item->type];
+		
+		if (($name == "dim") || ($name == "level")) {
+			foreach (array ('FW', 'PW', 'KW') as $dim) {
+				if ($item->level[$dim] > 0) {
+					if ($name == "dim") return [$dim];
+					if ($name == "level") return [$item->level[$dim]];
+				}
 			}
+		}
+		
+		if (($name == "topic1") || ($name == "topic2")) {
+			
+			$res = array();
+			foreach (wp_get_post_terms($item->id, 'topic') as $term) {
 				
-			if ($post->post_type == 'itemmc') {
-				$item = new EAL_ItemMC();
-			}
-			
-			
-			$row['terms'] = array ();
-			foreach (wp_get_post_terms($item_id, 'topic') as $term) {
 				$termhier = array($term->name);
 				$parentId = $term->parent;
 				while ($parentId>0) {
@@ -40,34 +33,206 @@ class PAG_Basket {
 					$termhier = array_merge (array ($parentTerm->name), $termhier);
 					$parentId = $parentTerm->parent;
 				}
-				$row['terms'] = array_merge ($row['terms'], array ($termhier));
-			}
-			
-			
-			$item->loadById($item_id);
-
-			$row['type'] = $item->type;
-			$row['dim'] = '';
-			$row['level'] = 0;
 				
-			foreach (array ('FW', 'PW', 'KW') as $dim) {
-				if ($item->level[$dim] > 0) {
-					$row['dim'] = $dim;
-					$row['level'] = $item->level[$dim]; 
+				if ($name=="topic1") array_push ($res, $termhier[0]);
+				
+				// for topic2: check if available AND if parent=topic1 is the same
+				if (($name=="topic2") && (count($termhier)>1) && ($termhier[0]==$parent)) array_push ($res, $termhier[1]);
+				
+			}
+			return $res;
+			
+			
+		}
+		
+		return [];
+		
+	}
+	
+	private static function groupBy ($name, $items, $parent, $complete) {
+	
+		$res = array();
+		$complete = true;
+		if ($complete) {	// makes sure all keys appear (available for all dimensions except for topic)
+			if (($name=="none") || ($name==null)) $res = array (0 => []);
+			if ($name=="type") 	$res = array ("itemsc" => [], "itemmc" => []);
+			if ($name=="dim") 	$res = array ("FW" => [], "KW" => [], "PW" => []);
+			if ($name=="level")	$res = array ("1" => [],"2" => [],"3" => [],"4" => [],"5" => [],"6" => []);
+		}
+		
+		foreach ($items as $item) {
+			$values = PAG_Basket::getValuesByKey($name, $item, $parent);
+			foreach ($values as $value) {
+				if ($res[$value] == null) $res[$value] = array();
+				array_push ($res[$value], $item);
+			}
+		}
+		ksort ($res);	// sort by key
+		return $res;
+	}
+	
+	
+	public static function load_items_callback () {
+		
+// 		global $wpdb; // this is how you get access to the database
+	
+		
+		// load all items from basket
+		$items = array ();
+		$itemids = get_user_meta(get_current_user_id(), 'itembasket', true);
+		if ($itemids == null) $itemids = array();
+		foreach ($itemids as $item_id) {
+			$post = get_post($item_id);
+			if ($post == null) continue;
+			$item = null;
+			if ($post->post_type == 'itemsc') $item = new EAL_ItemSC();
+			if ($post->post_type == 'itemmc') $item = new EAL_ItemMC();
+			if ($item == null) continue;
+			$item->loadById($item_id);
+			array_push($items, $item);
+		}
+		
+		
+		// FOR DEBUG
+		$dim_names = array(array ($_POST['dimx0'], $_POST['dimx1'], $_POST['dimx2']), array($_POST['dimy0'], $_POST['dimy1'], $_POST['dimy2']));
+// 		$dim_names = array(array ('dim', null, null), array('type', null, null));
+// 		$dim_values = array(array(), array());
+// 		foreach ([0,1] as $x) {
+// 			foreach ([0,1,2] as $y) {
+// 				$dim_values[$x][$y] = PAG_Basket::getDimXValues($dim_names[$x][$y]);
+// 			}
+// 		}
+		
+		
+		// group items by all dimensions (3+3)
+		$res = array();
+		$createHeader = true;
+		$lines = array ();
+		foreach (PAG_Basket::groupBy($dim_names[1][0], $items, null, false) as $k1 => $items1) {
+			
+			
+			
+			foreach (PAG_Basket::groupBy($dim_names[1][1], $items1, $k1, false) as $k2 => $items2) {
+			
+				foreach (PAG_Basket::groupBy($dim_names[1][2], $items2, $k2, false) as $k3 => $items3) {
+		
+					if (createHeader) {
+						$header_values = array([],[],[]);
+						$header_sizes = array([],[],[]);
+					}
+
+					$line = array ($k1, $k2, $k3);
+					
+					foreach (PAG_Basket::groupBy($dim_names[0][0], $items3, null, true) as $k4 => $items4) {
+						
+						if (createHeader) {						
+							array_push ($header_values[0], (($dim_names[0][0]=="none") || ($dim_names[0][0]==null)) ? "" : $k4);
+							$count_k4 = 0;
+						}
+						
+						foreach (PAG_Basket::groupBy($dim_names[0][1], $items4, $k4, true) as $k5 => $items5) {
+
+							if (createHeader) {
+								array_push ($header_values[1], (($dim_names[0][1]=="none") || ($dim_names[0][1]==null)) ? "" : $k5);
+								$count_k5 = 0;
+							}
+								
+							foreach (PAG_Basket::groupBy($dim_names[0][2], $items5, $k5, true) as $k6 => $items6) {
+									
+								$res[$k1][$k2][$k3][$k4][$k5][$k6] = $items6;
+
+								array_push ($line, count($items6));
+								
+								if (createHeader) {
+									array_push ($header_values[2], (($dim_names[0][2]=="none") || ($dim_names[0][2]==null)) ? "" : $k6);
+									array_push ($header_sizes[2], 1);
+									$count_k4++;
+									$count_k5++;
+								}
+							}
+							
+							if (createHeader) {
+								array_push ($header_sizes[1], $count_k5);
+							}
+									
+						}
+						
+						if (createHeader) {
+							array_push ($header_sizes[0], $count_k4);
+						}
+						
+					}
+					
+					$createHeader = false;
+					array_push ($lines, $line);
 				}
 			}
-			$row['points'] = $item->getPoints();
-		
-			array_push($items, $row);
+			
+
+			
+			
 		}
+		
+		
+		
+
+		// 
+		
+		
+		
+
+
+		
+
+		
+		
+		
+		
+		
+		
+			
+			
+// 			$row['terms'] = array ();
+// 			foreach (wp_get_post_terms($item_id, 'topic') as $term) {
+// 				$termhier = array($term->name);
+// 				$parentId = $term->parent;
+// 				while ($parentId>0) {
+// 					$parentTerm = get_term ($parentId, 'topic');
+// 					$termhier = array_merge (array ($parentTerm->name), $termhier);
+// 					$parentId = $parentTerm->parent;
+// 				}
+// 				$row['terms'] = array_merge ($row['terms'], array ($termhier));
+// 			}
+			
+			
+// 			$item->loadById($item_id);
+
+// 			$row['type'] = $item->type;
+// 			$dim = '';
+// 			$level = 0;
+			
+			
+// 			$row['points'] = $item->getPoints();
+		
+// 			array_push($items, $row);
+// 		}
 		
 		
 		
 		$whatever = intval( $_POST['whatever'] );
 	
 		$whatever += 10;
-
-		wp_send_json ($items );
+	
+		// no nested arrays for javascript --> expand to header1, header2 etc. 
+		wp_send_json (array (
+			'header_values_0' => $header_values[0],
+			'header_values_1' => $header_values[1],
+			'header_values_2' => $header_values[2],
+			'header_sizes_0'  => $header_sizes[0],
+			'header_sizes_1'  => $header_sizes[1],
+			'header_sizes_2'  => $header_sizes[2],
+			'lines' => $lines
+		) );
 		
 // 		echo $whatever;
 	
@@ -80,177 +245,62 @@ class PAG_Basket {
 		?>
 			<script type="text/javascript" >
 
-			var items;
-
 			jQuery(document).ready(function($) {
-				onChangeDimX();
-				var data = {
-						'action': 'load_items',
-						'whatever': 1234
-					};
-
-					// since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
-					jQuery.post(ajaxurl, data, function(response) {
-						items = response;
-// 						alert('Got this from the server: ' + response[0]['type']);
-						updateTable();
-					});
-
-
-					
+				load_items();
 			});
 
+			function load_items() {
 
-			function getDimensionValues (name) {
-				if (name=="none") 	return [];
-				if (name=="type") 	return ["itemsc", "itemmc"];
-				if (name=="dim") 	return ["FW", "KW", "PW"];
-				if (name=="level")	return ["1","2","3","4","5","6"];
-
-				if (name=="topic1") {
-					res = new Array ();
-					for (item of items) {
-						// loop through all terms (items can be annotated with multiple terms)
-						for (i=0; i<item['terms'].length; i++) {	
-							// each term is actually an array [root, level1, ..., actual term] --> we take the fist in topic1
-							if (item['terms'][i].length > 0) {
-								if (res.indexOf(item['terms'][i][0])== -1) {
-									res.push (item['terms'][i][0]);
-								}
-							}
-						}
-					}
-					res.sort();
-					return res;
-				} 
-
+				var data = {
+						'action': 'load_items',
+						'dimx0': jQuery("#dimensionsX #dim0").val(),
+						'dimx1': jQuery("#dimensionsX #dim1").val(),
+						'dimx2': jQuery("#dimensionsX #dim2").val(),
+						'dimy0': jQuery("#dimensionsY #dim0").val(),
+						'dimy1': jQuery("#dimensionsY #dim1").val(),
+						'dimy2': jQuery("#dimensionsY #dim2").val(),
+						'valtype': jQuery("#values #val").val()
+					};
+	
+				console.log ("Call AJAX");			
+				// since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
+				jQuery.post(ajaxurl, data, function(response) {
+					console.log(response);
+					updateTable(response);
+				});
 					
-				return [];
 			}
 
-
+			
 
 			
-			
-			function updateTable() {
+			function updateTable(response) {
 
 				jQuery("#itemtable").empty();
 
-
-				/* process dimension X */
-				dimX_names = new Array(3);
-				dimX_values = new Array(3);
-				dimX_length = new Array(3);
+				console.log (response);
+				
 				lines = new Array(3);
-
 				for (i of [0,1,2]) {
-					dimX_names[i] = jQuery("#dimensionsX #dim" + i).val();
-					dimX_values[i] = getDimensionValues (dimX_names[i]);
-					dimX_length[i] = dimX_values[i].length > 1 ? dimX_values[i].length : 1;
-					if (dimX_values[i].length>0) lines[i] = "<th>" + jQuery("#dimensionsX #dim" + i + " option:selected").text() + "</th>"
-				}	
-
-				// create column headers
-				for (d0=0; d0<dimX_length[0]; d0++) {
-					if (d0 < dimX_values[0].length) lines[0] += "<th colspan='" + (dimX_length[1]*dimX_length[2]) + "'>"+dimX_values[0][d0]+"</th>";
-					for (d1=0; d1<dimX_length[1]; d1++) {
-						if (d1 < dimX_values[1].length) lines[1] += "<th colspan='" + dimX_length[2] + "'>"+dimX_values[1][d1]+"</th>";
-						for (d2=0; d2<dimX_length[2]; d2++) {
-							if (d2 < dimX_values[2].length) lines[2] += "<th>"+dimX_values[2][d2]+"</th>";
-						}
+					if (response['header_values_'+i][0] == "") continue;
+					for (k=0; k<response['header_values_'+i].length; k++) {
+						lines[i] += "<th colspan='" + response['header_sizes_'+i][k] + "'>"+ response['header_values_'+i][k] +"</th>";
 					}
 				}
-
+				
 				for (line of lines) {
-					if (typeof line != "undefined") jQuery("#itemtable").append ("<tr>" + line + "</tr>");
+					if (typeof line != "undefined") jQuery("#itemtable").append ("<tr><th colspan='3'></th>" + line + "</tr>");
 				}
 
-
-				/* process dimension Y */
-				dimY_names = new Array(3);
-				dimY_values = new Array(3);
-				dimY_length = new Array(3);
-
-				for (i of [0,1,2]) {
-					dimY_names[i] = jQuery("#dimensionsY #dim" + i).val();
-					dimY_values[i] = getDimensionValues (dimY_names[i]);
-					dimY_length[i] = dimY_values[i].length > 1 ? dimY_values[i].length : 1;
-// 					console.log (dimY_names[i]);
-// 					console.log (dimY_values[i]);
-				}	
-
-				valtype = jQuery("#values #val").val();
-
-				for (d0=0; d0<dimY_length[0]; d0++) {
-					for (d1=0; d1<dimY_length[1]; d1++) {
-						for (d2=0; d2<dimY_length[2]; d2++) {
-
-							values = new Array (dimX_length[0]*dimX_length[1]*dimX_length[2]);
-							values.fill (0);
-							for (item of items) {
-
-								// check if items matches dimension Y
-								
-								
-
-								
-//			 					console.log (item['terms']);
-								
-								lastFactor = 1;
-								index = 0;
-								for (i of [2,1,0]) {
-									// ignore missing dimensions
-									if ((dimX_names[i]=="none") || (dimX_names[i] == null)) continue;
-
-									// unknown value --> disregard this item completely
-									pos = dimX_values[i].indexOf(item[dimX_names[i]]);
-									if (pos == -1) {
-										index = -1; 
-										break;
-									}
-
-									index += lastFactor * pos;
-									lastFactor = dimX_length[i]
-									
-									
-								}
-
-								if (index >= 0) values[index] += (valtype=="points") ? parseInt (item['points']) : 1;
-							}
-
-
-
-
-							
-						}
+				for (line of response['lines']) {
+					s = "";
+					for (col of line) {
+						s+= "<td>" + col + "</td>";
 					}
+					jQuery("#itemtable").append ("<tr>" + s + "</tr>");
 				}
-				
-				
 
 
-				
-
-				
-				
-				
-
-				
-				line = "<td></td>";
-				for (val of values) {
-					line += "<td>"+val+"</td>";
-				}
-				jQuery("#itemtable").append ("<tr>" + line + "</tr>");
-				
-				
-				
-// 				jQuery("#itemtable").append ('<tr><td>' + it['type'] + '</td></tr>');
-				
-				for (index = 0; index < items.length; index++) {
-
-					it = items[index];
-// 					jQuery("#itemtable").append ('<tr><td>' + it['type'] + '</td></tr>'); 
-				}
 
 				
 				
@@ -284,8 +334,9 @@ class PAG_Basket {
 	public static function page_ist_blueprint () {
 		
 		
+// 		add_action( 'admin_footer', array ('PAG_Basket', 'load_items_callback') ); // Write our JS below here
 		add_action( 'admin_footer', array ('PAG_Basket', 'load_items_javascript') ); // Write our JS below here
-	?>
+		?>
 	
 		
 	
@@ -301,21 +352,21 @@ class PAG_Basket {
 			</td>
 			<td>
 			<form id="dimensionsX">
-				 <select id="dim0" name="dim0" onchange="onChangeDimX(); updateTable()">
+				 <select id="dim0" name="dim0" onchange="onChangeDimX(); load_items()">
 	  				<option value="none">None</option>
 	  				<option value="type" selected>Item Typ</option>
 	  				<option value="dim">Dimension</option>
 	  				<option value="level">Anforderungsstufe</option>
 				</select>
 				<br/>
-				 <select id="dim1" name="dim1" onchange="onChangeDimX(); updateTable()">
+				 <select id="dim1" name="dim1" onchange="onChangeDimX(); load_items()">
 	  				<option value="none">None</option>
 	  				<option value="type">Item Typ</option>
-	  				<option value="dim">Dimension</option>
+	  				<option value="dim" selected>Dimension</option>
 	  				<option value="level">Anforderungsstufe</option>
 				</select>
 				<br/>
-				 <select id="dim2" name="dim2" onchange="onChangeDimX(); updateTable()">
+				 <select id="dim2" name="dim2" onchange="onChangeDimX(); load_items()">
 	  				<option value="none">None</option>
 	  				<option value="type">Item Typ</option>
 	  				<option value="dim">Dimension</option>
@@ -329,15 +380,15 @@ class PAG_Basket {
 			<tr> 
 			<td>
 		<form id="dimensionsY">
-			 <select id="dim0" name="dim0" onchange="updateTable()">
+			 <select id="dim0" name="dim0" onchange="load_items()">
   				<option value="none">None</option>
-  				<option value="topic1">Topic Level 1</option>
+  				<option value="topic1" selected>Topic Level 1</option>
   				<option value="topic2">Topic Level 2</option>
   				<option value="dim">Dimension</option>
   				<option value="level">Anforderungsstufe</option>
 			</select>
 			<br/>
-			 <select id="dim1" name="dim1" onchange="updateTable()">
+			 <select id="dim1" name="dim1" onchange="load_items()">
   				<option value="none">None</option>
   				<option value="topic1">Topic Level 1</option>
   				<option value="topic2">Topic Level 2</option>
@@ -346,7 +397,7 @@ class PAG_Basket {
   				<option value="level">Anforderungsstufe</option>
 			</select>
 			<br/>
-			 <select id="dim2" name="dim2" onchange="updateTable()">
+			 <select id="dim2" name="dim2" onchange="load_items()">
   				<option value="none">None</option>
   				<option value="topic1">Topic Level 1</option>
   				<option value="topic2">Topic Level 2</option>
