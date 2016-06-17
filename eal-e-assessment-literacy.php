@@ -191,6 +191,7 @@ function custom_bulk_action() {
 		}
 		
 		$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
+		if ($b_old == null) $b_old = array();
 		$b_new = array_unique (array_merge ($b_old, $postids));
 		$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new);
 	}

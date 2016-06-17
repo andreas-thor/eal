@@ -5,6 +5,11 @@ class PAG_Basket {
 	
 	
 	
+	
+	
+	
+	
+	
 	public static function load_items_callback() {
 		
 // 		global $wpdb; // this is how you get access to the database
@@ -97,11 +102,33 @@ class PAG_Basket {
 
 
 			function getDimensionValues (name) {
+				if (name=="none") 	return [];
 				if (name=="type") 	return ["itemsc", "itemmc"];
 				if (name=="dim") 	return ["FW", "KW", "PW"];
 				if (name=="level")	return ["1","2","3","4","5","6"];
+
+				if (name=="topic1") {
+					res = new Array ();
+					for (item of items) {
+						// loop through all terms (items can be annotated with multiple terms)
+						for (i=0; i<item['terms'].length; i++) {	
+							// each term is actually an array [root, level1, ..., actual term] --> we take the fist in topic1
+							if (item['terms'][i].length > 0) {
+								if (res.indexOf(item['terms'][i][0])== -1) {
+									res.push (item['terms'][i][0]);
+								}
+							}
+						}
+					}
+					res.sort();
+					return res;
+				} 
+
+					
 				return [];
 			}
+
+
 
 			
 			
@@ -109,70 +136,105 @@ class PAG_Basket {
 
 				jQuery("#itemtable").empty();
 
-				dim_names = new Array(3);
-				dim_values = new Array(3);
-				dim_length = new Array(3);
+
+				/* process dimension X */
+				dimX_names = new Array(3);
+				dimX_values = new Array(3);
+				dimX_length = new Array(3);
 				lines = new Array(3);
 
-
-				
 				for (i of [0,1,2]) {
-					dim_names[i] = jQuery("#dimensionsX #dim" + i).val();
-					dim_values[i] = getDimensionValues (dim_names[i]);
-					dim_length[i] = dim_values[i].length > 1 ? dim_values[i].length : 1;
-					if (dim_values[i].length>0) lines[i] = "<th>" + jQuery("#dimensionsX #dim" + i + " option:selected").text() + "</th>"
-
+					dimX_names[i] = jQuery("#dimensionsX #dim" + i).val();
+					dimX_values[i] = getDimensionValues (dimX_names[i]);
+					dimX_length[i] = dimX_values[i].length > 1 ? dimX_values[i].length : 1;
+					if (dimX_values[i].length>0) lines[i] = "<th>" + jQuery("#dimensionsX #dim" + i + " option:selected").text() + "</th>"
 				}	
 
-				
-				for (d0=0; d0<dim_length[0]; d0++) {
-					if (d0 < dim_values[0].length) lines[0] += "<th colspan='" + (dim_length[1]*dim_length[2]) + "'>"+dim_values[0][d0]+"</th>";
-					for (d1=0; d1<dim_length[1]; d1++) {
-						if (d1 < dim_values[1].length) lines[1] += "<th colspan='" + dim_length[2] + "'>"+dim_values[1][d1]+"</th>";
-						for (d2=0; d2<dim_length[2]; d2++) {
-							if (d2 < dim_values[2].length) lines[2] += "<th>"+dim_values[2][d2]+"</th>";
+				// create column headers
+				for (d0=0; d0<dimX_length[0]; d0++) {
+					if (d0 < dimX_values[0].length) lines[0] += "<th colspan='" + (dimX_length[1]*dimX_length[2]) + "'>"+dimX_values[0][d0]+"</th>";
+					for (d1=0; d1<dimX_length[1]; d1++) {
+						if (d1 < dimX_values[1].length) lines[1] += "<th colspan='" + dimX_length[2] + "'>"+dimX_values[1][d1]+"</th>";
+						for (d2=0; d2<dimX_length[2]; d2++) {
+							if (d2 < dimX_values[2].length) lines[2] += "<th>"+dimX_values[2][d2]+"</th>";
 						}
 					}
 				}
 
-// 				console.log (dim_names);
-// 				console.log (dim_values);
-// 				console.log (dim_length);
-				
 				for (line of lines) {
 					if (typeof line != "undefined") jQuery("#itemtable").append ("<tr>" + line + "</tr>");
 				}
 
+
+				/* process dimension Y */
+				dimY_names = new Array(3);
+				dimY_values = new Array(3);
+				dimY_length = new Array(3);
+
+				for (i of [0,1,2]) {
+					dimY_names[i] = jQuery("#dimensionsY #dim" + i).val();
+					dimY_values[i] = getDimensionValues (dimY_names[i]);
+					dimY_length[i] = dimY_values[i].length > 1 ? dimY_values[i].length : 1;
+// 					console.log (dimY_names[i]);
+// 					console.log (dimY_values[i]);
+				}	
+
 				valtype = jQuery("#values #val").val();
-				
-				values = new Array (dim_length[0]*dim_length[1]*dim_length[2]);
-				values.fill (0);
-				for (item of items) {
+
+				for (d0=0; d0<dimY_length[0]; d0++) {
+					for (d1=0; d1<dimY_length[1]; d1++) {
+						for (d2=0; d2<dimY_length[2]; d2++) {
+
+							values = new Array (dimX_length[0]*dimX_length[1]*dimX_length[2]);
+							values.fill (0);
+							for (item of items) {
+
+								// check if items matches dimension Y
+								
+								
+
+								
+//			 					console.log (item['terms']);
+								
+								lastFactor = 1;
+								index = 0;
+								for (i of [2,1,0]) {
+									// ignore missing dimensions
+									if ((dimX_names[i]=="none") || (dimX_names[i] == null)) continue;
+
+									// unknown value --> disregard this item completely
+									pos = dimX_values[i].indexOf(item[dimX_names[i]]);
+									if (pos == -1) {
+										index = -1; 
+										break;
+									}
+
+									index += lastFactor * pos;
+									lastFactor = dimX_length[i]
+									
+									
+								}
+
+								if (index >= 0) values[index] += (valtype=="points") ? parseInt (item['points']) : 1;
+							}
 
 
-					console.log (item['terms']);
-					
-					lastFactor = 1;
-					index = 0;
-					for (i of [2,1,0]) {
-						// ignore missing dimensions
-						if ((dim_names[i]=="none") || (dim_names[i] == null)) continue;
 
-						// unknown value --> disregard this item completely
-						pos = dim_values[i].indexOf(item[dim_names[i]]);
-						if (pos == -1) {
-							index = -1; 
-							break;
+
+							
 						}
-
-						index += lastFactor * pos;
-						lastFactor = dim_length[i]
-						
-						
 					}
-
-					if (index >= 0) values[index] += (valtype=="points") ? parseInt (item['points']) : 1;
 				}
+				
+				
+
+
+				
+
+				
+				
+				
+
 				
 				line = "<td></td>";
 				for (val of values) {
@@ -267,7 +329,7 @@ class PAG_Basket {
 			<tr> 
 			<td>
 		<form id="dimensionsY">
-			 <select id="dim1" name="dim1" onchange="updateTable()">
+			 <select id="dim0" name="dim0" onchange="updateTable()">
   				<option value="none">None</option>
   				<option value="topic1">Topic Level 1</option>
   				<option value="topic2">Topic Level 2</option>
@@ -275,7 +337,7 @@ class PAG_Basket {
   				<option value="level">Anforderungsstufe</option>
 			</select>
 			<br/>
-			 <select id="dim2" name="dim2" onchange="updateTable()">
+			 <select id="dim1" name="dim1" onchange="updateTable()">
   				<option value="none">None</option>
   				<option value="topic1">Topic Level 1</option>
   				<option value="topic2">Topic Level 2</option>
@@ -284,7 +346,7 @@ class PAG_Basket {
   				<option value="level">Anforderungsstufe</option>
 			</select>
 			<br/>
-			 <select id="dim3" name="dim3" onchange="updateTable()">
+			 <select id="dim2" name="dim2" onchange="updateTable()">
   				<option value="none">None</option>
   				<option value="topic1">Topic Level 1</option>
   				<option value="topic2">Topic Level 2</option>

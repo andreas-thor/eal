@@ -23,7 +23,11 @@ class CPT_Item_Table extends WP_List_Table {
 	
 	function column_title($item) {
 		$actions = array(
-				'remove'      => sprintf('<a href="?page=%s&action=%s&itemid=%s">Remove from Basket</a>',$_REQUEST['page'],'removefrombasket',$item['ID'])
+				'edit'   => sprintf('<a href="post.php?action=%s&post=%s">Edit</a>','edit',$item['ID']),
+				'remove' => sprintf('<a href="?page=%s&action=%s&itemid=%s">Remove from Basket</a>',$_REQUEST['page'],'removefrombasket',$item['ID'])
+				
+// 				http://localhost/wordpress/wp-admin/post.php?post=327&action=edit
+				
 // 				'delete'    => sprintf('<a href="?page=%s&action=%s&book=%s">Delete</a>',$_REQUEST['page'],'delete',$item['ID']),
 		);
 	
@@ -61,6 +65,7 @@ class CPT_Item_Table extends WP_List_Table {
 		
 		$this->items = array ();
 		$itemids = get_user_meta(get_current_user_id(), 'itembasket', true);
+		if ($itemids==null) $itemids = array();
 		foreach ($itemids as $item_id) {
 			$post = get_post($item_id);
 			if ($post == null) continue;
@@ -150,7 +155,10 @@ class CPT_Item_Table extends WP_List_Table {
 			case 'removefrombasket':
 				
 				$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
-				$b_new = array_diff ($b_old, $_REQUEST['itemids']);
+				
+				if ($_REQUEST['itemids']!=null) $b_new = array_diff ($b_old, $_REQUEST['itemids']);
+				if ($_REQUEST['itemid']!=null) $b_new = array_diff ($b_old, array ($_REQUEST['itemid']));
+				
 				$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new );
 				break;
 	
