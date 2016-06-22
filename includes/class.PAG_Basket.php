@@ -104,24 +104,41 @@ class PAG_Basket {
 // 		}
 		
 		
+		$noOfDimY = 3;
+		if (($_POST['dimy2']=="none") || ($_POST['dimy2']==null)) $noOfDimY = 2;  
+		if (($_POST['dimy1']=="none") || ($_POST['dimy1']==null)) $noOfDimY = 1;
+		if (($_POST['dimy0']=="none") || ($_POST['dimy0']==null)) $noOfDimY = 0;
+		
+		
 		// group items by all dimensions (3+3)
 		$res = array();
 		$createHeader = true;
 		$lines = array ();
+		$row_span = array ( array (), array());
+		
 		foreach (PAG_Basket::groupBy($dim_names[1][0], $items, null, false) as $k1 => $items1) {
 			
-			
+			$level1_first = true;
+			$level1_span = 0;
 			
 			foreach (PAG_Basket::groupBy($dim_names[1][1], $items1, $k1, false) as $k2 => $items2) {
 			
+				
+				$level2_first = true;
+				$level2_span = 0;
+				
 				foreach (PAG_Basket::groupBy($dim_names[1][2], $items2, $k2, false) as $k3 => $items3) {
 		
 					if (createHeader) {
 						$header_values = array([],[],[]);
 						$header_sizes = array([],[],[]);
 					}
-
-					$line = array ($k1, $k2, $k3);
+				
+					$level1_span++;
+					$level2_span++;
+					$line = array ($level1_first?$k1:"SPAN", $level2_first?$k2:"SPAN", $k3);
+					$level1_first = false;
+					$level2_first = false;
 					
 					foreach (PAG_Basket::groupBy($dim_names[0][0], $items3, null, true) as $k4 => $items4) {
 						
@@ -166,9 +183,13 @@ class PAG_Basket {
 					$createHeader = false;
 					array_push ($lines, $line);
 				}
+				
+				
+				array_push ($row_span[1], $level2_span);
 			}
 			
-
+			array_push ($row_span[0], $level1_span);
+				
 			
 			
 		}
@@ -231,6 +252,9 @@ class PAG_Basket {
 			'header_sizes_0'  => $header_sizes[0],
 			'header_sizes_1'  => $header_sizes[1],
 			'header_sizes_2'  => $header_sizes[2],
+			'row_span_0'	  => $row_span[0],
+			'row_span_1'	  => $row_span[1],
+			'noOfDimY'		  => $noOfDimY,
 			'lines' => $lines
 		) );
 		
@@ -289,13 +313,30 @@ class PAG_Basket {
 				}
 				
 				for (line of lines) {
-					if (typeof line != "undefined") jQuery("#itemtable").append ("<tr><th colspan='3'></th>" + line + "</tr>");
+					prefix = response['noOfDimY']>0 ? "<th colspan='" + response['noOfDimY'] + "'></th>" : ""
+					if (typeof line != "undefined") jQuery("#itemtable").append ("<tr>" + prefix + line + "</tr>");
 				}
 
+				level1span = 0;
+				level2span = 0;
+				
 				for (line of response['lines']) {
 					s = "";
-					for (col of line) {
-						s+= "<td>" + col + "</td>";
+					if ((line[0]!="SPAN") && (response['noOfDimY']>0)) {
+						s+= "<td rowspan='" + response['row_span_0'][level1span] + "'>" + (line[0]=="0"?"":line[0]) + "</td>";
+						level1span++;
+					}
+					if ((line[1]!="SPAN") && (response['noOfDimY']>1)) {
+						s+= "<td rowspan='" + response['row_span_1'][level2span] + "'>" + (line[1]=="0"?"":line[1]) + "</td>";
+						level2span++;
+					}
+
+					if (response['noOfDimY']>2) {
+						s+= "<td>" + (line[2]=="0"?"":line[2]) + "</td>";
+					}
+					
+					for (i=3; i<line.length; i++) {
+						s+= "<td>" + (line[i]=="0"?"":line[i]) + "</td>";
 					}
 					jQuery("#itemtable").append ("<tr>" + s + "</tr>");
 				}
