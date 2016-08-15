@@ -161,20 +161,41 @@ class EAL_ItemSC extends EAL_Item {
 	}
 	
 	
-	public function getPreviewHTML () {
+	public function getPreviewHTML ($forReview = TRUE) {
 			
-		$res  = "<div>{$this->description}</div>";
-		$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}";
-		$res .= "<table style='font-size: 100%'>";
+		$res = "";
 		
-		foreach ($this->answers as $a) {
-			$res .= sprintf('<tr align="left"><td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td><td>%s</td></tr>', 
-					$a['points'],	// input value 
-					($a['points']>0 ? 'bold' : 'normal'),	// font-weight
-					$a['answer']);	// cell value
+		if ($forReview) {
+		
+			$res  = "<div>{$this->description}</div>";
+			$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}";
+			$res .= "<table style='font-size: 100%'>";
+			
+			foreach ($this->answers as $a) {
+				$res .= sprintf('<tr align="left"><td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td><td>%s</td></tr>', 
+						$a['points'],	// input value 
+						($a['points']>0 ? 'bold' : 'normal'),	// font-weight
+						$a['answer']);	// cell value
+			}
+		
+			$res .= "</table></div>";
+		
+		} else {
+			
+			
+			$res .= "<h1>{$this->title}</h1>";
+			$res .= "<div>{$this->description}</div>";
+			$res .= "<div style='background-color:F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>{$this->question}";
+			$res .= "<form style='margin-top:1em'>";
+			
+			foreach ($this->answers as $a) {
+				$res .= "<div style='margin-top:1em'><input type='radio' name='x'>" . $a['answer'] . "</div>";
+			}
+			
+			$res .= "</form></div>";
+				
+			
 		}
-	
-		$res .= "</table></div>";
 	
 		return $res;
 	}

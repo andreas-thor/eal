@@ -67,6 +67,7 @@ abstract class CPT_Item extends CPT_Object{
 		unset ($actions['inline hide-if-no-js']);	
 		// add "Add Review"
 		$actions['add review'] = "<a href='post-new.php?post_type={$this->type}_review&item_id={$post->ID}'>Add&nbsp;New&nbsp;Review</a>";
+		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>";
 		return $actions;
 	}
 	

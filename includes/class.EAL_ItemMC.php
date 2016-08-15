@@ -168,41 +168,61 @@ class EAL_ItemMC extends EAL_Item {
 
 
 	
-	public function getPreviewHTML () {
+	public function getPreviewHTML ($forReview = TRUE) {
 		 
-		$res = "<div>{$this->description}</div>";
-		 
-		$answerLine = '<tr align="left">
-                           <td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
-                           <td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
-                           <td>%s</td>
-                    </tr>';
-		 
-		//           $res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}<ul style='list-style: none;margin-top:1em;'>";
-		$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}";
-		 
-		$res .= "<table style='font-size: 100%'>";
-		 
-		 
-		foreach ($this->answers as $a) {
-			//                  $res .= "<li><input type='checkbox' " . (($a['positive']>$a['negative']) ? 'checked' : '') . ">{$a['answer']}</input></li>";
-			$res .= sprintf($answerLine,
-					$a['positive'], ($a['positive']>$a['negative'] ? 'bold' : 'normal'),
-					$a['negative'], ($a['negative']>$a['positive'] ? 'bold' : 'normal'),
-					$a['answer']);
+		
+		if ($forReview) {
+			$res = "<div>{$this->description}</div>";
+			 
+			$answerLine = '<tr align="left">
+	                           <td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
+	                           <td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
+	                           <td>%s</td>
+	                    </tr>';
+			 
+			//           $res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}<ul style='list-style: none;margin-top:1em;'>";
+			$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}";
+			 
+			$res .= "<table style='font-size: 100%'>";
+			 
+			 
+			foreach ($this->answers as $a) {
+				//                  $res .= "<li><input type='checkbox' " . (($a['positive']>$a['negative']) ? 'checked' : '') . ">{$a['answer']}</input></li>";
+				$res .= sprintf($answerLine,
+						$a['positive'], ($a['positive']>$a['negative'] ? 'bold' : 'normal'),
+						$a['negative'], ($a['negative']>$a['positive'] ? 'bold' : 'normal'),
+						$a['answer']);
+			}
+		
+			//           $res .= "</ul></div>";
+			$res .= "</table></div>";
+			 
+			
+			// 		$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}<ul style='list-style: none;margin-top:1em;'>";
+			// 		foreach ($this->answers as $a) {
+			// 			$res .= "<li><input type='checkbox'>{$a['answer']}</input></li>";
+			// 		}
+			// 		$res .= "</ul></div>";
+			
+			return $res;
+		
+		} else {
+			
+			$res = "<h1>{$this->title}</h1><hr>";
+			$res .= "<div>{$this->description}</div>";
+			$res .= "<div style='background-color:F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>{$this->question}";
+			$res .= "<form style='margin-top:1em'>";
+			foreach ($this->answers as $a) {
+				$res .= "<div style='margin-top:1em'><input type='checkbox'>" . $a['answer'] . "</div>";
+			}
+			$res .= "</form></div>";
+				
+			return $res;
+			
+			
+			
+			
 		}
-	
-		//           $res .= "</ul></div>";
-		$res .= "</table></div>";
-		 
-		
-		// 		$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}<ul style='list-style: none;margin-top:1em;'>";
-		// 		foreach ($this->answers as $a) {
-		// 			$res .= "<li><input type='checkbox'>{$a['answer']}</input></li>";
-		// 		}
-		// 		$res .= "</ul></div>";
-		
-		return $res;
 	}
 	
 	

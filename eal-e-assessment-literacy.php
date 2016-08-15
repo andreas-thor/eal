@@ -109,7 +109,7 @@ function set_eal_admin_menu_entries () {
  	
  	
  	add_menu_page('eal_page_items', 'Items', 'edit_others_posts', 'eal_page_items', 'create_eal_page_items', 'dashicons-admin-post', 1);
- 	add_submenu_page('eal_page_items', 'All Items', 'All Items', 'edit_others_posts', 'eal_page_items' );
+ 	add_submenu_page( 'eal_page_items', 'All Items', 'All Items', 'edit_others_posts', 'eal_page_items' );
  	add_submenu_page( 'eal_page_items', 'Single Choice', 'Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
  	add_submenu_page( 'eal_page_items', 'Multiple Choice', 'Multiple Choice', 'edit_others_posts', 'edit.php?post_type=itemmc');
  	add_submenu_page( 'eal_page_items', 'Import', 'Import', 'edit_others_posts', 'import-items', array ('CPT_Item', 'import_items'));
@@ -135,7 +135,10 @@ function set_eal_admin_menu_entries () {
     	
     $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
     add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', array ('PAG_Basket', 'page_itembasket'), 'dashicons-cart', 31);
-    add_submenu_page( 'eal_page_itembasket', 'IST Blueprint', 'IST Blueprint', 'edit_others_posts', 'ist-blueprint', array ('PAG_Basket', 'page_ist_blueprint'));
+    add_submenu_page( 'eal_page_itembasket', 'Table', 'Table', 'edit_others_posts', 'eal_page_itembasket', array ('PAG_Basket', 'page_itembasket'));
+    
+    add_submenu_page( 'eal_page_itembasket', 'Explorer', 'Explorer', 'edit_others_posts', 'ist-blueprint', array ('PAG_Basket', 'page_ist_blueprint'));
+    add_submenu_page( 'eal_page_itembasket', 'Viewer', 'Viewer', 'edit_others_posts', 'view', array ('PAG_Basket', 'page_view'));
     
     
 }
@@ -170,6 +173,11 @@ function custom_bulk_action() {
 	global $wpdb;
 	$wp_list_table = _get_list_table('WP_Posts_List_Table');
 	
+	
+	if ($wp_list_table->current_action() == 'view') {
+		$_REQUEST['page'] = 'view';
+	}
+	
 	if ($wp_list_table->current_action() == 'export') {
 
 		$postids = $_REQUEST['post'];
@@ -194,7 +202,11 @@ function custom_bulk_action() {
 		if ($b_old == null) $b_old = array();
 		$b_new = array_unique (array_merge ($b_old, $postids));
 		$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new);
+		
+		
 	}
+	
+	
 
 
 }

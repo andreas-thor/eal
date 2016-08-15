@@ -37,7 +37,8 @@ class CPT_Item_Table extends WP_List_Table {
 	function get_bulk_actions() {
 		$actions = array(
 				'removefrombasket'    => 'Remove from Basket',
-				'exportILIAS5'	=> 'Export to ILIAS 5'
+				'exportILIAS5'	=> 'Export to ILIAS 5',
+				'viewitems'	=> 'View'
 		);
 		return $actions;
 	}
@@ -160,7 +161,7 @@ class CPT_Item_Table extends WP_List_Table {
 				if ($_REQUEST['itemid']!=null) $b_new = array_diff ($b_old, array ($_REQUEST['itemid']));
 				
 				$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new );
-				break;
+				return 'removefrombasket';
 	
 			case 'exportILIAS5':
 				
@@ -177,8 +178,13 @@ class CPT_Item_Table extends WP_List_Table {
 				
 				
 
-				break;
+				return 'exportILIAS5';
 	
+		
+			case 'viewitems':
+				
+				return 'viewitems';
+				
 			default:
 				// do nothing or something else
 				return;

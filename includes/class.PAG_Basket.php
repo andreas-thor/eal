@@ -114,6 +114,7 @@ class PAG_Basket {
 		$res = array();
 		$createHeader = true;
 		$lines = array ();
+		$lines_href = array ();
 		$row_span = array ( array (), array());
 		
 		foreach (PAG_Basket::groupBy($dim_names[1][0], $items, null, false) as $k1 => $items1) {
@@ -137,6 +138,7 @@ class PAG_Basket {
 					$level1_span++;
 					$level2_span++;
 					$line = array ($level1_first?$k1:"SPAN", $level2_first?$k2:"SPAN", $k3);
+					$line_href = array ('','','');
 					$level1_first = false;
 					$level2_first = false;
 					
@@ -158,7 +160,11 @@ class PAG_Basket {
 									
 								$res[$k1][$k2][$k3][$k4][$k5][$k6] = $items6;
 
+								$href = '';
+								foreach ($items6 as $i) { $href .= ($href=="") ? $i->id : "," . $i->id; }
+								
 								array_push ($line, count($items6));
+								array_push ($line_href, $href);
 								
 								if (createHeader) {
 									array_push ($header_values[2], (($dim_names[0][2]=="none") || ($dim_names[0][2]==null)) ? "" : $k6);
@@ -182,6 +188,7 @@ class PAG_Basket {
 					
 					$createHeader = false;
 					array_push ($lines, $line);
+					array_push ($lines_href, $line_href);
 				}
 				
 				
@@ -255,7 +262,8 @@ class PAG_Basket {
 			'row_span_0'	  => $row_span[0],
 			'row_span_1'	  => $row_span[1],
 			'noOfDimY'		  => $noOfDimY,
-			'lines' => $lines
+			'lines' => $lines,
+			'lines_href' => $lines_href
 		) );
 		
 // 		echo $whatever;
@@ -319,8 +327,14 @@ class PAG_Basket {
 
 				level1span = 0;
 				level2span = 0;
-				
-				for (line of response['lines']) {
+
+				for (y=0; y<response['lines'].length; y++) {
+				// for (line of response['lines']) {
+
+					line = response['lines'][y];
+					line_href = response['lines_href'][y];
+					
+					
 					s = "";
 					if ((line[0]!="SPAN") && (response['noOfDimY']>0)) {
 						s+= "<td rowspan='" + response['row_span_0'][level1span] + "'>" + (line[0]=="0"?"":line[0]) + "</td>";
@@ -336,7 +350,7 @@ class PAG_Basket {
 					}
 					
 					for (i=3; i<line.length; i++) {
-						s+= "<td>" + (line[i]=="0"?"":line[i]) + "</td>";
+						s+= "<td>" + (line[i]=="0"?"": "<a href='admin.php?page=view&itemids=" + line_href[i] + "'>" + line[i] + "</a>") + "</td>";
 					}
 					jQuery("#itemtable").append ("<tr>" + s + "</tr>");
 				}
@@ -467,22 +481,26 @@ class PAG_Basket {
 	
 	
 	public static function page_itembasket () {
-		?>
-		<div class="wrap">
-		
-			<h1>Item Basket</h1>
-	<?php 
 	
 	
 	
 	$myListTable = new CPT_Item_Table();
+	$action = $myListTable->process_bulk_action();
 	
+	if ($action == "viewitems") {
+		return PAG_Basket::page_view();
+	}
 	
 	
 	// echo '<div class="wrap"><h2>My List Table Test</h2>';
 	$myListTable->prepare_items();
 	
 	?>
+	
+		<div class="wrap">
+		
+			<h1>Item Basket</h1>
+	
 	<form method="post">
 	<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
 	<?php 
@@ -495,6 +513,65 @@ class PAG_Basket {
 	}
 
 
+	
+	public static function page_view () {
+		?>
+				<div class="wrap">
+				
+					
+					
+					<?php
+					
+					
+					$itemids = array();
+					if ($_REQUEST['itemid'] != null) {
+						array_push($itemids, $_REQUEST['itemid']);
+					} else {					
+						if ($_REQUEST['itemids'] != null) {
+							if (is_array($_REQUEST['itemids'])) $itemids = $_REQUEST['itemids'];
+							if (is_string($_REQUEST['itemids'])) $itemids = explode (",", $_REQUEST["itemids"]);
+						}
+						else {
+							$itemids = get_user_meta(get_current_user_id(), 'itembasket', true);
+								
+						}
+					}
+					
+
+					
+					$html_list = "";
+					$html_select = "<form><select onChange='for (x=0; x<this.form.nextSibling.childNodes.length; x++) {  this.form.nextSibling.childNodes[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'><option value='-1' selected>All " . count($itemids) . " items</option>";
+					$count = 0;		
+					foreach ($itemids as $item_id) {
+						
+						
+						$post = get_post($item_id);
+						if ($post == null) continue;
+						
+						
+						$item = null;
+						if ($post->post_type == 'itemsc') $item = new EAL_ItemSC();
+						if ($post->post_type == 'itemmc') $item = new EAL_ItemMC();
+						
+						if ($item != null) {
+							$item->loadById($item_id);
+							$html_select .= "<option value='{$count}'>{$item->title}</option>";
+							$html_list .= "<div style='margin-top:2em;'>" . $item->getPreviewHTML(FALSE) . "</div>";
+							$count++;
+						}
+						
+						
+						
+					}
+					
+					$html_select .= "</select></form>";
+					
+					if (count($itemids)>1) print $html_select;
+					print "<div style='margin-top:2em'>{$html_list}</div>";
+					
+					?> </div> <?php 
+					
+			}
 }
 
 	

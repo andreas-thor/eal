@@ -129,7 +129,7 @@ abstract class EAL_Item {
 	
 	public function getPoints() { return -1; }
 	
-	abstract public function getPreviewHTML ();
+	abstract public function getPreviewHTML ($forReview = TRUE);
 	
 	
 	
