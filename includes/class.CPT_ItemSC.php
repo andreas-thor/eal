@@ -8,6 +8,7 @@ require_once("class.EAL_ItemSC.php");
 class CPT_ItemSC extends CPT_Item {
 	
 	
+	
 	public function init($args = array()) {
 		$this->type = "itemsc";
 		$this->label = "Single Choice";

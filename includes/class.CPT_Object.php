@@ -36,7 +36,7 @@ abstract class CPT_Object {
 		
 					'public' => true,
 					'menu_position' => $this->menu_pos,
-					'menu_icon' => 'dashicons-welcome-learn-more', 
+					'menu_icon' => 'dashicons-list-view', // dashicons-welcome-learn-more', 
 					'supports' => array( 'title', 'revisions'), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
 					'taxonomies' => array( 'topic' ),
 					'has_archive' => false, // false to allow for single view

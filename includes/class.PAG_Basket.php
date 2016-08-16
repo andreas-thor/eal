@@ -514,64 +514,91 @@ class PAG_Basket {
 
 
 	
+	public static function page_generator () {
+	
+		wp_enqueue_script('jquery');
+		
+		print "<h1>HHHHH</h1>";
+		
+		
+		?> 
+		<script>
+  $( function() {
+    $( "#slider-range" ).slider({
+      range: true,
+      min: 0,
+      max: 500,
+      values: [ 75, 300 ],
+      slide: function( event, ui ) {
+        $( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
+      }
+    });
+    $( "#amount" ).val( "$" + $( "#slider-range" ).slider( "values", 0 ) +
+      " - $" + $( "#slider-range" ).slider( "values", 1 ) );
+  } );
+  </script>
+  
+  <p>
+  <label for="amount">Price range:</label>
+  <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+</p>
+ 
+<div id="slider-range"></div>
+		
+		<?php 
+	}
+	
 	public static function page_view () {
-		?>
-				<div class="wrap">
-				
 					
-					
-					<?php
-					
-					
-					$itemids = array();
-					if ($_REQUEST['itemid'] != null) {
-						array_push($itemids, $_REQUEST['itemid']);
-					} else {					
-						if ($_REQUEST['itemids'] != null) {
-							if (is_array($_REQUEST['itemids'])) $itemids = $_REQUEST['itemids'];
-							if (is_string($_REQUEST['itemids'])) $itemids = explode (",", $_REQUEST["itemids"]);
-						}
-						else {
-							$itemids = get_user_meta(get_current_user_id(), 'itembasket', true);
-								
-						}
-					}
-					
-
-					
-					$html_list = "";
-					$html_select = "<form><select onChange='for (x=0; x<this.form.nextSibling.childNodes.length; x++) {  this.form.nextSibling.childNodes[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'><option value='-1' selected>All " . count($itemids) . " items</option>";
-					$count = 0;		
-					foreach ($itemids as $item_id) {
-						
-						
-						$post = get_post($item_id);
-						if ($post == null) continue;
-						
-						
-						$item = null;
-						if ($post->post_type == 'itemsc') $item = new EAL_ItemSC();
-						if ($post->post_type == 'itemmc') $item = new EAL_ItemMC();
-						
-						if ($item != null) {
-							$item->loadById($item_id);
-							$html_select .= "<option value='{$count}'>{$item->title}</option>";
-							$html_list .= "<div style='margin-top:2em;'>" . $item->getPreviewHTML(FALSE) . "</div>";
-							$count++;
-						}
-						
-						
-						
-					}
-					
-					$html_select .= "</select></form>";
-					
-					if (count($itemids)>1) print $html_select;
-					print "<div style='margin-top:2em'>{$html_list}</div>";
-					
-					?> </div> <?php 
+		$itemids = array();
+		if ($_REQUEST['itemid'] != null) {
+			array_push($itemids, $_REQUEST['itemid']);
+		} else {					
+			if ($_REQUEST['itemids'] != null) {
+				if (is_array($_REQUEST['itemids'])) $itemids = $_REQUEST['itemids'];
+				if (is_string($_REQUEST['itemids'])) $itemids = explode (",", $_REQUEST["itemids"]);
+			}
+			else {
+				$itemids = get_user_meta(get_current_user_id(), 'itembasket', true);
 					
 			}
+		}
+		
+
+		
+		$html_list = "";
+		$html_select = "<form><select onChange='for (x=0; x<this.form.nextSibling.childNodes.length; x++) {  this.form.nextSibling.childNodes[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'><option value='-1' selected>All " . count($itemids) . " items</option>";
+		$count = 0;		
+		foreach ($itemids as $item_id) {
+			
+			
+			$post = get_post($item_id);
+			if ($post == null) continue;
+			
+			
+			$item = null;
+			if ($post->post_type == 'itemsc') $item = new EAL_ItemSC();
+			if ($post->post_type == 'itemmc') $item = new EAL_ItemMC();
+			
+			if ($item != null) {
+				$item->loadById($item_id);
+				$html_select .= "<option value='{$count}'>{$item->title}</option>";
+				$html_list .= "<div style='margin-top:2em;'>" . $item->getPreviewHTML(FALSE) . "</div>";
+				$count++;
+			}
+			
+			
+			
+		}
+		
+		$html_select .= "</select></form>";
+		
+		print "<div class='wrap'>";
+		if (count($itemids)>1) print $html_select;
+		print "<div style='margin-top:2em'>{$html_list}</div>";
+		print "</div>"; 
+					
+	}
 }
 
 	

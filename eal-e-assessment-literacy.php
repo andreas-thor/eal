@@ -81,6 +81,14 @@ function column_header_function () {
 
 
 
+function wpdocs_enqueue_custom() {
+	wp_enqueue_script( 'jquery' );
+	wp_enqueue_script( 'jquery-ui-core' );
+	wp_enqueue_script( 'jquery-ui-slider' );
+}
+add_action( 'admin_enqueue_scripts', 'wpdocs_enqueue_custom' );
+
+
 add_action ('admin_menu', 'set_eal_admin_menu_entries');
 
 function set_eal_admin_menu_entries () {
@@ -109,11 +117,13 @@ function set_eal_admin_menu_entries () {
  	
  	
  	add_menu_page('eal_page_items', 'Items', 'edit_others_posts', 'eal_page_items', 'create_eal_page_items', 'dashicons-admin-post', 1);
- 	add_submenu_page( 'eal_page_items', 'All Items', 'All Items', 'edit_others_posts', 'eal_page_items' );
- 	add_submenu_page( 'eal_page_items', 'Single Choice', 'Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
- 	add_submenu_page( 'eal_page_items', 'Multiple Choice', 'Multiple Choice', 'edit_others_posts', 'edit.php?post_type=itemmc');
- 	add_submenu_page( 'eal_page_items', 'Import', 'Import', 'edit_others_posts', 'import-items', array ('CPT_Item', 'import_items'));
- 	
+//  	add_submenu_page( 'eal_page_items', 'All Items', '<div class="dashicons-before dashicons-cart" style="display:inline">&nbsp;</div> All Items', 'edit_others_posts', 'eal_page_items' );
+
+// external images: add_submenu_page( 'eal_page_items', 'Single Choice', '<img style="height:1em" src="' . plugins_url('img/single-choice.png', __FILE__) . '"/> Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
+ 	add_submenu_page( 'eal_page_items', 'Single Choice', '<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div> Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
+ 	add_submenu_page( 'eal_page_items', 'Multiple Choice', '<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div> Multiple Choice', 'edit_others_posts', 'edit.php?post_type=itemmc');
+ 	add_submenu_page( 'eal_page_items', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_others_posts', 'import-items', array ('CPT_Item', 'import_items'));
+
  	
 	add_menu_page('eal_page_taxonomies', 'Taxonomies', 'edit_others_posts', 'eal_page_taxonomies', '', 'dashicons-networking', 30);
    	add_submenu_page( 'eal_page_taxonomies', 'Topic', 'Topic', 'edit_others_posts', 'edit-tags.php?taxonomy=topic');
@@ -131,14 +141,16 @@ function set_eal_admin_menu_entries () {
     	}
     	$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new, $b_old );
     }    	
-    	
-    	
+        	
+    
     $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
     add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', array ('PAG_Basket', 'page_itembasket'), 'dashicons-cart', 31);
-    add_submenu_page( 'eal_page_itembasket', 'Table', 'Table', 'edit_others_posts', 'eal_page_itembasket', array ('PAG_Basket', 'page_itembasket'));
+    add_submenu_page( 'eal_page_itembasket', 'Table', '<div class="dashicons-before dashicons-list-view" style="display:inline">&nbsp;</div> Table', 'edit_others_posts', 'eal_page_itembasket', array ('PAG_Basket', 'page_itembasket'));
+    add_submenu_page( 'eal_page_itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_others_posts', 'ist-blueprint', array ('PAG_Basket', 'page_ist_blueprint'));
+    add_submenu_page( 'eal_page_itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_others_posts', 'view', array ('PAG_Basket', 'page_view'));
+    add_submenu_page( 'eal_page_itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_others_posts', 'generator', array ('PAG_Basket', 'page_generator'));
     
-    add_submenu_page( 'eal_page_itembasket', 'Explorer', 'Explorer', 'edit_others_posts', 'ist-blueprint', array ('PAG_Basket', 'page_ist_blueprint'));
-    add_submenu_page( 'eal_page_itembasket', 'Viewer', 'Viewer', 'edit_others_posts', 'view', array ('PAG_Basket', 'page_view'));
+ 
     
     
 }
