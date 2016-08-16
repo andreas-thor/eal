@@ -482,68 +482,159 @@ class PAG_Basket {
 	
 	public static function page_itembasket () {
 	
-	
-	
-	$myListTable = new CPT_Item_Table();
-	$action = $myListTable->process_bulk_action();
-	
-	if ($action == "viewitems") {
-		return PAG_Basket::page_view();
-	}
-	
-	
-	// echo '<div class="wrap"><h2>My List Table Test</h2>';
-	$myListTable->prepare_items();
-	
-	?>
-	
-		<div class="wrap">
+		$myListTable = new CPT_Item_Table();
+		$action = $myListTable->process_bulk_action();
 		
-			<h1>Item Basket</h1>
-	
-	<form method="post">
-	<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
-	<?php 
-		$myListTable->search_box('search', 'search_id'); 
-		$myListTable->display();
+		if ($action == "viewitems") {
+			return PAG_Basket::page_view();
+		}
+		
+		
+		// echo '<div class="wrap"><h2>My List Table Test</h2>';
+		$myListTable->prepare_items();
+		
 		?>
-	</form>
-		</div>
-	<?php 		
+		
+			<div class="wrap">
+			
+				<h1>Item Basket</h1>
+		
+		<form method="post">
+		<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
+		<?php 
+			$myListTable->search_box('search', 'search_id'); 
+			$myListTable->display();
+			?>
+		</form>
+			</div>
+		<?php 		
 	}
 
 
 	
 	public static function page_generator () {
 	
-		wp_enqueue_script('jquery');
 		
-		print "<h1>HHHHH</h1>";
+		$criteria = array (
+				
+			"item_type" => array (
+				"sc" => "Single Choice",	
+				"mc" => "Multiple Choice"	
+			),	
+			"dimension" => array (
+					"KW" => "KW",
+					"FW" => "FW",
+					"PW" => "PW",
+			)
+				
+		);
 		
+		?>
 		
-		?> 
-		<script>
-  $( function() {
-    $( "#slider-range" ).slider({
-      range: true,
-      min: 0,
-      max: 500,
-      values: [ 75, 300 ],
-      slide: function( event, ui ) {
-        $( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
-      }
-    });
-    $( "#amount" ).val( "$" + $( "#slider-range" ).slider( "values", 0 ) +
-      " - $" + $( "#slider-range" ).slider( "values", 1 ) );
-  } );
-  </script>
   
-  <p>
-  <label for="amount">Price range:</label>
-  <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
-</p>
- 
-<div id="slider-range"></div>
+		
+		 
+  
+  
+<div class="wrap">
+
+  <div id="slider">
+	
+	</div>
+		
+		<style type="text/css">
+		#slider {width:300px; height:20px; background-color:#DDDDDD}
+		.ui-slider-handle {width: 50px; height: 15px; background-color:#0f0; position:relative; left:0px; cursor: e-resize; font-size: 9px; font-family: verdana;}
+	</style>
+		
+ <script>
+		  var $ =jQuery.noConflict();
+		  
+
+		  jQuery(document).ready(function($) {
+			    $( "#slider" ).slider(
+			    		{
+			    		      range: true,
+			    		      min: 0,
+			    		      max: 500,
+			    		      values: [ 75, 300 ]
+			    		}
+					     );
+
+			    
+
+
+					      });
+  </script>			
+			
+			
+		<?php  echo plugins_url( '/js/dashboard_script.js', __FILE__ ); ?> 
+			
+				<h1>Generate Task Pool</h1>
+				
+				
+				
+				<form  enctype="multipart/form-data" action="admin.php?page=generator" method="post">
+				
+					<table class="form-table">
+						<tbody>
+							<tr>
+								<th><label>Number of Items</label></th>
+								<td>
+									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
+									<input type="number" name="number_of_items" min="1" max="25" value="20"/>
+								</td>
+							</tr>
+							<tr>
+								<th><label>Item Type</label></th>
+							</tr>
+							<tr>
+								<td style="padding-top:0px;"><label>Single Choice</label></td>
+								<td style="padding-top:0px;">
+									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
+									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
+								</td>
+							<tr>
+							<tr>
+								<td style="padding-top:0px;"><label>Multiple Choice</label></td>
+								<td style="padding-top:0px;">
+									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
+									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
+								</td>
+							<tr>
+							<tr>
+								<th><label>Dimension</label></th>
+							</tr>
+							
+							<tr>
+								<td style="padding-top:0px;"><label>FW</label></td>
+								<td style="padding-top:0px;">
+									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
+									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
+								</td>
+							<tr>
+							<tr>
+								<td style="padding-top:0px;"><label>KW</label></td>
+								<td style="padding-top:0px;">
+									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
+									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
+								</td>
+							<tr>
+							<tr>
+								<td style="padding-top:0px;"><label>PW</label></td>
+								<td style="padding-top:0px;">
+									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
+									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
+								</td>
+							<tr>
+							
+						</tbody>
+					</table>
+					
+				</form>
+			</div>			
+		
+		
 		
 		<?php 
 	}

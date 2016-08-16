@@ -23,6 +23,7 @@ class CPT_Item_Table extends WP_List_Table {
 	
 	function column_title($item) {
 		$actions = array(
+				'view'   => sprintf('<a href="admin.php?page=view&itemid=%s">View</a>',$item['ID']),
 				'edit'   => sprintf('<a href="post.php?action=%s&post=%s">Edit</a>','edit',$item['ID']),
 				'remove' => sprintf('<a href="?page=%s&action=%s&itemid=%s">Remove from Basket</a>',$_REQUEST['page'],'removefrombasket',$item['ID'])
 				
@@ -36,9 +37,9 @@ class CPT_Item_Table extends WP_List_Table {
 	
 	function get_bulk_actions() {
 		$actions = array(
-				'removefrombasket'    => 'Remove from Basket',
-				'exportILIAS5'	=> 'Export to ILIAS 5',
-				'viewitems'	=> 'View'
+				'viewitems'	=> 'View items',
+				'removefrombasket'    => 'Remove items from Basket',
+				'exportILIAS5'	=> 'Export items to ILIAS 5'
 		);
 		return $actions;
 	}
