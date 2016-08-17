@@ -1,5 +1,7 @@
 <?php 
 
+require_once ("class.EAL_Item.php");
+
 class PAG_Basket {
 
 	
@@ -13,12 +15,14 @@ class PAG_Basket {
 		if ($name == "type") return [$item->type];
 		
 		if (($name == "dim") || ($name == "level")) {
+			$res = array();
 			foreach (array ('FW', 'PW', 'KW') as $dim) {
 				if ($item->level[$dim] > 0) {
-					if ($name == "dim") return [$dim];
-					if ($name == "level") return [$item->level[$dim]];
+					if ($name == "dim") array_push ($res, $dim); // return [$dim];
+					if ($name == "level") array_push ($res, $item->level[$dim]); // return [$item->level[$dim]];
 				}
 			}
+			return $res;
 		}
 		
 		if (($name == "topic1") || ($name == "topic2")) {
@@ -49,6 +53,15 @@ class PAG_Basket {
 		
 	}
 	
+	/**
+	 * Groups / partitions set of items by category
+	 * @param String $name category (type, dim, level, topic1, topic2)
+	 * @param EAL_Item[] $items
+	 * @param String $parent Parent term (i.e., term of topic1) if category = topic2
+	 * @param unknown $complete
+	 * @return array ( value => EAL_Item[] )
+	 */
+	
 	private static function groupBy ($name, $items, $parent, $complete) {
 	
 		$res = array();
@@ -72,11 +85,9 @@ class PAG_Basket {
 	}
 	
 	
-	public static function load_items_callback () {
-		
-// 		global $wpdb; // this is how you get access to the database
 	
-		
+	public static function loadAllItemsFromBasket () {
+	
 		// load all items from basket
 		$items = array ();
 		$itemids = get_user_meta(get_current_user_id(), 'itembasket', true);
@@ -91,6 +102,18 @@ class PAG_Basket {
 			$item->loadById($item_id);
 			array_push($items, $item);
 		}
+		
+		return $items;
+		
+	}
+	
+	
+	public static function load_items_callback () {
+		
+// 		global $wpdb; // this is how you get access to the database
+	
+		
+		$items = PAG_Basket::loadAllItemsFromBasket ();
 		
 		
 		// FOR DEBUG
@@ -515,6 +538,8 @@ class PAG_Basket {
 	public static function page_generator () {
 	
 		
+		
+		
 		$criteria = array (
 				
 			"item_type" => array (
@@ -570,6 +595,9 @@ class PAG_Basket {
 			
 		<?php  echo plugins_url( '/js/dashboard_script.js', __FILE__ ); ?> 
 			
+			
+			
+			
 				<h1>Generate Task Pool</h1>
 				
 				
@@ -578,55 +606,47 @@ class PAG_Basket {
 				
 					<table class="form-table">
 						<tbody>
-							<tr>
-								<th><label>Number of Items</label></th>
-								<td>
-									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
-									<input type="number" name="number_of_items" min="1" max="25" value="20"/>
-								</td>
-							</tr>
-							<tr>
-								<th><label>Item Type</label></th>
-							</tr>
-							<tr>
-								<td style="padding-top:0px;"><label>Single Choice</label></td>
-								<td style="padding-top:0px;">
-									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
-									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
-								</td>
-							<tr>
-							<tr>
-								<td style="padding-top:0px;"><label>Multiple Choice</label></td>
-								<td style="padding-top:0px;">
-									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
-									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
-								</td>
-							<tr>
-							<tr>
-								<th><label>Dimension</label></th>
-							</tr>
 							
-							<tr>
-								<td style="padding-top:0px;"><label>FW</label></td>
-								<td style="padding-top:0px;">
-									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
-									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
-								</td>
-							<tr>
-							<tr>
-								<td style="padding-top:0px;"><label>KW</label></td>
-								<td style="padding-top:0px;">
-									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
-									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
-								</td>
-							<tr>
-							<tr>
-								<td style="padding-top:0px;"><label>PW</label></td>
-								<td style="padding-top:0px;">
-									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
-									<input type="number" name="number_of_items" min="1" max="25" value="10"/>
-								</td>
-							<tr>
+
+
+		<?php 
+		
+			$items = PAG_Basket::loadAllItemsFromBasket ();
+			
+			new ALG_Item_Pool($items, array (29,0,0,0,0,0), array (29,12,17,2,5,1));
+			
+			printf("<tr><th><label>%s</label></th>", "Number of Items");
+			printf("<td style='padding-top:0px; padding-bottom:0px;'>");
+			printf("<input style='width:5em' type='number' name='min_%s' min='0' max='%d' value='0'/>", "number", count($items));
+			printf("<input style='width:5em' type='number' name='max_%s' min='0' max='%d' value='%d'/>", "number", count($items), count($items));
+			printf("</td></tr>");
+			
+			$categories = array ("type", "dim", "level", "topic1");
+			foreach ($categories as $category) {
+				
+				printf("<tr><th style='padding-bottom:0.5em;'><label>%s</label></th></tr>", EAL_Item::$category_label[$category]);
+				foreach (PAG_Basket::groupBy ($category, $items, NULL, true) as $catval => $catitems) {
+					
+					printf("<tr><td style='padding-top:0px; padding-bottom:0px;'><label>%s</label></td>", ($category == "topic1") ? $catval : EAL_Item::$category_value_label[$category][$catval]);
+					printf("<td style='padding-top:0px; padding-bottom:0px;'>");
+					printf("<input style='width:5em' type='number' name='min_%s' min='0' max='%d' value='0'/>", $catval, count($catitems));
+					printf("<input style='width:5em' type='number' name='max_%s' min='0' max='%d' value='%d'/>", $catval, count($catitems), count($catitems));
+					printf("</td></tr>");
+					
+				}
+				
+			}
+			
+			
+					
+		
+		
+		?>
+
+
+
+
+							
 							
 						</tbody>
 					</table>

@@ -37,6 +37,7 @@ require_once 'includes/class.CPT_ItemMC.Review.php';
 
 require_once 'includes/class.CPT_LearnOut.php';
 require_once 'includes/class.PAG_Basket.php';
+require_once 'includes/class.ALG_Item_Pool.php';
 
 
 // $GLOBALS["eal_itemtypes"] = [

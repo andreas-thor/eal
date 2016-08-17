@@ -18,6 +18,18 @@ abstract class EAL_Item {
 	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	public static $level_type = ["FW", "KW", "PW"];
 	
+	public static $category_value_label = [
+			"type" => ["itemsc" => "Single Choice", "itemmc" => "Multiple Choice"],
+			"level" => ["1" => "Erinnern", "2" => "Verstehen", "3" => "Anwenden", "4" => "Analysieren", "5" => "Evaluieren", "6" => "Erschaffen"],
+			"dim" => ["FW" => "FW", "KW" => "KW", "PW" => "PW"]
+	];
+	
+	public static $category_label = [
+			"type" => "Item Typ",
+			"level" => "Anforderungsstrufe",
+			"dim" => "Wissensdimension",
+			"topic1" => "Topic Stufe 1"
+	];
 	
 	function __construct() {
 		$this->level = ["FW" => null, "KW" => null, "PW" => null];
