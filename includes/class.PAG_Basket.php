@@ -306,15 +306,23 @@ class PAG_Basket {
 
 			function load_items() {
 
+				console.log ("Load Items", jQuery("#drag_dimx").children()[0]);
+				
 				var data = {
 						'action': 'load_items',
-						'dimx0': jQuery("#dimensionsX #dim0").val(),
-						'dimx1': jQuery("#dimensionsX #dim1").val(),
-						'dimx2': jQuery("#dimensionsX #dim2").val(),
-						'dimy0': jQuery("#dimensionsY #dim0").val(),
-						'dimy1': jQuery("#dimensionsY #dim1").val(),
-						'dimy2': jQuery("#dimensionsY #dim2").val(),
-						'valtype': jQuery("#values #val").val()
+						'dimx0': (jQuery("#drag_dimx").children().size()>1) ? jQuery("#drag_dimx").children()[0].value : 'none', 
+						'dimx1': (jQuery("#drag_dimx").children().size()>2) ? jQuery("#drag_dimx").children()[1].value : 'none', 
+						'dimx2': (jQuery("#drag_dimx").children().size()>3) ? jQuery("#drag_dimx").children()[2].value : 'none', 
+						'dimy0': (jQuery("#drag_dimy").children().size()>1) ? jQuery("#drag_dimy").children()[0].value : 'none', 
+						'dimy1': (jQuery("#drag_dimy").children().size()>2) ? jQuery("#drag_dimy").children()[1].value : 'none', 
+						'dimy2': (jQuery("#drag_dimy").children().size()>3) ? jQuery("#drag_dimy").children()[2].value : 'none', 
+// 						'dimx0': jQuery("#dimensionsX #dim0").val(),
+// 						'dimx1': jQuery("#dimensionsX #dim1").val(),
+// 						'dimx2': jQuery("#dimensionsX #dim2").val(),
+// 						'dimy0': jQuery("#dimensionsY #dim0").val(),
+// 						'dimy1': jQuery("#dimensionsY #dim1").val(),
+// 						'dimy2': jQuery("#dimensionsY #dim2").val(),
+						'valtype': 'number' // jQuery("#values #val").val()
 					};
 	
 				console.log ("Call AJAX");			
@@ -418,7 +426,91 @@ class PAG_Basket {
 	
 		<h1>Item Explorer</h1>
 	
-		<button draggable='true'> Hier <span style='font-weight:bolder; color:#FF0000'>&nbsp;&nbsp;&#10005; </span></button>
+		
+		<script>
+			function allowDrop(ev) {
+		    	ev.preventDefault();
+			}
+
+			
+			function drag(ev) {
+// 				console.log("Drag", ev.target.id);
+			    ev.dataTransfer.setData("text", ev.target.id);
+			}
+			
+			function drop(ev) {
+			    var data = ev.dataTransfer.getData("text");
+				console.log("Drop data", data);
+				console.log("Drop Target Id", ev.target.id);
+				console.log("Drop Target NodeName", ev.target.nodeName);
+
+				ev.preventDefault();
+
+				if (ev.target.id == "drag_home") {
+					ev.target.appendChild (document.getElementById(data));
+				} else { 
+					if (ev.target.nodeName == "BUTTON") {
+						ev.target.parentNode.appendChild (document.getElementById(data));
+					} else {
+
+					    ev.target.parentNode.insertBefore (document.getElementById(data), ev.target);
+
+					    console.log ("Drop Parent", ev.target.parentNode);
+					    console.log ("Drop Parent Cound ChildNodes", ev.target.parentNode.children.length);
+					    console.log ("Drop1", ev.target.parentNode.children[0]);
+					    console.log ("Drop2", ev.target.parentNode.children[1]);
+					    
+					    if (ev.target.parentNode.children.length > 3) { 
+					    	ev.target.style.display = 'none';
+					    }
+
+					    
+					}
+				}
+
+				document.getElementById(data).style.display = (document.getElementById(data).parentNode.id == 'drag_dimy') ? 'block' : 'inline'; 
+				document.getElementById("drag_place_dimx").style.display = (document.getElementById("drag_dimx").children.length > 3) ? 'none' : 'inline';
+				document.getElementById("drag_place_dimy").style.display = (document.getElementById("drag_dimy").children.length > 3) ? 'none' : 'block';
+
+				load_items();
+
+// 				if (data != "drag_topic2") {
+				    
+// 				    ev.preventDefault();
+// 				    ev.target.parentNode.insertBefore (ev.target.cloneNode(true), ev.target);
+
+				    
+// 				} else {
+// 					// check if previous category is topic1
+// 					if (ev.target.previousSibling != null) {
+// 						if (ev.target.previousSibling.id == "drag_topic1") {
+// 						    ev.preventDefault();
+// 						    ev.target.parentNode.insertBefore (ev.target.cloneNode(true), ev.target);
+// 						    ev.target.parentNode.insertBefore (document.getElementById(data), ev.target);
+
+// 						}
+// 					}
+// 				}
+			}
+		</script>
+
+		<div>
+			<div style='min-height:2em; border-style: dashed; border-width:1px; border-color:#AAAAAA; padding:0.5em;' id="drag_home" ondrop="drop(event)" ondragover="allowDrop(event)">
+				<button value='type' 	style='margin:0.2em;' id='drag_itemtype' draggable='true' ondragstart="drag(event)" > Item Typ </button>
+				<button value='dim' 	style='margin:0.2em;' id='drag_dimension' draggable='true' ondragstart="drag(event)"> Dimension </button>
+				<button value='level' 	style='margin:0.2em;' id='drag_level' draggable='true' ondragstart="drag(event)"> Anforderungsstufe </button>
+				<button value='topic1' 	style='margin:0.2em;' id='drag_topic1' draggable='true' ondragstart="drag(event)"> Topic Level 1</button>
+				<button value='topic2' 	style='margin:0.2em;' id='drag_topic2' draggable='true' ondragstart="drag(event)"> Topic Level 2</button>
+			</div>
+		</div>
+		<hr/>
+		
+		
+		
+		
+		
+<!-- 		
+		
 		<table>
 			<tr>
 			<td>
@@ -492,8 +584,24 @@ class PAG_Basket {
 		</tr>
 		</table>
 	
+	-->
 	
-		<table id="itemtable" border="1" class="wp-list-table widefat fixed striped posts">
+		<table>
+			<tr>
+			<td></td>
+			<td><div id='drag_dimx'>
+		<div id='drag_place_dimx' style='margin:0.2em; padding:0; display:inline; border-style: dashed; border-color:#AAAAAA; border-width:1px; ' ondrop="drop(event)" ondragover="allowDrop(event)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+		</div></td>
+			</tr>
+			
+			<tr>
+			<td valign='top'><div id='drag_dimy'>
+		<div id='drag_place_dimy' style='margin:0.2em; padding:0; display:block; border-style: dashed; border-color:#AAAAAA; border-width:1px; width:10em' ondrop="drop(event)" ondragover="allowDrop(event)">&nbsp;</div>
+		</div></td>
+			<td><table id="itemtable" border="1" class="wp-list-table widefat fixed striped posts"></td>
+			</tr>
+		</table>
+		
 		
 		<tr><td>Loading items from basket</td></tr>
 		</table>
