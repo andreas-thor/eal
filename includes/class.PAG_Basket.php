@@ -416,8 +416,9 @@ class PAG_Basket {
 		add_action( 'admin_footer', array ('PAG_Basket', 'load_items_javascript') ); // Write our JS below here
 		?>
 	
-		
+		<h1>Item Explorer</h1>
 	
+		<button draggable='true'> Hier <span style='font-weight:bolder; color:#FF0000'>&nbsp;&nbsp;&#10005; </span></button>
 		<table>
 			<tr>
 			<td>
@@ -563,100 +564,115 @@ class PAG_Basket {
   
 <div class="wrap">
 
-  <div id="slider">
 	
-	</div>
+			
 		
-		<style type="text/css">
-		#slider {width:300px; height:20px; background-color:#DDDDDD}
-		.ui-slider-handle {width: 50px; height: 15px; background-color:#0f0; position:relative; left:0px; cursor: e-resize; font-size: 9px; font-family: verdana;}
-	</style>
-		
- <script>
-		  var $ =jQuery.noConflict();
-		  
-
-		  jQuery(document).ready(function($) {
-			    $( "#slider" ).slider(
-			    		{
-			    		      range: true,
-			    		      min: 0,
-			    		      max: 500,
-			    		      values: [ 75, 300 ]
-			    		}
-					     );
-
-			    
-
-
-					      });
-  </script>			
-			
-			
-		<?php  echo plugins_url( '/js/dashboard_script.js', __FILE__ ); ?> 
-			
-			
-			
-			
-				<h1>Generate Task Pool</h1>
-				
-				
-				
-				<form  enctype="multipart/form-data" action="admin.php?page=generator" method="post">
-				
-					<table class="form-table">
-						<tbody>
-							
 
 
 		<?php 
 		
+		
+		
+		
+			
+			$html  = sprintf ("<form  enctype='multipart/form-data' action='admin.php?page=generator' method='post'><table class='form-table'><tbody'>");
+		
+			
 			$items = PAG_Basket::loadAllItemsFromBasket ();
 			
-			new ALG_Item_Pool($items, array (29,0,0,0,0,0), array (29,12,17,2,5,1));
+// 			
 			
-			printf("<tr><th><label>%s</label></th>", "Number of Items");
-			printf("<td style='padding-top:0px; padding-bottom:0px;'>");
-			printf("<input style='width:5em' type='number' name='min_%s' min='0' max='%d' value='0'/>", "number", count($items));
-			printf("<input style='width:5em' type='number' name='max_%s' min='0' max='%d' value='%d'/>", "number", count($items), count($items));
-			printf("</td></tr>");
+			// Number of Items (min, max)
+			$_SESSION['min_number'] = isset($_REQUEST['min_number']) ? $_REQUEST['min_number'] : (isset($_SESSION['min_number']) ? min ($_SESSION['min_number'], count($items)) : 0);
+			$_SESSION['max_number'] = isset($_REQUEST['max_number']) ? $_REQUEST['max_number'] : (isset($_SESSION['max_number']) ? min ($_SESSION['max_number'], count($items)) : count($items));
 			
+			$html .= sprintf("<tr><th style='padding-top:0px; padding-bottom:0px;'><label>%s</label></th>", "Number of Items");
+			$html .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
+			$html .= sprintf("<input style='width:5em' type='number' name='min_%s' min='0' max='%d' value='%d'/>", "number", count($items), $_SESSION['min_number']);
+			$html .= sprintf("<input style='width:5em' type='number' name='max_%s' min='0' max='%d' value='%d'/>", "number", count($items), $_SESSION['max_number']);
+			$html .= sprintf("</td></tr>");
+			
+			// Min / Max for all categories
 			$categories = array ("type", "dim", "level", "topic1");
 			foreach ($categories as $category) {
 				
-				printf("<tr><th style='padding-bottom:0.5em;'><label>%s</label></th></tr>", EAL_Item::$category_label[$category]);
+				$html .= sprintf("<tr><th style='padding-bottom:0.5em;'><label>%s</label></th></tr>", EAL_Item::$category_label[$category]);
 				foreach (PAG_Basket::groupBy ($category, $items, NULL, true) as $catval => $catitems) {
 					
-					printf("<tr><td style='padding-top:0px; padding-bottom:0px;'><label>%s</label></td>", ($category == "topic1") ? $catval : EAL_Item::$category_value_label[$category][$catval]);
-					printf("<td style='padding-top:0px; padding-bottom:0px;'>");
-					printf("<input style='width:5em' type='number' name='min_%s' min='0' max='%d' value='0'/>", $catval, count($catitems));
-					printf("<input style='width:5em' type='number' name='max_%s' min='0' max='%d' value='%d'/>", $catval, count($catitems), count($catitems));
-					printf("</td></tr>");
-					
+					$_SESSION['min_'.$catval] = isset($_REQUEST['min_'.$catval]) ? $_REQUEST['min_'.$catval] : (isset($_SESSION['min_'.$catval]) ? min ($_SESSION['min_'.$catval], count($catitems)) : 0);
+					$_SESSION['max_'.$catval] = isset($_REQUEST['max_'.$catval]) ? $_REQUEST['max_'.$catval] : (isset($_SESSION['max_'.$catval]) ? min ($_SESSION['max_'.$catval], count($catitems)) : count($catitems));
+						
+					$html .= sprintf("<tr><td style='padding-top:0px; padding-bottom:0px;'><label>%s</label></td>", ($category == "topic1") ? $catval : EAL_Item::$category_value_label[$category][$catval]);
+					$html .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
+					$html .= sprintf("<input style='width:5em' type='number' name='min_%s' min='0' max='%d' value='%d'/>", $catval, count($catitems), $_SESSION['min_'.$catval]);
+					$html .= sprintf("<input style='width:5em' type='number' name='max_%s' min='0' max='%d' value='%d'/>", $catval, count($catitems), $_SESSION['max_'.$catval]);
+					$html .= sprintf("</td></tr>");
 				}
 				
 			}
 			
+			$html .= sprintf ("<tr><th><button type='submit' name='action' value='generate'>Generate</button></th><tr>");
+			$html .= sprintf ("</tbody></table></form></div>");			
+
 			
+			
+			// (re-)generate pools
+			if ($_REQUEST['action'] == 'generate') {
+				$pool = new ALG_Item_Pool(
+					$items,
+					array ($_SESSION['min_number'], $_SESSION['min_itemsc'], $_SESSION['min_itemmc'], $_SESSION['min_FW'], $_SESSION['min_KW'], $_SESSION['min_PW']),
+					array ($_SESSION['max_number'], $_SESSION['max_itemsc'], $_SESSION['max_itemmc'], $_SESSION['max_FW'], $_SESSION['max_KW'], $_SESSION['max_PW'])
+				);
+				
+				$_SESSION['generated_pools'] = $pool->generatedPools;
+			}
+			
+			
+			
+			print ("<h1>Task Pool Generator</h1><br/>");
+			print ($html);
+			
+			// show pools (from last generation; stored in Session variable)
+			if (isset ($_SESSION['generated_pools'])) {
+// 				print_r ($_SESSION['generated_pools']);
+				
+				print ("<br/><h2>Generated Task Pools</h2>");
+				printf ("<table cellpadding='10px' class='widefat fixed' style='table-layout:fixed; width:%dem; background-color:rgba(0, 0, 0, 0);'>", 6+2*count($items)); 
+				print ("<col width='6em;' />");
+				
+				foreach ($items as $item) {
+					print ("<col width='2em;' />");
+				}
+				
+				foreach ($_SESSION['generated_pools'] as $pool) {
+					print ("<tr valign='middle'>");
+					$s = "View";
+					$href = "admin.php?page=view&itemids=" . join (",", $pool);
+					printf ("<td style='overflow: hidden; padding:0px; padding-bottom:0.5em; padding-top:0.5em; padding-left:1em' ><a href='%s' class='button'>View</a></td>", $href);
 					
+					// http://localhost/wordpress/wp-admin/admin.php?page=view&itemids=458,307,307,106
+					foreach ($items as $item) {
+						
+						$symbol = "";
+						$link = "";
+						if (in_array($item->id, $pool)) {
+							$link = sprintf ("onClick='document.location.href=\"admin.php?page=view&itemid=%s\";'", $item->id);
+							if ($item->type == "itemsc") $symbol = "<span class='dashicons dashicons-marker'></span>";	
+							if ($item->type == "itemmc") $symbol = "<span class='dashicons dashicons-forms'></span>";	
+						}
+						
+						
+						printf ("<td %s valign='bottom' style='overflow: hidden; padding:0px; padding-top:0.83em;' >%s</td>", $link, $symbol /*(in_array($item->id, $pool) ? "X" : "")*/);
+					}
+					print ("</tr>");
+				}
+				print ("</table>");
+				
+				
+			}
+			
+				
 		
-		
-		?>
-
-
-
-
-							
-							
-						</tbody>
-					</table>
-					
-				</form>
-			</div>			
-		
-		
-		
-		<?php 
 	}
 	
 	public static function page_view () {
@@ -671,7 +687,6 @@ class PAG_Basket {
 			}
 			else {
 				$itemids = get_user_meta(get_current_user_id(), 'itembasket', true);
-					
 			}
 		}
 		

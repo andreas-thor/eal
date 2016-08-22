@@ -208,8 +208,8 @@ class EAL_ItemMC extends EAL_Item {
 		
 		} else {
 			
-			$res = "<h1>{$this->title}</h1><hr>";
-			$res .= "<div>{$this->description}</div>";
+			$res  = sprintf ("<h1>%s <span class='dashicons dashicons-edit' onClick='document.location.href=\"post.php?action=edit&post=%d\";'></span></h1><hr>", $this->title, $this->id);
+			$res .= sprintf ("<div>%s</div>", $this->description);
 			$res .= "<div style='background-color:F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>{$this->question}";
 			$res .= "<form style='margin-top:1em'>";
 			foreach ($this->answers as $a) {

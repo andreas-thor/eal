@@ -417,6 +417,8 @@ add_action( 'init', 'create_eal_items' );
 
 function create_eal_items() {
 	
+	if (!session_id()) session_start();
+	
 	(new CPT_ItemSC())->init();
 	(new CPT_ItemMC())->init();
 	(new CPT_ItemSC_Review())->init();

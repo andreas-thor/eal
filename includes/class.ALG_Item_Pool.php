@@ -14,10 +14,20 @@ class ALG_Item_Pool {
 	private $maxPools;
 	private $countPools;
 	
+	public $generatedPools;
+	
+	
+	/**
+	 * 
+	 * @param unknown $items
+	 * @param unknown $min array of min values in order: (overall number, itemsc, itemmc, FW, KW, PW)
+	 * @param unknown $max array of max values (see above)
+	 */
 	function __construct($items, $min, $max) {
 		
-		$this->maxPools = 100;
+		$this->maxPools = 10;
 		$this->countPools = 0;
+		$this->generatedPools = array ();
 		
 		$this->items = array_values ($items);	// make sure items are indexed for 0 to n-1
 			
@@ -98,7 +108,13 @@ class ALG_Item_Pool {
 		
 		if ($allTrue) {
 			$this->countPools++;
-			print_r($current);
+			
+			$newPool = array();
+			foreach ($current as $item_pos) {
+				array_push ($newPool, $this->items[$item_pos]->id);
+			}
+			array_push ($this->generatedPools, $newPool);
+// 			print_r($current);
 			if ($this->countPools >= $this->maxPools) return;
 		}
 		
