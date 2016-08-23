@@ -30,14 +30,15 @@ require_once 'includes/class.CPT_Item_Table.php';
 require_once 'includes/class.CPT_Item.php';
 require_once 'includes/class.CPT_ItemSC.php';
 require_once 'includes/class.CPT_ItemMC.php';
+require_once 'includes/class.CPT_LearnOut.php';
 
 require_once 'includes/class.CPT_Item.Review.php';
 require_once 'includes/class.CPT_ItemSC.Review.php';
 require_once 'includes/class.CPT_ItemMC.Review.php';
 
-require_once 'includes/class.CPT_LearnOut.php';
 require_once 'includes/class.PAG_Basket.php';
-require_once 'includes/class.ALG_Item_Pool.php';
+require_once 'includes/class.PAG_Explorer.php';
+require_once 'includes/class.PAG_Generator.php';
 
 
 // $GLOBALS["eal_itemtypes"] = [
@@ -148,11 +149,11 @@ function set_eal_admin_menu_entries () {
         	
     
     $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
-    add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', array ('PAG_Basket', 'page_itembasket'), 'dashicons-cart', 31);
-    add_submenu_page( 'eal_page_itembasket', 'Table', '<div class="dashicons-before dashicons-list-view" style="display:inline">&nbsp;</div> Table', 'edit_others_posts', 'eal_page_itembasket', array ('PAG_Basket', 'page_itembasket'));
-    add_submenu_page( 'eal_page_itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_others_posts', 'ist-blueprint', array ('PAG_Basket', 'page_ist_blueprint'));
-    add_submenu_page( 'eal_page_itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_others_posts', 'view', array ('PAG_Basket', 'page_view'));
-    add_submenu_page( 'eal_page_itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_others_posts', 'generator', array ('PAG_Basket', 'page_generator'));
+    add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', array ('PAG_Basket', 'createPageTable'), 'dashicons-cart', 31);
+    add_submenu_page( 'eal_page_itembasket', 'Table', '<div class="dashicons-before dashicons-list-view" style="display:inline">&nbsp;</div> Table', 'edit_others_posts', 'eal_page_itembasket', array ('PAG_Basket', 'createPageTable'));
+    add_submenu_page( 'eal_page_itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_others_posts', 'ist-blueprint', array ('PAG_Explorer', 'createPage'));
+    add_submenu_page( 'eal_page_itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_others_posts', 'view', array ('PAG_Basket', 'createPageView'));
+    add_submenu_page( 'eal_page_itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_others_posts', 'generator', array ('PAG_Generator', 'createPage'));
     
  
     
@@ -161,7 +162,7 @@ function set_eal_admin_menu_entries () {
 
 
 // register AJAX-PHP-function
-add_action( 'wp_ajax_load_items', array ('PAG_Basket', 'load_items_callback') );
+add_action( 'wp_ajax_load_items', array ('PAG_Explorer', 'load_items_callback') );
 
 add_action('admin_footer-edit.php', 'custom_bulk_admin_footer');
 
