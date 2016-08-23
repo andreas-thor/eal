@@ -37,9 +37,15 @@ class PAG_Metadata {
 				
 				$prefix = str_repeat ("|&nbsp;&nbsp;", $level) . "+&nbsp;&nbsp;";
 				
-				$html  = sprintf("<div onmouseover=\"this.children[1].style.display='inline';\"  onmouseout=\"this.children[1].style.display='none';\" ");
-				$html .= sprintf("style='margin-left:0em'><span>%s%s</span>", $prefix, $term->name);
-				$html .= sprintf("<div style='display:none'>   <span><a href='term.php?taxonomy=topic&tag_ID=%d'>Edit</a></span></div></div>", $term->term_id);
+				$html  = sprintf("<div style='padding:0; margin-left:%dem' onmouseover=\"this.children[1].style.display='inline';\"  onmouseout=\"this.children[1].style.display='none';\">", 2*$level);
+// 				$html .= sprintf("<div style='border-style:solid; border-width:0 0 1px 1px; display:inline-block; width:30px;'><table style='padding:0'><tr><td>A</td></tr><tr><td>A</td></tr></table></div>");
+// 				$html .= sprintf("<div style='disp<table style='padding:0'><tr><td><div style='border-style:solid; border-width:0 0 1px 1px; display:inline-block; width:30px;'></td></tr><tr><td><div style='border-style:solid; border-width:0 0 1px 1px; display:inline-block; width:30px;'></td></tr></table>");
+				
+// 				$html .= sprintf("<label><span style='background-color:#FFFFFF;'>%s</span></label>", $term->name);
+				$html .= sprintf("<input value='%s' size='%d' readonly/>", $term->name, 50-4*$level);
+				// 				$html .= sprintf("style='margin-left:0em'><span>%s%s</span>", $prefix, $term->name);
+				$html .= sprintf("<div style='display:none'>   <span><a href='term.php?taxonomy=topic&tag_ID=%d'>Edit</a></span> | <span><a href=''>View Items</a></span> | <span><a href=''>Download</a></span></div>", $term->term_id);
+				$html .= sprintf("</div>");
 				
 				print ($html);
 				$this->printChildren ($term->term_id, $level+1);
