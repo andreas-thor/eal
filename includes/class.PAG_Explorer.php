@@ -107,6 +107,10 @@ class PAG_Explorer {
 		
 		$items = PAG_Basket::loadAllItemsFromBasket ();
 		
+// 		echo "<script> console.log('dimy0', 'test'); </script>";
+// 		print ("<script> console.log('dimy0', '" . $_POST['dimy0'] . "'); </script>");
+		
+		$_SESSION["dim_names"] = array(array ($_POST['dimx0'], $_POST['dimx1'], $_POST['dimx2']), array($_POST['dimy0'], $_POST['dimy1'], $_POST['dimy2']));
 		
 		// FOR DEBUG
 		$dim_names = array(array ($_POST['dimx0'], $_POST['dimx1'], $_POST['dimx2']), array($_POST['dimy0'], $_POST['dimy1'], $_POST['dimy2']));
@@ -435,20 +439,34 @@ class PAG_Explorer {
 
 	<div class="wrap">
 		
+		
+		<?php 
+			$buttons = array (
+				"type" 	=> "<button value='type' 	style='margin:0.2em;' id='drag_itemtype' draggable='true' ondragstart='drag(event)' > Item Typ </button>",
+				"dim"	=> "<button value='dim' 	style='margin:0.2em;' id='drag_dimension' draggable='true' ondragstart='drag(event)'> Dimension </button>", 
+				"level"	=> "<button value='level' 	style='margin:0.2em;' id='drag_level' draggable='true' ondragstart='drag(event)'> Anforderungsstufe </button>", 
+				"topic1"=> "<button value='topic1' 	style='margin:0.2em;' id='drag_topic1' draggable='true' ondragstart='drag(event)'> Topic Level 1</button>", 
+				"topic2"=> "<button value='topic2' 	style='margin:0.2em;' id='drag_topic2' draggable='true' ondragstart='drag(event)'> Topic Level 2</button>"
+			);
+		
+		?>
+		
 		<h1>Item Explorer</h1>
 
 		<div>
 			<div style='min-height:2em; border-style: dashed; border-width:1px; border-color:#AAAAAA; padding:0.5em;' id="drag_home" ondrop="drop(event)" ondragover="allowDrop(event)">
-				<button value='type' 	style='margin:0.2em;' id='drag_itemtype' draggable='true' ondragstart="drag(event)" > Item Typ </button>
-				<button value='dim' 	style='margin:0.2em;' id='drag_dimension' draggable='true' ondragstart="drag(event)"> Dimension </button>
-				<button value='level' 	style='margin:0.2em;' id='drag_level' draggable='true' ondragstart="drag(event)"> Anforderungsstufe </button>
-				<button value='topic1' 	style='margin:0.2em;' id='drag_topic1' draggable='true' ondragstart="drag(event)"> Topic Level 1</button>
-				<button value='topic2' 	style='margin:0.2em;' id='drag_topic2' draggable='true' ondragstart="drag(event)"> Topic Level 2</button>
+				<?php 
+					foreach ($buttons as $name => $html) {
+						if (isset($_SESSION["dim_names"])) {
+							if (in_array($name, $_SESSION["dim_names"][0]) || in_array($name, $_SESSION["dim_names"][1])) continue;	
+						}
+						print ($html);
+					}
+				?>
+						
 			</div>
 		</div>
 		<hr/>
-		
-		
 		
 		
 	
@@ -457,7 +475,20 @@ class PAG_Explorer {
 				<td></td>
 				<td>
 					<div id='drag_dimx'>
-						<div id='drag_place_dimx' style='margin:0.2em; padding:0; display:inline; border-style: dashed; border-color:#AAAAAA; border-width:1px; ' ondrop="drop(event)" ondragover="allowDrop(event)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+						<?php 
+							$count = 0;
+							if (isset($_SESSION["dim_names"])) {
+								foreach ($_SESSION["dim_names"][0] as $btn) {
+									foreach ($buttons as $name => $html) {
+										if ($btn==$name) {
+											$count++;
+											print ($html);
+										}
+									}
+								}
+							}
+						?>
+						<div id='drag_place_dimx' style='margin:0.2em; padding:0; display:<?php print (($count<3)?"inline":"none"); ?>; border-style: dashed; border-color:#AAAAAA; border-width:1px; ' ondrop="drop(event)" ondragover="allowDrop(event)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
 					</div>
 				</td>
 			</tr>
@@ -465,7 +496,20 @@ class PAG_Explorer {
 			<tr>
 				<td valign='top'>
 					<div id='drag_dimy'>
-						<div id='drag_place_dimy' style='margin:0.2em; padding:0; display:block; border-style: dashed; border-color:#AAAAAA; border-width:1px; width:10em' ondrop="drop(event)" ondragover="allowDrop(event)">&nbsp;</div>
+						<?php 
+							$count = 0;
+							if (isset($_SESSION["dim_names"])) {
+								foreach ($_SESSION["dim_names"][1] as $btn) {
+									foreach ($buttons as $name => $html) {
+										if ($btn==$name) {
+											$count++;
+											print ($html);
+										}
+									}
+								}
+							}
+						?>
+						<div id='drag_place_dimy' style='margin:0.2em; padding:0; display:<?php print (($count<3)?"block":"none"); ?>; border-style: dashed; border-color:#AAAAAA; border-width:1px; width:10em' ondrop="drop(event)" ondragover="allowDrop(event)">&nbsp;</div>
 					</div>
 				</td>
 				<td>
