@@ -34,7 +34,7 @@ abstract class CPT_Object {
 						'parent' => 'Parent Item'
 					),
 		
-					'public' => true,
+					'public' => false,
 					'menu_position' => $this->menu_pos,
 					'menu_icon' => 'dashicons-list-view', // dashicons-welcome-learn-more', 
 					'supports' => array( 'title', 'revisions'), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),

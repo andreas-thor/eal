@@ -17,7 +17,8 @@ class CPT_LearnOut extends CPT_Object {
 		
 		$this->type = "learnout";
 		$this->label = "Learn. Outcome";
-		$this->menu_pos = 7;
+		$this->menu_pos = 0;
+		
 		
 		parent::init();
 		

@@ -36,6 +36,7 @@ require_once 'includes/class.CPT_Item.Review.php';
 require_once 'includes/class.CPT_ItemSC.Review.php';
 require_once 'includes/class.CPT_ItemMC.Review.php';
 
+require_once 'includes/class.PAG_Metadata.php';
 require_once 'includes/class.PAG_Basket.php';
 require_once 'includes/class.PAG_Explorer.php';
 require_once 'includes/class.PAG_Generator.php';
@@ -130,12 +131,19 @@ function set_eal_admin_menu_entries () {
  	add_submenu_page( 'eal_page_items', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_others_posts', 'import-items', array ('CPT_Item', 'import_items'));
 
  	
-	add_menu_page('eal_page_taxonomies', 'Taxonomies', 'edit_others_posts', 'eal_page_taxonomies', '', 'dashicons-networking', 30);
-   	add_submenu_page( 'eal_page_taxonomies', 'Topic', 'Topic', 'edit_others_posts', 'edit-tags.php?taxonomy=topic');
-   	add_submenu_page( 'eal_page_taxonomies', 'Import', 'Import', 'edit_others_posts', 'import-topics', 'WPCB_import_topics');
+ 	
+ 	add_menu_page('eal_page_taxonomies', 'Metadata', 'edit_others_posts', 'eal_page_taxonomies', array ('PAG_Metadata', 'createTable'), 'dashicons-tag', 30);
+ 	add_submenu_page( 'eal_page_taxonomies', 'Taxonomy', '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> Taxonomy', 'edit_others_posts', 'eal_page_taxonomies', array ('PAG_Metadata', 'createTable'));
+ 	add_submenu_page( 'eal_page_taxonomies', 'Topics', '<div class="dashicons-before dashicons-format-status" style="display:inline">&nbsp;</div> Topics', 'edit_others_posts', 'edit-tags.php?taxonomy=topic');
+ 	add_submenu_page( 'eal_page_taxonomies', 'Import', 'Import', 'edit_others_posts', 'import-topics', 'WPCB_import_topics');
+ 	add_submenu_page( 'eal_page_taxonomies', 'Learning Outcomes', '<div class="dashicons-before dashicons-welcome-learn-more" style="display:inline">&nbsp;</div> Learn. Outcomes', 'edit_others_posts', 'edit.php?post_type=learnout');
+ 	
+// 	add_menu_page('eal_page_taxonomies', 'Taxonomies', 'edit_others_posts', 'eal_page_taxonomies', '', 'dashicons-networking', 30);
+//    	add_submenu_page( 'eal_page_taxonomies', 'Topic', 'Topic', 'edit_others_posts', 'edit-tags.php?taxonomy=topic');
+//    	add_submenu_page( 'eal_page_taxonomies', 'Import', 'Import', 'edit_others_posts', 'import-topics', 'WPCB_import_topics');
    	
    	
-    	
+ 	
     if ($_REQUEST['action'] == 'removefrombasket') {
     	$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
         	if ($_REQUEST['itemid']!=null) {
