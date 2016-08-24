@@ -35,6 +35,22 @@ class PAG_Metadata {
 				}
 				*/
 				
+				
+				$pages = get_posts(array(
+						'post_type' => 'itemsc',
+						'numberposts' => -1,
+						'tax_query' => array(
+								array(
+										'taxonomy' => 'topic',
+										'field' => 'id',
+										'terms' => $term->term_id,
+										'include_children' => false
+								)
+						)
+				));
+				foreach ($pages as $p) { $idlist = $idlist . "," + $p->ID; } 
+				
+				$idlist = "";
 				$prefix = str_repeat ("|&nbsp;&nbsp;", $level) . "+&nbsp;&nbsp;";
 				
 				$html  = sprintf("<div style='padding:0; margin-left:%dem' onmouseover=\"this.children[1].style.display='inline';\"  onmouseout=\"this.children[1].style.display='none';\">", 2*$level);

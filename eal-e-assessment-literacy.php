@@ -570,9 +570,57 @@ function create_eal_taxonomies () {
 }
 
 
+function my_custom_login_logo()
+{
+	echo '<style  type="text/css"> h1 a {  background-image:url(' . plugin_dir_url( __FILE__ ) . 'EAssLit.png)  !important; } </style>';
+}
+add_action('login_head',  'my_custom_login_logo');
+
+function custom_admin_logo()
+{
+	echo '<style type="text/css">#header-logo { background-image: url(' . plugin_dir_url( __FILE__ ) . 'EAssLit.png) !important; }</style>';
+}
+add_action('admin_head', 'custom_admin_logo');
 
 
+add_filter( 'admin_footer_text', '__return_empty_string', 11 );
+add_filter( 'update_footer', '__return_empty_string', 11 );
+
+function my_custom_admin_head() {
+	echo '<style>[for="wp_welcome_panel-hide"] {display: none !important;}</style>';
+}
+add_action( 'admin_head', 'my_custom_admin_head' );
 
 
+function example_remove_dashboard_widgets()
+{
+	// Globalize the metaboxes array, this holds all the widgets for wp-admin
+	global $wp_meta_boxes;
+	 
+	unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_primary']);
+	unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_secondary']);
+	unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_plugins']);
+}
+add_action('wp_dashboard_setup', 'example_remove_dashboard_widgets' );
+
+add_action( 'admin_bar_menu', 'my_new_toolbar_item', 999 );
+
+function my_new_toolbar_item( $wp_admin_bar ) {
+	$args = array(
+		'id'    => 'eal_logo',
+		'title' => '<span style="width:46px; height:46px"><img height="26" width="26" src="' . plugin_dir_url( __FILE__ ) . 'EAssLit_small.png"></span>'
+		
+	);
+	$wp_admin_bar->add_node( $args );
+	
+// 	$wp_admin_bar->remove_menu ('user-actions');
+	$wp_admin_bar->remove_menu ('updates');
+	$wp_admin_bar->remove_menu ('comments');
+	$wp_admin_bar->remove_menu ('new-content');
+	$wp_admin_bar->remove_menu ('wp-logo');
+	$wp_admin_bar->remove_menu ('site-name');
+	
+	
+}
 
 ?>

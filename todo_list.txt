@@ -1,6 +1,32 @@
 
+Entwicklung bis 25.08.2016
+==========================
+
+* HTML-Formatierungen bei Upload der Items zunächst ok; sobald Edit gehen Sie kaputt (Quoting etc.)
+
+* Taxonomy
+  * Action Links: View all
+  * Was passiert beim Löschen von Topics mit zugehörigen Items / Learning Outcomes?
+  
+Tabelle Taxonomy
+  * Add To Basket (--> alle Items zu dem Topic)
+  * View all (geht zum Viewer) 
+  
+Item Pool (Viewer)
+* Aggregierte Infos zu Item Pool 
+* Download
+
+Item-Tabelle: Bulk Actions
+  * 
+  * Export -> Add to Basket
+  * View all
+  
 Feedback Demo EAL (12.05.2016)
 ==============================
+
+
+
+
 
 
 * Bei Erstellung neuen Items mit LO

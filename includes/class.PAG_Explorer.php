@@ -50,10 +50,10 @@ class PAG_Explorer {
 					$parentId = $parentTerm->parent;
 				}
 				
-				if ($name=="topic1") array_push ($res, $termhier[0]);
+				if (($name=="topic1") && (!in_array ($termhier[0], $res))) array_push ($res, $termhier[0]);
 				
 				// for topic2: check if available AND if parent=topic1 is the same
-				if (($name=="topic2") && (count($termhier)>1) && ($termhier[0]==$parent)) array_push ($res, $termhier[1]);
+				if (($name=="topic2") && (count($termhier)>1) && ($termhier[0]==$parent) && (!in_array ($termhier[1], $res))) array_push ($res, $termhier[1]);
 				
 			}
 			return $res;

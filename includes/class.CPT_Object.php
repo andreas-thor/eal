@@ -71,14 +71,16 @@ abstract class CPT_Object {
 	public function WPCB_mb_editor ($post, $vars) {
 		
 		$editor_settings = array(
-				'media_buttons' => false,	// no media buttons
+				'media_buttons' => true,	// no media buttons
 				'teeny' => true,			// minimal editor
 				'quicktags' => false,		// hides Visual/Text tabs
 				'textarea_rows' => 3,
 				'tinymce' => true
 		);
 		
-		echo (wp_editor(wpautop(stripslashes($vars['args']['value'])) , $vars['args']['name'], $editor_settings ));
+		// TODO: HTML Layout geht verloren!!! mit oder ohne???
+		echo (wp_editor($vars['args']['value'] , $vars['args']['name'], $editor_settings ));
+// 		echo (wp_editor(wpautop(stripslashes($vars['args']['value'])) , $vars['args']['name'], $editor_settings ));
 	}
 	
 	

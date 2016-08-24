@@ -319,7 +319,8 @@ abstract class CPT_Item extends CPT_Object{
 			if (($_FILES['uploadedfile']['error'] == UPLOAD_ERR_OK) && (is_uploaded_file($_FILES['uploadedfile']['tmp_name']))) {
 	
 				// TODO: check file format parameter (ILIAS5, ...)							
-				EXP_Ilias::import($_FILES['uploadedfile']);
+				$ilias = new EXP_Ilias();
+				$ilias->import($_FILES['uploadedfile']);
 				
 			}
 		}

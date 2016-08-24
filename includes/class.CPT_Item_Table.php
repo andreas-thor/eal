@@ -166,12 +166,13 @@ class CPT_Item_Table extends WP_List_Table {
 	
 			case 'exportILIAS5':
 				
-				EXP_Ilias::generateExport($_REQUEST['itemids']);
+				$ilias = new EXP_Ilias();
+				$link = $ilias->generateExport($_REQUEST['itemids']);
 				
+				printf ("<h2><a href='%s'>Download</a></h2>", $link);
 				
-				
-				echo (implode (',', $_REQUEST['itemids']) . ' sollen in das ILIAS-Format exportiert werden.');
-				echo ("</br><a href='". plugins_url('download.php', __FILE__) . "?itemids=" . implode (',', $_REQUEST['itemids']) . "'>Download (" . count($_REQUEST['itemids']) . " Items)</a>");
+// 				echo (implode (',', $_REQUEST['itemids']) . ' sollen in das ILIAS-Format exportiert werden.');
+// 				echo ("</br><a href='". plugins_url('download.php', __FILE__) . "?itemids=" . implode (',', $_REQUEST['itemids']) . "'>Download (" . count($_REQUEST['itemids']) . " Items)</a>");
 				
 // 				echo (plugins_url('download.php', __FILE__));
 				// 				echo ("<script>window.open('http://www.colorado.edu/conflict/peace/download/peace_essay.ZIP');</script>");

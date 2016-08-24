@@ -80,7 +80,8 @@ class PAG_Basket {
 		
 		$html_list = "";
 		$html_select = "<form><select onChange='for (x=0; x<this.form.nextSibling.childNodes.length; x++) {  this.form.nextSibling.childNodes[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'><option value='-1' selected>All " . count($itemids) . " items</option>";
-		$count = 0;		
+		$count = 0;
+		$items = array ();
 		foreach ($itemids as $item_id) {
 			
 			
@@ -97,17 +98,56 @@ class PAG_Basket {
 				$html_select .= "<option value='{$count}'>{$item->title}</option>";
 				$html_list .= "<div style='margin-top:2em;'>" . $item->getPreviewHTML(FALSE) . "</div>";
 				$count++;
+				array_push($items, $item);
 			}
-			
-			
-			
 		}
-		
 		$html_select .= "</select></form>";
 		
+		
+		$html_info  = sprintf("<form  style='margin-top:5em' enctype='multipart/form-data' action='admin.php?page=view&download=1&itemids=%s' method='post'><table class='form-table'><tbody'>", implode(",",$itemids));
+		$html_info .= sprintf("<tr><th style='padding-top:0px; padding-bottom:0px;'><label>%s</label></th>", "Number of Items");
+		$html_info .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
+		$html_info .= sprintf("<input style='width:5em' type='number' value='%d' readonly/>", count($items));
+		$html_info .= sprintf("</td></tr>");
+		
+		// Min / Max for all categories
+		$categories = array ("type", "dim", "level", "topic1");
+		foreach ($categories as $category) {
+				
+			$html_info .= sprintf("<tr><th style='padding-bottom:0.5em;'><label>%s</label></th></tr>", EAL_Item::$category_label[$category]);
+			foreach (PAG_Explorer::groupBy ($category, $items, NULL, true) as $catval => $catitems) {
+		
+				$html_info .= sprintf("<tr><td style='padding-top:0px; padding-bottom:0px;'><label>%s</label></td>", ($category == "topic1") ? $catval : EAL_Item::$category_value_label[$category][$catval]);
+				$html_info .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
+				$html_info .= sprintf("<input style='width:5em' type='number' value='%d' readonly/>", count($catitems));
+				$html_info .= sprintf("</td></tr>");
+			}
+				
+		}
+		
+		$html_info .= sprintf ("<tr><th><button type='submit' name='action' value='download'>Download</button></th><tr>");
+		$html_info .= sprintf ("</tbody></table></form></div>");
+		
+		
+		
+		
+		
+		
 		print "<div class='wrap'>";
-		if (count($itemids)>1) print $html_select;
-		print "<div style='margin-top:2em'>{$html_list}</div>";
+		
+		if ($_REQUEST['download']=='1') {
+			$ilias = new EXP_Ilias();
+			$link = $ilias->generateExport($itemids);
+			printf ("<h2><a href='%s'>Download</a></h2>", $link);
+		}
+		
+		
+		if (count($itemids)>1) {
+			print $html_select;
+			print "<div style='margin-top:2em'>{$html_list}{$html_info}</div>";
+		} else {
+			print "<div style='margin-top:2em'>{$html_list}</div>";
+		}
 		print "</div>"; 
 					
 	}

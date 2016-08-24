@@ -100,7 +100,7 @@ class EAL_ItemSC extends EAL_Item {
 		$item = new EAL_ItemSC();
 		$item->init($post_id, $post);
 		
-		$wpdb->replace(
+		$a = $wpdb->replace(
 				"{$wpdb->prefix}eal_{$item->type}",
 				array(
 						'id' => $item->id,
