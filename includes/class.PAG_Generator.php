@@ -16,8 +16,12 @@ class PAG_Generator {
 	private $min;
 	private $max;
 	
+	private $overlap;
+	
 	private $maxPools;
 	private $countPools;
+	private $allPools;
+	
 	
 	public $generatedPools;
 	
@@ -25,15 +29,16 @@ class PAG_Generator {
 	/**
 	 *
 	 * @param unknown $items
-	 * @param unknown $min array of min values in order: (overall number, itemsc, itemmc, FW, KW, PW)
+	 * @param unknown $min array of min values in order: (overall number, type_itemsc, type_itemmc, dim_FW, dim_KW, dim_PW, level_1, level_2, level_3, level_4, level_5, level_6)
 	 * @param unknown $max array of max values (see above)
+	 * @param array overlap determines min/max overlap of pools (min=$overlap[0], max=overlap[1])
 	 */
-	function __construct($items, $min, $max) {
+	function __construct($items, $min, $max, $overlap) {
 	
 		$this->maxPools = 10;
 		$this->countPools = 0;
-		$this->generatedPools = array ();
-	
+		$this->allPools = array();
+		
 		$this->items = array_values ($items);	// make sure items are indexed for 0 to n-1
 			
 		// generate MASKs
@@ -47,12 +52,15 @@ class PAG_Generator {
 		$size = count($this->items);
 		foreach ($this->items as $idx => $item) {
 			array_push ($remaining, $idx);	// reverse order since we pop later
-			$vector = 1;
+			$vector = 1;	// = += $this->MASK[0]
 			if ($item->type == "itemsc") $vector += $this->MASK[1];
 			if ($item->type == "itemmc") $vector += $this->MASK[2];
-			if ($item->level["FW"] > 0) $vector += $this->MASK[3];
-			if ($item->level["KW"] > 0) $vector += $this->MASK[4];
-			if ($item->level["PW"] > 0) $vector += $this->MASK[5];
+			if ($item->level["FW"] > 0)  $vector += $this->MASK[3];
+			if ($item->level["KW"] > 0)  $vector += $this->MASK[4];
+			if ($item->level["PW"] > 0)  $vector += $this->MASK[5];
+			for ($level=1; $level<=6; $level++) {
+				if (($item->level["FW"]==$level) || ($item->level["KW"]==$level) || ($item->level["PW"]==$level))  $vector += $this->MASK[$level+5];
+			}
 			array_push($this->item_vectors, $vector);
 		}
 	
@@ -69,57 +77,77 @@ class PAG_Generator {
 	
 		$this->min = $min;
 		$this->max = $max;
+		$this->overlap = $overlap;
 	
 		$this->addOneItem (array(), $remaining, $values_current, $values_remaining);
 	
+		
+		$this->generatedPools = array ();
+		foreach ($this->allPools as $pool) {
+			$newPool = array();
+			foreach ($pool as $item_pos) {
+				array_push ($newPool, $this->items[$item_pos]->id);
+			}
+			array_push ($this->generatedPools, $newPool);
+		}
+		
 	}
 	
 	
+	/**
+	 * 
+	 * @param unknown $current array of item indexes, represents the currently generated pool 
+	 * @param unknown $remaining array of item indexes that are not in $current, i.e., $current + $remaining = $items and $current * $remaining = 0 
+	 * @param unknown $values_current
+	 * @param unknown $values_remaining
+	 */
 	public function addOneItem ($current, $remaining, $values_current, $values_remaining) {
 	
 		if ($this->countPools >= $this->maxPools) return;
 	
 		/* check conditions */
 		$allTrue = TRUE;
-	
-		for ($idx=0; $idx<count($this->MASK); $idx++) {
-				
-				
-				
-				
-			// 			// count occurences for constraint idx
-			// 			$val_current = 0;
-			// 			foreach ($current as $item) {
-			// 				if (($this->item_vectors[$item] & $this->MASK[$idx]) > 0) $val_current++;
-			// 			}
-				
-			if ($this->max[$idx] < $values_current[$idx]) {
-				return;	// greater than max
+		
+		// check for overlap
+		foreach ($this->allPools as $p) {
+			$inter = array_intersect($current, $p);
+			
+			if ($this->overlap[1] < count($inter)) {
+				return;	// maximum overlap exceeded
 			}
-				
-			// 			$val_remaining = 0;
-			// 			foreach ($remaining as $item) {
-			// 				if (($this->item_vectors[$item] & $this->MASK[$idx]) > 0) $val_remaining++;
-			// 			}
-	
-			if ($this->min[$idx] > $values_current[$idx]) { 	// minimum currently not yet reached
-				if ($this->min[$idx] > ($values_current[$idx]+$values_remaining[$idx]) ) {
-					return; 	// minimum can not be reached
+			
+			if ($this->overlap[0] > count($inter)) {
+				if ($this->overlap[0] > (count($inter) + count($remaining))) {
+// 					return; 	// minimum overlap can not be reached anymore
 				}
-				$allTrue = FALSE;
+				$allTrue = FALSE;	// minimum overlap not yet reached
 			}
-	
 		}
-	
-		if ($allTrue) {
-			$this->countPools++;
-				
-			$newPool = array();
-			foreach ($current as $item_pos) {
-				array_push ($newPool, $this->items[$item_pos]->id);
+		
+		
+		
+
+		for ($idx=0; $idx<count($this->MASK); $idx++) {
+
+			// Invalid pool -> Greater than maximum
+			if ($this->max[$idx] < $values_current[$idx]) {
+				return;	
 			}
-			array_push ($this->generatedPools, $newPool);
-			// 			print_r($current);
+
+			if ($this->min[$idx] > $values_current[$idx]) { 	// minimum currently not yet reached
+				// Prune search space -->  minimum can not be reached anamore
+				if ($this->min[$idx] > ($values_current[$idx]+$values_remaining[$idx]) ) {
+					return; 	
+				}
+				$allTrue = FALSE;	// condition not yet satisfied (below minimum)
+			}
+		}
+
+		
+		if ($allTrue) {
+			// $current is a valid pool (according to min/max ranges)
+			$this->countPools++;
+			array_push ($this->allPools, $current);
 			if ($this->countPools >= $this->maxPools) return;
 		}
 	
@@ -138,16 +166,15 @@ class PAG_Generator {
 				}
 			}
 				
-			// determine first item with set idx
+			// determine first item where MASK[best_idx] ist set 
 			foreach ($remaining as $key => $value) {
 				if (($this->item_vectors[$value] & $this->MASK[$bestIdx]) > 0) {
 					$toRemove = $key;
 					break;
 				}
 			}
-			$add = $remaining[$toRemove];
+			$add = $remaining[$toRemove];	// item that will be added to the pool
 			unset($remaining[$toRemove]);
-				
 				
 			$remaining_new = (new ArrayObject($remaining))->getArrayCopy();
 			$current_new = (new ArrayObject($current))->getArrayCopy();
@@ -185,41 +212,49 @@ class PAG_Generator {
 	
 	
 	
-	
+	private static function minMaxField ($name, $max) {
+		
+		/* set/get values to/from Session Variable */
+		$_SESSION['min_' . $name] = isset($_REQUEST['min_' . $name]) ? $_REQUEST['min_' . $name] : (isset($_SESSION['min_' . $name]) ? min ($_SESSION['min_' . $name], $max) : 0);
+		$_SESSION['max_' . $name] = isset($_REQUEST['max_' . $name]) ? $_REQUEST['max_' . $name] : (isset($_SESSION['max_' . $name]) ? min ($_SESSION['max_' . $name], $max) : $max);
+		
+		/* generate HTML for min and max input */
+		$html  = sprintf("<td style='vertical-align:top; padding-top:0px; padding-bottom:0px;'>");
+		$html .= sprintf("<input style='width:5em' type='number' name='min_%s' min='0' max='%d' value='%d'/>", $name, $max, $_SESSION['min_' . $name]);
+		$html .= sprintf("<input style='width:5em' type='number' name='max_%s' min='0' max='%d' value='%d'/>", $name, $max, $_SESSION['max_' . $name]);
+		$html .= sprintf("</td>");
+		return $html;
+	}
 	
 	
 	
 	public static function createPage () {
 	
-		
-		$criteria = array (
-				
-			"item_type" => array (
-				"sc" => "Single Choice",	
-				"mc" => "Multiple Choice"	
-			),	
-			"dimension" => array (
-					"KW" => "KW",
-					"FW" => "FW",
-					"PW" => "PW",
-			)
-				
-		);
-			
-	
-		
 		$items = PAG_Basket::loadAllItemsFromBasket ();
 
-		// Number of Items (min, max)
-		$_SESSION['min_number'] = isset($_REQUEST['min_number']) ? $_REQUEST['min_number'] : (isset($_SESSION['min_number']) ? min ($_SESSION['min_number'], count($items)) : 0);
-		$_SESSION['max_number'] = isset($_REQUEST['max_number']) ? $_REQUEST['max_number'] : (isset($_SESSION['max_number']) ? min ($_SESSION['max_number'], count($items)) : count($items));
-		
 		$html  = sprintf("<form  enctype='multipart/form-data' action='admin.php?page=generator' method='post'><table class='form-table'><tbody'>");
+		
 		$html .= sprintf("<tr><th style='padding-top:0px; padding-bottom:0px;'><label>%s</label></th>", "Number of Items");
-		$html .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
-		$html .= sprintf("<input style='width:5em' type='number' name='min_%s' min='0' max='%d' value='%d'/>", "number", count($items), $_SESSION['min_number']);
-		$html .= sprintf("<input style='width:5em' type='number' name='max_%s' min='0' max='%d' value='%d'/>", "number", count($items), $_SESSION['max_number']);
-		$html .= sprintf("</td></tr>");
+		$html .= PAG_Generator::minMaxField("number", count($items));
+		$html .= sprintf("</tr>");
+		
+		$html .= sprintf("<tr><td style='vertical-align:top; padding-top:0px; padding-bottom:0px;'><label>%s</label></td>", "Overlap");
+		$html .= PAG_Generator::minMaxField("overlap", count($items));
+		$html .= sprintf("</tr>");
+		$html .= sprintf("<tr><td style='vertical-align:top; padding-top:0px; padding-bottom:0px;'><button type='button' onclick='
+				
+				if (this.innerText == \"Select ...\") {
+					this.innerText = \"Close\";
+					this.parentNode.nextSibling.firstChild.style.display=\"block\";
+				} else {
+					this.innerText = \"Select ...\";
+					this.parentNode.nextSibling.firstChild.style.display=\"none\";
+				}
+				
+				'>Select ...</button></td>");
+		$html .= ("<td><div style='display:none'>");
+		foreach ($items as $i) $html .= sprintf ("<input type='checkbox' name='overlap_items[]' value='%d'><label style='vertical-align:top'>%s</label><br/>", $i->id, $i->title);
+		$html .= sprintf("</div></td></tr>");
 		
 		// Min / Max for all categories
 		$categories = array ("type", "dim", "level", "topic1");
@@ -228,14 +263,9 @@ class PAG_Generator {
 			$html .= sprintf("<tr><th style='padding-bottom:0.5em;'><label>%s</label></th></tr>", EAL_Item::$category_label[$category]);
 			foreach (PAG_Explorer::groupBy ($category, $items, NULL, true) as $catval => $catitems) {
 				
-				$_SESSION['min_'.$catval] = isset($_REQUEST['min_'.$catval]) ? $_REQUEST['min_'.$catval] : (isset($_SESSION['min_'.$catval]) ? min ($_SESSION['min_'.$catval], count($catitems)) : 0);
-				$_SESSION['max_'.$catval] = isset($_REQUEST['max_'.$catval]) ? $_REQUEST['max_'.$catval] : (isset($_SESSION['max_'.$catval]) ? min ($_SESSION['max_'.$catval], count($catitems)) : count($catitems));
-					
 				$html .= sprintf("<tr><td style='padding-top:0px; padding-bottom:0px;'><label>%s</label></td>", ($category == "topic1") ? $catval : EAL_Item::$category_value_label[$category][$catval]);
-				$html .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
-				$html .= sprintf("<input style='width:5em' type='number' name='min_%s' min='0' max='%d' value='%d'/>", $catval, count($catitems), $_SESSION['min_'.$catval]);
-				$html .= sprintf("<input style='width:5em' type='number' name='max_%s' min='0' max='%d' value='%d'/>", $catval, count($catitems), $_SESSION['max_'.$catval]);
-				$html .= sprintf("</td></tr>");
+				$html .= PAG_Generator::minMaxField($category . "_" . $catval, count($catitems));
+				$html .= sprintf("</tr>");
 			}
 			
 		}
@@ -249,8 +279,13 @@ class PAG_Generator {
 		if ($_REQUEST['action'] == 'generate') {
 			$pool = new PAG_Generator(
 				$items,
-				array ($_SESSION['min_number'], $_SESSION['min_itemsc'], $_SESSION['min_itemmc'], $_SESSION['min_FW'], $_SESSION['min_KW'], $_SESSION['min_PW']),
-				array ($_SESSION['max_number'], $_SESSION['max_itemsc'], $_SESSION['max_itemmc'], $_SESSION['max_FW'], $_SESSION['max_KW'], $_SESSION['max_PW'])
+				array (	$_SESSION['min_number'], $_SESSION['min_type_itemsc'], $_SESSION['min_type_itemmc'], 
+						$_SESSION['min_dim_FW'], $_SESSION['min_dim_KW'], $_SESSION['min_dim_PW'],
+						$_SESSION['min_level_1'], $_SESSION['min_level_2'], $_SESSION['min_level_3'], $_SESSION['min_level_4'], $_SESSION['min_level_5'], $_SESSION['min_level_6']),
+				array (	$_SESSION['max_number'], $_SESSION['max_type_itemsc'], $_SESSION['max_type_itemmc'],
+						$_SESSION['max_dim_FW'], $_SESSION['max_dim_KW'], $_SESSION['max_dim_PW'],
+						$_SESSION['max_level_1'], $_SESSION['max_level_2'], $_SESSION['max_level_3'], $_SESSION['max_level_4'], $_SESSION['max_level_5'], $_SESSION['max_level_6']),
+				array ( $_SESSION['min_overlap'], $_SESSION['max_overlap'])
 			);
 			
 			$_SESSION['generated_pools'] = $pool->generatedPools;

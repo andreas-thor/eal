@@ -182,8 +182,11 @@ class EAL_ItemSC extends EAL_Item {
 		
 		} else {
 			
-			$res  = sprintf ("<h1>%s <span class='dashicons dashicons-edit' onClick='document.location.href=\"post.php?action=edit&post=%d\";'></span></h1><hr>", $this->title, $this->id);
-			$res .= "<div>{$this->description}</div>";
+			$res  = sprintf ("<div onmouseover=\"this.children[1].style.display='inline';\"  onmouseout=\"this.children[1].style.display='none';\">");
+			$res .= sprintf ("<h1 style='display:inline'>%s</span></h1>", $this->title, $this->id);
+			$res .= sprintf ("<div style='display:none'><span><a href=\"post.php?action=edit&post=%d\">Edit</a></span></div>", $this->id);
+			$res .= sprintf ("</div><br/>");
+			$res .= sprintf ("<div>%s</div>", $this->description);
 			$res .= "<div style='background-color:F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>{$this->question}";
 			$res .= "<form style='margin-top:1em'>";
 			
@@ -191,7 +194,7 @@ class EAL_ItemSC extends EAL_Item {
 				$res .= "<div style='margin-top:1em'><input type='radio' name='x'>" . $a['answer'] . "</div>";
 			}
 			
-			$res .= "</form></div>";
+			$res .= "</form></div><br/>";
 				
 			
 		}

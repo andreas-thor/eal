@@ -79,7 +79,7 @@ class PAG_Basket {
 
 		
 		$html_list = "";
-		$html_select = "<form><select onChange='for (x=0; x<this.form.nextSibling.childNodes.length; x++) {  this.form.nextSibling.childNodes[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'><option value='-1' selected>All " . count($itemids) . " items</option>";
+		$html_select = "<form><select onChange='for (x=0; x<this.form.nextSibling.childNodes.length; x++) {  this.form.nextSibling.childNodes[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'><option value='-1' selected>[All " . count($itemids) . " items]</option>";
 		$count = 0;
 		$items = array ();
 		foreach ($itemids as $item_id) {
@@ -131,9 +131,10 @@ class PAG_Basket {
 		
 		
 		
+			
 		
 		
-		print "<div class='wrap'>";
+		print "<div class='wrap'><h1>Item Viewer</h1>";
 		
 		if ($_REQUEST['download']=='1') {
 			$ilias = new EXP_Ilias();

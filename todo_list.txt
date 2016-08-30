@@ -1,4 +1,36 @@
 
+- Import von Testergebnissen
+  - Item-Attribut: Schwierigkeit
+
+- Analyse der Testergebnisse???
+
+
+
+Feedback Demo EAL (25.08.2016)
+==============================
+
+Task Pool Generierung
+ * [TEST] Angabe minimaler & maximaler Overlap (#Items) ... Ziel: Ähnlichkeit zwischen Pools definieren
+ * Angabe von Items, die enthalten sein müssen (Seed Items)
+   - Definition der Semantik: Was bedeutet es, wenn z.B. 3 Items ausgewählt werden? Muss dann min_overlap >= 3 sein? Oder kann der auch 2 sein und es heißt "Die zwei müssen aus der 3er Menge stammen"
+   
+* Angabe Schwierigkeit:
+  - Durchschnittswert
+  - min und max #Items pro Cluster [0,0.1], (0.1,0.2], ..., (0.9,1.0]
+  - Definition Schwierigkeit: #erreichte Punkte / #Gesamtpunktzahl
+  
+* Topic 1 + Topic 2
+
+Explorer
+* Schwierigkeitsgrad (10 Gruppen) als Kriterium
+
+Nutzerrechte und Gruppen definieren
+
+Testinstallation bereitstellen (dbserv)
+
+
+
+
 Entwicklung bis 25.08.2016
 ==========================
 
@@ -13,20 +45,19 @@ Tabelle Taxonomy
   * View all (geht zum Viewer) 
   
 Item Pool (Viewer)
-* Aggregierte Infos zu Item Pool 
-* Download
+* DONE Aggregierte Infos zu Item Pool 
+* DONE Download
 
 Item-Tabelle: Bulk Actions
   * 
   * Export -> Add to Basket
   * View all
   
+  
+  
+  
 Feedback Demo EAL (12.05.2016)
 ==============================
-
-
-
-
 
 
 * Bei Erstellung neuen Items mit LO

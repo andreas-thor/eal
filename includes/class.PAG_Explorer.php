@@ -451,7 +451,7 @@ class PAG_Explorer {
 		
 		?>
 		
-		<h1>Item Explorer</h1>
+		<h1>Item Explorer</h1><br/>
 
 		<div>
 			<div style='min-height:2em; border-style: dashed; border-width:1px; border-color:#AAAAAA; padding:0.5em;' id="drag_home" ondrop="drop(event)" ondragover="allowDrop(event)">
