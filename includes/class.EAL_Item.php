@@ -153,8 +153,8 @@ abstract class EAL_Item {
 			"CREATE TABLE {$tabname} (
 				id bigint(20) unsigned NOT NULL,
 				title text,
-				description text,
-				question text,
+				description mediumtext,
+				question mediumtext,
 				answer text,
 				level tinyint unsigned,
 				level_FW tinyint unsigned,

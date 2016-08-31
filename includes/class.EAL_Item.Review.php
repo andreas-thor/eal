@@ -178,7 +178,7 @@ abstract class EAL_Item_Review {
 				level_FW tinyint unsigned,
 				level_KW tinyint unsigned,
 				level_PW tinyint unsigned,
-				feedback text,
+				feedback mediumtext,
 				overall tinyint unsigned,
 				KEY  (item_id),
 				PRIMARY KEY  (id)

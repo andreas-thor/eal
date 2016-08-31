@@ -89,8 +89,8 @@ class EAL_LearnOut {
 		dbDelta (
 			"CREATE TABLE {$wpdb->prefix}eal_learnout (
 				id bigint(20) unsigned NOT NULL,
-				title text,
-				description text,
+				title mediumtext,
+				description mediumtext,
 				level_FW tinyint unsigned,
 				level_KW tinyint unsigned,
 				level_PW tinyint unsigned

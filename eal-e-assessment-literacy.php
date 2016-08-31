@@ -40,6 +40,7 @@ require_once 'includes/class.PAG_Metadata.php';
 require_once 'includes/class.PAG_Basket.php';
 require_once 'includes/class.PAG_Explorer.php';
 require_once 'includes/class.PAG_Generator.php';
+require_once 'includes/class.PAG_Item.Import.php';
 
 
 // $GLOBALS["eal_itemtypes"] = [
@@ -128,7 +129,7 @@ function set_eal_admin_menu_entries () {
 // external images: add_submenu_page( 'eal_page_items', 'Single Choice', '<img style="height:1em" src="' . plugins_url('img/single-choice.png', __FILE__) . '"/> Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
  	add_submenu_page( 'eal_page_items', 'Single Choice', '<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div> Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
  	add_submenu_page( 'eal_page_items', 'Multiple Choice', '<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div> Multiple Choice', 'edit_others_posts', 'edit.php?post_type=itemmc');
- 	add_submenu_page( 'eal_page_items', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_others_posts', 'import-items', array ('CPT_Item', 'import_items'));
+ 	add_submenu_page( 'eal_page_items', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_others_posts', 'import-items', array ('PAG_Item_Import', 'createPage'));
 
  	
  	

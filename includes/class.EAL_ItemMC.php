@@ -100,7 +100,7 @@ class EAL_ItemMC extends EAL_Item {
 		$item = new EAL_ItemMC();
 		$item->init($post_id, $post);
 		
-		$wpdb->replace(
+		$rowCount = $wpdb->replace(
 				"{$wpdb->prefix}eal_{$item->type}",
 				array(
 						'id' => $item->id,
