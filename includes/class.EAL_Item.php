@@ -167,6 +167,21 @@ abstract class EAL_Item {
 		);
 	}
 	
+	public static function createTableResult() {
+		
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		global $wpdb;
+		dbDelta (
+			"CREATE TABLE {$wpdb->prefix}eal_result (
+				test_id bigint(20) unsigned NOT NULL,
+				item_id bigint(20) unsigned NOT NULL,
+				user_id bigint(20) unsigned NOT NULL,
+				points smallint, 
+				PRIMARY KEY  (test_id, item_id, user_id)
+			) {$wpdb->get_charset_collate()};"
+		);
+	}
+	
 	public static function createTableReview($tabname) {
 	
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );

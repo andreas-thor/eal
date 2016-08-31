@@ -207,6 +207,33 @@ class EXP_Ilias {
 	}
 	
 	public function parseResults (DOMDocument $doc, $itemids) {
+	
+		global $wpdb;
+		$values = array();
+		$insert = array();
+		
+		// test_id is timestamp of the first question
+		$xpath = new DOMXPath($doc);
+		$test_id = $xpath->evaluate("/results/tst_test_question/row", $doc->documentElement)[0]->getAttribute("tstamp");
+		
+		foreach ($xpath->evaluate("/results/tst_test_result/row", $doc->documentElement) as $row) {
+			
+			$question_fi = $row->getAttribute("question_fi");	
+			if (!isset($itemids['il_0_qst_' . $question_fi])) continue;
+			
+			$user = $row->getAttribute("active_fi");	// test-specific user_id
+			$points = $row->getAttribute("points");		// test-specific user_id
+					
+			array_push($values, $test_id, $itemids['il_0_qst_' . $question_fi], $user, $points);
+			array_push($insert, "(%d, %d, %d, %d)");
+			
+			// replace answers
+			$query = "REPLACE INTO {$wpdb->prefix}eal_result (test_id, item_id, user_id, points) VALUES ";
+			$query .= implode(', ', $insert);
+			$wpdb->query( $wpdb->prepare("$query ", $values));			
+			
+		}
+		
 		
 	}
 	

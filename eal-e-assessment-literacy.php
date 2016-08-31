@@ -410,11 +410,14 @@ function create_eal_page_taxonomies () {
  */
  
 
+register_activation_hook( __FILE__, array ('eal_item', 'createTableResult') );
 register_activation_hook( __FILE__, array ('eal_itemsc', 'createTables') );
 register_activation_hook( __FILE__, array ('eal_itemmc', 'createTables') );
 register_activation_hook( __FILE__, array ('eal_itemsc_review', 'createTables') );
 register_activation_hook( __FILE__, array ('eal_itemmc_review', 'createTables') );
 register_activation_hook( __FILE__, array ('eal_learnout', 'createTables') );
+
+
 
 
 add_action( 'init', 'create_eal_items' );
