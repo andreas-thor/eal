@@ -2,10 +2,10 @@
 
 // TODO: Delete Review (in POst Tabelle) --> löschen in Review-Tabelle
 
-require_once("class.CPT_Object.php");
-require_once ("class.EAL_Item.Review.php");
+require_once ("class.CPT_Object.php");
+require_once ("class.EAL_Review.php");
 
-abstract class CPT_Item_Review extends CPT_Object {
+class CPT_Review extends CPT_Object {
 	
 
 	/*
@@ -17,6 +17,8 @@ abstract class CPT_Item_Review extends CPT_Object {
 	public function init($args = array()) {
 
 		$this->menu_pos = -1;
+		$this->type = "review";
+		$this->label = "Item Review";
 		parent::init(array ('supports' => false, 'taxonomies' => array()));
 		
 		
@@ -32,13 +34,16 @@ abstract class CPT_Item_Review extends CPT_Object {
 	public function WPCB_register_meta_box_cb () {
 	
 		global $review;
+		
+		$review = new EAL_Review();
+		$review->load();
+		
 		add_meta_box('mb_item', 'Item: ' . $review->getItem()->title, array ($this, 'WPCB_mb_item'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_score', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($this, 'WPCB_mb_score'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'normal', 'default', array ('level' => $review->level, 'prefix' => 'review', 'default' => $review->getItem()->level, 'background' => 1 ));
 		add_meta_box('mb_feedback', 'Feedback', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'review_feedback', 'value' => $review->feedback));
 		add_meta_box('mb_overall', 'Revisionsurteil', array ($this, 'WPCB_mb_overall'), $this->type, 'side', 'default');
 	}
-	
 	
 	
 	
@@ -66,7 +71,7 @@ abstract class CPT_Item_Review extends CPT_Object {
 		
 		
 		$html_head = "<tr><th></th>";
-		foreach (EAL_Item_Review::$dimension2 as $k2 => $v2) {
+		foreach (EAL_Review::$dimension2 as $k2 => $v2) {
 			$html_head .= "<th style='padding:0.5em'>{$v2}</th>";
 		}
 		$html_head .= "</tr>";
@@ -87,9 +92,9 @@ abstract class CPT_Item_Review extends CPT_Object {
 <?php 
 		
 		$html_rows = "";
-		foreach (EAL_Item_Review::$dimension1 as $k1 => $v1) {
+		foreach (EAL_Review::$dimension1 as $k1 => $v1) {
 			$html_rows .= "<tr><td valign='top'style='padding:0.5em'>{$v1}<br/><a onclick=\"setRowGood(this);\">(alle gut)</a></td>";
-			foreach (EAL_Item_Review::$dimension2 as $k2 => $v2) {
+			foreach (EAL_Review::$dimension2 as $k2 => $v2) {
 				$html_rows .= "<td style='padding:0.5em; border-style:solid; border-width:1px;'>";
 				foreach ($values as $k3 => $v3) {
 					$html_rows .= "<input type='radio' id='{$k1}_{$k2}_{k3}' name='review_{$k1}_{$k2}' value='" . ($k3+1) . "' " . (($review->score[$k1][$k2]==$k3+1)?"checked":"") . ">{$v3}<br/>";

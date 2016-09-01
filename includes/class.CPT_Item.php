@@ -2,7 +2,7 @@
 
 require_once("class.CPT_Object.php");
 
-abstract class CPT_Item extends CPT_Object{
+class CPT_Item extends CPT_Object{
 	
 	
 	/*
@@ -12,6 +12,12 @@ abstract class CPT_Item extends CPT_Object{
 	 */
 	
 	public function init($args = array()) {
+		
+		if (!isset($this->type)) {
+			$this->type = "item";
+			$this->label = "XXXItem";
+			$this->menu_pos = 0;
+		}
 		
 		parent::init();
 
@@ -86,7 +92,7 @@ abstract class CPT_Item extends CPT_Object{
 	
 	
 
-	abstract public function WPCB_mb_answers ($post, $vars);
+	public function WPCB_mb_answers ($post, $vars) { }
 	
 	
 	public function WPCB_mb_level ($post, $vars) {
@@ -162,7 +168,7 @@ abstract class CPT_Item extends CPT_Object{
 				global $wpdb;
 				$sqlres = $wpdb->get_results( "
 						SELECT R.id as review_id, P.post_modified as last_changed
-						FROM {$wpdb->prefix}eal_{$this->type}_review AS R
+						FROM {$wpdb->prefix}eal_review AS R
 						JOIN {$wpdb->prefix}posts AS P ON (R.id = P.ID)
 						WHERE R.item_id = {$post->ID}
 						ORDER BY R.id
@@ -191,8 +197,8 @@ abstract class CPT_Item extends CPT_Object{
 	public function WPCB_posts_fields ( $array ) {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
-			$array = parent::WPCB_posts_fields($array) 
-				. ", (select count(*) from {$wpdb->prefix}eal_{$this->type}_review where {$wpdb->prefix}eal_{$this->type}.id = {$wpdb->prefix}eal_{$this->type}_review.item_id) as reviews"
+			$array .= ", {$wpdb->prefix}eal_item.* " 
+				. ", (select count(*) from {$wpdb->prefix}eal_review where {$wpdb->prefix}eal_item.id = {$wpdb->prefix}eal_review.item_id) as reviews"
 				. ", {$wpdb->prefix}eal_learnout.title AS LOTitle";
 		}
 		return $array;
@@ -202,10 +208,21 @@ abstract class CPT_Item extends CPT_Object{
 	public function WPCB_posts_join ($join) {
 		global $wp_query, $wpdb;
 	
-		$join = parent::WPCB_posts_join($join);
+// 		$join = parent::WPCB_posts_join($join);
 	
+		
 		if ($wp_query->query["post_type"] == $this->type) {
-			$join .= " LEFT OUTER JOIN {$wpdb->prefix}eal_learnout ON ({$wpdb->prefix}eal_learnout.id = {$wpdb->prefix}eal_{$this->type}.learnout_id)";
+			
+			if (($this->type=="itemmc") || ($this->type=="itemsc")) { 
+				$join .= " JOIN {$wpdb->prefix}eal_item ON ({$wpdb->prefix}eal_item.type = '{$this->type}' AND {$wpdb->prefix}eal_item.id = {$wpdb->posts}.ID)";
+			}
+			
+			
+		}
+		
+		
+		if ($wp_query->query["post_type"] == $this->type) {
+			$join .= " LEFT OUTER JOIN {$wpdb->prefix}eal_learnout ON ({$wpdb->prefix}eal_learnout.id = {$wpdb->prefix}eal_item.learnout_id)";
 		}
 		return $join;
 	}

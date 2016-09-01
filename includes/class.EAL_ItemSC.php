@@ -55,10 +55,11 @@ class EAL_ItemSC extends EAL_Item {
 
 		global $post;
 		if ($post->post_type != $this->type) return;
-		parent::load($eal_posttype);
+		
 	
 		if (get_post_status($post->ID)=='auto-draft') {
 				
+			parent::load($eal_posttype);
 			$this->answers = array (
 					array ('answer' => '', 'points' => 1),
 					array ('answer' => '', 'points' => 0),
@@ -67,13 +68,7 @@ class EAL_ItemSC extends EAL_Item {
 			);
 				
 		} else {
-				
-			global $wpdb;
-			$this->answers = array();
-			$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_{$this->type}_answer WHERE item_id = {$post->ID} ORDER BY id", ARRAY_A);
-			foreach ($sqlres as $a) {
-				array_push ($this->answers, array ('answer' => $a['answer'], 'points' => $a['points']));
-			}
+			$this->loadById($post->ID);
 		}
 	}
 	
@@ -83,7 +78,7 @@ class EAL_ItemSC extends EAL_Item {
 	
 		global $wpdb;
 		$this->answers = array();
-		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_{$this->type}_answer WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
+		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
 		foreach ($sqlres as $a) {
 			array_push ($this->answers, array ('answer' => $a['answer'], 'points' => $a['points']));
 		}
@@ -129,13 +124,13 @@ class EAL_ItemSC extends EAL_Item {
 			}
 	
 			// replace answers
-			$query = "REPLACE INTO {$wpdb->prefix}eal_{$item->type}_answer (item_id, id, answer, points) VALUES ";
+			$query = "REPLACE INTO {$wpdb->prefix}eal_{$item->type} (item_id, id, answer, points) VALUES ";
 			$query .= implode(', ', $insert);
 			$wpdb->query( $wpdb->prepare("$query ", $values));
 		}
 	
 		// delete remaining answers
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$item->type}_answer WHERE item_id=%d AND id>%d", array ($post_id, count($item->answers))));
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$item->type} WHERE item_id=%d AND id>%d", array ($post_id, count($item->answers))));
 	
 	}
 	
@@ -144,8 +139,8 @@ class EAL_ItemSC extends EAL_Item {
 	public static function delete ($post_id) {
 	
 		global $wpdb;
-		$wpdb->delete( '{$wpdb->prefix}eal_itemsc', array( 'id' => $post_id ), array( '%d' ) );
-		$wpdb->delete( '{$wpdb->prefix}eal_itemsc_answer', array( 'item_id' => $post_id ), array( '%d' ) );
+		$wpdb->delete( '{$wpdb->prefix}eal_item', array( 'id' => $post_id ), array( '%d' ) );
+		$wpdb->delete( '{$wpdb->prefix}eal_itemsc', array( 'item_id' => $post_id ), array( '%d' ) );
 		$wpdb->delete( '{$wpdb->prefix}eal_itemsc_review', array( 'item_id' => $post_id ), array( '%d' ) );
 	}
 	
@@ -207,17 +202,15 @@ class EAL_ItemSC extends EAL_Item {
 	public static function createTables() {
 	
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		
 		global $wpdb;
-		EAL_Item::createTableItem("{$wpdb->prefix}eal_itemsc");
 		
 		dbDelta (
-			"CREATE TABLE {$wpdb->prefix}eal_itemsc_answer (
+			"CREATE TABLE {$wpdb->prefix}eal_itemsc (
 				item_id bigint(20) unsigned NOT NULL,
 				id smallint unsigned NOT NULL,
 				answer text,
 				points smallint,
-				KEY  (item_id),
+				KEY index_item_id (item_id),
 				PRIMARY KEY  (item_id, id)
 			) {$wpdb->get_charset_collate()};"
 		);

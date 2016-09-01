@@ -7,6 +7,11 @@ Allgemeine ToDO
   - Frage, was mit nicht referenzierbaren Items passieren soll: Neu anlegen (ohne Metadaten!) oder ignorieren
   - Frage, was mit referenzierbaren Items passieren soll: Aktualisieren oder nur Testergebnisse
 
+-- Welche Statistiken vorberechnen pro Item? (avg points bzw. Schwierigkeit, Verteilung)
+  * avg(points) 
+  * median
+  * Verteilung
+  
   - Feedback: 
     * neu angelegte Items -> Link auf Viewer
     * aktualisierte Items -> Link auf Viewer

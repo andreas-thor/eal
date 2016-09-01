@@ -2,7 +2,7 @@
 
 
 
-abstract class EAL_Item {
+class EAL_Item {
 
 	public $type;	// will be set in subclasses (EAL_ItemMC, EAL_ItemSC, ...)
 	
@@ -87,23 +87,8 @@ abstract class EAL_Item {
 			$this->learnout_id = isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : (isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : null);
 			$this->learnout = null;
 				
-				
 		} else {
-				
-			global $wpdb;
-			$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE id = {$post->ID}", ARRAY_A);
-			
-			$this->id = $sqlres['id'];
-			$this->title = $sqlres['title'];
-			$this->description = $sqlres['description'];
-			$this->question = $sqlres['question'];
-			
-			$this->level["FW"] = $sqlres['level_FW'];
-			$this->level["KW"] = $sqlres['level_KW'];
-			$this->level["PW"] = $sqlres['level_PW'];
-			
-			$this->learnout_id = $sqlres['learnout_id'];
-			$this->learnout = null; // lazy loading
+			$this->loadById($post->ID);
 		}
 		
 	}
@@ -111,7 +96,7 @@ abstract class EAL_Item {
 	
 	public function loadById ($item_id) {
 		global $wpdb;
-		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE id = {$item_id}", ARRAY_A);
+		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_item WHERE id = {$item_id} AND type ='{$this->type}'", ARRAY_A);
 		
 		$this->id = $sqlres['id'];
 		$this->title = $sqlres['title'];
@@ -123,7 +108,7 @@ abstract class EAL_Item {
 		$this->level["PW"] = $sqlres['level_PW'];
 		
 		$this->learnout_id = $sqlres['learnout_id'];
-		$this->learnout = null;
+		$this->learnout = null; // lazy loading
 	}
 	
 	
@@ -141,73 +126,44 @@ abstract class EAL_Item {
 	
 	public function getPoints() { return -1; }
 	
-	abstract public function getPreviewHTML ($forReview = TRUE);
+	public function getPreviewHTML ($forReview = TRUE) { }
 	
 	
-	
-	public static function createTableItem($tabname) {
-	
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		global $wpdb;
-		dbDelta (
-			"CREATE TABLE {$tabname} (
-				id bigint(20) unsigned NOT NULL,
-				title text,
-				description mediumtext,
-				question mediumtext,
-				answer text,
-				level tinyint unsigned,
-				level_FW tinyint unsigned,
-				level_KW tinyint unsigned,
-				level_PW tinyint unsigned,
-				points smallint,
-				learnout_id bigint(20) unsigned,
-				PRIMARY KEY  (id)
-			) {$wpdb->get_charset_collate()};"
-		);
-	}
-	
-	public static function createTableResult() {
+	public static function createTables() {
 		
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		global $wpdb;
+
+		dbDelta (
+			"CREATE TABLE {$wpdb->prefix}eal_item (
+			id bigint(20) unsigned NOT NULL,
+			title text,
+			description mediumtext,
+			question mediumtext,
+			level_FW tinyint unsigned,
+			level_KW tinyint unsigned,
+			level_PW tinyint unsigned,
+			points smallint,
+			learnout_id bigint(20) unsigned,
+			type varchar(20) NOT NULL,
+			PRIMARY KEY  (id),
+			KEY index_type (type)
+			) {$wpdb->get_charset_collate()};"
+		);
+		
 		dbDelta (
 			"CREATE TABLE {$wpdb->prefix}eal_result (
-				test_id bigint(20) unsigned NOT NULL,
-				item_id bigint(20) unsigned NOT NULL,
-				user_id bigint(20) unsigned NOT NULL,
-				points smallint, 
-				PRIMARY KEY  (test_id, item_id, user_id)
+			test_id bigint(20) unsigned NOT NULL,
+			item_id bigint(20) unsigned NOT NULL,
+			user_id bigint(20) unsigned NOT NULL,
+			points smallint,
+			PRIMARY KEY  (test_id, item_id, user_id)
 			) {$wpdb->get_charset_collate()};"
 		);
 	}
-	
-	public static function createTableReview($tabname) {
-	
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		global $wpdb;
 		
-		$sqlScore = "";
-		foreach (EAL_Item_Review::$dimension1 as $k1 => $v1) {
-			foreach (EAL_Item_Review::$dimension2 as $k2 => $v2) {
-				$sqlScore .= "{$k1}_{$k2} tinyint unsigned, \n";
-			}
-		}
 	
-		dbDelta (
-			"CREATE TABLE {$tabname} (
-				id bigint(20) unsigned NOT NULL,
-				item_id bigint(20) unsigned NOT NULL, {$sqlScore}
-				level_FW tinyint unsigned,
-				level_KW tinyint unsigned,
-				level_PW tinyint unsigned,
-				feedback text,
-				overall tinyint unsigned,
-				KEY  (item_id),
-				PRIMARY KEY  (id)
-			) {$wpdb->get_charset_collate()};"
-		);
-	}
+	
 	
 	
 

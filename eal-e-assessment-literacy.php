@@ -32,9 +32,7 @@ require_once 'includes/class.CPT_ItemSC.php';
 require_once 'includes/class.CPT_ItemMC.php';
 require_once 'includes/class.CPT_LearnOut.php';
 
-require_once 'includes/class.CPT_Item.Review.php';
-require_once 'includes/class.CPT_ItemSC.Review.php';
-require_once 'includes/class.CPT_ItemMC.Review.php';
+require_once 'includes/class.CPT_Review.php';
 
 require_once 'includes/class.PAG_Metadata.php';
 require_once 'includes/class.PAG_Basket.php';
@@ -96,6 +94,33 @@ function wpdocs_enqueue_custom() {
 add_action( 'admin_enqueue_scripts', 'wpdocs_enqueue_custom' );
 
 
+
+function example_add_dashboard_widgets() {
+
+	global $wp_meta_boxes;
+	unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_quick_press']);
+	unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_primary']);
+	unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_right_now']);
+	unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_activity']);
+	
+	wp_add_dashboard_widget(
+                 'example_dashboard_widget',         // Widget slug.
+                 'Example Dashboard Widget',         // Title.
+                 'example_dashboard_widget_function' // Display function.
+        );	
+}
+add_action( 'wp_dashboard_setup', 'example_add_dashboard_widgets' );
+
+/**
+ * Create the function to output the contents of our Dashboard Widget.
+ */
+function example_dashboard_widget_function() {
+
+	// Display whatever it is you want to show.
+	echo "Hello World, I'm a great Dashboard Widget";
+}
+
+
 add_action ('admin_menu', 'set_eal_admin_menu_entries');
 
 function set_eal_admin_menu_entries () {
@@ -123,10 +148,11 @@ function set_eal_admin_menu_entries () {
  	
  	
  	
- 	add_menu_page('eal_page_items', 'Items', 'edit_others_posts', 'eal_page_items', 'create_eal_page_items', 'dashicons-admin-post', 1);
+ 	add_menu_page('eal_page_items', 'Items', 'edit_others_posts', 'eal_page_items', 'create_eal_page_items', 'dashicons-format-aside', 1);
 //  	add_submenu_page( 'eal_page_items', 'All Items', '<div class="dashicons-before dashicons-cart" style="display:inline">&nbsp;</div> All Items', 'edit_others_posts', 'eal_page_items' );
 
 // external images: add_submenu_page( 'eal_page_items', 'Single Choice', '<img style="height:1em" src="' . plugins_url('img/single-choice.png', __FILE__) . '"/> Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
+ 	add_submenu_page( 'eal_page_items', 'All Items', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> All Items', 'edit_others_posts', 'edit.php?post_type=item');
  	add_submenu_page( 'eal_page_items', 'Single Choice', '<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div> Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
  	add_submenu_page( 'eal_page_items', 'Multiple Choice', '<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div> Multiple Choice', 'edit_others_posts', 'edit.php?post_type=itemmc');
  	add_submenu_page( 'eal_page_items', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_others_posts', 'import-items', array ('PAG_Item_Import', 'createPage'));
@@ -410,11 +436,10 @@ function create_eal_page_taxonomies () {
  */
  
 
-register_activation_hook( __FILE__, array ('eal_item', 'createTableResult') );
+register_activation_hook( __FILE__, array ('eal_item', 'createTables') );
 register_activation_hook( __FILE__, array ('eal_itemsc', 'createTables') );
 register_activation_hook( __FILE__, array ('eal_itemmc', 'createTables') );
-register_activation_hook( __FILE__, array ('eal_itemsc_review', 'createTables') );
-register_activation_hook( __FILE__, array ('eal_itemmc_review', 'createTables') );
+register_activation_hook( __FILE__, array ('eal_item_review', 'createTables') );
 register_activation_hook( __FILE__, array ('eal_learnout', 'createTables') );
 
 
@@ -433,10 +458,10 @@ function create_eal_items() {
 	
 	if (!session_id()) session_start();
 	
+	(new CPT_Item())->init();
 	(new CPT_ItemSC())->init();
 	(new CPT_ItemMC())->init();
-	(new CPT_ItemSC_Review())->init();
-	(new CPT_ItemMC_Review())->init();
+	(new CPT_Review())->init();
 	(new CPT_LearnOut())->init();
 	
 	// 	CPT_ItemSC::init();

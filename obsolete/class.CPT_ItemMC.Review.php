@@ -2,10 +2,10 @@
 
 // TODO: Delete Review (in POst Tabelle) --> löschen in Review-Tabelle
 
-require_once("class.CPT_Item.Review.php");
+require_once("../includes/class.CPT_Review.php");
 require_once("class.EAL_ItemMC.Review.php");
 
-class CPT_ItemMC_Review extends CPT_Item_Review {
+class CPT_ItemMC_Review extends CPT_Review {
 	
 	public function init($args = array()) {
 	

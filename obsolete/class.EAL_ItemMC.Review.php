@@ -1,7 +1,7 @@
 <?php
 
 
-require_once ("class.EAL_Item.Review.php");
+require_once ("../includes/class.EAL_Review.php");
 
 class EAL_ItemMC_Review extends EAL_Item_Review {
 

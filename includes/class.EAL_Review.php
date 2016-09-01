@@ -1,12 +1,8 @@
 <?php
 
 
-abstract class EAL_Item_Review {
+class EAL_Review {
 
-	public static $item_types = ["itemmc", "itemsc"];
-	
-	public $type;	// will be set in subclasses (EAL_ItemMC, EAL_ItemSC, ...)
-	
 	public $id;
 	public $item_id;
 	public $item;
@@ -54,14 +50,28 @@ abstract class EAL_Item_Review {
 	}
 	
 	
-	abstract public function getItem ();
+	public function getItem () {
+		
+		if (is_null($this->item_id)) return null;
+		
+		if (is_null($this->item)) {
+			$post = get_post($this->item_id);
+			if ($post == null) return null;
+	
+			if ($post->post_type == 'itemsc') $this->item = new EAL_ItemSC();
+			if ($post->post_type == 'itemmc') $this->item = new EAL_ItemMC();
+			
+			$this->item->loadById($this->item_id);
+		}
+		return $this->item;
+	}
 	
 	
 	public function load () {
 		
 		global $post, $wpdb;
 		
-		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE id = {$post->ID}", ARRAY_A);
+		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_review WHERE id = {$post->ID}", ARRAY_A);
 		
 		if ($sqlres == null) {
 				
@@ -111,9 +121,10 @@ abstract class EAL_Item_Review {
 
 	public static function save ($post_id, $post) {
 	
-		global $wpdb;
-		global $review;
+		if ($_POST["post_type"]!="review") return;
 		
+		global $wpdb;
+		$review = new EAL_Review();
 		$review->init($post_id, $post);
 	
 		$replaceScore = array ();
@@ -127,7 +138,7 @@ abstract class EAL_Item_Review {
 	
 	
 		$wpdb->replace(
-				"{$wpdb->prefix}eal_{$review->type}",
+				"{$wpdb->prefix}eal_review",
 				array_merge (
 						array(
 								'id' => $review->id,
@@ -159,7 +170,7 @@ abstract class EAL_Item_Review {
 	
 	
 
-	public static function createTableReview($tabname) {
+	public static function createTables () {
 	
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		global $wpdb;
@@ -172,7 +183,7 @@ abstract class EAL_Item_Review {
 		}
 	
 		dbDelta (
-			"CREATE TABLE [$tabname} (
+			"CREATE TABLE {$wpdb->prefix}eal_review (
 				id bigint(20) unsigned NOT NULL,
 				item_id bigint(20) unsigned NOT NULL, {$sqlScore}
 				level_FW tinyint unsigned,
@@ -180,7 +191,7 @@ abstract class EAL_Item_Review {
 				level_PW tinyint unsigned,
 				feedback mediumtext,
 				overall tinyint unsigned,
-				KEY  (item_id),
+				KEY index_item_id (item_id),
 				PRIMARY KEY  (id)
 			) {$wpdb->get_charset_collate()};"
 		);
