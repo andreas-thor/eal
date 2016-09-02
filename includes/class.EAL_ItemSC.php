@@ -87,61 +87,51 @@ class EAL_ItemSC extends EAL_Item {
 	
 	
 	
-	public static function save ($post_id, $post) {
-	
-		if ($_POST["post_type"]!="itemsc") return;
+	public function save2DB() {
+		
+		parent::save2DB();
 		
 		global $wpdb;
-		$item = new EAL_ItemSC();
-		$item->init($post_id, $post);
 		
-		$a = $wpdb->replace(
-				"{$wpdb->prefix}eal_{$item->type}",
-				array(
-						'id' => $item->id,
-						'title' => $item->title,
-						'description' => $item->description,
-						'question' => $item->question,
-						'level_FW' => $item->level["FW"],
-						'level_KW' => $item->level["KW"],
-						'level_PW' => $item->level["PW"],
-						'points'   => $item->getPoints(),
-						'learnout_id' => $item->learnout_id
-				),
-				array('%d','%s','%s','%s','%d','%d','%d','%d','%d')
-		);
-	
-	
 		/** TODO: Sanitize all values */
-	
-		if (count($item->answers)>0) {
-				
+		
+		if (count($this->answers)>0) {
+		
 			$values = array();
 			$insert = array();
-			foreach ($item->answers as $k => $a) {
-				array_push($values, $item->id, $k+1, $a['answer'], $a['points']);
+			foreach ($this->answers as $k => $a) {
+				array_push($values, $this->id, $k+1, $a['answer'], $a['points']);
 				array_push($insert, "(%d, %d, %s, %d)");
 			}
-	
+		
 			// replace answers
-			$query = "REPLACE INTO {$wpdb->prefix}eal_{$item->type} (item_id, id, answer, points) VALUES ";
+			$query = "REPLACE INTO {$wpdb->prefix}eal_{$this->type} (item_id, id, answer, points) VALUES ";
 			$query .= implode(', ', $insert);
 			$wpdb->query( $wpdb->prepare("$query ", $values));
 		}
-	
+		
 		// delete remaining answers
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$item->type} WHERE item_id=%d AND id>%d", array ($post_id, count($item->answers))));
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$this->type} WHERE item_id=%d AND id>%d", array ($this->id, count($this->answers))));
+		
+	}
 	
+	
+	public static function save ($post_id, $post) {
+	
+		if ($_POST["post_type"]!="itemsc") return;
+		$item = new EAL_ItemSC();
+		$item->init($post_id, $post);
+		$item->save2DB();
 	}
 	
 	
 	
 	public static function delete ($post_id) {
 	
+		parent::delete($post_id);
 		global $wpdb;
-		$wpdb->delete( '{$wpdb->prefix}eal_item', array( 'id' => $post_id ), array( '%d' ) );
 		$wpdb->delete( '{$wpdb->prefix}eal_itemsc', array( 'item_id' => $post_id ), array( '%d' ) );
-		$wpdb->delete( '{$wpdb->prefix}eal_itemsc_review', array( 'item_id' => $post_id ), array( '%d' ) );
+		
 	}
 	
 	

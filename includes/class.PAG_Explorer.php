@@ -26,6 +26,23 @@ class PAG_Explorer {
 		
 		if ($name == "type") return [$item->type];
 		
+		if ($name == "difficulty") {
+			if (!isset ($item->difficulty)) return [];
+			return [$item->difficulty];
+// 			if ($item->difficulty <= 0.1) return [0.1];
+// 			if ($item->difficulty <= 0.2) return [0.2];
+// 			if ($item->difficulty <= 0.3) return [0.3];
+// 			if ($item->difficulty <= 0.4) return [0.4];
+// 			if ($item->difficulty <= 0.5) return [0.5];
+// 			if ($item->difficulty <= 0.6) return [0.6];
+// 			if ($item->difficulty <= 0.7) return [0.7];
+// 			if ($item->difficulty <= 0.8) return [0.8];
+// 			if ($item->difficulty <= 0.9) return [0.9];
+// 			if ($item->difficulty <= 1.0) return [1.0];
+// 			return [];
+		}
+		
+		
 		if (($name == "dim") || ($name == "level")) {
 			$res = array();
 			foreach (array ('FW', 'PW', 'KW') as $dim) {
@@ -83,6 +100,7 @@ class PAG_Explorer {
 			if ($name=="type") 	$res = array ("itemsc" => [], "itemmc" => []);
 			if ($name=="dim") 	$res = array ("FW" => [], "KW" => [], "PW" => []);
 			if ($name=="level")	$res = array ("1" => [],"2" => [],"3" => [],"4" => [],"5" => [],"6" => []);
+			if ($name=="difficulty") $res = array ("0.1" => [],"0.2" => [],"0.3" => [],"0.4" => [],"0.5" => [],"0.6" => [], "0.7" => [],"0.8" => [],"0.9" => [],"1.0" => []);
 		}
 		
 		foreach ($items as $item) {
@@ -442,11 +460,12 @@ class PAG_Explorer {
 		
 		<?php 
 			$buttons = array (
-				"type" 	=> "<button value='type' 	style='margin:0.2em;' id='drag_itemtype' draggable='true' ondragstart='drag(event)' > Item Typ </button>",
-				"dim"	=> "<button value='dim' 	style='margin:0.2em;' id='drag_dimension' draggable='true' ondragstart='drag(event)'> Dimension </button>", 
-				"level"	=> "<button value='level' 	style='margin:0.2em;' id='drag_level' draggable='true' ondragstart='drag(event)'> Anforderungsstufe </button>", 
-				"topic1"=> "<button value='topic1' 	style='margin:0.2em;' id='drag_topic1' draggable='true' ondragstart='drag(event)'> Topic Level 1</button>", 
-				"topic2"=> "<button value='topic2' 	style='margin:0.2em;' id='drag_topic2' draggable='true' ondragstart='drag(event)'> Topic Level 2</button>"
+				"type" 			=> "<button value='type' 		style='margin:0.2em;' id='drag_itemtype' 	draggable='true' ondragstart='drag(event)'> Item Typ </button>",
+				"dim"			=> "<button value='dim' 		style='margin:0.2em;' id='drag_dimension' 	draggable='true' ondragstart='drag(event)'> Dimension </button>", 
+				"level"			=> "<button value='level' 		style='margin:0.2em;' id='drag_level' 		draggable='true' ondragstart='drag(event)'> Anforderungsstufe </button>", 
+				"topic1"		=> "<button value='topic1' 		style='margin:0.2em;' id='drag_topic1' 		draggable='true' ondragstart='drag(event)'> Topic Level 1</button>", 
+				"topic2"		=> "<button value='topic2' 		style='margin:0.2em;' id='drag_topic2' 		draggable='true' ondragstart='drag(event)'> Topic Level 2</button>",
+				"difficulty"	=> "<button value='difficulty' 	style='margin:0.2em;' id='drag_difficulty' 	draggable='true' ondragstart='drag(event)'> Schwierigkeitsgrad</button>"
 			);
 		
 		?>

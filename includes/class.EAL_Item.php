@@ -15,6 +15,8 @@ class EAL_Item {
 	public $learnout;
 	public $learnout_id;
 	
+	public $difficulty;
+	
 	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	public static $level_type = ["FW", "KW", "PW"];
 	
@@ -53,6 +55,7 @@ class EAL_Item {
 		
 		$this->learnout_id = isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : (isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : null);
 		$this->learnout = null;
+		$this->difficulty = null;
 	}
 	
 	
@@ -65,6 +68,7 @@ class EAL_Item {
 		$_POST['item_level_KW'] = $this->level["KW"];
 		$_POST['item_level_PW'] = $this->level["PW"];
 		$_POST['learnout_id'] = $this->learnout_id;
+		$_POST['difficulty'] = $this->difficulty;
 	}
 	
 	
@@ -86,6 +90,7 @@ class EAL_Item {
 			
 			$this->learnout_id = isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : (isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : null);
 			$this->learnout = null;
+			$this->difficulty = null;
 				
 		} else {
 			$this->loadById($post->ID);
@@ -109,11 +114,41 @@ class EAL_Item {
 		
 		$this->learnout_id = $sqlres['learnout_id'];
 		$this->learnout = null; // lazy loading
+		$this->difficulty = $sqlres['difficulty'];
 	}
 	
 	
 	public static function save ($post_id, $post) { }
 	
+	public function save2DB () {
+		
+		global $wpdb;
+		
+		$wpdb->replace(
+			"{$wpdb->prefix}eal_item",
+			array(
+					'id' => $this->id,
+					'title' => $this->title,
+					'description' => $this->description,
+					'question' => $this->question,
+					'level_FW' => $this->level["FW"],
+					'level_KW' => $this->level["KW"],
+					'level_PW' => $this->level["PW"],
+					'points'   => $this->getPoints(),
+					'difficulty' => $this->difficulty,
+					'learnout_id' => $this->learnout_id,
+					'type' => $this->type
+			),
+			array('%d','%s','%s','%s','%d','%d','%d','%d','%f','%d','%s')
+			);
+	}
+	
+	
+	public static function delete ($post_id) {
+		global $wpdb;
+		$wpdb->delete( '{$wpdb->prefix}eal_item', array( 'id' => $post_id ), array( '%d' ) );
+		$wpdb->delete( '{$wpdb->prefix}eal_review', array( 'item_id' => $post_id ), array( '%d' ) );
+	}
 	
 	public function getLearnOut () {
 		
@@ -147,13 +182,14 @@ class EAL_Item {
 			level_KW tinyint unsigned,
 			level_PW tinyint unsigned,
 			points smallint,
+			difficulty decimal(10,1), 
 			learnout_id bigint(20) unsigned,
 			type varchar(20) NOT NULL,
 			PRIMARY KEY  (id),
 			KEY index_type (type)
 			) {$wpdb->get_charset_collate()};"
 		);
-		
+
 		dbDelta (
 			"CREATE TABLE {$wpdb->prefix}eal_result (
 			test_id bigint(20) unsigned NOT NULL,

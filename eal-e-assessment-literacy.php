@@ -669,7 +669,7 @@ function myposttype_admin_css() {
 
 	global $post_type;
 	
-	if ($_GET['post_type'] == 'item') {
+	if (($_GET['post_type'] == 'item') && (!isset($_GET['page']))) {
 		
 		$a = 7;
 		?>

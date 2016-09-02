@@ -173,9 +173,7 @@ class EXP_Ilias {
 			$item->answers = array();
 			foreach ($answers as $k => $v) {
 				if ($item->type == "itemsc") array_push ($item->answers, array ("answer" => $v["text"], "points" => $v["positive"]));
-				if ($item->type == "itemmc") {
-					array_push ($item->answers, array ("answer" => $v["text"], "positive" => $v["positive"], "negative" => $v["negative"]));
-				}
+				if ($item->type == "itemmc") array_push ($item->answers, array ("answer" => $v["text"], "positive" => $v["positive"], "negative" => $v["negative"]));
 			}
 				
 			
@@ -212,6 +210,7 @@ class EXP_Ilias {
 		$values = array();
 		$insert = array();
 		
+		
 		// test_id is timestamp of the first question
 		$xpath = new DOMXPath($doc);
 		$test_id = $xpath->evaluate("/results/tst_test_question/row", $doc->documentElement)[0]->getAttribute("tstamp");
@@ -227,13 +226,28 @@ class EXP_Ilias {
 			array_push($values, $test_id, $itemids['il_0_qst_' . $question_fi], $user, $points);
 			array_push($insert, "(%d, %d, %d, %d)");
 			
-			// replace answers
-			$query = "REPLACE INTO {$wpdb->prefix}eal_result (test_id, item_id, user_id, points) VALUES ";
-			$query .= implode(', ', $insert);
-			$wpdb->query( $wpdb->prepare("$query ", $values));			
-			
 		}
 		
+		if (count($values)>0) {
+			// insert / replace result
+			$query = "REPLACE INTO {$wpdb->prefix}eal_result (test_id, item_id, user_id, points) VALUES ";
+			$query .= implode(', ', $insert);
+			$wpdb->query( $wpdb->prepare("$query ", $values));
+			
+			// update difficulty for relevant items
+
+			$query = "UPDATE {$wpdb->prefix}eal_item, (
+				SELECT i.id, (1.0*avg(r.points))/max(i.points) as S 
+				FROM {$wpdb->prefix}eal_item i 
+				JOIN {$wpdb->prefix}eal_result r 
+				ON (r.item_id=i.id) 
+				GROUP BY i.id) as T 
+				SET {$wpdb->prefix}eal_item.difficulty = T.S 
+				WHERE {$wpdb->prefix}eal_item.id = T.id
+				AND {$wpdb->prefix}eal_item.id IN (" . implode (', ', array_values ($itemids)) . ")";
+			$a = $wpdb->query ($query);
+			$b = $a;
+		}
 		
 	}
 	

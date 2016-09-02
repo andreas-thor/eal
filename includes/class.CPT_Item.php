@@ -153,11 +153,11 @@ class CPT_Item extends CPT_Object{
 	
 	
 	public function WPCB_manage_posts_columns($columns) {
-		return array_merge(parent::WPCB_manage_posts_columns($columns), array('Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO'));
+		return array_merge(parent::WPCB_manage_posts_columns($columns), array('type' => 'Typ', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
 	}
 	
 	public function WPCB_manage_edit_sortable_columns ($columns) {
-		return array_merge(parent::WPCB_manage_edit_sortable_columns($columns) , array('Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO'));
+		return array_merge(parent::WPCB_manage_edit_sortable_columns($columns) , array('type' => 'Typ', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
 	}
 	
 	
@@ -168,6 +168,14 @@ class CPT_Item extends CPT_Object{
 		global $post;
 	
 		switch ( $column ) {
+			
+			case 'type':
+				if ($post->type == "itemsc") echo ('<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div>');
+				if ($post->type == "itemmc") echo ('<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div>');
+				break;
+				
+			case 'Difficulty': echo ($post->difficulty); break;
+			
 			case 'Punkte': echo ($post->points); break;
 			
 			case 'LO': echo ($post->LOTitle); break;
@@ -228,12 +236,19 @@ class CPT_Item extends CPT_Object{
 
 	public function WPCB_posts_orderby($orderby_statement) {
 	
-		global $wp_query;
+		global $wp_query, $wpdb;
 	
 		$orderby_statement = parent::WPCB_posts_orderby($orderby_statement);
 	
 		if ($wp_query->query["post_type"] == $this->type) {
 			if ($wp_query->get( 'orderby' ) == "LO") $orderby_statement = "LOTitle " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Difficulty") $orderby_statement = "{$wpdb->prefix}eal_item.difficulty " . $wp_query->get( 'order' );
+				
+			if ($wp_query->get( 'orderby' ) == "Typ") {
+				$orderby_statement = "{$wpdb->prefix}eal_item.type " . $wp_query->get( 'order' );
+			}
+				
+			
 		}
 	
 		return $orderby_statement;
