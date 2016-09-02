@@ -192,8 +192,8 @@ class CPT_LearnOut extends CPT_Object {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
 			$array = parent::WPCB_posts_fields($array) 
-			. ", (SELECT COUNT(*) FROM {$wpdb->prefix}eal_itemsc X JOIN {$wpdb->prefix}posts Y ON (X.id= Y.ID) WHERE Y.post_parent = 0 AND X.learnout_id = {$wpdb->posts}.ID) AS SC" 
-			. ", (SELECT COUNT(*) FROM {$wpdb->prefix}eal_itemmc X JOIN {$wpdb->prefix}posts Y ON (X.id= Y.ID) WHERE Y.post_parent = 0 AND X.learnout_id = {$wpdb->posts}.ID) AS MC" 
+			. ", (SELECT COUNT(*) FROM {$wpdb->prefix}eal_item X JOIN {$wpdb->prefix}posts Y ON (X.type = 'itemsc' AND X.id= Y.ID) WHERE Y.post_parent = 0 AND X.learnout_id = {$wpdb->posts}.ID) AS SC" 
+			. ", (SELECT COUNT(*) FROM {$wpdb->prefix}eal_item X JOIN {$wpdb->prefix}posts Y ON (X.type = 'itemmc' AND X.id= Y.ID) WHERE Y.post_parent = 0 AND X.learnout_id = {$wpdb->posts}.ID) AS MC" 
 			. ", (-9) as reviews ";
 		}
 		return $array;

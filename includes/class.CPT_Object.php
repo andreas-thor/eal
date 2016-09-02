@@ -34,6 +34,22 @@ abstract class CPT_Object {
 						'parent' => 'Parent Item'
 					),
 		
+// 					'capabilities' => array(
+// 						'edit_posts' => ($this->type == 'item') ? 'do_not_allow' : 'edit_posts', // false < WP 4.5, credit @Ewout
+// 					), 
+						
+// 				'capabilities' => array(
+// 					'publish_posts' => 'publish_{$this->type}s',
+// 					'edit_posts' => 'edit_{$this->type}s',
+// 					'edit_others_posts' => 'edit_others_{$this->type}s',
+// 					'delete_posts' => 'delete_{$this->type}s',
+// 					'delete_others_posts' => 'delete_others_{$this->type}s',
+// 					'read_private_posts' => 'read_private_{$this->type}s',
+// 					'edit_post' => 'edit_{$this->type}',
+// 					'delete_post' => 'delete_{$this->type}',
+// 					'read_post' => 'read_{$this->type}'
+// 				),
+						
 					'public' => false,
 					'menu_position' => $this->menu_pos,
 					'menu_icon' => 'dashicons-list-view', // dashicons-welcome-learn-more', 

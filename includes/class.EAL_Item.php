@@ -112,6 +112,9 @@ class EAL_Item {
 	}
 	
 	
+	public static function save ($post_id, $post) { }
+	
+	
 	public function getLearnOut () {
 		
 		if (is_null ($this->learnout_id )) return null;

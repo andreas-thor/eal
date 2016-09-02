@@ -147,19 +147,21 @@ function set_eal_admin_menu_entries () {
 //  	add_menu_page('My Page Title', 'My Menu Title', 'manage_options', 'my-menu', 'my_menu_output' );
  	
  	
+//  	add_menu_page('My Custom Page', 'My Custom Page', 'manage_options', 'my-top-level-slug');
+//  	add_submenu_page( 'my-top-level-slug', 'My Custom Page', 'My Custom Page', 'manage_options', 'my-top-level-slug');
  	
- 	add_menu_page('eal_page_items', 'Items', 'edit_others_posts', 'eal_page_items', 'create_eal_page_items', 'dashicons-format-aside', 1);
+ 	add_menu_page('eal_page_items', 'Items', 'edit_others_posts', 'edit.php?post_type=item', null /*'create_eal_page_items'*/, 'dashicons-format-aside', 31);
 //  	add_submenu_page( 'eal_page_items', 'All Items', '<div class="dashicons-before dashicons-cart" style="display:inline">&nbsp;</div> All Items', 'edit_others_posts', 'eal_page_items' );
 
 // external images: add_submenu_page( 'eal_page_items', 'Single Choice', '<img style="height:1em" src="' . plugins_url('img/single-choice.png', __FILE__) . '"/> Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
- 	add_submenu_page( 'eal_page_items', 'All Items', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> All Items', 'edit_others_posts', 'edit.php?post_type=item');
- 	add_submenu_page( 'eal_page_items', 'Single Choice', '<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div> Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
- 	add_submenu_page( 'eal_page_items', 'Multiple Choice', '<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div> Multiple Choice', 'edit_others_posts', 'edit.php?post_type=itemmc');
- 	add_submenu_page( 'eal_page_items', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_others_posts', 'import-items', array ('PAG_Item_Import', 'createPage'));
+ 	add_submenu_page( 'edit.php?post_type=item', 'All Items', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> All Items', 'edit_others_posts', 'edit.php?post_type=item');
+ 	add_submenu_page( 'edit.php?post_type=item', 'Single Choice', '<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div> Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
+ 	add_submenu_page( 'edit.php?post_type=item', 'Multiple Choice', '<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div> Multiple Choice', 'edit_others_posts', 'edit.php?post_type=itemmc');
+ 	add_submenu_page( 'edit.php?post_type=item', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_others_posts', 'import-items', array ('PAG_Item_Import', 'createPage'));
 
  	
  	
- 	add_menu_page('eal_page_taxonomies', 'Metadata', 'edit_others_posts', 'eal_page_taxonomies', array ('PAG_Metadata', 'createTable'), 'dashicons-tag', 30);
+ 	add_menu_page('eal_page_taxonomies', 'Metadata', 'edit_others_posts', 'eal_page_taxonomies', array ('PAG_Metadata', 'createTable'), 'dashicons-tag', 32);
  	add_submenu_page( 'eal_page_taxonomies', 'Taxonomy', '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> Taxonomy', 'edit_others_posts', 'eal_page_taxonomies', array ('PAG_Metadata', 'createTable'));
  	add_submenu_page( 'eal_page_taxonomies', 'Topics', '<div class="dashicons-before dashicons-format-status" style="display:inline">&nbsp;</div> Topics', 'edit_others_posts', 'edit-tags.php?taxonomy=topic');
  	add_submenu_page( 'eal_page_taxonomies', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_others_posts', 'import-topics', 'WPCB_import_topics');
@@ -185,7 +187,7 @@ function set_eal_admin_menu_entries () {
         	
     
     $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
-    add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', array ('PAG_Basket', 'createPageTable'), 'dashicons-cart', 31);
+    add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', array ('PAG_Basket', 'createPageTable'), 'dashicons-cart', 33);
     add_submenu_page( 'eal_page_itembasket', 'Table', '<div class="dashicons-before dashicons-list-view" style="display:inline">&nbsp;</div> Table', 'edit_others_posts', 'eal_page_itembasket', array ('PAG_Basket', 'createPageTable'));
     add_submenu_page( 'eal_page_itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_others_posts', 'ist-blueprint', array ('PAG_Explorer', 'createPage'));
     add_submenu_page( 'eal_page_itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_others_posts', 'view', array ('PAG_Basket', 'createPageView'));
@@ -401,26 +403,34 @@ function WPCB_import_topics () {
 // }
 
 
+
+
 /**
  * Page "Items" has
  * - Buttons to add new items of different types
  * - TODO: List of all items incl. bulk operations
  */
 
+
 function create_eal_page_items () {
+
 	
-	$html  = '
-		<div class="wrap">
-			<form action="options.php" method="post" name="options">
-				<h1>All Items
-					<a class="add-new-h2" href="edit.php?post_type=itemsc">All Single Choice</a>
-					<a class="add-new-h2" href="edit.php?post_type=itemmc">All Multiple Choice</a>
-					<a class="add-new-h2" href="admin.php?page=import-items">Import Items</a>
-				</h1>
-			</form>
-		</div>';
+// 	$foo = menu_page_url("edit.php?post_type=item", 0);
+// 	wp_redirect($foo);
+// 	exit;
+	
+// 	$html  = '
+// 		<div class="wrap">
+// 			<form action="options.php" method="post" name="options">
+// 				<h1>All Items
+// 					<a class="add-new-h2" href="edit.php?post_type=itemsc">All Single Choice</a>
+// 					<a class="add-new-h2" href="edit.php?post_type=itemmc">All Multiple Choice</a>
+// 					<a class="add-new-h2" href="admin.php?page=import-items">Import Items</a>
+// 				</h1>
+// 			</form>
+// 		</div>';
 			
-	echo $html;
+// 	echo $html;
 }
 
 
@@ -651,5 +661,29 @@ function my_new_toolbar_item( $wp_admin_bar ) {
 	
 	
 }
+
+
+add_action('admin_head', 'myposttype_admin_css');
+
+function myposttype_admin_css() {
+
+	global $post_type;
+	
+	if ($_GET['post_type'] == 'item') {
+		
+		$a = 7;
+		?>
+		        <script type="text/javascript">
+		            jQuery(document).ready( function($)
+		            {
+		                jQuery(jQuery(".wrap h1")[0]).replaceWith ('<h1>All Items <a href="http://localhost/wordpress/wp-admin/post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a><a href="http://localhost/wordpress/wp-admin/post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a></h1>');
+		            });
+		        </script>
+		    <?php
+		
+	}
+}
+
+
 
 ?>

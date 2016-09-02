@@ -15,7 +15,7 @@ class CPT_Item extends CPT_Object{
 		
 		if (!isset($this->type)) {
 			$this->type = "item";
-			$this->label = "XXXItem";
+			$this->label = "Item";
 			$this->menu_pos = 0;
 		}
 		
@@ -59,10 +59,19 @@ class CPT_Item extends CPT_Object{
 		
 		add_filter('post_row_actions', array ($this ,'WPCB_post_row_actions'), 10, 2);
 		
+		add_filter('posts_search', array ($this ,'WPCB_post_search'), 10, 2);
 		
  	
 	}
 	
+	public function WPCB_post_search($search, $wpquery){
+	
+		global $post_type;
+		if ($post_type != $this->type) return $search;
+		
+		return $search;
+// 		$a = 7;
+	}
 	
 	public function WPCB_post_row_actions($actions, $post){
 
@@ -72,7 +81,7 @@ class CPT_Item extends CPT_Object{
 		// remove Quick Edit
 		unset ($actions['inline hide-if-no-js']);	
 		// add "Add Review"
-		$actions['add review'] = "<a href='post-new.php?post_type={$this->type}_review&item_id={$post->ID}'>Add&nbsp;New&nbsp;Review</a>";
+		$actions['add review'] = "<a href='post-new.php?post_type=review&item_id={$post->ID}'>Add&nbsp;New&nbsp;Review</a>";
 		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>";
 		return $actions;
 	}
@@ -208,20 +217,8 @@ class CPT_Item extends CPT_Object{
 	public function WPCB_posts_join ($join) {
 		global $wp_query, $wpdb;
 	
-// 		$join = parent::WPCB_posts_join($join);
-	
-		
 		if ($wp_query->query["post_type"] == $this->type) {
-			
-			if (($this->type=="itemmc") || ($this->type=="itemsc")) { 
-				$join .= " JOIN {$wpdb->prefix}eal_item ON ({$wpdb->prefix}eal_item.type = '{$this->type}' AND {$wpdb->prefix}eal_item.id = {$wpdb->posts}.ID)";
-			}
-			
-			
-		}
-		
-		
-		if ($wp_query->query["post_type"] == $this->type) {
+			$join .= " JOIN {$wpdb->prefix}eal_item ON ({$wpdb->prefix}eal_item.id = {$wpdb->posts}.ID)";
 			$join .= " LEFT OUTER JOIN {$wpdb->prefix}eal_learnout ON ({$wpdb->prefix}eal_learnout.id = {$wpdb->prefix}eal_item.learnout_id)";
 		}
 		return $join;
@@ -252,8 +249,16 @@ class CPT_Item extends CPT_Object{
 			if (isset($_REQUEST["learnout_id"])) {
 					$where .= " AND {$wpdb->prefix}eal_learnout.id = {$_REQUEST['learnout_id']}";
 			}
+			
+			// if all items are considered --> consider all type starting with "item"
+			if ($this->type == "item") {
+				$where = str_replace( "wp_posts.post_type = 'item'", "wp_posts.post_type LIKE 'item%'", $where); 
+			}
+			
 		}
 	
+		
+		
 		return $where;
 	}
 	
@@ -324,7 +329,9 @@ class CPT_Item extends CPT_Object{
 	
 	
 	
+	static function CPT_contextual_help( $contextual_help, $screen_id, $screen ) {
 	
+	}
 	
 
 
