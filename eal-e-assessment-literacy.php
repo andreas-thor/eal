@@ -40,6 +40,8 @@ require_once 'includes/class.PAG_Explorer.php';
 require_once 'includes/class.PAG_Generator.php';
 require_once 'includes/class.PAG_Item.Import.php';
 
+require_once 'includes/class.CLA_RoleTaxonomy.php';
+
 
 // $GLOBALS["eal_itemtypes"] = [
 // 		'eal_item_sc' => 'Single Choice',
@@ -149,24 +151,28 @@ function set_eal_admin_menu_entries () {
  	
 //  	add_menu_page('My Custom Page', 'My Custom Page', 'manage_options', 'my-top-level-slug');
 //  	add_submenu_page( 'my-top-level-slug', 'My Custom Page', 'My Custom Page', 'manage_options', 'my-top-level-slug');
- 	
- 	add_menu_page('eal_page_items', 'Items', 'edit_others_posts', 'edit.php?post_type=item', null /*'create_eal_page_items'*/, 'dashicons-format-aside', 31);
-//  	add_submenu_page( 'eal_page_items', 'All Items', '<div class="dashicons-before dashicons-cart" style="display:inline">&nbsp;</div> All Items', 'edit_others_posts', 'eal_page_items' );
-
-// external images: add_submenu_page( 'eal_page_items', 'Single Choice', '<img style="height:1em" src="' . plugins_url('img/single-choice.png', __FILE__) . '"/> Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
- 	add_submenu_page( 'edit.php?post_type=item', 'All Items', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> All Items', 'edit_others_posts', 'edit.php?post_type=item');
- 	add_submenu_page( 'edit.php?post_type=item', 'Single Choice', '<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div> Single Choice', 'edit_others_posts', 'edit.php?post_type=itemsc');
- 	add_submenu_page( 'edit.php?post_type=item', 'Multiple Choice', '<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div> Multiple Choice', 'edit_others_posts', 'edit.php?post_type=itemmc');
- 	add_submenu_page( 'edit.php?post_type=item', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_others_posts', 'import-items', array ('PAG_Item_Import', 'createPage'));
 
  	
  	
- 	add_menu_page('eal_page_taxonomies', 'Metadata', 'edit_others_posts', 'eal_page_taxonomies', array ('PAG_Metadata', 'createTable'), 'dashicons-tag', 32);
- 	add_submenu_page( 'eal_page_taxonomies', 'Taxonomy', '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> Taxonomy', 'edit_others_posts', 'eal_page_taxonomies', array ('PAG_Metadata', 'createTable'));
- 	add_submenu_page( 'eal_page_taxonomies', 'Topics', '<div class="dashicons-before dashicons-format-status" style="display:inline">&nbsp;</div> Topics', 'edit_others_posts', 'edit-tags.php?taxonomy=topic');
- 	add_submenu_page( 'eal_page_taxonomies', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_others_posts', 'import-topics', 'WPCB_import_topics');
- 	add_submenu_page( 'eal_page_taxonomies', 'Learning Outcomes', '<div class="dashicons-before dashicons-welcome-learn-more" style="display:inline">&nbsp;</div> Learn. Outcomes', 'edit_others_posts', 'edit.php?post_type=learnout');
+ 	
+ 	$domain = RoleTaxonomy::getCurrentDomain();
+ 	if (count($domain)>0) {
+ 	
+	 	add_menu_page('eal_page_items', 'Items', 'edit_posts', 'edit.php?post_type=item', '' /*'create_eal_page_items'*/, 'dashicons-format-aside', 31);
+	 	add_submenu_page( 'edit.php?post_type=item', 'All Items', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> All Items', 'edit_posts', 'edit.php?post_type=item');
+	 	add_submenu_page( 'edit.php?post_type=item', 'Single Choice', '<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div> Single Choice', 'edit_posts', 'edit.php?post_type=itemsc');
+	 	add_submenu_page( 'edit.php?post_type=item', 'Multiple Choice', '<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div> Multiple Choice', 'edit_posts', 'edit.php?post_type=itemmc');
+	 	add_submenu_page( 'edit.php?post_type=item', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import-items', array ('PAG_Item_Import', 'createPage'));
 
+	 	/* TODO: first sub menu should open menu */
+	 	add_menu_page('eal_page_metadata', 'Metadata', 'manage_categories', 'metadata', '' /* array ('PAG_Metadata', 'createTable')*/, 'dashicons-tag', 32);
+// 	 	add_submenu_page( 'menu_metadata', 'Taxonomy', '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> Taxonomy', 'edit_posts', 'eal_page_taxonomies', array ('PAG_Metadata', 'createTable'));
+		add_submenu_page( 'metadata', $domain["label"], '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> ' . $domain["label"], 'edit_posts', 'edit-tags.php?taxonomy=' . $domain["name"]);
+	 	add_submenu_page( 'metadata', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'read', 'import', 'WPCB_import_topics');
+	 	add_submenu_page( 'metadata', 'Learning Outcomes', '<div class="dashicons-before dashicons-welcome-learn-more" style="display:inline">&nbsp;</div> Learn. Outcomes', 'edit_posts', 'edit.php?post_type=learnout');
+ 	}
+ 	
+ 	
  	
 // 	add_menu_page('eal_page_taxonomies', 'Taxonomies', 'edit_others_posts', 'eal_page_taxonomies', '', 'dashicons-networking', 30);
 //    	add_submenu_page( 'eal_page_taxonomies', 'Topic', 'Topic', 'edit_others_posts', 'edit-tags.php?taxonomy=topic');
@@ -187,16 +193,18 @@ function set_eal_admin_menu_entries () {
         	
     
     $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
-    add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', array ('PAG_Basket', 'createPageTable'), 'dashicons-cart', 33);
-    add_submenu_page( 'eal_page_itembasket', 'Table', '<div class="dashicons-before dashicons-list-view" style="display:inline">&nbsp;</div> Table', 'edit_others_posts', 'eal_page_itembasket', array ('PAG_Basket', 'createPageTable'));
-    add_submenu_page( 'eal_page_itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_others_posts', 'ist-blueprint', array ('PAG_Explorer', 'createPage'));
-    add_submenu_page( 'eal_page_itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_others_posts', 'view', array ('PAG_Basket', 'createPageView'));
-    add_submenu_page( 'eal_page_itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_others_posts', 'generator', array ('PAG_Generator', 'createPage'));
+    add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'edit_posts', 'eal_page_itembasket', array ('PAG_Basket', 'createPageTable'), 'dashicons-cart', 33);
+    add_submenu_page( 'eal_page_itembasket', 'Table', '<div class="dashicons-before dashicons-list-view" style="display:inline">&nbsp;</div> Table', 'edit_posts', 'eal_page_itembasket', array ('PAG_Basket', 'createPageTable'));
+    add_submenu_page( 'eal_page_itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_posts', 'ist-blueprint', array ('PAG_Explorer', 'createPage'));
+    add_submenu_page( 'eal_page_itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view', array ('PAG_Basket', 'createPageView'));
+    add_submenu_page( 'eal_page_itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'generator', array ('PAG_Generator', 'createPage'));
     
  
     
     
 }
+
+
 
 
 // register AJAX-PHP-function
@@ -308,7 +316,7 @@ function WPCB_import_topics () {
 		
 			<h1>Topics</h1>
 			
-			<h2>Upload Topic Terms</h2>
+			<h2>Upload Terms</h2>
 			<form  enctype="multipart/form-data" action="admin.php?page=import-tags" method="post">
 				<table class="form-table">
 					<tbody>
@@ -474,6 +482,11 @@ function create_eal_items() {
 	(new CPT_Review())->init();
 	(new CPT_LearnOut())->init();
 	
+	RoleTaxonomy::init();
+	
+	
+	
+	
 	// 	CPT_ItemSC::init();
 // 	CPT_ItemMC::init();
 // 	CPT_Item_Review::CPT_init();
@@ -575,38 +588,38 @@ function create_eal_items() {
 }
 
 
-add_action( 'init', 'create_eal_taxonomies', 0 );
-function create_eal_taxonomies () {
+// add_action( 'init', 'create_eal_taxonomies', 0 );
+// function create_eal_taxonomies () {
 	
-	// Add new taxonomy, make it hierarchical (like categories)
-	$labels = array (
-			'name' => _x ( 'Topics', 'taxonomy general name' ),
-			'singular_name' => _x ( 'Topic', 'taxonomy singular name' ),
-			'search_items' => __ ( 'Search Topics' ),
-			'all_items' => __ ( 'All Topics' ),
-			'parent_item' => __ ( 'Parent Topic' ),
-			'parent_item_colon' => __ ( 'Parent Topic:' ),
-			'edit_item' => __ ( 'Edit Topic' ),
-			'update_item' => __ ( 'Update Topic' ),
-			'add_new_item' => __ ( 'Add New Topic' ),
-			'new_item_name' => __ ( 'New Topic Name' ),
-			'menu_name' => __ ( 'Topic' ) 
-	);
+// 	// Add new taxonomy, make it hierarchical (like categories)
+// 	$labels = array (
+// 			'name' => _x ( 'Topics', 'taxonomy general name' ),
+// 			'singular_name' => _x ( 'Topic', 'taxonomy singular name' ),
+// 			'search_items' => __ ( 'Search Topics' ),
+// 			'all_items' => __ ( 'All Topics' ),
+// 			'parent_item' => __ ( 'Parent Topic' ),
+// 			'parent_item_colon' => __ ( 'Parent Topic:' ),
+// 			'edit_item' => __ ( 'Edit Topic' ),
+// 			'update_item' => __ ( 'Update Topic' ),
+// 			'add_new_item' => __ ( 'Add New Topic' ),
+// 			'new_item_name' => __ ( 'New Topic Name' ),
+// 			'menu_name' => __ ( 'Topic' ) 
+// 	);
 	
-	$args = array (
-			'hierarchical' => true,
-			'labels' => $labels,
-			'show_ui' => true,
-			'show_admin_column' => true,
-			'query_var' => true,
-			'show_in_menu'    => true,
-// 			'rewrite' => array ( 'slug' => 'topic' ), 
-			'public' => false,
-			'rewrite' => false
-	);
+// 	$args = array (
+// 			'hierarchical' => true,
+// 			'labels' => $labels,
+// 			'show_ui' => true,
+// 			'show_admin_column' => true,
+// 			'query_var' => true,
+// 			'show_in_menu'    => true,
+// // 			'rewrite' => array ( 'slug' => 'topic' ), 
+// 			'public' => false,
+// 			'rewrite' => false
+// 	);
 	
-	register_taxonomy ( 'topic', array ('eal_itemsc', 'eal_itemmc') , $args );		
-}
+// 	register_taxonomy ( 'topic', array ('eal_itemsc', 'eal_itemmc') , $args );		
+// }
 
 
 function my_custom_login_logo()
@@ -684,6 +697,9 @@ function myposttype_admin_css() {
 	}
 }
 
+add_action ('show_user_profile', array ('RoleTaxonomy', 'showCurrentRole'));
+add_action ('edit_user_profile', array ('RoleTaxonomy', 'showCurrentRole'));
+add_action( 'profile_update', array ('RoleTaxonomy', 'setCurrentRole'));
 
 
 ?>
