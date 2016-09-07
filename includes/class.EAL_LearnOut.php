@@ -5,6 +5,7 @@
 class EAL_LearnOut {
 
 	public $type;	// will be set in subclasses (EAL_ItemMC, EAL_ItemSC, ...)
+	public $domain;	// each LO belongs to a domain (when newly created: domain = current user's role domain)
 	
 	public $id;
 	public $title;
@@ -34,6 +35,7 @@ class EAL_LearnOut {
 		$this->level["FW"] = isset ($_POST['learnout_level_FW']) ? $_POST['learnout_level_FW'] : null;
 		$this->level["KW"] = isset ($_POST['learnout_level_KW']) ? $_POST['learnout_level_KW'] : null;
 		$this->level["PW"] = isset ($_POST['learnout_level_PW']) ? $_POST['learnout_level_PW'] : null;
+		$this->domain = RoleTaxonomy::getCurrentDomain()["name"];
 	}
 	
 	
@@ -51,24 +53,18 @@ class EAL_LearnOut {
 			$this->level["FW"] = 0;
 			$this->level["KW"] = 0;
 			$this->level["PW"] = 0;
+			$this->domain = RoleTaxonomy::getCurrentDomain()["name"];
+				
 				
 		} else {
-				
-			global $wpdb;
-			$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE id = {$post->ID}", ARRAY_A);
-			$this->id = $sqlres['id'];
-			$this->title = $sqlres['title'];
-			$this->description = $sqlres['description'];
-			$this->level["FW"] = $sqlres['level_FW'];
-			$this->level["KW"] = $sqlres['level_KW'];
-			$this->level["PW"] = $sqlres['level_PW'];
-				
+			$this->loadById($post->ID);
 		}
 		
 	}
 	
 	
 	public function loadById ($item_id) {
+		
 		global $wpdb;
 		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE id = {$item_id}", ARRAY_A);
 		$this->id = $sqlres['id'];
@@ -77,6 +73,7 @@ class EAL_LearnOut {
 		$this->level["FW"] = $sqlres['level_FW'];
 		$this->level["KW"] = $sqlres['level_KW'];
 		$this->level["PW"] = $sqlres['level_PW'];
+		$this->domain = $sqlres['domain'];
 	}
 	
 	
@@ -93,8 +90,10 @@ class EAL_LearnOut {
 				description mediumtext,
 				level_FW tinyint unsigned,
 				level_KW tinyint unsigned,
-				level_PW tinyint unsigned
-				PRIMARY KEY  (id)
+				level_PW tinyint unsigned,
+				domain varchar(50) NOT NULL,
+				PRIMARY KEY  (id),
+				KEY index_domain (domain)
 			) {$wpdb->get_charset_collate()};"
 		);
 	}
@@ -114,9 +113,10 @@ class EAL_LearnOut {
 					'description' => $item->description,
 					'level_FW' => $item->level["FW"],
 					'level_KW' => $item->level["KW"],
-					'level_PW' => $item->level["PW"]
+					'level_PW' => $item->level["PW"],
+					'domain' => $item->domain
 			),
-			array('%d','%s','%s','%d','%d','%d')
+			array('%d','%s','%s','%d','%d','%d','%s')
 		);
 	
 	}
@@ -131,6 +131,7 @@ class EAL_LearnOut {
 				JOIN {$wpdb->prefix}posts P
 				ON (L.id = P.id)
 				WHERE P.post_status = 'publish'
+				AND L.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "'
 				ORDER BY id
 				");
 		

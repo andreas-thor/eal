@@ -156,14 +156,15 @@ function set_eal_admin_menu_entries () {
  	
  	
  	$domain = RoleTaxonomy::getCurrentDomain();
- 	if (count($domain)>0) {
+ 	if ($domain["name"]!="") {
  	
 	 	add_menu_page('eal_page_items', 'Items', 'edit_posts', 'edit.php?post_type=item', '' /*'create_eal_page_items'*/, 'dashicons-format-aside', 31);
 	 	add_submenu_page( 'edit.php?post_type=item', 'All Items', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> All Items', 'edit_posts', 'edit.php?post_type=item');
 	 	add_submenu_page( 'edit.php?post_type=item', 'Single Choice', '<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div> Single Choice', 'edit_posts', 'edit.php?post_type=itemsc');
 	 	add_submenu_page( 'edit.php?post_type=item', 'Multiple Choice', '<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div> Multiple Choice', 'edit_posts', 'edit.php?post_type=itemmc');
 	 	add_submenu_page( 'edit.php?post_type=item', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import-items', array ('PAG_Item_Import', 'createPage'));
-
+	 	add_submenu_page( 'edit.php?post_type=item', 'Reviews', '<div class="dashicons-before dashicons-admin-comments" style="display:inline">&nbsp;</div> Reviews', 'edit_posts', 'edit.php?post_type=review');
+	 	 
 	 	/* TODO: first sub menu should open menu */
 	 	add_menu_page('eal_page_metadata', 'Metadata', 'manage_categories', 'metadata', '' /* array ('PAG_Metadata', 'createTable')*/, 'dashicons-tag', 32);
 // 	 	add_submenu_page( 'menu_metadata', 'Taxonomy', '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> Taxonomy', 'edit_posts', 'eal_page_taxonomies', array ('PAG_Metadata', 'createTable'));
@@ -660,7 +661,7 @@ add_action( 'admin_bar_menu', 'my_new_toolbar_item', 999 );
 function my_new_toolbar_item( $wp_admin_bar ) {
 	$args = array(
 		'id'    => 'eal_logo',
-		'title' => '<span style="width:46px; height:46px"><img height="26" width="26" src="' . plugin_dir_url( __FILE__ ) . 'EAssLit_small.png"></span>'
+		'title' => '<div style="width:10em"><img style="display:block; margin:auto" src="' . plugin_dir_url( __FILE__ ) . 'EAssLit_small.png"></div>'
 		
 	);
 	$wp_admin_bar->add_node( $args );
@@ -672,7 +673,7 @@ function my_new_toolbar_item( $wp_admin_bar ) {
 	$wp_admin_bar->remove_menu ('wp-logo');
 	$wp_admin_bar->remove_menu ('site-name');
 	
-	
+	$wp_admin_bar->add_menu (array ("id" => "eal_currentRole", "title" => RoleTaxonomy::getCurrentDomain()["label"]));
 }
 
 

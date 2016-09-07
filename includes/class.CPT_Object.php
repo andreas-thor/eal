@@ -73,7 +73,7 @@ abstract class CPT_Object {
 		add_filter("manage_edit-{$this->type}_sortable_columns", array ($this, 'WPCB_manage_edit_sortable_columns'));
 		add_action("manage_{$this->type}_posts_custom_column" , array ($this, 'WPCB_manage_posts_custom_column'), 10, 2 );
 		
-		
+		// Generate databses query to retrieve all data
 		add_filter('posts_join', array ($this, 'WPCB_posts_join'));
 		add_filter('posts_fields', array ($this, 'WPCB_posts_fields'), 10, 1 );
 		add_filter('posts_orderby', array ($this, 'WPCB_posts_orderby'), 10, 1 );
@@ -199,25 +199,11 @@ abstract class CPT_Object {
 	
 
 	
-	public function WPCB_posts_join ($join) {
-		global $wp_query, $wpdb;
-		if ($wp_query->query["post_type"] == $this->type) {
-			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} ON ({$wpdb->prefix}eal_{$this->type}.id = {$wpdb->posts}.ID)";
-		}
-		return $join;
-	}
-	
-	
 
 	
 	
-	public function WPCB_posts_fields ( $array ) {
-		global $wp_query, $wpdb;
-		if ($wp_query->query["post_type"] == $this->type) {
-			$array .= ", {$wpdb->prefix}eal_{$this->type}.* ";
-		}
-		return $array;
-	}
+
+
 	
 	
 	

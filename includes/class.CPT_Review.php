@@ -174,7 +174,47 @@ class CPT_Review extends CPT_Object {
 	}
 	
 	
-
+	
+	
+	public function WPCB_posts_fields ( $array ) {
+		global $wp_query, $wpdb;
+		if ($wp_query->query["post_type"] == $this->type) {
+			$array .= ", {$wpdb->prefix}eal_{$this->type}.*, {$wpdb->prefix}eal_item.*, concat('Rev: ',{$wpdb->prefix}eal_item.title) as post_title ";
+		}
+		return $array;
+	}
+	
+	
+	
+	
+	public function WPCB_posts_join ($join) {
+		global $wp_query, $wpdb;
+		if ($wp_query->query["post_type"] == $this->type) {
+			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} ON ({$wpdb->prefix}eal_{$this->type}.id = {$wpdb->posts}.ID) ";
+			$join .= " JOIN {$wpdb->prefix}eal_item ON ({$wpdb->prefix}eal_item.id = {$wpdb->prefix}eal_{$this->type}.item_id AND {$wpdb->prefix}eal_item.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
+		}
+		return $join;
+	}
+	
+	public function WPCB_manage_posts_columns($columns) {
+		return array_merge(parent::WPCB_manage_posts_columns($columns), array('item_title' => 'item_title', 'type' => 'Typ', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
+	}
+	
+	
+	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
+	
+		global $post;
+	
+		switch ( $column ) {
+			case 'FW': echo (($post->level_FW > 0) ? EAL_Item::$level_label[$post->level_FW-1] : ''); break;
+			case 'PW': echo (($post->level_PW > 0) ? EAL_Item::$level_label[$post->level_PW-1] : ''); break;
+			case 'KW': echo (($post->level_KW > 0) ? EAL_Item::$level_label[$post->level_KW-1] : ''); break;
+			case 'item_title': echo ($post->item_title); break;
+		}
+	}
+	
+	
+	
 	public function WPCB_post_updated_messages ( $messages ) {
 	
 		global $post, $post_ID;

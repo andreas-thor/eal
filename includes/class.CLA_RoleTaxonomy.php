@@ -54,12 +54,12 @@ class RoleTaxonomy {
 					'show_admin_column' => true,
 					'query_var' => true,
 					'show_in_menu'    => true,
-					// 			'rewrite' => array ( 'slug' => 'topic' ),
-					'public' => TRUE,
-					'rewrite' => false
+								'rewrite' => array ( 'slug' => $name ),
+					'public' => TRUE
+// 					'rewrite' => false
 			);
 			
-			register_taxonomy ( $name, array ('eal_itemsc', 'eal_itemmc') , $args );			
+			register_taxonomy ( $name, array ('itemsc', 'itemmc') , $args );			
 			
 			
 			
@@ -135,14 +135,17 @@ class RoleTaxonomy {
 		
 		$current_role = get_user_meta (get_current_user_id(), 'current_role', true);
 		
-		if ((!isset($current_role)) ||  ($current_role== "")) return array();
-		if ($current_role == "administrator") return array();
+		$result = array ("name" => "", "label" => "");
+		
+		if ((!isset($current_role)) ||  ($current_role== "")) return $result;
+		if ($current_role == "administrator") return $result;
 		$pos = strpos($current_role, "_");
 		if ($pos != FALSE) {
 			$domain = substr($current_role, $pos+1);
-			return array ("name" => $domain, "label" => RoleTaxonomy::$domains[$domain]);
+			$result["name"] = $domain;
+			$result["label"] = RoleTaxonomy::$domains[$domain];
 		}
-		return array();
+		return $result;
 		
 	}
 	

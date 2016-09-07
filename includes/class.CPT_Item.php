@@ -1,6 +1,7 @@
 <?php
 
 require_once("class.CPT_Object.php");
+require_once("class.CLA_RoleTaxonomy.php");
 
 class CPT_Item extends CPT_Object{
 	
@@ -50,9 +51,6 @@ class CPT_Item extends CPT_Object{
 		add_filter('post_updated_messages', array ($this, 'WPCB_post_updated_messages') );
 		add_action('contextual_help', array ($classname, 'CPT_contextual_help' ), 10, 3);
 
-		/* hide shortlink block */
-		add_filter('get_sample_permalink_html', '__return_empty_string', 10, 5);
-		add_filter('pre_get_shortlink', '__return_empty_string' );
 		
 		add_action ("save_post_revision", array ("eal_{$this->type}", 'save'), 10, 2);
 		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
@@ -61,7 +59,11 @@ class CPT_Item extends CPT_Object{
 		
 		add_filter('posts_search', array ($this ,'WPCB_post_search'), 10, 2);
 		
- 	
+		
+		/* hide shortlink block */
+		add_filter('get_sample_permalink_html', '__return_empty_string', 10, 5);
+		add_filter('pre_get_shortlink', '__return_empty_string' );
+		
 	}
 	
 	public function WPCB_post_search($search, $wpquery){
@@ -101,7 +103,9 @@ class CPT_Item extends CPT_Object{
 	
 	
 
-	public function WPCB_mb_answers ($post, $vars) { }
+	public function WPCB_mb_answers ($post, $vars) { 
+		wp_die ("<pre>Can not call WPCB_mb_answers on CPT_Item.</pre>");
+	}
 	
 	
 	public function WPCB_mb_level ($post, $vars) {
@@ -222,11 +226,18 @@ class CPT_Item extends CPT_Object{
 	}
 	
 	
+	/**
+	 * Join to item table; restrict to items of current domain
+	 * join to learning outcome (if available) 
+	 * {@inheritDoc}
+	 * @see CPT_Object::WPCB_posts_join()
+	 */
+	
 	public function WPCB_posts_join ($join) {
 		global $wp_query, $wpdb;
 	
 		if ($wp_query->query["post_type"] == $this->type) {
-			$join .= " JOIN {$wpdb->prefix}eal_item ON ({$wpdb->prefix}eal_item.id = {$wpdb->posts}.ID)";
+			$join .= " JOIN {$wpdb->prefix}eal_item ON ({$wpdb->prefix}eal_item.id = {$wpdb->posts}.ID AND {$wpdb->prefix}eal_item.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
 			$join .= " LEFT OUTER JOIN {$wpdb->prefix}eal_learnout ON ({$wpdb->prefix}eal_learnout.id = {$wpdb->prefix}eal_item.learnout_id)";
 		}
 		return $join;
@@ -284,39 +295,7 @@ class CPT_Item extends CPT_Object{
 
 
 
-	
-	
-// 	public function WPCB_mb_description ($post, $vars) {
-	
-// 		global $item;
-// 		$editor_settings = array(
-// 				'media_buttons' => false,	// no media buttons
-// 				'teeny' => true,			// minimal editor
-// 				'quicktags' => false,		// hides Visual/Text tabs
-// 				'textarea_rows' => 3,
-// 				'tinymce' => true
-// 		);
-	
-// 		$html = wp_editor(wpautop(stripslashes($item->description)) , 'item_description', $editor_settings );
-// 		echo $html;
-// 	}
-	
-	
-// 	public function WPCB_mb_question ($post, $vars) {
-	
-// 		global $item;
-// 		$editor_settings = array(
-// 				'media_buttons' => false,	// no media buttons
-// 				'teeny' => true,			// minimal editor
-// 				'quicktags' => false,		// hides Visual/Text tabs
-// 				'textarea_rows' => 3,
-// 				'tinymce' => true
-// 		);
-	
-// 		$html = wp_editor(wpautop(stripslashes($item->question)) , 'item_question', $editor_settings );
-// 		echo $html;
-// 	}	
-	
+
 	
 
 	
@@ -350,9 +329,40 @@ class CPT_Item extends CPT_Object{
 	
 
 
-
 	
 
+
+	// 	public function WPCB_mb_description ($post, $vars) {
+	
+	// 		global $item;
+	// 		$editor_settings = array(
+	// 				'media_buttons' => false,	// no media buttons
+	// 				'teeny' => true,			// minimal editor
+	// 				'quicktags' => false,		// hides Visual/Text tabs
+	// 				'textarea_rows' => 3,
+	// 				'tinymce' => true
+	// 		);
+	
+	// 		$html = wp_editor(wpautop(stripslashes($item->description)) , 'item_description', $editor_settings );
+	// 		echo $html;
+	// 	}
+	
+	
+	// 	public function WPCB_mb_question ($post, $vars) {
+	
+	// 		global $item;
+	// 		$editor_settings = array(
+	// 				'media_buttons' => false,	// no media buttons
+	// 				'teeny' => true,			// minimal editor
+	// 				'quicktags' => false,		// hides Visual/Text tabs
+	// 				'textarea_rows' => 3,
+	// 				'tinymce' => true
+	// 		);
+	
+	// 		$html = wp_editor(wpautop(stripslashes($item->question)) , 'item_question', $editor_settings );
+	// 		echo $html;
+	// 	}
+	
 	
 	
 	
@@ -466,7 +476,6 @@ class CPT_Item extends CPT_Object{
 // 		break;
 
 
-	
 }
 
 ?>

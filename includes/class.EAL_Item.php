@@ -1,10 +1,12 @@
 <?php
 
+require_once 'class.CLA_RoleTaxonomy.php';
 
 
 class EAL_Item {
 
 	public $type;	// will be set in subclasses (EAL_ItemMC, EAL_ItemSC, ...)
+	public $domain;	// each item belongs to a domain (when newly created: domain = current user's role domain)
 	
 	public $id;
 	public $title;
@@ -54,8 +56,9 @@ class EAL_Item {
 		$this->level["PW"] = isset ($_POST['item_level_PW']) ? $_POST['item_level_PW'] : null;
 		
 		$this->learnout_id = isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : (isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : null);
-		$this->learnout = null;
+		$this->learnout = null;		// lazy loading
 		$this->difficulty = null;
+		$this->domain = RoleTaxonomy::getCurrentDomain()["name"];
 	}
 	
 	
@@ -79,6 +82,7 @@ class EAL_Item {
 		
 		if (get_post_status($post->ID)=='auto-draft') {
 				
+			/* Create new item */
 			$this->id = $post->ID;
 			$this->title = '';
 			$this->description = '';
@@ -91,6 +95,8 @@ class EAL_Item {
 			$this->learnout_id = isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : (isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : null);
 			$this->learnout = null;
 			$this->difficulty = null;
+			
+			$this->domain = RoleTaxonomy::getCurrentDomain()["name"];
 				
 		} else {
 			$this->loadById($post->ID);
@@ -115,6 +121,7 @@ class EAL_Item {
 		$this->learnout_id = $sqlres['learnout_id'];
 		$this->learnout = null; // lazy loading
 		$this->difficulty = $sqlres['difficulty'];
+		$this->domain = $sqlres['domain'];
 	}
 	
 	
@@ -137,9 +144,10 @@ class EAL_Item {
 					'points'   => $this->getPoints(),
 					'difficulty' => $this->difficulty,
 					'learnout_id' => $this->learnout_id,
-					'type' => $this->type
+					'type' => $this->type,
+					'domain' => $this->domain
 			),
-			array('%d','%s','%s','%s','%d','%d','%d','%d','%f','%d','%s')
+			array('%d','%s','%s','%s','%d','%d','%d','%d','%f','%d','%s','%s')
 			);
 	}
 	
@@ -150,6 +158,11 @@ class EAL_Item {
 		$wpdb->delete( '{$wpdb->prefix}eal_review', array( 'item_id' => $post_id ), array( '%d' ) );
 	}
 	
+	
+	/**
+	 * Implements lazy loading of learning outcome 
+	 * @return NULL|NULL|EAL_LearnOut
+	 */
 	public function getLearnOut () {
 		
 		if (is_null ($this->learnout_id )) return null;
@@ -166,6 +179,10 @@ class EAL_Item {
 	
 	public function getPreviewHTML ($forReview = TRUE) { }
 	
+	
+	/**
+	 * Create database tables when plugin is activated 
+	 */
 	
 	public static function createTables() {
 		
@@ -185,8 +202,10 @@ class EAL_Item {
 			difficulty decimal(10,1), 
 			learnout_id bigint(20) unsigned,
 			type varchar(20) NOT NULL,
+			domain varchar(50) NOT NULL,
 			PRIMARY KEY  (id),
-			KEY index_type (type)
+			KEY index_type (type),
+			KEY index_domain (domain)
 			) {$wpdb->get_charset_collate()};"
 		);
 
@@ -205,19 +224,25 @@ class EAL_Item {
 	
 	
 	
-
+	/**
+	 * Methods for comparing two item versions
+	 * @param EAL_Item $comp
+	 */
 	
 	public function compareTitle (EAL_Item $comp) {
 		return array ("id" => 'title', 'name' => 'Titel', 'diff' => $this->compareText ($this->title, $comp->title));
 	}
 	
+	
 	public function compareDescription (EAL_Item $comp) {
 		return array ("id" => 'description', 'name' => 'Fall- oder Problemvignette', 'diff' => $this->compareText ($this->description, $comp->description));
 	}
 	
+	
 	public function compareQuestion (EAL_Item $comp) {
 		return array ("id" => 'question', 'name' => 'Aufgabenstellung', 'diff' => $this->compareText ($this->question, $comp->question));
 	}
+	
 	
 	public function compareLevel (EAL_Item $comp) {
 		$diff  = "<table class='diff'>";
@@ -228,8 +253,6 @@ class EAL_Item {
 		$diff .= "</tr></tbody></table>";
 		return array ("id" => 'level', 'name' => 'Anforderungsstufe', 'diff' => $diff);
 	}
-	
-
 	
 	
 	private function compareLevel1 ($old, $new, $class) {

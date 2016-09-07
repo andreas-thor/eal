@@ -191,12 +191,20 @@ class CPT_LearnOut extends CPT_Object {
 	public function WPCB_posts_fields ( $array ) {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
-			$array = parent::WPCB_posts_fields($array) 
+			$array .= ", {$wpdb->prefix}eal_{$this->type}.* " 
 			. ", (SELECT COUNT(*) FROM {$wpdb->prefix}eal_item X JOIN {$wpdb->prefix}posts Y ON (X.type = 'itemsc' AND X.id= Y.ID) WHERE Y.post_parent = 0 AND X.learnout_id = {$wpdb->posts}.ID) AS SC" 
 			. ", (SELECT COUNT(*) FROM {$wpdb->prefix}eal_item X JOIN {$wpdb->prefix}posts Y ON (X.type = 'itemmc' AND X.id= Y.ID) WHERE Y.post_parent = 0 AND X.learnout_id = {$wpdb->posts}.ID) AS MC" 
 			. ", (-9) as reviews ";
 		}
 		return $array;
+	}
+	
+	public function WPCB_posts_join ($join) {
+		global $wp_query, $wpdb;
+		if ($wp_query->query["post_type"] == $this->type) {
+			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} ON ({$wpdb->prefix}eal_{$this->type}.id = {$wpdb->posts}.ID AND {$wpdb->prefix}eal_{$this->type}.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
+		}
+		return $join;
 	}
 	
 	
