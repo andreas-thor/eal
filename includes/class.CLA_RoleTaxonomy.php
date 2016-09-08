@@ -63,10 +63,39 @@ class RoleTaxonomy {
 			
 			
 			
+// 			add_role ('author_' . $name, 'Author @ ' . $label, array(
+// 				'read'         => true,  
+// 				'edit_posts'   => true,
+// 				'delete_posts' => true,
+// 			));
+
 			add_role ('author_' . $name, 'Author @ ' . $label, array(
-				'read'         => true,  
-				'edit_posts'   => true,
-				'delete_posts' => true,
+					"delete_others_pages" => false,
+					"delete_others_posts" => false,
+					"delete_pages" => true,
+					"delete_posts" => true,
+					"delete_private_pages" => true,
+					"delete_private_posts" => true,
+					"delete_published_pages" => true,
+					"delete_published_posts" => true,
+					"edit_others_pages" => false,
+					"edit_others_posts" => false,
+					"edit_pages" => true,
+					"edit_posts" => true,
+					"edit_private_pages" => true,
+					"edit_private_posts" => true,
+					"edit_published_pages" => true,
+					"edit_published_posts" => true,
+					"manage_categories" => true,
+					"manage_links" => true,
+					"moderate_comments" => true,
+					"publish_pages" => false,
+					"publish_posts" => false,
+					"read" => true,
+					"read_private_pages" => true,
+					"read_private_posts" => true,
+					"unfiltered_html" => true,
+					"upload_files" => true
 			));
 			
 			add_role ('editor_' . $name, 'Editor @ ' . $label, array(

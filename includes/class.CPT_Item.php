@@ -83,7 +83,9 @@ class CPT_Item extends CPT_Object{
 		// remove Quick Edit
 		unset ($actions['inline hide-if-no-js']);	
 		// add "Add Review"
-		$actions['add review'] = "<a href='post-new.php?post_type=review&item_id={$post->ID}'>Add&nbsp;New&nbsp;Review</a>";
+// 		$actions['add review'] = "<a href='post-new.php?post_type=review&item_id={$post->ID}'>Add&nbsp;New&nbsp;Review</a>";
+
+		
 		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>";
 		return $actions;
 	}
@@ -157,11 +159,11 @@ class CPT_Item extends CPT_Object{
 	
 	
 	public function WPCB_manage_posts_columns($columns) {
-		return array_merge(parent::WPCB_manage_posts_columns($columns), array('type' => 'Typ', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
+		return array_merge(parent::WPCB_manage_posts_columns($columns), array('type' => 'Typ', 'item_author' => 'Author', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
 	}
 	
 	public function WPCB_manage_edit_sortable_columns ($columns) {
-		return array_merge(parent::WPCB_manage_edit_sortable_columns($columns) , array('type' => 'Typ', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
+		return array_merge(parent::WPCB_manage_edit_sortable_columns($columns) , array('type' => 'Typ', 'item_author' => 'Author', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
 	}
 	
 	
@@ -177,6 +179,9 @@ class CPT_Item extends CPT_Object{
 				if ($post->type == "itemsc") echo ('<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div>');
 				if ($post->type == "itemmc") echo ('<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div>');
 				break;
+				
+			case 'item_author':
+				echo ($post->user_login); break;
 				
 			case 'Difficulty': echo ($post->difficulty); break;
 			
@@ -196,18 +201,27 @@ class CPT_Item extends CPT_Object{
 						");
 	
 				$c = count($sqlres); 
-				if ($c>0) {
-					printf ("<div class='page-title-action' onclick=\"this.nextSibling.style.display = (this.nextSibling.style.display == 'none') ? 'block' : 'none';\">%d review%s</div>", $c, $c>1 ? "s" : "");
-					echo ("<div style='display:none'>");
-					foreach ($sqlres as $pos => $sqlrow) {
-						echo ("<a href='post.php?post={$sqlrow->review_id}&action=edit'>&nbsp;#" . ($pos+1) . "&nbsp;{$sqlrow->last_changed}</a><br/>");
-					}
+// 				if ($c>0) {
+// 					printf ("<div class='page-title-action' onclick=\"this.nextSibling.style.display = (this.nextSibling.style.display == 'none') ? 'block' : 'none';\">%d review%s</div>", $c, $c>1 ? "s" : "");
+// 					echo ("<div style='display:none'>");
+// 					foreach ($sqlres as $pos => $sqlrow) {
+// 						echo ("<a href='post.php?post={$sqlrow->review_id}&action=edit'>&nbsp;#" . ($pos+1) . "&nbsp;{$sqlrow->last_changed}</a><br/>");
+// 					}
 		
-					echo ("</div>");
+// 					echo ("</div>");
 					
 					/* Add New Review link is in the short actions now */
 // 					echo ("<h1><a class='page-title-action' href='post-new.php?post_type={$this->type}_review&item_id={$post->ID}'>Add&nbsp;New&nbsp;Review</a></h1>");
-				}
+
+					
+					
+					echo ("{$c}<div class='row-actions'>");
+					if ($c>0) echo ("<span class='view'><a href='edit.php?post_type=review&item_id={$post->ID}' title='Show All Review'>Show&nbsp;All&nbsp;Reviews</a> | </span>");
+					echo ("<span class='edit'><a href='post-new.php?post_type=review&item_id={$post->ID}' title='Add New Review'>Add&nbsp;New&nbsp;Review</a></span>");
+					echo ("<span class='inline hide-if-no-js'></span></div>");
+					break;
+						
+// 				}
 				break;
 		}
 	}
@@ -220,7 +234,8 @@ class CPT_Item extends CPT_Object{
 		if ($wp_query->query["post_type"] == $this->type) {
 			$array .= ", {$wpdb->prefix}eal_item.* " 
 				. ", (select count(*) from {$wpdb->prefix}eal_review where {$wpdb->prefix}eal_item.id = {$wpdb->prefix}eal_review.item_id) as reviews"
-				. ", {$wpdb->prefix}eal_learnout.title AS LOTitle";
+				. ", {$wpdb->prefix}eal_learnout.title AS LOTitle"
+				. ", {$wpdb->users}.user_login ";
 		}
 		return $array;
 	}
@@ -238,6 +253,7 @@ class CPT_Item extends CPT_Object{
 	
 		if ($wp_query->query["post_type"] == $this->type) {
 			$join .= " JOIN {$wpdb->prefix}eal_item ON ({$wpdb->prefix}eal_item.id = {$wpdb->posts}.ID AND {$wpdb->prefix}eal_item.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
+			$join .= " JOIN {$wpdb->users} ON ({$wpdb->users}.id = {$wpdb->posts}.post_author) ";
 			$join .= " LEFT OUTER JOIN {$wpdb->prefix}eal_learnout ON ({$wpdb->prefix}eal_learnout.id = {$wpdb->prefix}eal_item.learnout_id)";
 		}
 		return $join;
@@ -252,6 +268,7 @@ class CPT_Item extends CPT_Object{
 		$orderby_statement = parent::WPCB_posts_orderby($orderby_statement);
 	
 		if ($wp_query->query["post_type"] == $this->type) {
+			if ($wp_query->get( 'orderby' ) == "item_author") $orderby_statement = "user_login " . $wp_query->get( 'order' );
 			if ($wp_query->get( 'orderby' ) == "LO") $orderby_statement = "LOTitle " . $wp_query->get( 'order' );
 			if ($wp_query->get( 'orderby' ) == "Difficulty") $orderby_statement = "{$wpdb->prefix}eal_item.difficulty " . $wp_query->get( 'order' );
 				

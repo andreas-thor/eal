@@ -179,7 +179,11 @@ class CPT_Review extends CPT_Object {
 	public function WPCB_posts_fields ( $array ) {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
-			$array .= ", {$wpdb->prefix}eal_{$this->type}.*, {$wpdb->prefix}eal_item.*, concat('Rev: ',{$wpdb->prefix}eal_item.title) as post_title ";
+			$array .= ", {$wpdb->prefix}eal_{$this->type}.*, {$wpdb->prefix}eal_item.* ";
+			$array .= ", concat('Rev: ',{$wpdb->prefix}eal_item.title) as post_title, UI.user_login as item_author, UR.user_login as review_author ";
+			$array .= ", ABS (COALESCE ({$wpdb->prefix}eal_item.level_FW,0) - COALESCE ({$wpdb->prefix}eal_{$this->type}.level_FW,0)) ";
+			$array .= "+ ABS (COALESCE ({$wpdb->prefix}eal_item.level_KW,0) - COALESCE ({$wpdb->prefix}eal_{$this->type}.level_KW,0)) ";
+			$array .= "+ ABS (COALESCE ({$wpdb->prefix}eal_item.level_PW,0) - COALESCE ({$wpdb->prefix}eal_{$this->type}.level_PW,0)) AS change_level";
 		}
 		return $array;
 	}
@@ -192,12 +196,34 @@ class CPT_Review extends CPT_Object {
 		if ($wp_query->query["post_type"] == $this->type) {
 			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} ON ({$wpdb->prefix}eal_{$this->type}.id = {$wpdb->posts}.ID) ";
 			$join .= " JOIN {$wpdb->prefix}eal_item ON ({$wpdb->prefix}eal_item.id = {$wpdb->prefix}eal_{$this->type}.item_id AND {$wpdb->prefix}eal_item.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
+			$join .= " JOIN {$wpdb->posts} AS postitem ON ({$wpdb->prefix}eal_item.id = postitem.id) ";
+			$join .= " JOIN {$wpdb->users} UI ON (UI.id = postitem.post_author) ";
+			$join .= " JOIN {$wpdb->posts} AS postreview ON ({$wpdb->prefix}eal_item.id = postreview.id) ";
+			$join .= " JOIN {$wpdb->users} UR ON (UR.id = postreview.post_author) ";
 		}
 		return $join;
 	}
 	
+	
+	public function WPCB_posts_where($where) {
+	
+		global $wp_query, $wpdb;
+	
+		$where = parent::WPCB_posts_where($where);
+	
+		if ($wp_query->query["post_type"] == $this->type) {
+			if (isset($_REQUEST["item_id"])) {
+				$where .= " AND {$wpdb->prefix}eal_{$this->type}.item_id = {$_REQUEST['item_id']}";
+			}
+		}
+
+		return $where;
+	}
+	
+	
 	public function WPCB_manage_posts_columns($columns) {
-		return array_merge(parent::WPCB_manage_posts_columns($columns), array('item_title' => 'item_title', 'type' => 'Typ', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
+		return array_merge($columns, array('type' => 'Typ', 'review_author' => 'Author Review', 'item_author' => 'Author Item', 'score' => 'Score', 'level' => 'Level', 'overall' => 'Overall'));
+// 		return array_merge(parent::WPCB_manage_posts_columns($columns), array('item_author' => 'Author Item', 'item_title' => 'item_title', 'type' => 'Typ', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
 	}
 	
 	
@@ -206,10 +232,56 @@ class CPT_Review extends CPT_Object {
 		global $post;
 	
 		switch ( $column ) {
-			case 'FW': echo (($post->level_FW > 0) ? EAL_Item::$level_label[$post->level_FW-1] : ''); break;
-			case 'PW': echo (($post->level_PW > 0) ? EAL_Item::$level_label[$post->level_PW-1] : ''); break;
-			case 'KW': echo (($post->level_KW > 0) ? EAL_Item::$level_label[$post->level_KW-1] : ''); break;
-			case 'item_title': echo ($post->item_title); break;
+			case 'type':
+				if ($post->type == "itemsc") echo ('<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div>');
+				if ($post->type == "itemmc") echo ('<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div>');
+				break;
+					
+			case 'review_author': echo ($post->review_author); break;
+			case 'item_author': echo ($post->item_author); break;
+			
+			case 'overall': switch ($post->overall) {
+				case 1: echo ('<div class="dashicons-before dashicons-yes" style="display:inline">&nbsp;</div>'); break;				
+				case 2: echo ('<div class="dashicons-before dashicons-flag" style="display:inline">&nbsp;</div>'); break;				
+				case 3: echo ('<div class="dashicons-before dashicons-no-alt" style="display:inline">&nbsp;</div>'); break;				
+			} break;
+			
+			case 'score': 
+				if (($post->description_correctness == 1) && ($post->description_relevance == 1) && ($post->description_wording == 1)) {
+					echo ('<div class="dashicons-before dashicons-star-filled" style="display:inline">&nbsp;</div>'); 
+				} else {
+					if (($post->description_correctness < 3) && ($post->description_relevance < 3) && ($post->description_wording < 3)) {
+						echo ('<div class="dashicons-before dashicons-star-half" style="display:inline">&nbsp;</div>'); 
+					} else {
+						echo ('<div class="dashicons-before dashicons-star-empty" style="display:inline">&nbsp;</div>');
+					}
+				}
+				
+				if (($post->question_correctness == 1) && ($post->question_relevance == 1) && ($post->question_wording == 1)) {
+					echo ('<div class="dashicons-before dashicons-star-filled" style="display:inline">&nbsp;</div>');
+				} else {
+					if (($post->question_correctness < 3) && ($post->question_relevance < 3) && ($post->question_wording < 3)) {
+						echo ('<div class="dashicons-before dashicons-star-half" style="display:inline">&nbsp;</div>');
+					} else {
+						echo ('<div class="dashicons-before dashicons-star-empty" style="display:inline">&nbsp;</div>');
+					}
+				}
+				
+				if (($post->answers_correctness == 1) && ($post->answers_relevance == 1) && ($post->answers_wording == 1)) {
+					echo ('<div class="dashicons-before dashicons-star-filled" style="display:inline">&nbsp;</div>');
+				} else {
+					if (($post->answers_correctness < 3) && ($post->answers_relevance < 3) && ($post->answers_wording < 3)) {
+						echo ('<div class="dashicons-before dashicons-star-half" style="display:inline">&nbsp;</div>');
+					} else {
+						echo ('<div class="dashicons-before dashicons-star-empty" style="display:inline">&nbsp;</div>');
+					}
+				}
+				break;
+				
+			case 'level': 
+				if ($post->change_level > 0) echo ('<div class="dashicons-before dashicons-warning" style="display:inline">&nbsp;</div>');
+				break;
+				
 		}
 	}
 	
