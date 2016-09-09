@@ -64,6 +64,59 @@ class CPT_Item extends CPT_Object{
 		add_filter('get_sample_permalink_html', '__return_empty_string', 10, 5);
 		add_filter('pre_get_shortlink', '__return_empty_string' );
 		
+		
+		add_filter( 'views_edit-' . $this->type, array ($this, 'wpse14230_views_edit_post'));
+		add_filter( 'wp_count_posts', array ($this, 'wpse149143_wp_count_posts'), 10, 3);
+		
+		
+	}
+
+	public function wpse14230_views_edit_post( $views )
+	{
+// 		unset ($views["all"]);
+		return $views;
+	}
+	
+	
+	/**
+	 * Modify returned post counts by status for the current post type.
+	 *  Only retrieve counts of own items for users without rights to 'edit_others_posts'
+	 *
+	 * @since   26 June 2014
+	 * @version 26 June 2014
+	 * @author  W. van Dam
+	 *
+	 * @notes   Based on wp_count_posts (wp-includes/posts.php)
+	 *
+	 * @param object $counts An object containing the current post_type's post
+	 *                       counts by status.
+	 * @param string $type   Post type.
+	 * @param string $perm   The permission to determine if the posts are 'readable'
+	 *                       by the current user.
+	 *
+	 * @return object Number of posts for each status
+	 */
+	function wpse149143_wp_count_posts( $counts, $type, $perm ) {
+		global $wpdb;
+	
+		if ($type != $this->type) return $counts;
+		
+		$query  = "
+			SELECT post_status, COUNT( * ) AS num_posts 
+			FROM {$wpdb->posts} P
+			JOIN {$wpdb->prefix}eal_item E
+			ON (P.ID = E.ID)
+			WHERE E.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "' 
+			AND P.post_type ";
+		$query .= ($type == "item") ? "LIKE 'item%'" : ("= '" . $type . "'");
+		$query .= " GROUP BY P.post_status";
+		$results = (array) $wpdb->get_results( $query, ARRAY_A );
+		$counts = array_fill_keys( get_post_stati(), 0 );
+	
+		foreach ( $results as $row ) {
+			$counts[ $row['post_status'] ] = $row['num_posts'];
+		}
+		return (object) $counts;
 	}
 	
 	public function WPCB_post_search($search, $wpquery){
@@ -94,6 +147,12 @@ class CPT_Item extends CPT_Object{
 	public function WPCB_register_meta_box_cb () {
 	
 		global $item, $post;
+		
+		if ($item->domain != RoleTaxonomy::getCurrentDomain()["name"]) {
+			wp_die ("Item does not belong to your current domain!");
+		}
+		
+		
 		$post->post_title .= "\x03";	// we add ASCII 03 to modify the title
 		
 		add_meta_box('mb_learnout', 'Learning Outcome', array ($this, 'WPCB_mb_learnout'), $this->type, 'normal', 'default', array ('learnout' => $item->getLearnOut()));

@@ -32,6 +32,9 @@ class CPT_LearnOut extends CPT_Object {
 		$learnout = new EAL_LearnOut();
 		$learnout->load();
 	
+		if ($learnout->domain != RoleTaxonomy::getCurrentDomain()["name"]) {
+			wp_die ("Learning outcome does not belong to your current domain!");
+		}
 	
 		global $post;
 		

@@ -38,6 +38,10 @@ class CPT_Review extends CPT_Object {
 		$review = new EAL_Review();
 		$review->load();
 		
+		if ($review->getItem()->domain != RoleTaxonomy::getCurrentDomain()["name"]) {
+			wp_die ("Reviewed item does not belong to your current domain!");
+		}
+		
 		add_meta_box('mb_item', 'Item: ' . $review->getItem()->title, array ($this, 'WPCB_mb_item'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_score', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($this, 'WPCB_mb_score'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'normal', 'default', array ('level' => $review->level, 'prefix' => 'review', 'default' => $review->getItem()->level, 'background' => 1 ));
