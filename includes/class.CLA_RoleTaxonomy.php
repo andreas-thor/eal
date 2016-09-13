@@ -54,8 +54,9 @@ class RoleTaxonomy {
 					'show_admin_column' => true,
 					'query_var' => true,
 					'show_in_menu'    => true,
-								'rewrite' => array ( 'slug' => $name ),
-					'public' => TRUE
+					'rewrite' => array ( 'slug' => $name ),
+					'public' => TRUE,
+					'meta_box_cb' => FALSE
 // 					'rewrite' => false
 			);
 			

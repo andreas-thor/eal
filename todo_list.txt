@@ -1,6 +1,12 @@
 Allgemeine ToDO
 ====
 
+- Navigation in Tabellen
+  * Klick auf Learning Outcome --> show all Items of if LO
+  * Klick auf Author
+  * Klick auf Level
+  -- generell: Vereinheitlichung
+
 
 - Import von Testergebnissen
   - Item-Attribut: Schwierigkeit

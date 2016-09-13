@@ -160,10 +160,18 @@ class CPT_Item extends CPT_Object{
 		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_question', 'value' => $item->question));
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $item->level, 'default' => (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level) ));
 		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($this, 'WPCB_mb_answers'), $this->type, 'normal', 'default');
+		
+		
+		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getCurrentDomain()["label"], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => RoleTaxonomy::getCurrentDomain()["name"] ));
+		
 	}
 	
 	
-
+	public function WPCB_mb_taxonomy ($post, $vars) {
+		post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy", "title" => "", "args" => $vars['args']) );
+	}
+	
+	
 	public function WPCB_mb_answers ($post, $vars) { 
 		wp_die ("<pre>Can not call WPCB_mb_answers on CPT_Item.</pre>");
 	}
@@ -232,6 +240,8 @@ class CPT_Item extends CPT_Object{
 		
 		global $post;
 	
+// 		$basic_url = remove_query_arg (array ("LO", "FW", "KW", "PW"));
+		
 		switch ( $column ) {
 			
 			case 'type':
@@ -245,9 +255,16 @@ class CPT_Item extends CPT_Object{
 			case 'Difficulty': echo ($post->difficulty); break;
 			
 			case 'Punkte': echo ($post->points); break;
-			
-			case 'LO': echo ($post->LOTitle); break;
-			
+
+			case 'LO': 
+				printf ('<a href="%1$s">%2$s</a>', add_query_arg ("LO", $post->learnout_id), $post->LOTitle); 
+				printf ('<div class="row-actions">');
+				printf ('<span class="edit"><a href="post.php?post_type=learnout&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->learnout_id);
+				printf ('<span class="inline hide-if-no-js"></span></div>');
+				break;
+				
+// 			case 'LO': echo ("<a href='" . add_query_arg ("LO", $post->learnout_id) . "'>" . $post->LOTitle . "</a>"); break;
+				
 			case 'Reviews':
 	
 				global $wpdb;
@@ -355,6 +372,10 @@ class CPT_Item extends CPT_Object{
 			// if all items are considered --> consider all type starting with "item"
 			if ($this->type == "item") {
 				$where = str_replace( "wp_posts.post_type = 'item'", "wp_posts.post_type LIKE 'item%'", $where); 
+			}
+			
+			if (isset ($_REQUEST['LO'])) {
+				$where .= " AND {$wpdb->prefix}eal_item.learnout_id = " . $_REQUEST['LO'];
 			}
 			
 		}

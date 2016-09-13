@@ -661,7 +661,7 @@ add_action( 'admin_bar_menu', 'my_new_toolbar_item', 999 );
 function my_new_toolbar_item( $wp_admin_bar ) {
 	$args = array(
 		'id'    => 'eal_logo',
-		'title' => '<div style="width:10em"><img style="display:block; margin:auto" src="' . plugin_dir_url( __FILE__ ) . 'EAssLit_small.png"></div>'
+		'title' => '<div style="width:10em"><a href="' . site_url() . '/wp-admin/"><img style="display:block; margin-top:1em; margin-left:-1em; width:11em"  src="' . plugin_dir_url( __FILE__ ) . 'EAssLit_small.png"></a></div>'
 		
 	);
 	$wp_admin_bar->add_node( $args );
