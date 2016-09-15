@@ -51,7 +51,7 @@ class RoleTaxonomy {
 					'hierarchical' => true,
 					'labels' => $labels,
 					'show_ui' => true,
-					'show_admin_column' => true,
+					'show_admin_column' => FALSE,
 					'query_var' => true,
 					'show_in_menu'    => true,
 					'rewrite' => array ( 'slug' => $name ),
@@ -177,6 +177,21 @@ class RoleTaxonomy {
 		}
 		return $result;
 		
+	}
+	
+	
+	/**
+	 * Specifies if current user can edit itemm
+	 * @param unknown $post
+	 */
+	public static function canEditItemPost ($post) {
+		
+		if ($post->post_author == get_current_user_id()) return TRUE;	// current user
+		if ($post->post_status == "draft") return FALSE;
+
+		$current_role = get_user_meta (get_current_user_id(), 'current_role', true);
+		if (substr($current_role, 0, 7) == "editor_") return TRUE;	// editor
+		return FALSE;
 	}
 	
 }

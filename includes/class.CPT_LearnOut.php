@@ -148,11 +148,11 @@ class CPT_LearnOut extends CPT_Object {
 		
 	
 	public function WPCB_manage_posts_columns($columns) {
-		return array_merge(parent::WPCB_manage_posts_columns($columns), array('SC' => 'Single Choice', 'MC' => 'Multiple Choice'));
+		return array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'SC' => 'Single Choice', 'MC' => 'Multiple Choice');
 	}
 	
 	public function WPCB_manage_edit_sortable_columns ($columns) {
-		return array_merge(parent::WPCB_manage_edit_sortable_columns($columns) , array('SC' => 'SC', 'MC' => 'MC'));
+		return array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'SC' => 'SC', 'MC' => 'MC');
 	}
 	
 	

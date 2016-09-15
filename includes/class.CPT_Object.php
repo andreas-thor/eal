@@ -163,13 +163,7 @@ abstract class CPT_Object {
 	
 	
 
-	public function WPCB_manage_posts_columns($columns) {
-		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW'));
-	}
-	
-	public function WPCB_manage_edit_sortable_columns ($columns) {
-		return array_merge($columns, array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW'));
-	}
+
 	
 	
 	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {

@@ -133,13 +133,14 @@ class CPT_Item extends CPT_Object{
 		
 		if ($post->post_type != $this->type) return $actions;
 		
-		// remove Quick Edit
-		unset ($actions['inline hide-if-no-js']);	
-		// add "Add Review"
-// 		$actions['add review'] = "<a href='post-new.php?post_type=review&item_id={$post->ID}'>Add&nbsp;New&nbsp;Review</a>";
-
+		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
+		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
 		
-		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>";
+		if (!RoleTaxonomy::canEditItemPost($post)) {		// "Edit" & "Trash" only if editable by user
+			unset ($actions['edit']);
+			unset ($actions['trash']);
+		}
+
 		return $actions;
 	}
 	
@@ -226,23 +227,29 @@ class CPT_Item extends CPT_Object{
 	
 	
 	public function WPCB_manage_posts_columns($columns) {
-		return array_merge(parent::WPCB_manage_posts_columns($columns), array('type' => 'Typ', 'item_author' => 'Author', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
+		return array('cb' => '<input type="checkbox" />', 'post_title' => 'Title', 'date' => 'Date', 'type' => 'Type', 'item_author' => 'Author', 'points' => 'Points', 'FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Reviews' => 'Reviews', 'LO' => 'LO', 'difficulty' => 'Difficulty');
 	}
 	
 	public function WPCB_manage_edit_sortable_columns ($columns) {
-		return array_merge(parent::WPCB_manage_edit_sortable_columns($columns) , array('type' => 'Typ', 'item_author' => 'Author', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
+		return array('a' => 'b', 'post_status' => 'Status', 'date' => 'date', 'type' => 'Type', 'item_author' => 'Author', 'Punkte' => 'Punkte', 'FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Reviews' => 'Reviews', 'LO' => 'LO', 'difficulty' => 'Difficulty');
 	}
 	
 	
 	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
 	
-		parent::WPCB_manage_posts_custom_column($column, $post_id);
+// 		parent::WPCB_manage_posts_custom_column($column, $post_id);
 		
 		global $post;
 	
-// 		$basic_url = remove_query_arg (array ("LO", "FW", "KW", "PW"));
+ 		$basic_url = remove_query_arg (array ("item_author", "points", "level_FW", "level_KW", "level_PW"));
 		
 		switch ( $column ) {
+			
+			case 'post_title': 
+				printf ($post->post_title); 
+				if ($post->post_status == "draft") echo (' &mdash; <span class="post-state"><i>Draft</i></span>');
+				if ($post->post_status == "pending") echo (' &mdash; <span class="post-state"><b>Pending</b></span>');
+				break;
 			
 			case 'type':
 				if ($post->type == "itemsc") echo ('<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div>');
@@ -250,20 +257,36 @@ class CPT_Item extends CPT_Object{
 				break;
 				
 			case 'item_author':
-				echo ($post->user_login); break;
+				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('item_author', $post->post_author, $basic_url), $post->user_login); 
+				break;
 				
-			case 'Difficulty': echo ($post->difficulty); break;
+				
+			case 'difficulty': echo ($post->difficulty); break;
 			
-			case 'Punkte': echo ($post->points); break;
-
+			case 'points': 
+				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('points', $post->points, $basic_url), $post->points);
+				break;
+				
+			case 'FW': 
+				if ($post->level_FW > 0) printf ('<a href="%1$s">%2$s</a>', add_query_arg ('level_FW', $post->level_FW, $basic_url), EAL_Item::$level_label[$post->level_FW-1]);
+				break;				
+				
+			case 'PW':
+				if ($post->level_PW > 0) printf ('<a href="%1$s">%2$s</a>', add_query_arg ('level_PW', $post->level_PW, $basic_url), EAL_Item::$level_label[$post->level_PW-1]);
+				break;				
+				
+			case 'KW':
+				if ($post->level_KW > 0) printf ('<a href="%1$s">%2$s</a>', add_query_arg ('level_KW', $post->level_KW, $basic_url), EAL_Item::$level_label[$post->level_KW-1]);
+				break;				
+				
+				
+				
 			case 'LO': 
-				printf ('<a href="%1$s">%2$s</a>', add_query_arg ("LO", $post->learnout_id), $post->LOTitle); 
+				printf ('<a href="%1$s">%2$s</a>', add_query_arg ("learnout_id", $post->learnout_id, $basic_url), $post->LOTitle); 
 				printf ('<div class="row-actions">');
 				printf ('<span class="edit"><a href="post.php?post_type=learnout&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->learnout_id);
 				printf ('<span class="inline hide-if-no-js"></span></div>');
 				break;
-				
-// 			case 'LO': echo ("<a href='" . add_query_arg ("LO", $post->learnout_id) . "'>" . $post->LOTitle . "</a>"); break;
 				
 			case 'Reviews':
 	
@@ -362,7 +385,7 @@ class CPT_Item extends CPT_Object{
 	
 		global $wp_query, $wpdb;
 		
-		$where = parent::WPCB_posts_where($where);
+// 		$where = parent::WPCB_posts_where($where);
 		
 		if ($wp_query->query["post_type"] == $this->type) {
 			if (isset($_REQUEST["learnout_id"])) {
@@ -371,9 +394,19 @@ class CPT_Item extends CPT_Object{
 			
 			// if all items are considered --> consider all type starting with "item"
 			if ($this->type == "item") {
-				$where = str_replace( "wp_posts.post_type = 'item'", "wp_posts.post_type LIKE 'item%'", $where); 
+				$where = str_replace( "{$wpdb->posts}.post_type = 'item'", "{$wpdb->posts}.post_type LIKE 'item%'", $where); 
 			}
 			
+			if (isset ($_REQUEST['item_author'])) 	$where .= " AND {$wpdb->posts}.post_author 			= " . $_REQUEST['item_author'];
+			if (isset ($_REQUEST['points'])) 		$where .= " AND {$wpdb->prefix}eal_item.points    	= " . $_REQUEST['points'];
+			if (isset ($_REQUEST['level_FW'])) 		$where .= " AND {$wpdb->prefix}eal_item.level_FW 	= " . $_REQUEST['level_FW'];
+			if (isset ($_REQUEST['level_PW'])) 		$where .= " AND {$wpdb->prefix}eal_item.level_PW 	= " . $_REQUEST['level_PW'];
+			if (isset ($_REQUEST['level_KW'])) 		$where .= " AND {$wpdb->prefix}eal_item.level_KW	= " . $_REQUEST['level_KW'];
+			if (isset ($_REQUEST['learnout_id']))	$where .= " AND {$wpdb->prefix}eal_item.learnout_id = " . $_REQUEST['learnout_id'];
+				
+			
+			
+				
 			if (isset ($_REQUEST['LO'])) {
 				$where .= " AND {$wpdb->prefix}eal_item.learnout_id = " . $_REQUEST['LO'];
 			}

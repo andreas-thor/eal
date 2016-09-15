@@ -6,7 +6,14 @@ Allgemeine ToDO
   * Klick auf Author
   * Klick auf Level
   -- generell: Vereinheitlichung
-
+  -- eigene fields im SELECT explizit angeben
+  -- Frage: Welche Infos in der Tabelle?
+  
+  
+ - Actions
+   * View for Items, Review und Learning Outcome --> all users (status 
+   * Edit for Items, Revuew und Learning Outcome --> for item author + editor
+     - nur editor 
 
 - Import von Testergebnissen
   - Item-Attribut: Schwierigkeit
