@@ -31,6 +31,10 @@ class PAG_Basket {
 	
 	public static function createPageTable () {
 	
+		wp_redirect( 'http://www.google.de' );
+		exit();
+		
+		
 		$myListTable = new CPT_Item_Table();
 		$action = $myListTable->process_bulk_action();
 		

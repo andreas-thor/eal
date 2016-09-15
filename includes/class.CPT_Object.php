@@ -79,9 +79,36 @@ abstract class CPT_Object {
 		add_filter('posts_orderby', array ($this, 'WPCB_posts_orderby'), 10, 1 );
 		add_filter('posts_where', array ($this, 'WPCB_posts_where'), 10, 1 );
 		
+		add_filter('post_row_actions', array ($this , 'WPCB_post_row_actions'), 10, 2);
+		
 		add_action( 'restrict_manage_posts', array ($this, 'WPCB_restrict_manage_posts') );
 		
+		add_action('admin_footer-edit.php', array ($this, 'add_bulk_actions'));
+		
+		
+		
 	}		
+	
+	
+	function add_bulk_actions() {
+	
+		global $post_type;
+		if ($post_type != $this->type) return;
+	
+		?>
+				    <script type="text/javascript">
+				      jQuery(document).ready(function() {
+	
+						jQuery("select[name='action'] > option[value='edit']").remove();
+						jQuery("select[name='action2'] > option[value='edit']").remove();
+					      
+				        jQuery('<option>').val('add_to_basket').text('<?php _e('Add To Basket')?>').appendTo("select[name='action']");
+				        jQuery('<option>').val('add_to_basket').text('<?php _e('Add To Basket')?>').appendTo("select[name='action2']");
+				      });
+				    </script>
+			    <?php
+		}
+		
 	
 	
 	public function WPCB_mb_editor ($post, $vars) {

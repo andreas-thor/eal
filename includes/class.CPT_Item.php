@@ -55,7 +55,6 @@ class CPT_Item extends CPT_Object{
 		add_action ("save_post_revision", array ("eal_{$this->type}", 'save'), 10, 2);
 		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
 		
-		add_filter('post_row_actions', array ($this ,'WPCB_post_row_actions'), 10, 2);
 		
 		add_filter('posts_search', array ($this ,'WPCB_post_search'), 10, 2);
 		
@@ -67,10 +66,17 @@ class CPT_Item extends CPT_Object{
 		
 		add_filter( 'views_edit-' . $this->type, array ($this, 'wpse14230_views_edit_post'));
 		add_filter( 'wp_count_posts', array ($this, 'wpse149143_wp_count_posts'), 10, 3);
+
 		
+		
+			
 		
 	}
 
+
+	
+	
+	
 	public function wpse14230_views_edit_post( $views )
 	{
 // 		unset ($views["all"]);
@@ -108,7 +114,21 @@ class CPT_Item extends CPT_Object{
 			ON (P.ID = E.ID)
 			WHERE E.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "' 
 			AND P.post_type ";
-		$query .= ($type == "item") ? "LIKE 'item%'" : ("= '" . $type . "'");
+		$query .= ($type == "item") || ($type == "itembasket") ? "LIKE 'item%'" : ("= '" . $type . "'");
+		
+		
+		if ($type == "itembasket") {
+				
+			$basket = get_user_meta(get_current_user_id(), 'itembasket', true);
+			if (is_array($basket) && (count($basket)>0)) {
+				$query .= " AND E.ID IN (" . implode(",", $basket) . ") ";
+			} else {
+				$query .= " AND (1=2) ";
+			}
+		
+		}		
+		
+		
 		$query .= " GROUP BY P.post_status";
 		$results = (array) $wpdb->get_results( $query, ARRAY_A );
 		$counts = array_fill_keys( get_post_stati(), 0 );
@@ -227,18 +247,16 @@ class CPT_Item extends CPT_Object{
 	
 	
 	public function WPCB_manage_posts_columns($columns) {
-		return array('cb' => '<input type="checkbox" />', 'post_title' => 'Title', 'date' => 'Date', 'type' => 'Type', 'item_author' => 'Author', 'points' => 'Points', 'FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Reviews' => 'Reviews', 'LO' => 'LO', 'difficulty' => 'Difficulty');
+		return array('cb' => '<input type="checkbox" />', 'post_title' => 'Title', 'date' => 'Date', 'type' => 'Type', 'item_author' => 'Author', 'points' => 'Points', 'FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'reviews' => 'Reviews', 'lo' => 'Learn. Out.', 'difficulty' => 'Difficulty');
 	}
 	
 	public function WPCB_manage_edit_sortable_columns ($columns) {
-		return array('a' => 'b', 'post_status' => 'Status', 'date' => 'date', 'type' => 'Type', 'item_author' => 'Author', 'Punkte' => 'Punkte', 'FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'Reviews' => 'Reviews', 'LO' => 'LO', 'difficulty' => 'Difficulty');
+		return array('post_title' => 'Title', 'date' => 'Date', 'type' => 'Type', 'item_author' => 'Author', 'points' => 'Points', 'FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'reviews' => 'Reviews', 'lo' => 'Learn. Out.', 'difficulty' => 'Difficulty');
 	}
 	
 	
 	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
 	
-// 		parent::WPCB_manage_posts_custom_column($column, $post_id);
-		
 		global $post;
 	
  		$basic_url = remove_query_arg (array ("item_author", "points", "level_FW", "level_KW", "level_PW"));
@@ -279,16 +297,14 @@ class CPT_Item extends CPT_Object{
 				if ($post->level_KW > 0) printf ('<a href="%1$s">%2$s</a>', add_query_arg ('level_KW', $post->level_KW, $basic_url), EAL_Item::$level_label[$post->level_KW-1]);
 				break;				
 				
-				
-				
-			case 'LO': 
+			case 'lo': 
 				printf ('<a href="%1$s">%2$s</a>', add_query_arg ("learnout_id", $post->learnout_id, $basic_url), $post->LOTitle); 
 				printf ('<div class="row-actions">');
 				printf ('<span class="edit"><a href="post.php?post_type=learnout&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->learnout_id);
 				printf ('<span class="inline hide-if-no-js"></span></div>');
 				break;
 				
-			case 'Reviews':
+			case 'reviews':
 	
 				global $wpdb;
 				$sqlres = $wpdb->get_results( "
@@ -364,18 +380,20 @@ class CPT_Item extends CPT_Object{
 	
 		global $wp_query, $wpdb;
 	
-		$orderby_statement = parent::WPCB_posts_orderby($orderby_statement);
+// 		$orderby_statement = parent::WPCB_posts_orderby($orderby_statement);
 	
 		if ($wp_query->query["post_type"] == $this->type) {
-			if ($wp_query->get( 'orderby' ) == "item_author") $orderby_statement = "user_login " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "LO") $orderby_statement = "LOTitle " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "Difficulty") $orderby_statement = "{$wpdb->prefix}eal_item.difficulty " . $wp_query->get( 'order' );
-				
-			if ($wp_query->get( 'orderby' ) == "Typ") {
-				$orderby_statement = "{$wpdb->prefix}eal_item.type " . $wp_query->get( 'order' );
-			}
-				
-			
+			if ($wp_query->get( 'orderby' ) == "Title")		 	$orderby_statement = "{$wpdb->posts}.post_title " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Date")		 	$orderby_statement = "{$wpdb->posts}.post_date " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Type") 			$orderby_statement = "{$wpdb->prefix}eal_item.type " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Author")	 	$orderby_statement = "{$wpdb->users}.user_login " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Points") 		$orderby_statement = "{$wpdb->prefix}eal_item.points " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "FW") 			$orderby_statement = "{$wpdb->prefix}eal_item.level_FW " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "PW") 			$orderby_statement = "{$wpdb->prefix}eal_item.level_PW " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "KW") 			$orderby_statement = "{$wpdb->prefix}eal_item.level_KW " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Reviews")		$orderby_statement = "reviews " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Learn. Out.")	$orderby_statement = "{$wpdb->prefix}eal_learnout.title " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Difficulty") 	$orderby_statement = "{$wpdb->prefix}eal_item.difficulty " . $wp_query->get( 'order' );
 		}
 	
 		return $orderby_statement;
@@ -403,14 +421,19 @@ class CPT_Item extends CPT_Object{
 			if (isset ($_REQUEST['level_PW'])) 		$where .= " AND {$wpdb->prefix}eal_item.level_PW 	= " . $_REQUEST['level_PW'];
 			if (isset ($_REQUEST['level_KW'])) 		$where .= " AND {$wpdb->prefix}eal_item.level_KW	= " . $_REQUEST['level_KW'];
 			if (isset ($_REQUEST['learnout_id']))	$where .= " AND {$wpdb->prefix}eal_item.learnout_id = " . $_REQUEST['learnout_id'];
-				
+
+			if ($this->type == "itembasket") {
 			
-			
+				$where = str_replace( "{$wpdb->posts}.post_type = 'itembasket'", "{$wpdb->posts}.post_type LIKE 'item%'", $where);
 				
-			if (isset ($_REQUEST['LO'])) {
-				$where .= " AND {$wpdb->prefix}eal_item.learnout_id = " . $_REQUEST['LO'];
+				$basket = get_user_meta(get_current_user_id(), 'itembasket', true);
+				if (is_array($basket) && (count($basket)>0)) {
+					$where .= " AND {$wpdb->prefix}eal_item.ID IN (" . implode(",", $basket) . ") ";
+				} else {
+					$where .= " AND (1=2) ";
+				}
+				
 			}
-			
 		}
 	
 		

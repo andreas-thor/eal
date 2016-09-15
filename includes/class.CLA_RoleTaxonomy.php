@@ -159,6 +159,13 @@ class RoleTaxonomy {
 		update_user_meta ($user_id, 'current_role', $_REQUEST["userroles"]);
 	}
 	
+	public static function getCurrentRole () {
+
+		$current_role = get_user_meta (get_current_user_id(), 'current_role', true);
+		if ($current_role == "administrator") return $result;
+		if (substr($current_role, 0, 7) == "editor_") return "editor";
+		return "author";
+	}
 	
 	
 	public static function getCurrentDomain () {
@@ -189,6 +196,19 @@ class RoleTaxonomy {
 		if ($post->post_author == get_current_user_id()) return TRUE;	// current user
 		if ($post->post_status == "draft") return FALSE;
 
+		$current_role = get_user_meta (get_current_user_id(), 'current_role', true);
+		if (substr($current_role, 0, 7) == "editor_") return TRUE;	// editor
+		return FALSE;
+	}
+	
+	
+	/**
+	 * Specifies if current user can edit itemm
+	 * @param unknown $post
+	 */
+	public static function canEditReviewPost ($post) {
+	
+		if ($post->post_author == get_current_user_id()) return TRUE;	// current user
 		$current_role = get_user_meta (get_current_user_id(), 'current_role', true);
 		if (substr($current_role, 0, 7) == "editor_") return TRUE;	// editor
 		return FALSE;

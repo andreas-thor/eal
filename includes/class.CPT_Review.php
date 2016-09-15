@@ -31,6 +31,26 @@ class CPT_Review extends CPT_Object {
 	
 	
 	
+	function add_bulk_actions() {
+	
+		global $post_type;
+		if ($post_type != $this->type) return;
+	
+		parent::add_bulk_actions();
+	
+?>
+			<script type="text/javascript">
+				jQuery(document).ready(function() {
+					jQuery("select[name='action'] > option[value='add_to_basket']").remove();
+					jQuery("select[name='action2'] > option[value='add_to_basket']").remove();
+	      });
+			</script>
+			
+<?php
+	}
+		
+	
+	
 	public function WPCB_register_meta_box_cb () {
 	
 		global $review;
@@ -209,6 +229,27 @@ class CPT_Review extends CPT_Object {
 	}
 	
 	
+	public function WPCB_posts_orderby($orderby_statement) {
+	
+		global $wp_query, $wpdb;
+	
+		// 		$orderby_statement = parent::WPCB_posts_orderby($orderby_statement);
+	
+		if ($wp_query->query["post_type"] == $this->type) {
+			if ($wp_query->get( 'orderby' ) == "Title")		 	$orderby_statement = "{$wpdb->prefix}eal_item.title " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Date")		 	$orderby_statement = "{$wpdb->posts}.post_date " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Type") 			$orderby_statement = "{$wpdb->prefix}eal_item.type " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Author Review")	$orderby_statement = "UR.user_login " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Author Item") 	$orderby_statement = "UI.user_login " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Level") 		$orderby_statement = "change_level " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Overall") 		$orderby_statement = "{$wpdb->prefix}eal_{$this->type}.overall " . $wp_query->get( 'order' );
+		}
+	
+		return $orderby_statement;
+	}
+	
+	
+	
 	public function WPCB_posts_where($where) {
 	
 		global $wp_query, $wpdb;
@@ -225,10 +266,36 @@ class CPT_Review extends CPT_Object {
 	}
 	
 	
-	public function WPCB_manage_posts_columns($columns) {
-		return array_merge($columns, array('type' => 'Typ', 'review_author' => 'Author Review', 'item_author' => 'Author Item', 'score' => 'Score', 'level' => 'Level', 'overall' => 'Overall'));
-// 		return array_merge(parent::WPCB_manage_posts_columns($columns), array('item_author' => 'Author Item', 'item_title' => 'item_title', 'type' => 'Typ', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
+// 	public function WPCB_manage_posts_columns($columns) {
+// 		return array_merge($columns, array('type' => 'Typ', 'review_author' => 'Author Review', 'item_author' => 'Author Item', 'score' => 'Score', 'level' => 'Level', 'overall' => 'Overall'));
+// // 		return array_merge(parent::WPCB_manage_posts_columns($columns), array('item_author' => 'Author Item', 'item_title' => 'item_title', 'type' => 'Typ', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
+// 	}
+	
+	
+	public function WPCB_post_row_actions($actions, $post){
+	
+		if ($post->post_type != $this->type) return $actions;
+	
+		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
+		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
+	
+		if (!RoleTaxonomy::canEditReviewPost($post)) {		// "Edit" & "Trash" only if editable by user
+			unset ($actions['edit']);
+			unset ($actions['trash']);
+		}
+	
+		return $actions;
 	}
+	
+	
+	public function WPCB_manage_posts_columns($columns) {
+		return array('cb' => '<input type="checkbox" />', 'item_title' => 'Title', 'date' => 'Date', 'type' => 'Type', 'review_author' => 'Author Review', 'item_author' => 'Author Item', 'score' => 'Score', 'level' => 'Level', 'overall' => 'Overall');
+	}
+	
+	public function WPCB_manage_edit_sortable_columns ($columns) {
+		return array('item_title' => 'Title', 'date' => 'Date', 'type' => 'Type', 'review_author' => 'Author Review', 'item_author' => 'Author Item', 'level' => 'Level', 'overall' => 'Overall');
+	}
+	
 	
 	
 	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
@@ -236,6 +303,11 @@ class CPT_Review extends CPT_Object {
 		global $post;
 	
 		switch ( $column ) {
+			
+			case 'item_title':
+				printf ($post->title);
+				break;
+			
 			case 'type':
 				if ($post->type == "itemsc") echo ('<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div>');
 				if ($post->type == "itemmc") echo ('<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div>');
