@@ -6,6 +6,18 @@ require_once ("class.CPT_Object.php");
 require_once ("class.EAL_Review.php");
 
 class CPT_Review extends CPT_Object {
+
+	public $table_columns = array (
+		'cb' => '<input type="checkbox" />', 
+		'item_title' => 'Title', 
+		'date' => 'Date', 
+		'item_type' => 'Type', 
+		'review_author' => 'Author Review', 
+		'item_author' => 'Author Item', 
+		'score' => 'Score', 
+		'change_level' => 'Level', 
+		'overall' => 'Overall'
+	);
 	
 
 	/*
@@ -203,27 +215,29 @@ class CPT_Review extends CPT_Object {
 	public function WPCB_posts_fields ( $array ) {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
-			$array .= ", {$wpdb->prefix}eal_{$this->type}.*, {$wpdb->prefix}eal_item.* ";
-			$array .= ", concat('Rev: ',{$wpdb->prefix}eal_item.title) as post_title, UI.user_login as item_author, UR.user_login as review_author ";
-			$array .= ", ABS (COALESCE ({$wpdb->prefix}eal_item.level_FW,0) - COALESCE ({$wpdb->prefix}eal_{$this->type}.level_FW,0)) ";
-			$array .= "+ ABS (COALESCE ({$wpdb->prefix}eal_item.level_KW,0) - COALESCE ({$wpdb->prefix}eal_{$this->type}.level_KW,0)) ";
-			$array .= "+ ABS (COALESCE ({$wpdb->prefix}eal_item.level_PW,0) - COALESCE ({$wpdb->prefix}eal_{$this->type}.level_PW,0)) AS change_level";
+			$array .= ", I.title as item_title";
+			$array .= ", I.type as item_type";
+			$array .= ", UI.user_login as item_author";
+			$array .= ", UI.id as item_author_id";
+			$array .= ", UR.user_login as review_author";				
+			$array .= ", UR.id as review_author_id";
+			$array .= ", ABS(COALESCE(I.level_FW,0)-COALESCE(R.level_FW,0))+ABS(COALESCE(I.level_KW,0)-COALESCE(R.level_KW,0))+ABS(COALESCE(I.level_PW,0)-COALESCE(R.level_PW,0)) AS change_level";
+			$array .= ", R.overall";
+				
 		}
 		return $array;
 	}
 	
 	
 	
-	
 	public function WPCB_posts_join ($join) {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
-			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} ON ({$wpdb->prefix}eal_{$this->type}.id = {$wpdb->posts}.ID) ";
-			$join .= " JOIN {$wpdb->prefix}eal_item ON ({$wpdb->prefix}eal_item.id = {$wpdb->prefix}eal_{$this->type}.item_id AND {$wpdb->prefix}eal_item.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
-			$join .= " JOIN {$wpdb->posts} AS postitem ON ({$wpdb->prefix}eal_item.id = postitem.id) ";
+			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} AS R ON (R.id = {$wpdb->posts}.ID) ";
+			$join .= " JOIN {$wpdb->prefix}eal_item AS I ON (I.id = R.item_id AND I.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
+			$join .= " JOIN {$wpdb->posts} AS postitem ON (I.id = postitem.id) ";
 			$join .= " JOIN {$wpdb->users} UI ON (UI.id = postitem.post_author) ";
-			$join .= " JOIN {$wpdb->posts} AS postreview ON ({$wpdb->prefix}eal_item.id = postreview.id) ";
-			$join .= " JOIN {$wpdb->users} UR ON (UR.id = postreview.post_author) ";
+			$join .= " JOIN {$wpdb->users} UR ON (UR.id = {$wpdb->posts}.post_author) ";
 		}
 		return $join;
 	}
@@ -236,13 +250,13 @@ class CPT_Review extends CPT_Object {
 		// 		$orderby_statement = parent::WPCB_posts_orderby($orderby_statement);
 	
 		if ($wp_query->query["post_type"] == $this->type) {
-			if ($wp_query->get( 'orderby' ) == "Title")		 	$orderby_statement = "{$wpdb->prefix}eal_item.title " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Title")		 	$orderby_statement = "I.title " . $wp_query->get( 'order' );
 			if ($wp_query->get( 'orderby' ) == "Date")		 	$orderby_statement = "{$wpdb->posts}.post_date " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "Type") 			$orderby_statement = "{$wpdb->prefix}eal_item.type " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Type") 			$orderby_statement = "I.type " . $wp_query->get( 'order' );
 			if ($wp_query->get( 'orderby' ) == "Author Review")	$orderby_statement = "UR.user_login " . $wp_query->get( 'order' );
 			if ($wp_query->get( 'orderby' ) == "Author Item") 	$orderby_statement = "UI.user_login " . $wp_query->get( 'order' );
 			if ($wp_query->get( 'orderby' ) == "Level") 		$orderby_statement = "change_level " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "Overall") 		$orderby_statement = "{$wpdb->prefix}eal_{$this->type}.overall " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == "Overall") 		$orderby_statement = "R.overall " . $wp_query->get( 'order' );
 		}
 	
 		return $orderby_statement;
@@ -258,7 +272,7 @@ class CPT_Review extends CPT_Object {
 	
 		if ($wp_query->query["post_type"] == $this->type) {
 			if (isset($_REQUEST["item_id"])) {
-				$where .= " AND {$wpdb->prefix}eal_{$this->type}.item_id = {$_REQUEST['item_id']}";
+				$where .= " AND R.item_id = {$_REQUEST['item_id']}";
 			}
 		}
 
@@ -288,78 +302,8 @@ class CPT_Review extends CPT_Object {
 	}
 	
 	
-	public function WPCB_manage_posts_columns($columns) {
-		return array('cb' => '<input type="checkbox" />', 'item_title' => 'Title', 'date' => 'Date', 'type' => 'Type', 'review_author' => 'Author Review', 'item_author' => 'Author Item', 'score' => 'Score', 'level' => 'Level', 'overall' => 'Overall');
-	}
+
 	
-	public function WPCB_manage_edit_sortable_columns ($columns) {
-		return array('item_title' => 'Title', 'date' => 'Date', 'type' => 'Type', 'review_author' => 'Author Review', 'item_author' => 'Author Item', 'level' => 'Level', 'overall' => 'Overall');
-	}
-	
-	
-	
-	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
-	
-		global $post;
-	
-		switch ( $column ) {
-			
-			case 'item_title':
-				printf ($post->title);
-				break;
-			
-			case 'type':
-				if ($post->type == "itemsc") echo ('<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div>');
-				if ($post->type == "itemmc") echo ('<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div>');
-				break;
-					
-			case 'review_author': echo ($post->review_author); break;
-			case 'item_author': echo ($post->item_author); break;
-			
-			case 'overall': switch ($post->overall) {
-				case 1: echo ('<div class="dashicons-before dashicons-yes" style="display:inline">&nbsp;</div>'); break;				
-				case 2: echo ('<div class="dashicons-before dashicons-flag" style="display:inline">&nbsp;</div>'); break;				
-				case 3: echo ('<div class="dashicons-before dashicons-no-alt" style="display:inline">&nbsp;</div>'); break;				
-			} break;
-			
-			case 'score': 
-				if (($post->description_correctness == 1) && ($post->description_relevance == 1) && ($post->description_wording == 1)) {
-					echo ('<div class="dashicons-before dashicons-star-filled" style="display:inline">&nbsp;</div>'); 
-				} else {
-					if (($post->description_correctness < 3) && ($post->description_relevance < 3) && ($post->description_wording < 3)) {
-						echo ('<div class="dashicons-before dashicons-star-half" style="display:inline">&nbsp;</div>'); 
-					} else {
-						echo ('<div class="dashicons-before dashicons-star-empty" style="display:inline">&nbsp;</div>');
-					}
-				}
-				
-				if (($post->question_correctness == 1) && ($post->question_relevance == 1) && ($post->question_wording == 1)) {
-					echo ('<div class="dashicons-before dashicons-star-filled" style="display:inline">&nbsp;</div>');
-				} else {
-					if (($post->question_correctness < 3) && ($post->question_relevance < 3) && ($post->question_wording < 3)) {
-						echo ('<div class="dashicons-before dashicons-star-half" style="display:inline">&nbsp;</div>');
-					} else {
-						echo ('<div class="dashicons-before dashicons-star-empty" style="display:inline">&nbsp;</div>');
-					}
-				}
-				
-				if (($post->answers_correctness == 1) && ($post->answers_relevance == 1) && ($post->answers_wording == 1)) {
-					echo ('<div class="dashicons-before dashicons-star-filled" style="display:inline">&nbsp;</div>');
-				} else {
-					if (($post->answers_correctness < 3) && ($post->answers_relevance < 3) && ($post->answers_wording < 3)) {
-						echo ('<div class="dashicons-before dashicons-star-half" style="display:inline">&nbsp;</div>');
-					} else {
-						echo ('<div class="dashicons-before dashicons-star-empty" style="display:inline">&nbsp;</div>');
-					}
-				}
-				break;
-				
-			case 'level': 
-				if ($post->change_level > 0) echo ('<div class="dashicons-before dashicons-warning" style="display:inline">&nbsp;</div>');
-				break;
-				
-		}
-	}
 	
 	
 	

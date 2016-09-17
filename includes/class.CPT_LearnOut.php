@@ -5,6 +5,15 @@ require_once("class.EAL_LearnOut.php");
 
 class CPT_LearnOut extends CPT_Object {
 	
+	public $table_columns = array (
+		'cb' => '<input type="checkbox" />',
+		'learnout_title' => 'Title',
+		'date' => 'Date',
+		'level_FW' => 'FW',
+		'level_KW' => 'KW',
+		'level_PW' => 'PW',
+		'no_of_items' => 'Items'
+	);
 	
 	
 	/*
@@ -146,47 +155,7 @@ class CPT_LearnOut extends CPT_Object {
 			
 	}
 		
-	
-	public function WPCB_manage_posts_columns($columns) {
-		return array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'SC' => 'Single Choice', 'MC' => 'Multiple Choice');
-	}
-	
-	public function WPCB_manage_edit_sortable_columns ($columns) {
-		return array('FW' => 'FW', 'KW' => 'KW', 'PW' => 'PW', 'SC' => 'SC', 'MC' => 'MC');
-	}
-	
-	
-	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
-	
-		parent::WPCB_manage_posts_custom_column($column, $post_id);
-	
-		global $post;
-	
-		switch ( $column ) {
-			case 'SC': 
-// 				echo ("{$post->SC} SC Items");
-// 				echo ("<h1><a class='page-title-action' href='post-new.php?post_type=itemsc&learnout_id={$post->ID}'>Show All {$post->SC} SC Items</a></h1>");
-// 				echo ("<a class='page-title-action' href='post-new.php?post_type=itemsc&learnout_id={$post->ID}'>Add&nbsp;New&nbsp;SC</a>");
-				
-				echo ("{$post->SC} SC Items");
-				echo ("<div class='row-actions'>");
-				if ($post->SC > 0) {
-					echo ("<span class='view'><a href='edit.php?post_type=itemsc&learnout_id={$post->ID}' title='Show All'>Show All</a> |</span>");
-				}
-				echo ("<span class='edit'><a href='post-new.php?post_type=itemsc&learnout_id={$post->ID}' title='Add New SC'>Add New SC</a></span>");
-				echo ("<span class='inline hide-if-no-js'></span></div>");
-				break;
-			case 'MC':
-				echo ("{$post->MC} MC Items");
-				echo ("<div class='row-actions'>");
-				if ($post->MC > 0) {
-					echo ("<span class='view'><a href='edit.php?post_type=itemmc&learnout_id={$post->ID}' title='Show All'>Show All</a> |</span>");
-				}
-				echo ("<span class='edit'><a href='post-new.php?post_type=itemmc&learnout_id={$post->ID}' title='Add New MC'>Add New MC</a></span>");
-				echo ("<span class='inline hide-if-no-js'></span></div>");
-				break;
-		}
-	}
+
 	
 	
 	
@@ -194,10 +163,13 @@ class CPT_LearnOut extends CPT_Object {
 	public function WPCB_posts_fields ( $array ) {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
-			$array .= ", {$wpdb->prefix}eal_{$this->type}.* " 
-			. ", (SELECT COUNT(*) FROM {$wpdb->prefix}eal_item X JOIN {$wpdb->prefix}posts Y ON (X.type = 'itemsc' AND X.id= Y.ID) WHERE Y.post_parent = 0 AND X.learnout_id = {$wpdb->posts}.ID) AS SC" 
-			. ", (SELECT COUNT(*) FROM {$wpdb->prefix}eal_item X JOIN {$wpdb->prefix}posts Y ON (X.type = 'itemmc' AND X.id= Y.ID) WHERE Y.post_parent = 0 AND X.learnout_id = {$wpdb->posts}.ID) AS MC" 
-			. ", (-9) as reviews ";
+			$array .= "
+				, {$wpdb->prefix}eal_{$this->type}.title AS learnout_title
+				, {$wpdb->prefix}eal_{$this->type}.level_FW AS level_FW
+				, {$wpdb->prefix}eal_{$this->type}.level_PW AS level_PW
+				, {$wpdb->prefix}eal_{$this->type}.level_KW AS level_KW				
+			    , (SELECT COUNT(*) FROM {$wpdb->prefix}eal_item AS X JOIN {$wpdb->posts} AS Y ON (X.id = Y.ID) WHERE Y.post_parent=0 AND X.learnout_id = {$wpdb->prefix}eal_{$this->type}.id) AS no_of_items
+			";
 		}
 		return $array;
 	}
@@ -215,14 +187,15 @@ class CPT_LearnOut extends CPT_Object {
 	
 		global $wp_query;
 		
-		$orderby_statement = parent::WPCB_posts_orderby($orderby_statement);
-		
 		if ($wp_query->query["post_type"] == $this->type) {
-			if ($wp_query->get( 'orderby' ) == "SC") $orderby_statement = "SC " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "MC") $orderby_statement = "MC " . $wp_query->get( 'order' );
+			if ($wp_query->get('orderby') == $this->table_columns['learnout_title'])	$orderby_statement = "learnout_title {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['date'])		 		$orderby_statement = "{$wpdb->posts}.post_date {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['level_FW']) 			$orderby_statement = "{$wpdb->prefix}eal_{$this->type}.level_FW {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['level_PW']) 			$orderby_statement = "{$wpdb->prefix}eal_{$this->type}.level_PW {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['level_KW']) 			$orderby_statement = "{$wpdb->prefix}eal_{$this->type}.level_KW {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['no_of_items'])		$orderby_statement = "no_of_items {$wp_query->get('order')}";
 		}
 	
-		// 		$orderby_statement = "level_KW DESC";
 		return $orderby_statement;
 	}
 	

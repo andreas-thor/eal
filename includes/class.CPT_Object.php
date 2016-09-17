@@ -7,6 +7,8 @@ abstract class CPT_Object {
 	public $label;
 	public $menu_pos;
 	
+	public $table_columns;	// to be set by sub-classes
+	
 	/*
 	 * #######################################################################
 	 * post type registration; specification of page layout
@@ -191,18 +193,174 @@ abstract class CPT_Object {
 	
 
 
-	
-	
 	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
 	
 		global $post;
 	
+		$basic_url = remove_query_arg (array ("item_author", "review_author", "points", "level_FW", "level_KW", "level_PW", "learnout_id"));
+	
 		switch ( $column ) {
-			case 'FW': echo (($post->level_FW > 0) ? EAL_Item::$level_label[$post->level_FW-1] : ''); break;
-			case 'PW': echo (($post->level_PW > 0) ? EAL_Item::$level_label[$post->level_PW-1] : ''); break;
-			case 'KW': echo (($post->level_KW > 0) ? EAL_Item::$level_label[$post->level_KW-1] : ''); break;
+				
+			case 'item_title':
+				printf ($post->item_title);
+				if ($post->post_status == "draft") echo (' &mdash; <span class="post-state"><i>Draft</i></span>');
+				if ($post->post_status == "pending") echo (' &mdash; <span class="post-state"><b>Pending</b></span>');
+				break;
+				
+			case 'review_title':
+				printf ($post->review_title);
+				if ($post->post_status == "draft") echo (' &mdash; <span class="post-state"><i>Draft</i></span>');
+				break;
+				
+			case 'learnout_title':
+				printf ($post->learnout_title);
+				if ($post->post_status == "draft") echo (' &mdash; <span class="post-state"><i>Draft</i></span>');
+				break;
+			
+			case 'item_type':
+				if ($post->item_type == "itemsc") echo ('<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div>');
+				if ($post->item_type == "itemmc") echo ('<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div>');
+				break;
+	
+			case 'item_author':
+				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('item_author', $post->item_author_id, $basic_url), $post->item_author);
+				break;
+	
+			case 'review_author':
+				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('review_author', $post->review_author_id, $basic_url), $post->review_author);
+				break;
+				
+			case 'difficulty': echo ($post->difficulty); break;
+				
+			case 'points':
+				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('points', $post->points, $basic_url), $post->points);
+				break;
+	
+			case 'level_FW':
+				if ($post->level_FW > 0) printf ('<a href="%1$s">%2$s</a>', add_query_arg ('level_FW', $post->level_FW, $basic_url), EAL_Item::$level_label[$post->level_FW-1]);
+				break;
+	
+			case 'level_PW':
+				if ($post->level_PW > 0) printf ('<a href="%1$s">%2$s</a>', add_query_arg ('level_PW', $post->level_PW, $basic_url), EAL_Item::$level_label[$post->level_PW-1]);
+				break;
+	
+			case 'level_KW':
+				if ($post->level_KW > 0) printf ('<a href="%1$s">%2$s</a>', add_query_arg ('level_KW', $post->level_KW, $basic_url), EAL_Item::$level_label[$post->level_KW-1]);
+				break;
+	
+			case 'item_learnout':
+				printf ('<a href="%1$s">%2$s</a>', add_query_arg ("learnout_id", $post->learnout_id, $basic_url), $post->learnout_title);
+				printf ('<div class="row-actions">');
+				printf ('<span class="edit"><a href="post.php?post_type=learnout&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->learnout_id);
+				printf ('<span class="inline hide-if-no-js"></span></div>');
+				break;
+	
+			case 'no_of_reviews':
+				echo ("{$post->no_of_reviews}<div class='row-actions'>");
+				if ($post->no_of_reviews>0) echo ("<span class='view'><a href='edit.php?post_type=review&item_id={$post->ID}' title='Show All Review'>Show&nbsp;All&nbsp;Reviews</a> | </span>");
+				echo ("<span class='edit'><a href='post-new.php?post_type=review&item_id={$post->ID}' title='Add New Review'>Add&nbsp;New&nbsp;Review</a></span>");
+				echo ("<span class='inline hide-if-no-js'></span></div>");
+				break;
+				
+			case 'no_of_items':
+				echo ("{$post->no_of_items}<div class='row-actions'>");
+				if ($post->no_of_items>0) echo ("<span class='view'><a href='edit.php?post_type=item&learnout_id={$post->ID}' title='Show All Items'>Show&nbsp;All&nbsp;Itemss</a> | </span>");
+				echo ("<span class='edit'><a href='post-new.php?post_type=itemmc&learnout_id={$post->ID}' title='Add New MC'>Add New MC</a> | </span>");
+				echo ("<span class='edit'><a href='post-new.php?post_type=itemmc&learnout_id={$post->ID}' title='Add New MC'>Add New MC</a></span>");
+				echo ("<span class='inline hide-if-no-js'></span></div>");
+				break;
+				
+			case 'overall': switch ($post->overall) {
+				case 1: echo ('<div class="dashicons-before dashicons-yes" style="display:inline">&nbsp;</div>'); break;
+				case 2: echo ('<div class="dashicons-before dashicons-flag" style="display:inline">&nbsp;</div>'); break;
+				case 3: echo ('<div class="dashicons-before dashicons-no-alt" style="display:inline">&nbsp;</div>'); break;
+			} break;
+				
+			case 'score':
+				if (($post->description_correctness == 1) && ($post->description_relevance == 1) && ($post->description_wording == 1)) {
+					echo ('<div class="dashicons-before dashicons-star-filled" style="display:inline">&nbsp;</div>');
+				} else {
+					if (($post->description_correctness < 3) && ($post->description_relevance < 3) && ($post->description_wording < 3)) {
+						echo ('<div class="dashicons-before dashicons-star-half" style="display:inline">&nbsp;</div>');
+					} else {
+						echo ('<div class="dashicons-before dashicons-star-empty" style="display:inline">&nbsp;</div>');
+					}
+				}
+			
+				if (($post->question_correctness == 1) && ($post->question_relevance == 1) && ($post->question_wording == 1)) {
+					echo ('<div class="dashicons-before dashicons-star-filled" style="display:inline">&nbsp;</div>');
+				} else {
+					if (($post->question_correctness < 3) && ($post->question_relevance < 3) && ($post->question_wording < 3)) {
+						echo ('<div class="dashicons-before dashicons-star-half" style="display:inline">&nbsp;</div>');
+					} else {
+						echo ('<div class="dashicons-before dashicons-star-empty" style="display:inline">&nbsp;</div>');
+					}
+				}
+			
+				if (($post->answers_correctness == 1) && ($post->answers_relevance == 1) && ($post->answers_wording == 1)) {
+					echo ('<div class="dashicons-before dashicons-star-filled" style="display:inline">&nbsp;</div>');
+				} else {
+					if (($post->answers_correctness < 3) && ($post->answers_relevance < 3) && ($post->answers_wording < 3)) {
+						echo ('<div class="dashicons-before dashicons-star-half" style="display:inline">&nbsp;</div>');
+					} else {
+						echo ('<div class="dashicons-before dashicons-star-empty" style="display:inline">&nbsp;</div>');
+					}
+				}
+				break;
+			
+			case 'change_level':
+				if ($post->change_level > 0) echo ('<div class="dashicons-before dashicons-warning" style="display:inline">&nbsp;</div>');
+				break;				
+	
 		}
 	}
+	
+	
+	public function WPCB_manage_posts_columns($columns) {
+		return $this->table_columns;
+// 		return array(
+// 				'cb' => '<input type="checkbox" />',
+// 				'item_title' => 'Title',
+// 				'date' => 'Date',
+// 				'item_type' => 'Type',
+// 				'item_author' => 'Author',
+// 				'points' => 'Points',
+// 				'level_FW' => 'FW',
+// 				'level_KW' => 'KW',
+// 				'level_PW' => 'PW',
+// 				'no_of_reviews' => 'Reviews',
+// 				'item_learnout' => 'Learn. Out.',
+// 				'difficulty' => 'Difficulty');
+	}
+	
+	public function WPCB_manage_edit_sortable_columns ($columns) {
+		$sortable_columns = $this->table_columns;
+		unset ($sortable_columns['cb']);
+		return $sortable_columns;
+// 		return array(
+// 				'item_title' => 'Title',
+// 				'date' => 'Date',
+// 				'item_type' => 'Type',
+// 				'item_author' => 'Author',
+// 				'points' => 'Points',
+// 				'level_FW' => 'FW',
+// 				'level_KW' => 'KW',
+// 				'level_PW' => 'PW',
+// 				'no_of_reviews' => 'Reviews',
+// 				'item_learnout' => 'Learn. Out.',
+// 				'difficulty' => 'Difficulty');
+	}	
+	
+// 	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
+	
+// 		global $post;
+	
+// 		switch ( $column ) {
+// 			case 'FW': echo (($post->level_FW > 0) ? EAL_Item::$level_label[$post->level_FW-1] : ''); break;
+// 			case 'PW': echo (($post->level_PW > 0) ? EAL_Item::$level_label[$post->level_PW-1] : ''); break;
+// 			case 'KW': echo (($post->level_KW > 0) ? EAL_Item::$level_label[$post->level_KW-1] : ''); break;
+// 		}
+// 	}
 
 
 
