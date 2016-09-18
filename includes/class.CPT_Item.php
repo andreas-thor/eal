@@ -12,7 +12,7 @@ class CPT_Item extends CPT_Object{
 		'date' => 'Date',
 		'item_type' => 'Type',
 		'item_author' => 'Author',
-		'points' => 'Points',
+		'item_points' => 'Points',
 		'level_FW' => 'FW',
 		'level_KW' => 'KW',
 		'level_PW' => 'PW',
@@ -182,6 +182,55 @@ class CPT_Item extends CPT_Object{
 	}
 	
 	
+	function custom_bulk_action() {
+	
+		
+		if ($_REQUEST["post_type"] != $this->type) return; 
+		
+		global $wpdb;
+		
+		$wp_list_table = _get_list_table('WP_Posts_List_Table');
+	
+	
+		if ($wp_list_table->current_action() == 'view') {
+			$_REQUEST['page'] = 'view';
+		}
+	
+		if ($wp_list_table->current_action() == 'add_to_basket') {
+	
+			$postids = $_REQUEST['post'];
+	
+			if (($_REQUEST['post_type'] == 'learnout')) {
+	
+				// get all items of the learning outcomes
+				$postids = array ();
+				foreach (array('itemsc', 'itemmc') as $itemtype) {
+					$postids=array_merge ($postids, $wpdb->get_col( "
+							SELECT      P.id
+							FROM        {$wpdb->prefix}eal_{$itemtype} E
+							JOIN		{$wpdb->prefix}posts P
+							ON			(P.ID = E.ID)
+							WHERE		P.post_parent = 0
+							AND			E.learnout_id IN (" . join(", ", $_REQUEST['post']) . ")"
+									));
+				}
+			}
+	
+			$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
+			if ($b_old == null) $b_old = array();
+			$b_new = array_unique (array_merge ($b_old, $postids));
+			$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new);
+	
+	
+		}
+	
+	
+	
+	
+	}
+	
+	
+	
 	public function WPCB_register_meta_box_cb () {
 	
 		global $item, $post;
@@ -314,7 +363,7 @@ class CPT_Item extends CPT_Object{
 			if ($wp_query->get('orderby') == $this->table_columns['date'])		 		$orderby_statement = "{$wpdb->posts}.post_date {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['item_type']) 		$orderby_statement = "item_type {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['item_author'])	 	$orderby_statement = "item_author {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['points']) 			$orderby_statement = "item_points {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['item_points']) 		$orderby_statement = "item_points {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['level_FW']) 			$orderby_statement = "I.level_FW {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['level_PW']) 			$orderby_statement = "I.level_PW {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['level_KW']) 			$orderby_statement = "I.level_KW {$wp_query->get('order')}";
@@ -332,20 +381,16 @@ class CPT_Item extends CPT_Object{
 	
 		global $wp_query, $wpdb;
 		
-// 		$where = parent::WPCB_posts_where($where);
-		
 		if ($wp_query->query["post_type"] == $this->type) {
-			if (isset($_REQUEST["learnout_id"])) {
-					$where .= " AND {$wpdb->prefix}eal_learnout.id = {$_REQUEST['learnout_id']}";
-			}
 			
 			// if all items are considered --> consider all type starting with "item"
 			if ($this->type == "item") {
-				$where = str_replace( "{$wpdb->posts}.post_type = 'item'", "{$wpdb->posts}.post_type LIKE 'item%'", $where); 
+				$where = str_replace( "{$wpdb->posts}.post_type = 'item'", "{$wpdb->posts}.post_type LIKE 'item%'", $where);
 			}
-			
+				
+			if (isset($_REQUEST["learnout_id"])) 		$where .= " AND L.id = {$_REQUEST['learnout_id']}";
 			if (isset ($_REQUEST['item_author'])) 		$where .= " AND {$wpdb->posts}.post_author 			= " . $_REQUEST['item_author'];
-			if (isset ($_REQUEST['points'])) 			$where .= " AND I.points    	= " . $_REQUEST['points'];
+			if (isset ($_REQUEST['item_points'])) 		$where .= " AND I.points  	= " . $_REQUEST['points'];
 			if (isset ($_REQUEST['level_FW'])) 			$where .= " AND I.level_FW 	= " . $_REQUEST['level_FW'];
 			if (isset ($_REQUEST['level_PW'])) 			$where .= " AND I.level_PW 	= " . $_REQUEST['level_PW'];
 			if (isset ($_REQUEST['level_KW'])) 			$where .= " AND I.level_KW	= " . $_REQUEST['level_KW'];

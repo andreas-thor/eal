@@ -25,8 +25,6 @@
 // include_once 'includes/eal_item_sc.php';
 // include_once 'includes/eal_item_mc.php';
 
-require_once 'includes/class.CPT_Item_Table.php';
-
 require_once 'includes/class.CPT_Item.php';
 require_once 'includes/class.CPT_ItemBasket.php';
 require_once 'includes/class.CPT_ItemSC.php';
@@ -194,16 +192,17 @@ function set_eal_admin_menu_entries () {
    	
    	
  	
-    if ($_REQUEST['action'] == 'removefrombasket') {
-    	$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
-        	if ($_REQUEST['itemid']!=null) {
-    		$b_new = array_diff ($b_old, [$_REQUEST['itemid']]);
-    	}
-        if ($_REQUEST['itemids']!=null) {
-    		$b_new = array_diff ($b_old, $_REQUEST['itemids']);
-    	}
-    	$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new, $b_old );
-    }    	
+//  	if ($_REQUEST['action'] == 'removefrombasket') {
+//  		$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
+//  		if ($_REQUEST['itemid']!=null) {
+//  			$b_new = array_diff ($b_old, [$_REQUEST['itemid']]);
+//  		}
+//  		if ($_REQUEST['itemids']!=null) {
+//  			$b_new = array_diff ($b_old, $_REQUEST['itemids']);
+//  		}
+//  		$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new, $b_old );
+//  	}
+ 	
         	
     
     $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
@@ -243,50 +242,8 @@ add_action( 'wp_ajax_load_items', array ('PAG_Explorer', 'load_items_callback') 
 // }
 
 
-add_action('load-edit.php', 'custom_bulk_action');
-
-function custom_bulk_action() {
-
-	global $wpdb;
-	$wp_list_table = _get_list_table('WP_Posts_List_Table');
-	
-	
-	if ($wp_list_table->current_action() == 'view') {
-		$_REQUEST['page'] = 'view';
-	}
-	
-	if ($wp_list_table->current_action() == 'export') {
-
-		$postids = $_REQUEST['post'];
-		
-		if (($_REQUEST['post_type'] == 'learnout')) {
-
-			// get all items of the learning outcomes
-			$postids = array ();
-			foreach (array('itemsc', 'itemmc') as $itemtype) {
-				$postids=array_merge ($postids, $wpdb->get_col( "
-						SELECT      P.id
-						FROM        {$wpdb->prefix}eal_{$itemtype} E
-						JOIN		{$wpdb->prefix}posts P
-						ON			(P.ID = E.ID)
-						WHERE		P.post_parent = 0
-						AND			E.learnout_id IN (" . join(", ", $_REQUEST['post']) . ")"
-				));
-			}
-		}
-		
-		$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
-		if ($b_old == null) $b_old = array();
-		$b_new = array_unique (array_merge ($b_old, $postids));
-		$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new);
-		
-		
-	}
-	
-	
 
 
-}
 
 
 

@@ -9,6 +9,7 @@ class CPT_LearnOut extends CPT_Object {
 		'cb' => '<input type="checkbox" />',
 		'learnout_title' => 'Title',
 		'date' => 'Date',
+		'learnout_author' => 'Author', 
 		'level_FW' => 'FW',
 		'level_KW' => 'KW',
 		'level_PW' => 'PW',
@@ -163,13 +164,13 @@ class CPT_LearnOut extends CPT_Object {
 	public function WPCB_posts_fields ( $array ) {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
-			$array .= "
-				, {$wpdb->prefix}eal_{$this->type}.title AS learnout_title
-				, {$wpdb->prefix}eal_{$this->type}.level_FW AS level_FW
-				, {$wpdb->prefix}eal_{$this->type}.level_PW AS level_PW
-				, {$wpdb->prefix}eal_{$this->type}.level_KW AS level_KW				
-			    , (SELECT COUNT(*) FROM {$wpdb->prefix}eal_item AS X JOIN {$wpdb->posts} AS Y ON (X.id = Y.ID) WHERE Y.post_parent=0 AND X.learnout_id = {$wpdb->prefix}eal_{$this->type}.id) AS no_of_items
-			";
+			$array .= ", L.title AS learnout_title";
+			$array .= ", {$wpdb->posts}.post_author AS learnout_author_id";
+			$array .= ", U.user_login AS learnout_author";
+			$array .= ", L.level_FW AS level_FW";
+			$array .= ", L.level_PW AS level_PW";
+			$array .= ", L.level_KW AS level_KW";			
+			$array .= ", (SELECT COUNT(*) FROM {$wpdb->prefix}eal_item AS X JOIN {$wpdb->posts} AS Y ON (X.id = Y.ID) WHERE Y.post_parent=0 AND X.learnout_id = L.id) AS no_of_items";
 		}
 		return $array;
 	}
@@ -177,22 +178,41 @@ class CPT_LearnOut extends CPT_Object {
 	public function WPCB_posts_join ($join) {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
-			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} ON ({$wpdb->prefix}eal_{$this->type}.id = {$wpdb->posts}.ID AND {$wpdb->prefix}eal_{$this->type}.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
+			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} L ON (L.id = {$wpdb->posts}.ID AND L.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
+			$join .= " JOIN {$wpdb->users} U ON (U.id = {$wpdb->posts}.post_author) ";
 		}
 		return $join;
+	}
+	
+
+	public function WPCB_posts_where($where) {
+	
+		global $wp_query, $wpdb;
+	
+		if ($wp_query->query["post_type"] == $this->type) {
+			if (isset ($_REQUEST['learnout_author'])) 	$where .= " AND {$wpdb->posts}.post_author 	= " . $_REQUEST['learnout_author'];
+			if (isset ($_REQUEST['level_FW'])) 			$where .= " AND L.level_FW 	= " . $_REQUEST['level_FW'];
+			if (isset ($_REQUEST['level_PW'])) 			$where .= " AND L.level_PW 	= " . $_REQUEST['level_PW'];
+			if (isset ($_REQUEST['level_KW'])) 			$where .= " AND L.level_KW	= " . $_REQUEST['level_KW'];
+		}
+	
+	
+	
+		return $where;
 	}
 	
 	
 	public function WPCB_posts_orderby($orderby_statement) {
 	
-		global $wp_query;
+		global $wpdb, $wp_query;
 		
 		if ($wp_query->query["post_type"] == $this->type) {
 			if ($wp_query->get('orderby') == $this->table_columns['learnout_title'])	$orderby_statement = "learnout_title {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['date'])		 		$orderby_statement = "{$wpdb->posts}.post_date {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['level_FW']) 			$orderby_statement = "{$wpdb->prefix}eal_{$this->type}.level_FW {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['level_PW']) 			$orderby_statement = "{$wpdb->prefix}eal_{$this->type}.level_PW {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['level_KW']) 			$orderby_statement = "{$wpdb->prefix}eal_{$this->type}.level_KW {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['learnout_author'])	$orderby_statement = "U.user_login {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['level_FW']) 			$orderby_statement = "L.level_FW {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['level_PW']) 			$orderby_statement = "L.level_PW {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['level_KW']) 			$orderby_statement = "L.level_KW {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['no_of_items'])		$orderby_statement = "no_of_items {$wp_query->get('order')}";
 		}
 	

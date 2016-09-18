@@ -1,9 +1,9 @@
 <?php 
 
 require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
-require_once ("class.EAL_ItemSC.php");
-require_once ("class.EAL_ItemMC.php");
-require_once ("class.EXP_Ilias.php");
+require_once ("../includes/class.EAL_ItemSC.php");
+require_once ("../includes/class.EAL_ItemMC.php");
+require_once ("../includes/class.EXP_Ilias.php");
 
 class CPT_Item_Table extends WP_List_Table {
 

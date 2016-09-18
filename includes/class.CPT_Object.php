@@ -86,6 +86,7 @@ abstract class CPT_Object {
 		add_action( 'restrict_manage_posts', array ($this, 'WPCB_restrict_manage_posts') );
 		
 		add_action('admin_footer-edit.php', array ($this, 'add_bulk_actions'));
+		add_action('load-edit.php', array ($this, 'custom_bulk_action'));
 		
 		
 		
@@ -109,8 +110,10 @@ abstract class CPT_Object {
 				      });
 				    </script>
 			    <?php
-		}
+	}
 		
+	
+	
 	
 	
 	public function WPCB_mb_editor ($post, $vars) {
@@ -197,7 +200,7 @@ abstract class CPT_Object {
 	
 		global $post;
 	
-		$basic_url = remove_query_arg (array ("item_author", "review_author", "points", "level_FW", "level_KW", "level_PW", "learnout_id"));
+		$basic_url = remove_query_arg (array ("item_author", "review_author", "learnout_author", "item_points", "level_FW", "level_KW", "level_PW", "learnout_id"));
 	
 		switch ( $column ) {
 				
@@ -229,11 +232,15 @@ abstract class CPT_Object {
 			case 'review_author':
 				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('review_author', $post->review_author_id, $basic_url), $post->review_author);
 				break;
-				
+
+			case 'learnout_author':
+				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('learnout_author', $post->learnout_author_id, $basic_url), $post->learnout_author);
+				break;
+					
 			case 'difficulty': echo ($post->difficulty); break;
 				
-			case 'points':
-				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('points', $post->points, $basic_url), $post->points);
+			case 'item_points':
+				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('item_points', $post->item_points, $basic_url), $post->item_points);
 				break;
 	
 			case 'level_FW':
@@ -264,8 +271,8 @@ abstract class CPT_Object {
 				
 			case 'no_of_items':
 				echo ("{$post->no_of_items}<div class='row-actions'>");
-				if ($post->no_of_items>0) echo ("<span class='view'><a href='edit.php?post_type=item&learnout_id={$post->ID}' title='Show All Items'>Show&nbsp;All&nbsp;Itemss</a> | </span>");
-				echo ("<span class='edit'><a href='post-new.php?post_type=itemmc&learnout_id={$post->ID}' title='Add New MC'>Add New MC</a> | </span>");
+				if ($post->no_of_items>0) echo ("<span class='view'><a href='edit.php?post_type=item&learnout_id={$post->ID}' title='Show All Items'>Show&nbsp;All&nbsp;Items</a> | </span>");
+				echo ("<span class='edit'><a href='post-new.php?post_type=itemsc&learnout_id={$post->ID}' title='Add New SC'>Add New MC</a> | </span>");
 				echo ("<span class='edit'><a href='post-new.php?post_type=itemmc&learnout_id={$post->ID}' title='Add New MC'>Add New MC</a></span>");
 				echo ("<span class='inline hide-if-no-js'></span></div>");
 				break;
