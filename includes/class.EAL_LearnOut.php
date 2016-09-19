@@ -154,9 +154,7 @@ class EAL_LearnOut {
 		$res .= sprintf ("<div style='display:none'><span><a href=\"post.php?action=edit&post=%d\">Edit</a></span></div>", $this->id);
 		$res .= sprintf ("</div><br/>");
 		$res .= sprintf ("<div>%s</div>", $this->description);
-		if ($this->level["FW"]>0) $res .= sprintf ('<i>FW: %1$s</i><br/>', EAL_Item::$level_label[$this->level["FW"]-1]);
-		if ($this->level["PW"]>0) $res .= sprintf ('<i>PW: %1$s</i><br/>', EAL_Item::$level_label[$this->level["PW"]-1]);
-		if ($this->level["KW"]>0) $res .= sprintf ('<i>KW: %1$s</i><br/>', EAL_Item::$level_label[$this->level["KW"]-1]);
+		$res .= CPT_Object::getLevelHTML('learnout_' . $this->id, $this->level, null, "disabled", 0, '');
 		$res .= "<br/>";
 	
 		return $res;

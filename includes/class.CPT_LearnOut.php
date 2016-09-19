@@ -50,6 +50,9 @@ class CPT_LearnOut extends CPT_Object {
 		
 		add_meta_box('mb_description', 'Beschreibung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'learnout_description', 'value' => $learnout->description) );
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $learnout->level, 'prefix' => 'learnout'));
+		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getCurrentDomain()["label"], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => RoleTaxonomy::getCurrentDomain()["name"] ));
+		
+		
 		
 		// term selections --> show buttons for text modules 	
 ?>
@@ -83,6 +86,11 @@ class CPT_LearnOut extends CPT_Object {
 	
 	function wpdocs_theme_name_scripts() {
 		wp_enqueue_script( 'script-name', get_template_directory_uri() . '/js/example.js', array(), '1.0.0', true );
+	}
+	
+	
+	public function WPCB_mb_taxonomy ($post, $vars) {
+		post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy", "title" => "", "args" => $vars['args']) );
 	}
 	
 	
@@ -135,11 +143,9 @@ class CPT_LearnOut extends CPT_Object {
 
 	public function WPCB_mb_level ($post, $vars) {
 	
-				
 ?>
 		<script>
-			
-			
+			// callback javascript function is called when a new level is clicked --> matching verbs are shown
 			function showSuperVerbs (e, levIT, levITs, levLO, levLOs) {
 				var j = jQuery.noConflict();
 				j(document).find("#eal_superverbs").find("div").hide();
@@ -148,10 +154,14 @@ class CPT_LearnOut extends CPT_Object {
 		</script>
 <?php		
 		
-		// callback javascript function is called when a new level is clicked --> matching verbs are shown
-		$vars['args']['callback'] = 'showSuperVerbs';
-		parent::WPCB_mb_level($post, $vars);
+// 		$vars['args']['callback'] = 'showSuperVerbs';
+// 		parent::WPCB_mb_level($post, $vars);
 			
+		
+		global $learnout;
+		print (CPT_Object::getLevelHTML('learnout', $learnout->level, null, "", 0, 'showSuperVerbs'));
+		
+		
 		
 			
 	}

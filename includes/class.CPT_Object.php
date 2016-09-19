@@ -189,19 +189,10 @@ abstract class CPT_Object {
 	}
 	
 	
-	public function WPCB_mb_level ($post, $vars) {
-	
-		$level = $vars['args']['level'];
-		$prefix = isset ($vars['args']['prefix']) ? $vars['args']['prefix'] : "item"; 
+	public static function getLevelHTML ($prefix, $level, $default, $disabled, $background, $callback) {
 		
-		$default = isset ($vars['args']['default']) ? $vars['args']['default'] : array ("FW"=>0, "KW"=>0, "PW"=>0);	// default ("expected") levels
-		$disabled = isset ($vars['args']['disabled']) ? $vars['args']['disabled'] : "";		// disable change
-		$callback = isset ($vars['args']['callback']) ? $vars['args']['callback'] : "";		// callback javascript function
-		$background = isset ($vars['args']['background']) ? $vars['args']['background'] : 0;	// show default with different background color
-		$print = isset ($vars['args']['print']) ? $vars['args']['print'] : 1;	// echo/print HTML code; return otherwise
 ?>
 		<script>
-			
 			function disableOtherLevels (e) {
 	 			var j = jQuery.noConflict();
 				// uncheck all other radio input in the table
@@ -211,13 +202,11 @@ abstract class CPT_Object {
 			}
 		</script>
 <?php
-		
-	
+				
+			
 		$res = "<table style='font-size:100%'><tr><td></td>";
 		
-		foreach ($level as $c => $v) {
-			$res .= sprintf ('<td>%s</td>', $c);
-		}
+		foreach ($level as $c => $v) $res .= sprintf ('<td>%s</td>', $c);
 		
 		$res .= sprintf ('</tr>');
 		
@@ -234,20 +223,17 @@ abstract class CPT_Object {
 						$callback, $n+1, EAL_Item::$level_label[$n], $default[$c], (($default[$c]>0) ? EAL_Item::$level_label[$default[$c]-1] : ""));
 				}
 				$res .= sprintf ("\"></td>"); 
-					 
 			}
 			$res .= sprintf ('</tr>');
 		}
 		$res .= sprintf ('</table>');
 		
-		
-		if ($print==1) {
-			echo $res;
-		} else {
-			return $res;
-		}
-// 		echo $html;
+		return $res;
 	}
+	
+	
+	
+
 	
 	
 	

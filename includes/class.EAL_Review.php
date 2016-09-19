@@ -217,10 +217,10 @@ class EAL_Review {
 		$res .= sprintf ("<div style='display:none'><span><a href=\"post.php?action=edit&post=%d\">Edit</a></span></div>", $this->id);
 		$res .= sprintf ("</div><br/>");
 		$res .= sprintf ("<div>%s</div>", $this->getScoreHTML(FALSE));
-		if ($this->level["FW"]>0) $res .= sprintf ('<i>FW: %1$s</i><br/>', EAL_Item::$level_label[$this->level["FW"]-1]);
-		if ($this->level["PW"]>0) $res .= sprintf ('<i>PW: %1$s</i><br/>', EAL_Item::$level_label[$this->level["PW"]-1]);
-		if ($this->level["KW"]>0) $res .= sprintf ('<i>KW: %1$s</i><br/>', EAL_Item::$level_label[$this->level["KW"]-1]);
+		$res .= CPT_Object::getLevelHTML('review_' . $this->id, $this->level,  $this->getItem()->level, "disabled", 1, '');
+		$res .= sprintf ("<div>%s</div>", $this->feedback);
 		$res .= "<br/>";
+		
 	
 		return $res;
 			
@@ -265,11 +265,8 @@ class EAL_Review {
 				foreach ($values as $k3 => $v3) {
 					$checked = ($this->score[$k1][$k2]==$k3+1);
 					$html_rows .= "<input type='radio' id='{$k1}_{$k2}_{k3}' name='review_{$k1}_{$k2}' value='" . ($k3+1) . "'";
-					$html_rows .= ($editable ? "" : " disabled");
-					$html_rows .= ($checked ? " checked='checked'" : "") . ">";
-					$html_rows .= (($checked) && !($editable)) ? "<b>{$v3}</b>" : $v3;
-					$html_rows .= "<br/>";
-					
+					$html_rows .= ($editable || $checked) ? "" : " disabled";
+					$html_rows .= ($checked ? " checked='checked'" : "") . ">" . $v3 . "<br/>";
 				}
 				$html_rows .= "</td>";
 			}

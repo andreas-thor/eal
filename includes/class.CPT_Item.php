@@ -11,6 +11,7 @@ class CPT_Item extends CPT_Object{
 		'item_title' => 'Title',
 		'date' => 'Date',
 		'item_type' => 'Type',
+		'taxonomy' => 'Taxonomy', 
 		'item_author' => 'Author',
 		'item_points' => 'Points',
 		'level_FW' => 'FW',
@@ -213,8 +214,6 @@ class CPT_Item extends CPT_Object{
 		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_question', 'value' => $item->question));
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $item->level, 'default' => (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level) ));
 		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($this, 'WPCB_mb_answers'), $this->type, 'normal', 'default');
-		
-		
 		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getCurrentDomain()["label"], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => RoleTaxonomy::getCurrentDomain()["name"] ));
 		
 	}
@@ -252,8 +251,12 @@ class CPT_Item extends CPT_Object{
 		</script>
 <?php		
 		
-		$vars['args']['callback'] = 'checkLOLevel';
-		return parent::WPCB_mb_level($post, $vars);
+// 		$vars['args']['callback'] = 'checkLOLevel';
+		
+		global $item;
+		print (CPT_Object::getLevelHTML("item", $item->level, (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level), "", 0, 'checkLOLevel'));
+		
+// 		return parent::WPCB_mb_level($post, $vars);
 		
 	}
 	

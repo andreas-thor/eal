@@ -85,7 +85,10 @@ class CPT_Review extends CPT_Object {
 		add_meta_box('mb_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'normal', 'default', array ('level' => $review->level, 'prefix' => 'review', 'default' => $review->getItem()->level, 'background' => 1 ));
 		add_meta_box('mb_feedback', 'Feedback', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'review_feedback', 'value' => $review->feedback));
 		add_meta_box('mb_overall', 'Revisionsurteil', array ($this, 'WPCB_mb_overall'), $this->type, 'side', 'default');
+		
 	}
+		
+		
 	
 	
 	
@@ -102,51 +105,17 @@ class CPT_Review extends CPT_Object {
 	}
 	
 	
-	
-
-	
 	public function WPCB_mb_score ($post, $vars) {
 		
 		global $review;
 		print ($review->getScoreHTML(TRUE));
 	}
 	
-	
-	
-// 	public function WPCB_mb_level ($post, $vars) {
-	
-// 		global $review;
-	
-// 		echo ("	<table style='font-size:100%'>
-// 				<tr><th align='left'>Einordnung Autor</th><th style='padding-left:3em;'></th><th align='left'>Einordnung Review</th></tr>
-// 				<tr><td style='border-style:solid; border-width:1px;'>");
-// 		parent::WPCB_mb_level($post, array ('args' => array ('level' => $review->getItem()->level, 'disabled' => 'disabled')));
-// 		echo ("	</td><td style='padding-left:3em;'></td><td style='border-style:solid; border-width:1px;''>");
-// 		parent::WPCB_mb_level($post, array ('args' => array ('level' => $review->level, 'prefix' => 'review')));
-		
-// 		parent::WPCB_mb_level($post, array ('args' => array ('level' => $review->level, 'prefix' => 'review', 'default' => $review->getItem()->level, 'background' => 1 )));
-		
-// 		echo ("</td></tr></table>");
-// 	}
-	
-	
+	public function WPCB_mb_level ($post, $vars) {
 
-	
-// 	public function WPCB_mb_feedback ($post, $vars) {
-	
-// 		global $review;
-	
-// 		$editor_settings = array(
-// 				'media_buttons' => false,	// no media buttons
-// 				'teeny' => true,			// minimal editor
-// 				'quicktags' => false,		// hides Visual/Text tabs
-// 				'textarea_rows' => 3,
-// 				'tinymce' => true
-// 		);
-	
-// 		$html = wp_editor(wpautop(stripslashes($review->feedback)) , 'review_feedback', $editor_settings );
-// 		echo $html;
-// 	}
+		global $review;
+		print (CPT_Object::getLevelHTML('review', $review->level,  $review->getItem()->level, "", 1, ''));
+	}
 	
 	
 
@@ -246,31 +215,6 @@ class CPT_Review extends CPT_Object {
 
 		return $where;
 	}
-	
-	
-// 	public function WPCB_manage_posts_columns($columns) {
-// 		return array_merge($columns, array('type' => 'Typ', 'review_author' => 'Author Review', 'item_author' => 'Author Item', 'score' => 'Score', 'level' => 'Level', 'overall' => 'Overall'));
-// // 		return array_merge(parent::WPCB_manage_posts_columns($columns), array('item_author' => 'Author Item', 'item_title' => 'item_title', 'type' => 'Typ', 'Punkte' => 'Punkte', 'Reviews' => 'Reviews', 'LO' => 'LO', 'Difficulty' => 'Difficulty'));
-// 	}
-	
-	
-// 	public function WPCB_post_row_actions($actions, $post){
-	
-// 		if ($post->post_type != $this->type) return $actions;
-	
-// 		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
-// 		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
-	
-// 		if (!RoleTaxonomy::canEditReviewPost($post)) {		// "Edit" & "Trash" only if editable by user
-// 			unset ($actions['edit']);
-// 			unset ($actions['trash']);
-// 		}
-	
-// 		return $actions;
-// 	}
-	
-	
-
 	
 	
 	

@@ -74,7 +74,7 @@ class PAG_Basket {
 		$itemids = array();
 		
 		/* try to get learning outcomes */
-		$post_type = "learnout";
+		$post_label = "Learning Outcome";
 		if ($_REQUEST['learnoutid'] != null) $itemids = [$_REQUEST['learnoutid']];
 		if ($_REQUEST['learnoutids'] != null) {
 			if (is_array($_REQUEST['learnoutids'])) $itemids = $_REQUEST['learnoutids'];
@@ -82,7 +82,7 @@ class PAG_Basket {
 		}
 
 		if (count($itemids)==0) {  // learning outcomes found --> get reviews
-			$post_type = "review";
+			$post_label = "Review";
 			if ($_REQUEST['reviewid'] != null) $itemids = [$_REQUEST['reviewid']];
 			if ($_REQUEST['reviewids'] != null) {
 				if (is_array($_REQUEST['reviewids'])) $itemids = $_REQUEST['reviewids'];
@@ -91,7 +91,7 @@ class PAG_Basket {
 		}
 			
 		if (count($itemids)==0) {	// nothing found --> get items
-			$post_type = "item";
+			$post_label = "Item";
 			if ($_REQUEST['itemid'] != null) $itemids = [$_REQUEST['itemid']];
 			if ($_REQUEST['itemids'] != null) {
 				if (is_array($_REQUEST['itemids'])) $itemids = $_REQUEST['itemids'];
@@ -107,7 +107,7 @@ class PAG_Basket {
 		
 		$html_list = "";
 		$html_select  = "<form><select onChange='for (x=0; x<this.form.nextSibling.childNodes.length; x++) {  this.form.nextSibling.childNodes[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'>";
-		$html_select .= sprintf ('<option value="-1" selected>[All %1$d %2$s]</option>', count($itemids), ($post_type=="item") ? "Items" : "Learning Outcomes");
+		$html_select .= sprintf ('<option value="-1" selected>[All %1$d %2$ss]</option>', count($itemids), $post_label);
 		$count = 0;
 		$items = array ();
 		foreach ($itemids as $item_id) {
@@ -132,7 +132,7 @@ class PAG_Basket {
 		$html_select .= "</select></form>";
 		
 		
-		if ($post_type=="item") {
+		if ($post_label=="Item") {
 			$html_info  = sprintf("<form  style='margin-top:5em' enctype='multipart/form-data' action='admin.php?page=view&download=1&itemids=%s' method='post'><table class='form-table'><tbody'>", implode(",",$itemids));
 			$html_info .= sprintf("<tr><th style='padding-top:0px; padding-bottom:0px;'><label>%s</label></th>", "Number of Items");
 			$html_info .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
@@ -159,7 +159,7 @@ class PAG_Basket {
 		}
 		
 		
-		printf ('<div class="wrap"><h1>%1$s Viewer</h1>', ($post_type=="item") ? "Item" : "Learning Outcome");
+		printf ('<div class="wrap"><h1>%1$s Viewer</h1>', $post_label);
 		
 		if ($_REQUEST['download']=='1') {
 			$ilias = new EXP_Ilias();
