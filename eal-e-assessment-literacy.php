@@ -655,34 +655,19 @@ add_action('admin_head', 'myposttype_admin_css');
 
 function myposttype_admin_css() {
 
-	global $post_type;
+	/* adjust h1 label on table sites */
 	
-	if (($_GET['post_type'] == 'item') && (!isset($_GET['page']))) {
-		
-		?>
-		        <script type="text/javascript">
-		            jQuery(document).ready( function($)
-		            {
-		                jQuery(jQuery(".wrap h1")[0]).replaceWith ('<h1>All Items <a href="http://localhost/wordpress/wp-admin/post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a><a href="http://localhost/wordpress/wp-admin/post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a></h1>');
-		            });
-		        </script>
-		    <?php
-		
+	?> <script type="text/javascript">	jQuery(document).ready( function($) { <?php 
+
+	if (!isset($_REQUEST['page'])) {
+		switch ($_REQUEST['post_type']) {
+			case 'item': ?> jQuery(jQuery(".wrap h1")[0]).replaceWith ('<h1>All Items <a href="http://localhost/wordpress/wp-admin/post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a><a href="http://localhost/wordpress/wp-admin/post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a></h1>'); <?php break;  	
+			case 'itembasket': ?> jQuery(jQuery(".wrap h1")[0]).replaceWith ('<h1>Item Basket</h1>'); <?php break;			
+			case 'review': ?> jQuery(jQuery(".wrap h1")[0]).replaceWith ('<h1>All Reviews</h1>'); <?php break;			
+		}
 	}
 	
-	if (($_GET['post_type'] == 'itembasket') && (!isset($_GET['page']))) {
-	
-		?>
-			        <script type="text/javascript">
-			            jQuery(document).ready( function($)
-			            {
-			                jQuery(jQuery(".wrap h1")[0]).replaceWith ('<h1>Item Basket</h1>');
-			            });
-			        </script>
-			    <?php
-			
-		}
-		
+	?> }); </script> <?php
 	
 }
 

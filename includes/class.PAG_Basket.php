@@ -1,6 +1,10 @@
 <?php 
 
 require_once ("class.EAL_Item.php");
+require_once ("class.EAL_ItemSC.php");
+require_once ("class.EAL_ItemMC.php");
+require_once ("class.EAL_Learnout.php");
+require_once ("class.EAL_Review.php");
 
 class PAG_Basket {
 
@@ -68,35 +72,55 @@ class PAG_Basket {
 	public static function createPageView () {
 					
 		$itemids = array();
-		if ($_REQUEST['itemid'] != null) {
-			array_push($itemids, $_REQUEST['itemid']);
-		} else {					
+		
+		/* try to get learning outcomes */
+		$post_type = "learnout";
+		if ($_REQUEST['learnoutid'] != null) $itemids = [$_REQUEST['learnoutid']];
+		if ($_REQUEST['learnoutids'] != null) {
+			if (is_array($_REQUEST['learnoutids'])) $itemids = $_REQUEST['learnoutids'];
+			if (is_string($_REQUEST['learnoutids'])) $itemids = explode (",", $_REQUEST["learnoutids"]);
+		}
+
+		if (count($itemids)==0) {  // learning outcomes found --> get reviews
+			$post_type = "review";
+			if ($_REQUEST['reviewid'] != null) $itemids = [$_REQUEST['reviewid']];
+			if ($_REQUEST['reviewids'] != null) {
+				if (is_array($_REQUEST['reviewids'])) $itemids = $_REQUEST['reviewids'];
+				if (is_string($_REQUEST['reviewids'])) $itemids = explode (",", $_REQUEST["reviewids"]);
+			}
+		}
+			
+		if (count($itemids)==0) {	// nothing found --> get items
+			$post_type = "item";
+			if ($_REQUEST['itemid'] != null) $itemids = [$_REQUEST['itemid']];
 			if ($_REQUEST['itemids'] != null) {
 				if (is_array($_REQUEST['itemids'])) $itemids = $_REQUEST['itemids'];
 				if (is_string($_REQUEST['itemids'])) $itemids = explode (",", $_REQUEST["itemids"]);
 			}
-			else {
-				$itemids = get_user_meta(get_current_user_id(), 'itembasket', true);
-			}
+
+			// fallback: get items from basket
+			if (count($itemids) == 0) $itemids = get_user_meta(get_current_user_id(), 'itembasket', true);
 		}
+		
 		
 
 		
 		$html_list = "";
-		$html_select = "<form><select onChange='for (x=0; x<this.form.nextSibling.childNodes.length; x++) {  this.form.nextSibling.childNodes[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'><option value='-1' selected>[All " . count($itemids) . " items]</option>";
+		$html_select  = "<form><select onChange='for (x=0; x<this.form.nextSibling.childNodes.length; x++) {  this.form.nextSibling.childNodes[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'>";
+		$html_select .= sprintf ('<option value="-1" selected>[All %1$d %2$s]</option>', count($itemids), ($post_type=="item") ? "Items" : "Learning Outcomes");
 		$count = 0;
 		$items = array ();
 		foreach ($itemids as $item_id) {
 			
-			
 			$post = get_post($item_id);
 			if ($post == null) continue;
-			
 			
 			$item = null;
 			if ($post->post_type == 'itemsc') $item = new EAL_ItemSC();
 			if ($post->post_type == 'itemmc') $item = new EAL_ItemMC();
-			
+			if ($post->post_type == 'learnout') $item = new EAL_LearnOut();
+			if ($post->post_type == 'review') $item = new EAL_Review();
+				
 			if ($item != null) {
 				$item->loadById($item_id);
 				$html_select .= "<option value='{$count}'>{$item->title}</option>";
@@ -108,37 +132,34 @@ class PAG_Basket {
 		$html_select .= "</select></form>";
 		
 		
-		$html_info  = sprintf("<form  style='margin-top:5em' enctype='multipart/form-data' action='admin.php?page=view&download=1&itemids=%s' method='post'><table class='form-table'><tbody'>", implode(",",$itemids));
-		$html_info .= sprintf("<tr><th style='padding-top:0px; padding-bottom:0px;'><label>%s</label></th>", "Number of Items");
-		$html_info .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
-		$html_info .= sprintf("<input style='width:5em' type='number' value='%d' readonly/>", count($items));
-		$html_info .= sprintf("</td></tr>");
-		
-		// Min / Max for all categories
-		$categories = array ("type", "dim", "level", "topic1");
-		foreach ($categories as $category) {
-				
-			$html_info .= sprintf("<tr><th style='padding-bottom:0.5em;'><label>%s</label></th></tr>", EAL_Item::$category_label[$category]);
-			foreach (PAG_Explorer::groupBy ($category, $items, NULL, true) as $catval => $catitems) {
-		
-				$html_info .= sprintf("<tr><td style='padding-top:0px; padding-bottom:0px;'><label>%s</label></td>", ($category == "topic1") ? $catval : EAL_Item::$category_value_label[$category][$catval]);
-				$html_info .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
-				$html_info .= sprintf("<input style='width:5em' type='number' value='%d' readonly/>", count($catitems));
-				$html_info .= sprintf("</td></tr>");
+		if ($post_type=="item") {
+			$html_info  = sprintf("<form  style='margin-top:5em' enctype='multipart/form-data' action='admin.php?page=view&download=1&itemids=%s' method='post'><table class='form-table'><tbody'>", implode(",",$itemids));
+			$html_info .= sprintf("<tr><th style='padding-top:0px; padding-bottom:0px;'><label>%s</label></th>", "Number of Items");
+			$html_info .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
+			$html_info .= sprintf("<input style='width:5em' type='number' value='%d' readonly/>", count($items));
+			$html_info .= sprintf("</td></tr>");
+			
+			// Min / Max for all categories
+			$categories = array ("type", "dim", "level", "topic1");
+			foreach ($categories as $category) {
+					
+				$html_info .= sprintf("<tr><th style='padding-bottom:0.5em;'><label>%s</label></th></tr>", EAL_Item::$category_label[$category]);
+				foreach (PAG_Explorer::groupBy ($category, $items, NULL, true) as $catval => $catitems) {
+			
+					$html_info .= sprintf("<tr><td style='padding-top:0px; padding-bottom:0px;'><label>%s</label></td>", ($category == "topic1") ? $catval : EAL_Item::$category_value_label[$category][$catval]);
+					$html_info .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
+					$html_info .= sprintf("<input style='width:5em' type='number' value='%d' readonly/>", count($catitems));
+					$html_info .= sprintf("</td></tr>");
+				}
+					
 			}
-				
+			
+			$html_info .= sprintf ("<tr><th><button type='submit' name='action' value='download'>Download</button></th><tr>");
+			$html_info .= sprintf ("</tbody></table></form></div>");
 		}
 		
-		$html_info .= sprintf ("<tr><th><button type='submit' name='action' value='download'>Download</button></th><tr>");
-		$html_info .= sprintf ("</tbody></table></form></div>");
 		
-		
-		
-		
-			
-		
-		
-		print "<div class='wrap'><h1>Item Viewer</h1>";
+		printf ('<div class="wrap"><h1>%1$s Viewer</h1>', ($post_type=="item") ? "Item" : "Learning Outcome");
 		
 		if ($_REQUEST['download']=='1') {
 			$ilias = new EXP_Ilias();

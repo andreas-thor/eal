@@ -93,25 +93,82 @@ abstract class CPT_Object {
 	}		
 	
 	
-	function add_bulk_actions() {
+	public function WPCB_post_row_actions($actions, $post){
 	
-		global $post_type;
-		if ($post_type != $this->type) return;
+		unset ($actions['view']);
+		unset ($actions['edit']);
+		unset ($actions['inline hide-if-no-js']);
+		return $actions;
 	
-		?>
-				    <script type="text/javascript">
-				      jQuery(document).ready(function() {
+		// 		if ($post->post_type != $this->type) return $actions;
 	
-						jQuery("select[name='action'] > option[value='edit']").remove();
-						jQuery("select[name='action2'] > option[value='edit']").remove();
-					      
-				        jQuery('<option>').val('add_to_basket').text('<?php _e('Add To Basket')?>').appendTo("select[name='action']");
-				        jQuery('<option>').val('add_to_basket').text('<?php _e('Add To Basket')?>').appendTo("select[name='action2']");
-				      });
-				    </script>
-			    <?php
+		// 		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
+		// 		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
+	
+		// 		if (!RoleTaxonomy::canEditItemPost($post)) {		// "Edit" & "Trash" only if editable by user
+		// 			unset ($actions['edit']);
+		// 			unset ($actions['trash']);
+		// 		}
+	
+		// 		return $actions;
 	}
+	
+
+	function custom_bulk_action() {
+	
+	
+		if ($_REQUEST["post_type"] != $this->type) return;
+	
+		global $wpdb;
+	
+		$wp_list_table = _get_list_table('WP_Posts_List_Table');
+	
+	
+		if ($wp_list_table->current_action() == 'view') {
 		
+			if (substr ($_REQUEST['post_type'], 0, 4) == 'item') {
+				$sendback = add_query_arg( 'itemids', $_REQUEST['post'], 'edit.php?page=view&post_type=itembasket' );
+				wp_redirect($sendback);
+				exit();
+			}
+			
+			if ($_REQUEST['post_type'] == 'learnout') {
+				$sendback = add_query_arg( 'learnoutids', $_REQUEST['post'], 'edit.php?page=view&post_type=itembasket' );
+				wp_redirect($sendback);
+				exit();
+			}
+
+			if ($_REQUEST['post_type'] == 'review') {
+				$sendback = add_query_arg( 'reviewids', $_REQUEST['post'], 'edit.php?page=view&post_type=itembasket' );
+				wp_redirect($sendback);
+				exit();
+			}
+				
+		}
+	
+		
+		/* Add Items to Basket */
+		if ($wp_list_table->current_action() == 'add_to_basket') {
+
+			/* get array of postids */
+			$postids = $_REQUEST['post'];
+			if (!is_array($postids)) $postids = [$postids];
+
+			$basket_old = get_user_meta(get_current_user_id(), 'itembasket', true);
+			if ($basket_old == null) $basket_old = array();
+			if (count($basket_old) == 0) $basket_old = [-1];	// dummy basket to make sure SQLL works
+			
+			/* get Items from Learning Outcomes */
+			$sql  = "SELECT P.id FROM {$wpdb->prefix}eal_item I JOIN {$wpdb->prefix}posts P ON (P.ID = I.ID) WHERE P.post_parent = 0 AND ";
+			$sql .= sprintf('( %1$s IN (%2$s) OR I.id IN (%3$s) )',  ($_REQUEST['post_type']=='learnout') ? 'I.learnout_id' : 'I.id', join(", ", $postids), join(", ", $basket_old));
+			$itemids = $wpdb->get_col ($sql);
+	
+			$x = update_user_meta( get_current_user_id(), 'itembasket', $itemids);
+	
+	
+		}
+	
+	}		
 	
 	
 	
@@ -194,7 +251,10 @@ abstract class CPT_Object {
 	
 	
 	
-
+	/** TODO: Check if editable (based on user rights); if post_status = trash --> not editable
+	 * @param unknown $column
+	 * @param unknown $post_id
+	 */
 
 	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
 	
@@ -208,16 +268,31 @@ abstract class CPT_Object {
 				printf ($post->item_title);
 				if ($post->post_status == "draft") echo (' &mdash; <span class="post-state"><i>Draft</i></span>');
 				if ($post->post_status == "pending") echo (' &mdash; <span class="post-state"><b>Pending</b></span>');
+				
+				printf ('<div class="row-actions">');
+				printf ('<span class="view"><a href="admin.php?page=view&itemid=%1$d" title="View">View</a></span>', $post->ID);
+				printf ('<span class="edit"> | <a href="post.php?post_type=item&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->ID);
+				printf (' | <span class="inline hide-if-no-js"></span></div>');
+				
+				
 				break;
 				
 			case 'review_title':
-				printf ($post->review_title);
+				printf ('<a href="%1$s">[%2$s]</a>', add_query_arg ('item_id', $post->item_id, $basic_url), $post->item_title);
 				if ($post->post_status == "draft") echo (' &mdash; <span class="post-state"><i>Draft</i></span>');
+				printf ('<div class="row-actions">');
+				printf ('<span class="view"><a href="admin.php?page=view&reviewid=%1$d" title="View">View</a></span>', $post->ID);
+				printf ('<span class="edit"> | <a href="post.php?post_type=review&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->ID);
+				printf (' | <span class="inline hide-if-no-js"></span></div>');
 				break;
 				
 			case 'learnout_title':
 				printf ($post->learnout_title);
 				if ($post->post_status == "draft") echo (' &mdash; <span class="post-state"><i>Draft</i></span>');
+				printf ('<div class="row-actions">');
+				printf ('<span class="view"><a href="admin.php?page=view&learnoutid=%1$d" title="View">View</a></span>', $post->ID);
+				printf ('<span class="edit"> | <a href="post.php?post_type=learnout&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->ID);
+				printf (' | <span class="inline hide-if-no-js"></span></div>');
 				break;
 			
 			case 'item_type':
@@ -258,7 +333,8 @@ abstract class CPT_Object {
 			case 'item_learnout':
 				printf ('<a href="%1$s">%2$s</a>', add_query_arg ("learnout_id", $post->learnout_id, $basic_url), $post->learnout_title);
 				printf ('<div class="row-actions">');
-				printf ('<span class="edit"><a href="post.php?post_type=learnout&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->learnout_id);
+				printf ('<span class="view"><a href="admin.php?page=view&learnoutid=%1$d" title="View">View</a></span>', $post->learnout_id);
+				printf (' | <span class="edit"><a href="post.php?post_type=learnout&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->learnout_id);
 				printf ('<span class="inline hide-if-no-js"></span></div>');
 				break;
 	
@@ -272,7 +348,7 @@ abstract class CPT_Object {
 			case 'no_of_items':
 				echo ("{$post->no_of_items}<div class='row-actions'>");
 				if ($post->no_of_items>0) echo ("<span class='view'><a href='edit.php?post_type=item&learnout_id={$post->ID}' title='Show All Items'>Show&nbsp;All&nbsp;Items</a> | </span>");
-				echo ("<span class='edit'><a href='post-new.php?post_type=itemsc&learnout_id={$post->ID}' title='Add New SC'>Add New MC</a> | </span>");
+				echo ("<span class='edit'><a href='post-new.php?post_type=itemsc&learnout_id={$post->ID}' title='Add New SC'>Add New SC</a> | </span>");
 				echo ("<span class='edit'><a href='post-new.php?post_type=itemmc&learnout_id={$post->ID}' title='Add New MC'>Add New MC</a></span>");
 				echo ("<span class='inline hide-if-no-js'></span></div>");
 				break;

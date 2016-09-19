@@ -9,7 +9,7 @@ class CPT_Review extends CPT_Object {
 
 	public $table_columns = array (
 		'cb' => '<input type="checkbox" />', 
-		'item_title' => 'Title', 
+		'review_title' => 'Title', 
 		'date' => 'Date', 
 		'item_type' => 'Type', 
 		'review_author' => 'Author Review', 
@@ -42,24 +42,30 @@ class CPT_Review extends CPT_Object {
 	}
 	
 	
-	
 	function add_bulk_actions() {
 	
 		global $post_type;
 		if ($post_type != $this->type) return;
 	
-		parent::add_bulk_actions();
-	
-?>
+		?>
 			<script type="text/javascript">
 				jQuery(document).ready(function() {
-					jQuery("select[name='action'] > option[value='add_to_basket']").remove();
-					jQuery("select[name='action2'] > option[value='add_to_basket']").remove();
-	      });
-			</script>
-			
-<?php
+	
+					var htmlselect = ["action", "action2"];
+						    	
+					htmlselect.forEach(function (s, i, o) {
+							  		
+						jQuery("select[name='" + s + "'] > option").remove();
+				        jQuery('<option>').val('bulk').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
+				        jQuery('<option>').val('view').text('<?php _e('View Reviews')?>').appendTo("select[name='" + s + "']");
+				        jQuery('<option>').val('trash').text('<?php _e('Trash Reviews')?>').appendTo("select[name='" + s + "']");
+				      });
+				});			    
+		    </script>
+	<?php
+	
 	}
+
 		
 	
 	
@@ -102,46 +108,7 @@ class CPT_Review extends CPT_Object {
 	public function WPCB_mb_score ($post, $vars) {
 		
 		global $review;
-		
-		$values = ["gut", "Korrektur", "ungeeignet"];
-		
-		
-		$html_head = "<tr><th></th>";
-		foreach (EAL_Review::$dimension2 as $k2 => $v2) {
-			$html_head .= "<th style='padding:0.5em'>{$v2}</th>";
-		}
-		$html_head .= "</tr>";
-			
-		
-?>
-		<script>
-			var $ = jQuery.noConflict();
-			
-			function setRowGood (e) {
-				$(e).parent().parent().find("input").each ( function() {
- 					if (this.value==1) this.checked = true;
-				});
-			}
-		</script>
-
-
-<?php 
-		
-		$html_rows = "";
-		foreach (EAL_Review::$dimension1 as $k1 => $v1) {
-			$html_rows .= "<tr><td valign='top'style='padding:0.5em'>{$v1}<br/><a onclick=\"setRowGood(this);\">(alle gut)</a></td>";
-			foreach (EAL_Review::$dimension2 as $k2 => $v2) {
-				$html_rows .= "<td style='padding:0.5em; border-style:solid; border-width:1px;'>";
-				foreach ($values as $k3 => $v3) {
-					$html_rows .= "<input type='radio' id='{$k1}_{$k2}_{k3}' name='review_{$k1}_{$k2}' value='" . ($k3+1) . "' " . (($review->score[$k1][$k2]==$k3+1)?"checked":"") . ">{$v3}<br/>";
-				}
-				$html_rows .= "</td>";
-			}
-			$html_rows .= "</tr>";
-		}
-				
-		echo ("<table style='font-size:100%'>{$html_head}{$html_rows}</table>");
-			
+		print ($review->getScoreHTML(TRUE));
 	}
 	
 	
@@ -215,6 +182,7 @@ class CPT_Review extends CPT_Object {
 	public function WPCB_posts_fields ( $array ) {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
+			$array .= ", I.ID as item_id";
 			$array .= ", I.title as item_title";
 			$array .= ", I.type as item_type";
 			$array .= ", UI.user_login as item_author";
@@ -271,9 +239,9 @@ class CPT_Review extends CPT_Object {
 		$where = parent::WPCB_posts_where($where);
 	
 		if ($wp_query->query["post_type"] == $this->type) {
-			if (isset($_REQUEST["item_id"])) {
-				$where .= " AND R.item_id = {$_REQUEST['item_id']}";
-			}
+			if (isset ($_REQUEST['item_id'])) 			$where .= " AND I.id = {$_REQUEST['item_id']}";
+			if (isset ($_REQUEST['review_author'])) 	$where .= " AND UR.id = " . $_REQUEST['review_author'];
+			if (isset ($_REQUEST['item_author'])) 		$where .= " AND UI.id = " . $_REQUEST['item_author'];
 		}
 
 		return $where;
@@ -286,20 +254,20 @@ class CPT_Review extends CPT_Object {
 // 	}
 	
 	
-	public function WPCB_post_row_actions($actions, $post){
+// 	public function WPCB_post_row_actions($actions, $post){
 	
-		if ($post->post_type != $this->type) return $actions;
+// 		if ($post->post_type != $this->type) return $actions;
 	
-		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
-		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
+// 		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
+// 		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
 	
-		if (!RoleTaxonomy::canEditReviewPost($post)) {		// "Edit" & "Trash" only if editable by user
-			unset ($actions['edit']);
-			unset ($actions['trash']);
-		}
+// 		if (!RoleTaxonomy::canEditReviewPost($post)) {		// "Edit" & "Trash" only if editable by user
+// 			unset ($actions['edit']);
+// 			unset ($actions['trash']);
+// 		}
 	
-		return $actions;
-	}
+// 		return $actions;
+// 	}
 	
 	
 

@@ -220,14 +220,40 @@ class CPT_LearnOut extends CPT_Object {
 	}
 	
 	
-	public function WPCB_post_row_actions($actions, $post) {
 	
-		if ($post->post_type != $this->type) return $actions;
+	function add_bulk_actions() {
 	
-		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
-		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
-		return $actions;
-	}
+		global $post_type;
+		if ($post_type != $this->type) return;
+	
+		?>
+			<script type="text/javascript">
+				jQuery(document).ready(function() {
+	
+					var htmlselect = ["action", "action2"];
+						    	
+					htmlselect.forEach(function (s, i, o) {
+							  		
+						jQuery("select[name='" + s + "'] > option").remove();
+				        jQuery('<option>').val('view').text('<?php _e('View Learning Outcomes')?>').appendTo("select[name='" + s + "']");
+				        jQuery('<option>').val('trash').text('<?php _e('Trash Learning Outcomes')?>').appendTo("select[name='" + s + "']");
+				        jQuery('<option>').val('add_to_basket').text('<?php _e('Add Items To Basket')?>').appendTo("select[name='" + s + "']");
+				      });
+				});			    
+		    </script>
+	<?php
+	
+		}
+		
+	
+// 	public function WPCB_post_row_actions($actions, $post) {
+	
+// 		if ($post->post_type != $this->type) return $actions;
+	
+// 		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
+// 		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
+// 		return $actions;
+// 	}
 	
 	
 }

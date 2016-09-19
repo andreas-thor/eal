@@ -165,69 +165,35 @@ class CPT_Item extends CPT_Object{
 // 		$a = 7;
 	}
 	
-	public function WPCB_post_row_actions($actions, $post){
 
-		
-		if ($post->post_type != $this->type) return $actions;
-		
-		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
-		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
-		
-		if (!RoleTaxonomy::canEditItemPost($post)) {		// "Edit" & "Trash" only if editable by user
-			unset ($actions['edit']);
-			unset ($actions['trash']);
-		}
+	
+	function add_bulk_actions() {
+	
+		global $post_type;
+		if ($post_type != $this->type) return;
+	
+?>
+		<script type="text/javascript">
+			jQuery(document).ready(function() {
 
-		return $actions;
+				var htmlselect = ["action", "action2"];
+					    	
+				htmlselect.forEach(function (s, i, o) {
+						  		
+					jQuery("select[name='" + s + "'] > option").remove();
+			        jQuery('<option>').val('bulk').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('view').text('<?php _e('View Items')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('trash').text('<?php _e('Trash Items')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('add_to_basket').text('<?php _e('Add Items To Basket')?>').appendTo("select[name='" + s + "']");
+			      });
+			});			    
+	    </script>
+<?php
+
 	}
-	
-	
-	function custom_bulk_action() {
-	
 		
-		if ($_REQUEST["post_type"] != $this->type) return; 
-		
-		global $wpdb;
-		
-		$wp_list_table = _get_list_table('WP_Posts_List_Table');
 	
 	
-		if ($wp_list_table->current_action() == 'view') {
-			$_REQUEST['page'] = 'view';
-		}
-	
-		if ($wp_list_table->current_action() == 'add_to_basket') {
-	
-			$postids = $_REQUEST['post'];
-	
-			if (($_REQUEST['post_type'] == 'learnout')) {
-	
-				// get all items of the learning outcomes
-				$postids = array ();
-				foreach (array('itemsc', 'itemmc') as $itemtype) {
-					$postids=array_merge ($postids, $wpdb->get_col( "
-							SELECT      P.id
-							FROM        {$wpdb->prefix}eal_{$itemtype} E
-							JOIN		{$wpdb->prefix}posts P
-							ON			(P.ID = E.ID)
-							WHERE		P.post_parent = 0
-							AND			E.learnout_id IN (" . join(", ", $_REQUEST['post']) . ")"
-									));
-				}
-			}
-	
-			$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
-			if ($b_old == null) $b_old = array();
-			$b_new = array_unique (array_merge ($b_old, $postids));
-			$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new);
-	
-	
-		}
-	
-	
-	
-	
-	}
 	
 	
 	
@@ -359,16 +325,16 @@ class CPT_Item extends CPT_Object{
 	
 		if ($wp_query->query["post_type"] == $this->type) {
 			
-			if ($wp_query->get('orderby') == $this->table_columns['item_title'])	 	$orderby_statement = "item_title {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['item_title'])	 	$orderby_statement = "I.title {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['date'])		 		$orderby_statement = "{$wpdb->posts}.post_date {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['item_type']) 		$orderby_statement = "item_type {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['item_author'])	 	$orderby_statement = "item_author {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['item_points']) 		$orderby_statement = "item_points {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['item_type']) 		$orderby_statement = "I.type {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['item_author'])	 	$orderby_statement = "U.user_login {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['item_points']) 		$orderby_statement = "I.points {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['level_FW']) 			$orderby_statement = "I.level_FW {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['level_PW']) 			$orderby_statement = "I.level_PW {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['level_KW']) 			$orderby_statement = "I.level_KW {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['no_of_reviews'])		$orderby_statement = "no_of_reviews {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['item_learnout'])		$orderby_statement = "learnout_title {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['item_learnout'])		$orderby_statement = "L.title {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['difficulty']) 		$orderby_statement = "I.difficulty {$wp_query->get('order')}";
 		}
 	
@@ -390,7 +356,7 @@ class CPT_Item extends CPT_Object{
 				
 			if (isset($_REQUEST["learnout_id"])) 		$where .= " AND L.id = {$_REQUEST['learnout_id']}";
 			if (isset ($_REQUEST['item_author'])) 		$where .= " AND {$wpdb->posts}.post_author 			= " . $_REQUEST['item_author'];
-			if (isset ($_REQUEST['item_points'])) 		$where .= " AND I.points  	= " . $_REQUEST['points'];
+			if (isset ($_REQUEST['item_points'])) 		$where .= " AND I.points  	= " . $_REQUEST['item_points'];
 			if (isset ($_REQUEST['level_FW'])) 			$where .= " AND I.level_FW 	= " . $_REQUEST['level_FW'];
 			if (isset ($_REQUEST['level_PW'])) 			$where .= " AND I.level_PW 	= " . $_REQUEST['level_PW'];
 			if (isset ($_REQUEST['level_KW'])) 			$where .= " AND I.level_KW	= " . $_REQUEST['level_KW'];
