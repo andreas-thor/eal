@@ -84,6 +84,7 @@ abstract class CPT_Object {
 		add_filter('post_row_actions', array ($this , 'WPCB_post_row_actions'), 10, 2);
 		
 		add_action( 'restrict_manage_posts', array ($this, 'WPCB_restrict_manage_posts') );
+		add_filter('months_dropdown_results', '__return_empty_array');	// TODO: Implement Date Filter for All Items (currently for none, because it only works for real item types)
 		
 		add_action('admin_footer-edit.php', array ($this, 'add_bulk_actions'));
 		add_action('load-edit.php', array ($this, 'custom_bulk_action'));
@@ -246,7 +247,8 @@ abstract class CPT_Object {
 	
 		global $post;
 	
-		$basic_url = remove_query_arg (array ("item_author", "review_author", "learnout_author", "item_points", "level_FW", "level_KW", "level_PW", "learnout_id"));
+		// "s" is search string
+		$basic_url = remove_query_arg (array ("s", "item_type", "item_author", "review_author", "learnout_author", "item_points", "taxonomy", "level_FW", "level_KW", "level_PW", "learnout_id"));
 	
 		switch ( $column ) {
 				
@@ -282,10 +284,18 @@ abstract class CPT_Object {
 				break;
 			
 			case 'item_type':
-				if ($post->item_type == "itemsc") echo ('<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div>');
-				if ($post->item_type == "itemmc") echo ('<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div>');
+				if ($post->item_type == "itemsc") printf ('<a href="%1$s"><div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div></a>', add_query_arg ('item_type', "itemsc", $basic_url));
+				if ($post->item_type == "itemmc") printf ('<a href="%1$s"><div class="dashicons-before dashicons-forms"  style="display:inline">&nbsp;</div></a>', add_query_arg ('item_type', "itemmc", $basic_url));
 				break;
 	
+			case 'taxonomy':
+				foreach (wp_get_post_terms($post->ID, RoleTaxonomy::getCurrentDomain()["name"]) as $term) {
+					printf ('<a href="%1$s">%2$s</a><br/>', add_query_arg ('taxonomy', $term->term_id , $basic_url), $term->name);
+				}
+				
+				
+				break;
+				
 			case 'item_author':
 				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('item_author', $post->item_author_id, $basic_url), $post->item_author);
 				break;
@@ -300,6 +310,8 @@ abstract class CPT_Object {
 					
 			case 'difficulty': echo ($post->difficulty); break;
 				
+			
+			
 			case 'item_points':
 				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('item_points', $post->item_points, $basic_url), $post->item_points);
 				break;
@@ -405,6 +417,7 @@ abstract class CPT_Object {
 	public function WPCB_manage_edit_sortable_columns ($columns) {
 		$sortable_columns = $this->table_columns;
 		unset ($sortable_columns['cb']);
+		unset ($sortable_columns['taxonomy']);
 		return $sortable_columns;
 // 		return array(
 // 				'item_title' => 'Title',
@@ -485,25 +498,38 @@ abstract class CPT_Object {
 	}
 	
 	
+
+	
 	public function WPCB_restrict_manage_posts() {
 	
 		global $typenow, $wp_query;
 	
 		// an array of all the taxonomyies you want to display. Use the taxonomy name or slug
-		$taxonomies = array('topic');
+		$taxonomies = array(RoleTaxonomy::getCurrentDomain()["name"]);
 	
 		// must set this to the post type you want the filter(s) displayed on
 		if( $typenow == $this->type ){
-	
+
+			if (($this->type == "item") || ($this->type == "itembasket")) { 
+				$selected = isset($_REQUEST["item_type"]) ? $_REQUEST["item_type"] : "0";
+				printf ('<select class="postform" name="item_type">');
+				printf ('<option value="0" %1$s>All Item Types</option>', 		($selected=="0") ? "selected" : "");
+				printf ('<option value="itemsc" %1$s>Single Choice</option>', 	($selected=="itemsc") ? "selected" : "");
+				printf ('<option value="itemmc" %1$s>Multiple Choice</option>', ($selected=="itemmc") ? "selected" : "");
+				printf ('</select>');
+			}
+				
+				
+			
 			wp_dropdown_categories(array(
 					'show_option_all' =>  __("Show All Topics"),
-					'taxonomy'        =>  'topic',
-					'name'            =>  'topic',
+					'taxonomy'        =>  RoleTaxonomy::getCurrentDomain()["name"],
+					'name'            =>  'taxonomy',
 					'orderby'         =>  'name',
-					'selected'        =>  isset($wp_query->query['topic']) ? $wp_query->query['topic'] :'',
+					'selected'        =>  isset($wp_query->query['taxonomy']) ? $wp_query->query['taxonomy'] :'',
 					'hierarchical'    =>  true,
 					'depth'           =>  0,
-					'value_field'	  =>  'slug',
+					'value_field'	  =>  'term_id',
 					'show_count'      =>  true, // Show # listings in parens
 					'hide_empty'      =>  false, // Don't show businesses w/o listings
 			));

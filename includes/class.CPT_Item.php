@@ -157,14 +157,7 @@ class CPT_Item extends CPT_Object{
 		return (object) $counts;
 	}
 	
-	public function WPCB_post_search($search, $wpquery){
-	
-		global $post_type;
-		if ($post_type != $this->type) return $search;
-		
-		return $search;
-// 		$a = 7;
-	}
+
 	
 
 	
@@ -356,15 +349,25 @@ class CPT_Item extends CPT_Object{
 			if ($this->type == "item") {
 				$where = str_replace( "{$wpdb->posts}.post_type = 'item'", "{$wpdb->posts}.post_type LIKE 'item%'", $where);
 			}
-				
-			if (isset($_REQUEST["learnout_id"])) 		$where .= " AND L.id = {$_REQUEST['learnout_id']}";
+
+			if (isset ($_REQUEST["item_type"]) && ($_REQUEST['item_type'] != "0")) 		$where .= " AND I.type = '{$_REQUEST['item_type']}'";
+			if (isset ($_REQUEST["learnout_id"])) 		$where .= " AND L.id = {$_REQUEST['learnout_id']}";
 			if (isset ($_REQUEST['item_author'])) 		$where .= " AND {$wpdb->posts}.post_author 			= " . $_REQUEST['item_author'];
 			if (isset ($_REQUEST['item_points'])) 		$where .= " AND I.points  	= " . $_REQUEST['item_points'];
-			if (isset ($_REQUEST['level_FW'])) 			$where .= " AND I.level_FW 	= " . $_REQUEST['level_FW'];
-			if (isset ($_REQUEST['level_PW'])) 			$where .= " AND I.level_PW 	= " . $_REQUEST['level_PW'];
-			if (isset ($_REQUEST['level_KW'])) 			$where .= " AND I.level_KW	= " . $_REQUEST['level_KW'];
+			if (isset ($_REQUEST['level_FW']) && ($_REQUEST['level_FW']>0)) 			$where .= " AND I.level_FW 	= " . $_REQUEST['level_FW'];
+			if (isset ($_REQUEST['level_PW']) && ($_REQUEST['level_PW']>0)) 			$where .= " AND I.level_PW 	= " . $_REQUEST['level_PW'];
+			if (isset ($_REQUEST['level_KW']) && ($_REQUEST['level_KW']>0)) 			$where .= " AND I.level_KW	= " . $_REQUEST['level_KW'];
 			if (isset ($_REQUEST['learnout_id']))		$where .= " AND I.learnout_id = " . $_REQUEST['learnout_id'];
+
+			if (isset ($_REQUEST['taxonomy']) && ($_REQUEST['taxonomy']>0))	{
 				
+				$children = get_term_children( $_REQUEST['taxonomy'], RoleTaxonomy::getCurrentDomain()["name"] );
+				array_push($children, $_REQUEST['taxonomy']);
+				$where .= sprintf (' AND %1$s.ID IN (SELECT TR.object_id FROM %2$s TT JOIN %3$s TR ON (TT.term_taxonomy_id = TR.term_taxonomy_id) WHERE TT.term_id IN ( %4$s ))',
+					$wpdb->posts , $wpdb->term_taxonomy, $wpdb->term_relationships, implode(', ', $children));
+				
+			}
+			
 			if ($this->type == "itembasket") {
 			
 				$where = str_replace( "{$wpdb->posts}.post_type = 'itembasket'", "{$wpdb->posts}.post_type LIKE 'item%'", $where);
@@ -386,9 +389,20 @@ class CPT_Item extends CPT_Object{
 	
 	
 
+	public function WPCB_post_search($search, $wpquery){
 	
+		global $post_type;
+		if ($post_type != $this->type) return $search;
+		if (empty ($search)) return $search;
+// 		if (!isset ($wpquery->query['s'])) return $search;
+		
+		
+		$search = sprintf (' AND ( L.Title LIKE "%%%1$s%%" OR I.Title LIKE "%%%1$s%%" OR U.user_login LIKE "%%%1$s%%" )', $wpquery->query['s']);
+		return $search;
+		// 		$a = 7;
+	}
 	
-
+ 
 
 
 
