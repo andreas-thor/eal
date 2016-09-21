@@ -69,6 +69,8 @@ class CPT_Review extends CPT_Object {
 		
 	
 	
+
+	
 	public function WPCB_register_meta_box_cb () {
 	
 		global $review;
@@ -180,6 +182,24 @@ class CPT_Review extends CPT_Object {
 	}
 	
 	
+	function WPCB_count_posts( $counts, $type, $perm ) {
+		global $wpdb;
+		if ($type != $this->type) return $counts;
+		
+		$query  = "SELECT P.post_status, COUNT(*) AS num_posts FROM {$wpdb->posts} P ";
+		$query .= " JOIN {$wpdb->prefix}eal_{$this->type} AS R ON (R.id = P.ID) ";
+		$query .= " JOIN {$wpdb->prefix}eal_item AS I ON (I.id = R.item_id AND I.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
+		$query .= " JOIN {$wpdb->posts} AS postitem ON (I.id = postitem.id) ";
+		$query .= " GROUP BY P.post_status";
+		
+		$results = (array) $wpdb->get_results( $query, ARRAY_A );
+		$counts = array_fill_keys( get_post_stati(), 0 );
+		foreach ( $results as $row ) {
+			$counts[ $row['post_status'] ] = $row['num_posts'];
+		}
+		return (object) $counts;
+	}	
+	
 	public function WPCB_posts_orderby($orderby_statement) {
 	
 		global $wp_query, $wpdb;
@@ -215,6 +235,8 @@ class CPT_Review extends CPT_Object {
 
 		return $where;
 	}
+	
+
 	
 	
 	

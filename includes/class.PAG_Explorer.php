@@ -17,6 +17,10 @@ class PAG_Explorer {
 			if ($k == "itemsc") return "Single Choice";
 		}
 		
+		if ($dim == "level") {
+			return EAL_Item::$level_label[$k-1];
+		}
+		
 		return $k;
 	}
 	
@@ -29,19 +33,7 @@ class PAG_Explorer {
 		if ($name == "difficulty") {
 			if (!isset ($item->difficulty)) return [];
 			return [$item->difficulty];
-// 			if ($item->difficulty <= 0.1) return [0.1];
-// 			if ($item->difficulty <= 0.2) return [0.2];
-// 			if ($item->difficulty <= 0.3) return [0.3];
-// 			if ($item->difficulty <= 0.4) return [0.4];
-// 			if ($item->difficulty <= 0.5) return [0.5];
-// 			if ($item->difficulty <= 0.6) return [0.6];
-// 			if ($item->difficulty <= 0.7) return [0.7];
-// 			if ($item->difficulty <= 0.8) return [0.8];
-// 			if ($item->difficulty <= 0.9) return [0.9];
-// 			if ($item->difficulty <= 1.0) return [1.0];
-// 			return [];
 		}
-		
 		
 		if (($name == "dim") || ($name == "level")) {
 			$res = array();
@@ -466,7 +458,7 @@ class PAG_Explorer {
 				"topic1"		=> "<button value='topic1' 		style='margin:0.2em;' id='drag_topic1' 		draggable='true' ondragstart='drag(event)'> Topic Level 1</button>", 
 				"topic2"		=> "<button value='topic2' 		style='margin:0.2em;' id='drag_topic2' 		draggable='true' ondragstart='drag(event)'> Topic Level 2</button>",
 				"difficulty"	=> "<button value='difficulty' 	style='margin:0.2em;' id='drag_difficulty' 	draggable='true' ondragstart='drag(event)'> Schwierigkeitsgrad</button>"
-			);
+					);
 		
 		?>
 		

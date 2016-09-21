@@ -212,7 +212,15 @@ function set_eal_admin_menu_entries () {
     add_submenu_page( 'edit.php?post_type=itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view', array ('PAG_Basket', 'createPageView'));
     add_submenu_page( 'edit.php?post_type=itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'generator', array ('PAG_Generator', 'createPage'));
     
-    
+ 	
+// ALT
+//     $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
+//     add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', array ('PAG_Basket', 'createPageTable'), 'dashicons-cart', 31);
+//     add_submenu_page( 'eal_page_itembasket', 'Table', '<div class="dashicons-before dashicons-list-view" style="display:inline">&nbsp;</div> Table', 'edit_others_posts', 'eal_page_itembasket', array ('PAG_Basket', 'createPageTable'));
+//     add_submenu_page( 'eal_page_itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_others_posts', 'ist-blueprint', array ('PAG_Explorer', 'createPage'));
+//     add_submenu_page( 'eal_page_itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_others_posts', 'view', array ('PAG_Basket', 'createPageView'));
+//     add_submenu_page( 'eal_page_itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_others_posts', 'generator', array ('PAG_Generator', 'createPage'));
+         
     
     
 }
@@ -222,25 +230,6 @@ function set_eal_admin_menu_entries () {
 
 // register AJAX-PHP-function
 add_action( 'wp_ajax_load_items', array ('PAG_Explorer', 'load_items_callback') );
-
-// add_action('admin_footer-edit.php', 'custom_bulk_admin_footer');
-
-// function custom_bulk_admin_footer() {
-
-// 	global $post_type;
-
-// 	if (($post_type == 'itemsc') || ($post_type == 'itemmc') || ($post_type == 'learnout')) {
-// 		?>
-//      <script type="text/javascript">
-//       jQuery(document).ready(function() {
-//        jQuery('<option>').val('export').text('<?php _e('Export')?>').appendTo("select[name='action']");
-        //jQuery('<option>').val('export').text('<?php _e('Export')?>').appendTo("select[name='action2']");
-//       });
-    //</script>
-    //<?php
-//   }
-// }
-
 
 
 

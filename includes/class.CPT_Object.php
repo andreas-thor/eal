@@ -89,10 +89,16 @@ abstract class CPT_Object {
 		add_action('admin_footer-edit.php', array ($this, 'add_bulk_actions'));
 		add_action('load-edit.php', array ($this, 'custom_bulk_action'));
 		
-		
+		add_filter( 'wp_count_posts', array ($this, 'WPCB_count_posts'), 10, 3);
+		add_filter( 'views_edit-{$this->type}', array ($this, 'WPCP_views_edit'));
 		
 	}		
 	
+	
+	public function WPCP_views_edit ($views) {
+		unset($views['mine']);
+		return $views;
+	}
 	
 	public function WPCB_post_row_actions($actions, $post){
 	

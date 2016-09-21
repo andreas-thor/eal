@@ -83,7 +83,6 @@ class CPT_Item extends CPT_Object{
 		
 		
 		add_filter( 'views_edit-' . $this->type, array ($this, 'wpse14230_views_edit_post'));
-		add_filter( 'wp_count_posts', array ($this, 'wpse149143_wp_count_posts'), 10, 3);
 
 		
 		
@@ -104,23 +103,13 @@ class CPT_Item extends CPT_Object{
 	
 	/**
 	 * Modify returned post counts by status for the current post type.
-	 *  Only retrieve counts of own items for users without rights to 'edit_others_posts'
-	 *
-	 * @since   26 June 2014
-	 * @version 26 June 2014
-	 * @author  W. van Dam
-	 *
-	 * @notes   Based on wp_count_posts (wp-includes/posts.php)
-	 *
-	 * @param object $counts An object containing the current post_type's post
-	 *                       counts by status.
+	 * @param object $counts An object containing the current post_type's post counts by status.
 	 * @param string $type   Post type.
-	 * @param string $perm   The permission to determine if the posts are 'readable'
-	 *                       by the current user.
+	 * @param string $perm   The permission to determine if the posts are 'readable' by the current user.
 	 *
 	 * @return object Number of posts for each status
 	 */
-	function wpse149143_wp_count_posts( $counts, $type, $perm ) {
+	function WPCB_count_posts( $counts, $type, $perm ) {
 		global $wpdb;
 	
 		if ($type != $this->type) return $counts;
@@ -307,6 +296,7 @@ class CPT_Item extends CPT_Object{
 			$array .= ", (select count(*) from {$wpdb->prefix}eal_review AS R join {$wpdb->posts} AS RP ON (R.ID=RP.ID) where RP.post_parent=0 AND I.id = R.item_id) AS no_of_reviews";
 			$array .= ", L.title AS learnout_title";
 			$array .= ", L.id AS learnout_id ";
+			$array .= ", I.difficulty as difficulty ";
 		}
 		return $array;
 	}
