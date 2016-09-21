@@ -101,50 +101,7 @@ class CPT_Item extends CPT_Object{
 	}
 	
 	
-	/**
-	 * Modify returned post counts by status for the current post type.
-	 * @param object $counts An object containing the current post_type's post counts by status.
-	 * @param string $type   Post type.
-	 * @param string $perm   The permission to determine if the posts are 'readable' by the current user.
-	 *
-	 * @return object Number of posts for each status
-	 */
-	function WPCB_count_posts( $counts, $type, $perm ) {
-		global $wpdb;
-	
-		if ($type != $this->type) return $counts;
-		
-		$query  = "
-			SELECT post_status, COUNT( * ) AS num_posts 
-			FROM {$wpdb->posts} P
-			JOIN {$wpdb->prefix}eal_item E
-			ON (P.ID = E.ID)
-			WHERE E.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "' 
-			AND P.post_type ";
-		$query .= ($type == "item") || ($type == "itembasket") ? "LIKE 'item%'" : ("= '" . $type . "'");
-		
-		
-		if ($type == "itembasket") {
-				
-			$basket = get_user_meta(get_current_user_id(), 'itembasket', true);
-			if (is_array($basket) && (count($basket)>0)) {
-				$query .= " AND E.ID IN (" . implode(",", $basket) . ") ";
-			} else {
-				$query .= " AND (1=2) ";
-			}
-		
-		}		
-		
-		
-		$query .= " GROUP BY P.post_status";
-		$results = (array) $wpdb->get_results( $query, ARRAY_A );
-		$counts = array_fill_keys( get_post_stati(), 0 );
-	
-		foreach ( $results as $row ) {
-			$counts[ $row['post_status'] ] = $row['num_posts'];
-		}
-		return (object) $counts;
-	}
+
 	
 
 	
@@ -269,10 +226,10 @@ class CPT_Item extends CPT_Object{
 	 * @see CPT_Object::WPCB_posts_join()
 	 */
 	
-	public function WPCB_posts_join ($join) {
+	public function WPCB_posts_join ($join, $checktype=TRUE) {
 		global $wp_query, $wpdb;
 	
-		if ($wp_query->query["post_type"] == $this->type) {
+		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
 			$join .= " JOIN {$wpdb->prefix}eal_item I ON (I.id = {$wpdb->posts}.ID AND I.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
 			$join .= " JOIN {$wpdb->users} U ON (U.id = {$wpdb->posts}.post_author) ";
 			$join .= " LEFT OUTER JOIN {$wpdb->prefix}eal_learnout L ON (L.id = I.learnout_id)";
@@ -329,11 +286,11 @@ class CPT_Item extends CPT_Object{
 	
 	
 					
-	public function WPCB_posts_where($where) {
+	public function WPCB_posts_where($where, $checktype = TRUE) {
 	
 		global $wp_query, $wpdb;
 		
-		if ($wp_query->query["post_type"] == $this->type) {
+		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
 			
 			// if all items are considered --> consider all type starting with "item"
 			if ($this->type == "item") {
@@ -341,13 +298,13 @@ class CPT_Item extends CPT_Object{
 			}
 
 			if (isset ($_REQUEST["item_type"]) && ($_REQUEST['item_type'] != "0")) 		$where .= " AND I.type = '{$_REQUEST['item_type']}'";
-			if (isset ($_REQUEST["learnout_id"])) 		$where .= " AND L.id = {$_REQUEST['learnout_id']}";
-			if (isset ($_REQUEST['item_author'])) 		$where .= " AND {$wpdb->posts}.post_author 			= " . $_REQUEST['item_author'];
-			if (isset ($_REQUEST['item_points'])) 		$where .= " AND I.points  	= " . $_REQUEST['item_points'];
+			if (isset ($_REQUEST["learnout_id"])) 										$where .= " AND L.id = {$_REQUEST['learnout_id']}";
+			if (isset ($_REQUEST['item_author'])) 										$where .= " AND {$wpdb->posts}.post_author 			= " . $_REQUEST['item_author'];
+			if (isset ($_REQUEST['item_points'])) 										$where .= " AND I.points  	= " . $_REQUEST['item_points'];
 			if (isset ($_REQUEST['level_FW']) && ($_REQUEST['level_FW']>0)) 			$where .= " AND I.level_FW 	= " . $_REQUEST['level_FW'];
 			if (isset ($_REQUEST['level_PW']) && ($_REQUEST['level_PW']>0)) 			$where .= " AND I.level_PW 	= " . $_REQUEST['level_PW'];
 			if (isset ($_REQUEST['level_KW']) && ($_REQUEST['level_KW']>0)) 			$where .= " AND I.level_KW	= " . $_REQUEST['level_KW'];
-			if (isset ($_REQUEST['learnout_id']))		$where .= " AND I.learnout_id = " . $_REQUEST['learnout_id'];
+			if (isset ($_REQUEST['learnout_id']))										$where .= " AND I.learnout_id = " . $_REQUEST['learnout_id'];
 
 			if (isset ($_REQUEST['taxonomy']) && ($_REQUEST['taxonomy']>0))	{
 				
@@ -396,7 +353,31 @@ class CPT_Item extends CPT_Object{
 
 
 
+	/**
+	 * Modify returned post counts by status for the current post type.
+	 * @param object $counts An object containing the current post_type's post counts by status.
+	 * @param string $type   Post type.
+	 * @param string $perm   The permission to determine if the posts are 'readable' by the current user.
+	 *
+	 * @return object Number of posts for each status
+	 */
+	public function WPCB_count_posts( $counts, $type, $perm) {
+		global $wpdb;
 	
+		if ($type != $this->type) return $counts;
+	
+		$query  = "SELECT {$wpdb->posts}.post_status, COUNT( * ) AS num_posts ";
+		$query .= $this->WPCB_posts_join  (" FROM {$wpdb->posts} ", FALSE);
+		$query .= $this->WPCB_posts_where (" WHERE {$wpdb->posts}.post_type = '{$type}' ", FALSE);
+		$query .= " GROUP BY {$wpdb->posts}.post_status";
+		
+		$results = (array) $wpdb->get_results( $query, ARRAY_A );
+		$counts = array_fill_keys( get_post_stati(), 0 );
+		foreach ( $results as $row ) {
+			$counts[ $row['post_status'] ] = $row['num_posts'];
+		}
+		return (object) $counts;
+	}	
 
 	
 	

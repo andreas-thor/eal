@@ -405,19 +405,6 @@ abstract class CPT_Object {
 	
 	public function WPCB_manage_posts_columns($columns) {
 		return $this->table_columns;
-// 		return array(
-// 				'cb' => '<input type="checkbox" />',
-// 				'item_title' => 'Title',
-// 				'date' => 'Date',
-// 				'item_type' => 'Type',
-// 				'item_author' => 'Author',
-// 				'points' => 'Points',
-// 				'level_FW' => 'FW',
-// 				'level_KW' => 'KW',
-// 				'level_PW' => 'PW',
-// 				'no_of_reviews' => 'Reviews',
-// 				'item_learnout' => 'Learn. Out.',
-// 				'difficulty' => 'Difficulty');
 	}
 	
 	public function WPCB_manage_edit_sortable_columns ($columns) {
@@ -425,30 +412,9 @@ abstract class CPT_Object {
 		unset ($sortable_columns['cb']);
 		unset ($sortable_columns['taxonomy']);
 		return $sortable_columns;
-// 		return array(
-// 				'item_title' => 'Title',
-// 				'date' => 'Date',
-// 				'item_type' => 'Type',
-// 				'item_author' => 'Author',
-// 				'points' => 'Points',
-// 				'level_FW' => 'FW',
-// 				'level_KW' => 'KW',
-// 				'level_PW' => 'PW',
-// 				'no_of_reviews' => 'Reviews',
-// 				'item_learnout' => 'Learn. Out.',
-// 				'difficulty' => 'Difficulty');
 	}	
 	
-// 	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
-	
-// 		global $post;
-	
-// 		switch ( $column ) {
-// 			case 'FW': echo (($post->level_FW > 0) ? EAL_Item::$level_label[$post->level_FW-1] : ''); break;
-// 			case 'PW': echo (($post->level_PW > 0) ? EAL_Item::$level_label[$post->level_PW-1] : ''); break;
-// 			case 'KW': echo (($post->level_KW > 0) ? EAL_Item::$level_label[$post->level_KW-1] : ''); break;
-// 		}
-// 	}
+
 
 
 
@@ -461,16 +427,6 @@ abstract class CPT_Object {
 		}
 		return $result;
 	}
-	
-	
-	
-
-	
-
-	
-	
-
-
 	
 	
 	
@@ -505,6 +461,24 @@ abstract class CPT_Object {
 	
 	
 
+	public function WPCB_count_posts( $counts, $type, $perm) {
+		global $wpdb;
+	
+		if ($type != $this->type) return $counts;
+	
+		$query  = "SELECT {$wpdb->posts}.post_status, COUNT( * ) AS num_posts ";
+		$query .= $this->WPCB_posts_join  (" FROM {$wpdb->posts} ", FALSE);
+		$query .= " GROUP BY {$wpdb->posts}.post_status";
+	
+		$results = (array) $wpdb->get_results( $query, ARRAY_A );
+		$counts = array_fill_keys( get_post_stati(), 0 );
+		foreach ( $results as $row ) {
+			$counts[ $row['post_status'] ] = $row['num_posts'];
+		}
+		return (object) $counts;
+	}
+	
+	
 	
 	public function WPCB_restrict_manage_posts() {
 	

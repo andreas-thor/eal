@@ -35,29 +35,11 @@ class CPT_LearnOut extends CPT_Object {
 	}
 	
 	
+	
 
-	function WPCB_count_posts( $counts, $type, $perm ) {
-		global $wpdb;
 	
-		if ($type != $this->type) return $counts;
-	
-// 		$query  = "
-// 		SELECT post_status, COUNT( * ) AS num_posts
-// 		FROM {$wpdb->posts} P
-// 		JOIN {$wpdb->prefix}eal_review R
-// 		ON (R.ID = E.ID)
-// 		JOIN {$wpdb->prefix}eal_item E
-// 		ON (R.item_ID = E.ID)
-// 		WHERE E.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "'";
-// 		$query .= " GROUP BY P.post_status";
-// 		$results = (array) $wpdb->get_results( $query, ARRAY_A );
-// 		$counts = array_fill_keys( get_post_stati(), 0 );
-	
-// 		foreach ( $results as $row ) {
-// 			$counts[ $row['post_status'] ] = $row['num_posts'];
-// 		}
-		return (object) $counts;
-	}
+
+
 	
 	public function WPCB_register_meta_box_cb () {
 	
@@ -208,9 +190,9 @@ class CPT_LearnOut extends CPT_Object {
 		return $array;
 	}
 	
-	public function WPCB_posts_join ($join) {
+	public function WPCB_posts_join ($join, $checktype=TRUE) {
 		global $wp_query, $wpdb;
-		if ($wp_query->query["post_type"] == $this->type) {
+		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
 			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} L ON (L.id = {$wpdb->posts}.ID AND L.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
 			$join .= " JOIN {$wpdb->users} U ON (U.id = {$wpdb->posts}.post_author) ";
 		}
@@ -252,6 +234,9 @@ class CPT_LearnOut extends CPT_Object {
 		return $orderby_statement;
 	}
 	
+	
+	
+
 	
 	
 	function add_bulk_actions() {

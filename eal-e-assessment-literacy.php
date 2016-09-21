@@ -95,8 +95,8 @@ function wpdocs_enqueue_custom() {
 add_action( 'admin_enqueue_scripts', 'wpdocs_enqueue_custom' );
 
 
-
-function example_add_dashboard_widgets() {
+add_action( 'wp_dashboard_setup', 'WPCB_dashboard_setup' );
+function WPCB_dashboard_setup() {
 
 	global $wp_meta_boxes;
 	unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_quick_press']);
@@ -104,23 +104,64 @@ function example_add_dashboard_widgets() {
 	unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_right_now']);
 	unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_activity']);
 	
-	wp_add_dashboard_widget(
-                 'example_dashboard_widget',         // Widget slug.
-                 'Example Dashboard Widget',         // Title.
-                 'example_dashboard_widget_function' // Display function.
-        );	
-}
-add_action( 'wp_dashboard_setup', 'example_add_dashboard_widgets' );
-
-/**
- * Create the function to output the contents of our Dashboard Widget.
- */
-function example_dashboard_widget_function() {
-
-	// Display whatever it is you want to show.
-	echo "Hello World, I'm a great Dashboard Widget";
+	unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_primary']);
+	unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_secondary']);
+	unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_plugins']);
+	
+	wp_add_dashboard_widget('dashboard_items', 		'Item Overview', 		'WPCP_dashboard_items' );	
+	wp_add_dashboard_widget('dashboard_metadata', 	'Metadata Overview', 	'WPCP_dashboard_metadata' );	
+	wp_add_dashboard_widget('dashboard_user', 		'User Overview', 		'WPCP_dashboard_user' );	
 }
 
+function WPCP_dashboard_items() {
+
+	$objects = [new CPT_Item(), new CPT_ItemSC(), new CPT_ItemSC(), new CPT_Review()];
+	$counts = array();
+	foreach ($objects as $object) {
+		$object->init();
+		array_push($counts, $object->WPCB_count_posts(NULL, $object->type, NULL));
+	}
+	
+	printf ('<table border="0">');
+	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-format-aside" 	style="display:inline">&nbsp;</div> All Items</td>			<td align="right" style="width:4em"><a href="edit.php?post_type=item">%1$d</a></td>		<td align="right" style="width:10em">&nbsp;(%2$d pending review)</td></tr>', $counts[0]->publish+$counts[0]->pending+$counts[0]->draft, $counts[0]->draft);
+	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-marker" 			style="display:inline">&nbsp;</div> Single Choice</td>		<td align="right" style="width:4em"><a href="edit.php?post_type=itemsc">%1$d</a></td>	<td align="right" style="width:10em">&nbsp;(%2$d pending review)</td></tr>', $counts[1]->publish+$counts[1]->pending+$counts[1]->draft, $counts[1]->draft);
+	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-forms" 			style="display:inline">&nbsp;</div> Multiple Choice</td>	<td align="right" style="width:4em"><a href="edit.php?post_type=itemmc">%1$d</a></td>	<td align="right" style="width:10em">&nbsp;(%2$d pending review)</td></tr>', $counts[2]->publish+$counts[2]->pending+$counts[2]->draft, $counts[2]->draft);
+	printf ('</table><hr>');
+ 	printf ('<table border="0">');
+	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-admin-comments" 	style="display:inline">&nbsp;</div> Reviews</td>			<td align="right" style="width:4em"><a href="edit.php?post_type=review">%1$d</a></td></tr>', $counts[3]->publish+$counts[3]->pending+$counts[3]->draft);
+ 	printf ('</table>');
+}
+
+function WPCP_dashboard_metadata() {
+
+	printf ('<table border="0">');
+	$domain = RoleTaxonomy::getCurrentDomain();
+	if ($domain["name"]!="") {
+		$term_count = wp_count_terms( $domain["name"], array( 'hide_empty' => false ));
+		printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-networking" 		style="display:inline">&nbsp;</div> %1$s</td>			<td align="right" style="width:4em"><a href="edit-tags.php?taxonomy=%2$s">%3$d</a></td></tr>', $domain["label"], $domain["name"], $term_count);
+	}
+	
+	$object = new CPT_LearnOut();
+	$object->init();
+	$count = $object->WPCB_count_posts(NULL, $object->type, NULL);
+	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-welcome-learn-more" 	style="display:inline">&nbsp;</div> Learning Outcomes</td>		<td align="right" style="width:4em"><a href="edit.php?post_type=learnout">%1$d</a></td></tr>', $count->publish+$count->pending+$count->draft);
+	printf ('</table>');
+}
+
+
+function WPCP_dashboard_user() {
+	global $wp_roles;
+	
+	printf ('<table border="0">');
+	$user = wp_get_current_user();
+	foreach ($user->roles as $role) {
+		printf ('<tr><td><div class="dashicons-before dashicons-admin-users" 	style="display:inline">&nbsp;</div> %2$s %1$s %3$s</td></tr>', 
+			$wp_roles->roles[$role]["name"], 
+			(get_user_meta ($user->ID, 'current_role', true)==$role) ? "<b>" : "",
+			(get_user_meta ($user->ID, 'current_role', true)==$role) ? "</b>" : "");
+	}
+	printf ('</table>');
+}
 
 add_action ('admin_menu', 'set_eal_admin_menu_entries');
 
@@ -179,29 +220,10 @@ function set_eal_admin_menu_entries () {
 	 	add_submenu_page( 'metadata', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', 'WPCB_import_topics');
 	 	add_submenu_page( 'metadata', 'Learning Outcomes', '<div class="dashicons-before dashicons-welcome-learn-more" style="display:inline">&nbsp;</div> Learn. Outcomes', 'edit_posts', 'edit.php?post_type=learnout');
 	 	 
-	 	
-	 	// 	 	add_submenu_page( 'menu_metadata', 'Taxonomy', '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> Taxonomy', 'edit_posts', 'eal_page_taxonomies', array ('PAG_Metadata', 'createTable'));
-	 		 
  	}
  	
  	
- 	
-// 	add_menu_page('eal_page_taxonomies', 'Taxonomies', 'edit_others_posts', 'eal_page_taxonomies', '', 'dashicons-networking', 30);
-//    	add_submenu_page( 'eal_page_taxonomies', 'Topic', 'Topic', 'edit_others_posts', 'edit-tags.php?taxonomy=topic');
-//    	add_submenu_page( 'eal_page_taxonomies', 'Import', 'Import', 'edit_others_posts', 'import-topics', 'WPCB_import_topics');
-   	
-   	
- 	
-//  	if ($_REQUEST['action'] == 'removefrombasket') {
-//  		$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
-//  		if ($_REQUEST['itemid']!=null) {
-//  			$b_new = array_diff ($b_old, [$_REQUEST['itemid']]);
-//  		}
-//  		if ($_REQUEST['itemids']!=null) {
-//  			$b_new = array_diff ($b_old, $_REQUEST['itemids']);
-//  		}
-//  		$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new, $b_old );
-//  	}
+
  	
         	
     
@@ -213,14 +235,6 @@ function set_eal_admin_menu_entries () {
     add_submenu_page( 'edit.php?post_type=itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'generator', array ('PAG_Generator', 'createPage'));
     
  	
-// ALT
-//     $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
-//     add_menu_page('eal_page_itembasket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'administrator', 'eal_page_itembasket', array ('PAG_Basket', 'createPageTable'), 'dashicons-cart', 31);
-//     add_submenu_page( 'eal_page_itembasket', 'Table', '<div class="dashicons-before dashicons-list-view" style="display:inline">&nbsp;</div> Table', 'edit_others_posts', 'eal_page_itembasket', array ('PAG_Basket', 'createPageTable'));
-//     add_submenu_page( 'eal_page_itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_others_posts', 'ist-blueprint', array ('PAG_Explorer', 'createPage'));
-//     add_submenu_page( 'eal_page_itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_others_posts', 'view', array ('PAG_Basket', 'createPageView'));
-//     add_submenu_page( 'eal_page_itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_others_posts', 'generator', array ('PAG_Generator', 'createPage'));
-         
     
     
 }
@@ -360,16 +374,6 @@ function WPCB_import_topics () {
 
 
 
-// highlight the proper top level menu
-// add_action('parent_file', 'set_eal_taxonomies_menu_correction');
-// function set_eal_taxonomies_menu_correction($parent_file) {
-// 	global $current_screen;
-// 	$taxonomy = $current_screen->taxonomy;
-// 	if ($taxonomy == 'topic')
-// 		$parent_file = 'eal_page_taxonomies';
-// 	return $parent_file;
-// }
-
 
 
 
@@ -380,32 +384,9 @@ function WPCB_import_topics () {
  */
 
 
-function create_eal_page_items () {
+function create_eal_page_items () { }
 
-	
-// 	$foo = menu_page_url("edit.php?post_type=item", 0);
-// 	wp_redirect($foo);
-// 	exit;
-	
-// 	$html  = '
-// 		<div class="wrap">
-// 			<form action="options.php" method="post" name="options">
-// 				<h1>All Items
-// 					<a class="add-new-h2" href="edit.php?post_type=itemsc">All Single Choice</a>
-// 					<a class="add-new-h2" href="edit.php?post_type=itemmc">All Multiple Choice</a>
-// 					<a class="add-new-h2" href="admin.php?page=import-items">Import Items</a>
-// 				</h1>
-// 			</form>
-// 		</div>';
-			
-// 	echo $html;
-}
-
-
-
-function create_eal_page_taxonomies () {
-	
-}
+function create_eal_page_taxonomies () { }
 
 /**
  * Add custom post types
@@ -425,8 +406,6 @@ register_activation_hook( __FILE__, array ('eal_learnout', 'createTables') );
 
 add_action( 'init', 'create_eal_items' );
 
-//add_action ('init', array('ItemMC', 'init'));
-
 
 
 
@@ -444,143 +423,9 @@ function create_eal_items() {
 	(new CPT_LearnOut())->init();
 	
 	RoleTaxonomy::init();
-	
-	
-	
-	
-	// 	CPT_ItemSC::init();
-// 	CPT_ItemMC::init();
-// 	CPT_Item_Review::CPT_init();
-	
-	
-// 		$book = new CustomPostType( 'Book' );
-// 		$book->add_taxonomy( 'xas', array ('hierarchical' => true) );
-// 		$book->add_taxonomy( 'author' );
-//
-// 		$book->add_meta_box(
-// 				'Book Info',
-// 				array(
-// 						'Year' => 'text',
-// 						'Genre' => 'text'
-// 				),
-// 				'normal',
-// 				'default',
-// 				array ('ItemMC', 'loadX')
-// 		);
-//
-// 		$book->add_meta_box(
-// 				'Author Info',
-// 				array(
-// 						'Name' => 'text',
-// 						'Nationality' => 'text',
-// 						'Birthday' => 'text'
-// 				)
-// 		);
-		
-	
-	
-	
-// 	function loadX ($post, $data) {
-// 		global $post;
-	
-// 		// Nonce field for some validation
-// 		wp_nonce_field ( plugin_basename ( __FILE__ ), 'custom_post_type' );
-	
-// 		// Get all inputs from $data
-// 		$custom_fields = $data ['args'] [0];
-	
-// 		// Get the saved values
-// 		$meta = get_post_custom ( $post->ID );
-	
-// 		// Check the array and loop through it
-// 		if (! empty ( $custom_fields )) {
-// 			/* Loop through $custom_fields */
-// 			foreach ( $custom_fields as $label => $type ) {
-// 				$field_id_name = strtolower ( str_replace ( ' ', '_', $data ['id'] ) ) . '_' . strtolower ( str_replace ( ' ', '_', $label ) );
-	
-// 				echo '<label for="' . $field_id_name . '">' . $label . '</label><input type="text" name="custom_meta[' . $field_id_name . ']" id="' . $field_id_name . '" value="AAA' . $meta [$field_id_name] [0] . '" />';
-// 			}
-// 		}
-// 	}
-		
- 	
-	
-	// add_action ('save_post', array ('itemmc', 'CPT_save_post'), 10, 2);
-	
-	
-	
-// 	foreach ($GLOBALS["eal_itemtypes"] as $id => $name) {
-		
-// // 		$currentmenupos++;
-// 		register_post_type( $id,
-// 				array(
-// 						'labels' => array(
-// 								'name' => $name,
-// 								'singular_name' => $name,
-// 								'add_new' => 'Add ' . $name,
-// 								'add_new_item' => 'Add New ' . $name,
-// 								'edit' => 'Edit',
-// 								'edit_item' => 'Edit ' . $name,
-// 								'new_item' => 'New ' . $name,
-// 								'view' => 'View',
-// 								'view_item' => 'View ' . $name,
-// 								'search_items' => 'Search ' . $name,
-// 								'not_found' => 'No Items found',
-// 								'not_found_in_trash' => 'No Items found in Trash',
-// 								'parent' => 'Parent Item'
-// 						),
-	
-// 						'public' => true,
-// 						'menu_position' => 2,
-// 						'supports' => array( 'title'), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
-// 						'taxonomies' => array( 'topic' ),
-// 						'menu_icon' => plugins_url( 'images/image.png', __FILE__ ),
-// 						'has_archive' => true,
-// 						'show_in_menu'    => true,
-// 						'register_meta_box_cb' => $id . '_add_meta_boxes'
-// 				)
-// 		);
-		
-// 		add_action ('save_post_' . $id, $id . "_save_post");
-		
-		
-		
-// 	}
 }
 
 
-// add_action( 'init', 'create_eal_taxonomies', 0 );
-// function create_eal_taxonomies () {
-	
-// 	// Add new taxonomy, make it hierarchical (like categories)
-// 	$labels = array (
-// 			'name' => _x ( 'Topics', 'taxonomy general name' ),
-// 			'singular_name' => _x ( 'Topic', 'taxonomy singular name' ),
-// 			'search_items' => __ ( 'Search Topics' ),
-// 			'all_items' => __ ( 'All Topics' ),
-// 			'parent_item' => __ ( 'Parent Topic' ),
-// 			'parent_item_colon' => __ ( 'Parent Topic:' ),
-// 			'edit_item' => __ ( 'Edit Topic' ),
-// 			'update_item' => __ ( 'Update Topic' ),
-// 			'add_new_item' => __ ( 'Add New Topic' ),
-// 			'new_item_name' => __ ( 'New Topic Name' ),
-// 			'menu_name' => __ ( 'Topic' ) 
-// 	);
-	
-// 	$args = array (
-// 			'hierarchical' => true,
-// 			'labels' => $labels,
-// 			'show_ui' => true,
-// 			'show_admin_column' => true,
-// 			'query_var' => true,
-// 			'show_in_menu'    => true,
-// // 			'rewrite' => array ( 'slug' => 'topic' ), 
-// 			'public' => false,
-// 			'rewrite' => false
-// 	);
-	
-// 	register_taxonomy ( 'topic', array ('eal_itemsc', 'eal_itemmc') , $args );		
-// }
 
 
 function my_custom_login_logo()
@@ -617,17 +462,6 @@ function my_custom_admin_head() {
 }
 add_action( 'admin_head', 'my_custom_admin_head' );
 
-
-function example_remove_dashboard_widgets()
-{
-	// Globalize the metaboxes array, this holds all the widgets for wp-admin
-	global $wp_meta_boxes;
-	 
-	unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_primary']);
-	unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_secondary']);
-	unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_plugins']);
-}
-add_action('wp_dashboard_setup', 'example_remove_dashboard_widgets' );
 
 add_action( 'admin_bar_menu', 'my_new_toolbar_item', 999 );
 
