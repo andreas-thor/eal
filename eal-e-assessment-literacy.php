@@ -585,15 +585,28 @@ function create_eal_items() {
 
 function my_custom_login_logo()
 {
-	echo '<style  type="text/css"> h1 a {  background-image:url(' . plugin_dir_url( __FILE__ ) . 'EAssLit.png)  !important; } </style>';
+	echo '<style  type="text/css"> .login h1 a { width:320px; background-size: 320px; background-position: center middle; background-image:url(' . plugin_dir_url( __FILE__ ) . 'Logo_EAs.LiT.png)  !important; } </style>';
+	echo '<style  type="text/css"> p#backtoblog {  display: none; } </style>';
+// 	echo '<style  type="text/css"> h1  {  	background-size: 300px 100px; background:url(' . plugin_dir_url( __FILE__ ) . 'Logo_EAs.LiT.png)  !important; } </style>';
 }
 add_action('login_head',  'my_custom_login_logo');
 
-function custom_admin_logo()
-{
-	echo '<style type="text/css">#header-logo { background-image: url(' . plugin_dir_url( __FILE__ ) . 'EAssLit.png) !important; }</style>';
+
+function my_login_logo_url() {
+	return "https://github.com/andreas-thor/eal";
 }
-add_action('admin_head', 'custom_admin_logo');
+add_filter( 'login_headerurl', 'my_login_logo_url' );
+
+function my_login_logo_url_title() {
+	return 'EAs.LiT';
+}
+add_filter( 'login_headertitle', 'my_login_logo_url_title' );
+
+// function custom_admin_logo()
+// {
+// 	echo '<style type="text/css">#header-logo { background-image: url(' . plugin_dir_url( __FILE__ ) . '2Logo_EAs.LiT.png) !important; }</style>';
+// }
+// add_action('admin_head', 'custom_admin_logo');
 
 
 add_filter( 'admin_footer_text', '__return_empty_string', 11 );
@@ -621,7 +634,7 @@ add_action( 'admin_bar_menu', 'my_new_toolbar_item', 999 );
 function my_new_toolbar_item( $wp_admin_bar ) {
 	$args = array(
 		'id'    => 'eal_logo',
-		'title' => '<div style="width:10em"><a href="' . site_url() . '/wp-admin/"><img style="display:block; margin-top:1em; margin-left:-1em; width:11em"  src="' . plugin_dir_url( __FILE__ ) . 'EAssLit_small.png"></a></div>'
+		'title' => '<div style="width:10em"><a href="' . site_url() . '/wp-admin/"><img style="display:block; margin-top:1em; margin-left:-1em; width:11em"  src="' . plugin_dir_url( __FILE__ ) . 'Logo_EAs.LiT.png"></a></div>'
 		
 	);
 	$wp_admin_bar->add_node( $args );
