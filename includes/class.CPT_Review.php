@@ -206,13 +206,13 @@ class CPT_Review extends CPT_Object {
 	
 	
 	
-	public function WPCB_posts_where($where) {
+	public function WPCB_posts_where($where, $checktype = TRUE) {
 	
 		global $wp_query, $wpdb;
 	
-		$where = parent::WPCB_posts_where($where);
+		$where = parent::WPCB_posts_where($where, $checktype);
 	
-		if ($wp_query->query["post_type"] == $this->type) {
+		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
 			if (isset ($_REQUEST['item_id'])) 			$where .= " AND I.id = {$_REQUEST['item_id']}";
 			if (isset ($_REQUEST['review_author'])) 	$where .= " AND UR.id = " . $_REQUEST['review_author'];
 			if (isset ($_REQUEST['item_author'])) 		$where .= " AND UI.id = " . $_REQUEST['item_author'];
@@ -221,6 +221,7 @@ class CPT_Review extends CPT_Object {
 		return $where;
 	}
 	
+
 
 
 	

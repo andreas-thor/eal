@@ -7,6 +7,9 @@ class PAG_Metadata {
 	
 	private $terms;
 	
+	
+	
+	
 	function __construct() {
 		
 		$this->terms = get_terms( array(

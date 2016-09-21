@@ -115,7 +115,7 @@ function WPCB_dashboard_setup() {
 
 function WPCP_dashboard_items() {
 
-	$objects = [new CPT_Item(), new CPT_ItemSC(), new CPT_ItemSC(), new CPT_Review()];
+	$objects = [new CPT_Item(), new CPT_ItemSC(), new CPT_ItemMC(), new CPT_Review()];
 	$counts = array();
 	foreach ($objects as $object) {
 		$object->init();
@@ -209,16 +209,25 @@ function set_eal_admin_menu_entries () {
 	 	/* TODO: first sub menu should open menu */
 // 	 	$menuslug = 'metadata';
 	 	$taxurl = 'edit-tags.php?taxonomy=' . $domain["name"]; 
+	 	$taxurlredirect = add_query_arg ('redirect', $taxurl, 'edit.php?post_type=learnout');
 	 	
 // 	 	add_menu_page('eal_page_metadata', 'Metadata', 'edit_posts', $menuslug, '' /* array ('PAG_Metadata', 'createTable')*/, 'dashicons-tag', 32);
 // 		add_submenu_page( $menuslug, $domain["label"], '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> ' . $domain["label"], 'edit_posts', $taxurl);
 // 	 	add_submenu_page( $menuslug, 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', 'WPCB_import_topics');
 // 	 	add_submenu_page( $menuslug, 'Learning Outcomes', '<div class="dashicons-before dashicons-welcome-learn-more" style="display:inline">&nbsp;</div> Learn. Outcomes', 'edit_posts', 'edit.php?post_type=learnout');
+
 	 	
-	 	add_menu_page('eal_page_metadata', 'Metadata', 'edit_posts', 'metadata', '' /* array ('PAG_Metadata', 'createTable')*/, 'dashicons-tag', 32);
-	 	add_submenu_page( 'metadata', $domain["label"], '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> ' . $domain["label"], 'edit_posts', $taxurl);
-	 	add_submenu_page( 'metadata', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', 'WPCB_import_topics');
-	 	add_submenu_page( 'metadata', 'Learning Outcomes', '<div class="dashicons-before dashicons-welcome-learn-more" style="display:inline">&nbsp;</div> Learn. Outcomes', 'edit_posts', 'edit.php?post_type=learnout');
+	 	add_menu_page('eal_page_metadata', 'Metadata', 'edit_posts', 'edit.php?post_type=learnout', '' /*'create_eal_page_items'*/, 'dashicons-tag', 32);
+	 	add_submenu_page( 'edit.php?post_type=learnout', 'Learning Outcomes', '<div class="dashicons-before dashicons-welcome-learn-more" style="display:inline">&nbsp;</div> Learn. Outcomes', 'edit_posts', 'edit.php?post_type=learnout');
+	 	add_submenu_page( 'edit.php?post_type=learnout', $domain["label"], '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> ' . $domain["label"], 'edit_posts', $taxurl);
+	 	add_submenu_page( 'edit.php?post_type=learnout', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', 'WPCB_import_topics');
+	 		 
+	 	
+// LEZTE	 	
+// 	 	add_menu_page('eal_page_metadata', 'Metadata', 'edit_posts', 'metadata', '' /* array ('PAG_Metadata', 'createTable')*/, 'dashicons-tag', 32);
+// 	 	add_submenu_page( 'metadata', $domain["label"], '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> ' . $domain["label"], 'edit_posts', $taxurl);
+// 	 	add_submenu_page( 'metadata', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', 'WPCB_import_topics');
+// 	 	add_submenu_page( 'metadata', 'Learning Outcomes', '<div class="dashicons-before dashicons-welcome-learn-more" style="display:inline">&nbsp;</div> Learn. Outcomes', 'edit_posts', 'edit.php?post_type=learnout');
 	 	 
  	}
  	
@@ -228,7 +237,7 @@ function set_eal_admin_menu_entries () {
         	
     
     $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
-    add_menu_page('eal_page_basket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'edit_posts', 'edit.php?post_type=itembasket', '' /*'create_eal_page_items'*/, 'dashicons-format-aside', 34);
+    add_menu_page('eal_page_basket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'edit_posts', 'edit.php?post_type=itembasket', '' /*'create_eal_page_items'*/, 'dashicons-cart', 34);
     add_submenu_page( 'edit.php?post_type=itembasket', 'Table', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> Table', 'edit_posts', 'edit.php?post_type=itembasket');
     add_submenu_page( 'edit.php?post_type=itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_posts', 'ist-blueprint', array ('PAG_Explorer', 'createPage'));
     add_submenu_page( 'edit.php?post_type=itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view', array ('PAG_Basket', 'createPageView'));
@@ -244,8 +253,6 @@ function set_eal_admin_menu_entries () {
 
 // register AJAX-PHP-function
 add_action( 'wp_ajax_load_items', array ('PAG_Explorer', 'load_items_callback') );
-
-
 
 
 
@@ -510,6 +517,17 @@ function myposttype_admin_css() {
 add_action ('show_user_profile', array ('RoleTaxonomy', 'showCurrentRole'));
 add_action ('edit_user_profile', array ('RoleTaxonomy', 'showCurrentRole'));
 add_action( 'profile_update', array ('RoleTaxonomy', 'setCurrentRole'));
+
+
+// add_action ('wp_loaded', 'growtheme_mailchimp_signup');
+// function growtheme_mailchimp_signup() {
+// 	// Submit the Form
+// 	if(isset($_REQUEST['redirect'])) {
+// 		wp_redirect($_REQUEST['redirect']);
+// 		exit();
+// 	}
+// }
+	
 
 
 ?>

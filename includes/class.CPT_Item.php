@@ -334,6 +334,7 @@ class CPT_Item extends CPT_Object{
 		return $where;
 	}
 	
+
 	
 
 	public function WPCB_post_search($search, $wpquery){
@@ -353,35 +354,6 @@ class CPT_Item extends CPT_Object{
 
 
 
-	/**
-	 * Modify returned post counts by status for the current post type.
-	 * @param object $counts An object containing the current post_type's post counts by status.
-	 * @param string $type   Post type.
-	 * @param string $perm   The permission to determine if the posts are 'readable' by the current user.
-	 *
-	 * @return object Number of posts for each status
-	 */
-	public function WPCB_count_posts( $counts, $type, $perm) {
-		global $wpdb;
-	
-		if ($type != $this->type) return $counts;
-	
-		$query  = "SELECT {$wpdb->posts}.post_status, COUNT( * ) AS num_posts ";
-		$query .= $this->WPCB_posts_join  (" FROM {$wpdb->posts} ", FALSE);
-		$query .= $this->WPCB_posts_where (" WHERE {$wpdb->posts}.post_type = '{$type}' ", FALSE);
-		$query .= " GROUP BY {$wpdb->posts}.post_status";
-		
-		$results = (array) $wpdb->get_results( $query, ARRAY_A );
-		$counts = array_fill_keys( get_post_stati(), 0 );
-		foreach ( $results as $row ) {
-			$counts[ $row['post_status'] ] = $row['num_posts'];
-		}
-		return (object) $counts;
-	}	
-
-	
-	
-	
 
 	public function WPCB_post_updated_messages ( $messages ) {
 	

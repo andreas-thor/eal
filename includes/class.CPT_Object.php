@@ -336,10 +336,12 @@ abstract class CPT_Object {
 	
 			case 'item_learnout':
 				printf ('<a href="%1$s">%2$s</a>', add_query_arg ("learnout_id", $post->learnout_id, $basic_url), $post->learnout_title);
-				printf ('<div class="row-actions">');
-				printf ('<span class="view"><a href="admin.php?page=view&learnoutid=%1$d" title="View">View</a></span>', $post->learnout_id);
-				printf (' | <span class="edit"><a href="post.php?post_type=learnout&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->learnout_id);
-				printf ('<span class="inline hide-if-no-js"></span></div>');
+				if ($post->learnout_id > 0) {
+					printf ('<div class="row-actions">');
+					printf ('<span class="view"><a href="admin.php?page=view&learnoutid=%1$d" title="View">View</a></span>', $post->learnout_id);
+					printf (' | <span class="edit"><a href="post.php?post_type=learnout&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->learnout_id);
+					printf ('<span class="inline hide-if-no-js"></span></div>');
+				}
 				break;
 	
 			case 'no_of_reviews':
@@ -445,10 +447,10 @@ abstract class CPT_Object {
 	}
 	
 	
-	public function WPCB_posts_where($where) {
+	public function WPCB_posts_where($where, $checktype = TRUE) {
 	
 		global $wp_query, $wpdb;
-		if ($wp_query->query["post_type"] == $this->type) {
+		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
 			foreach (EAL_Item::$level_type as $lt) {
 				if (isset($_REQUEST["level_{$lt}"]) && ($_REQUEST["level_{$lt}"] != '0')) {
 					$where .= " AND ({$wpdb->prefix}eal_{$this->type}.level_{$lt} = {$_REQUEST["level_{$lt}"]})";
@@ -468,6 +470,7 @@ abstract class CPT_Object {
 	
 		$query  = "SELECT {$wpdb->posts}.post_status, COUNT( * ) AS num_posts ";
 		$query .= $this->WPCB_posts_join  (" FROM {$wpdb->posts} ", FALSE);
+		$query .= $this->WPCB_posts_where (" WHERE {$wpdb->posts}.post_type = '{$type}' ", FALSE);
 		$query .= " GROUP BY {$wpdb->posts}.post_status";
 	
 		$results = (array) $wpdb->get_results( $query, ARRAY_A );
@@ -477,6 +480,7 @@ abstract class CPT_Object {
 		}
 		return (object) $counts;
 	}
+
 	
 	
 	

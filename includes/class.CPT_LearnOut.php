@@ -200,11 +200,11 @@ class CPT_LearnOut extends CPT_Object {
 	}
 	
 
-	public function WPCB_posts_where($where) {
+	public function WPCB_posts_where($where, $checktype = TRUE) {
 	
 		global $wp_query, $wpdb;
 	
-		if ($wp_query->query["post_type"] == $this->type) {
+		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
 			if (isset ($_REQUEST['learnout_author'])) 	$where .= " AND {$wpdb->posts}.post_author 	= " . $_REQUEST['learnout_author'];
 			if (isset ($_REQUEST['level_FW'])) 			$where .= " AND L.level_FW 	= " . $_REQUEST['level_FW'];
 			if (isset ($_REQUEST['level_PW'])) 			$where .= " AND L.level_PW 	= " . $_REQUEST['level_PW'];
@@ -235,6 +235,7 @@ class CPT_LearnOut extends CPT_Object {
 	}
 	
 	
+
 	
 
 	
