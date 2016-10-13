@@ -342,10 +342,3 @@ class PAG_Generator {
 
 }
 ?>
-	
-	
-	
-	
-	
-	
-	
