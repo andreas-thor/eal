@@ -185,8 +185,8 @@ class EAL_Review {
 		global $wpdb;
 	
 		$sqlScore = "";
-		foreach (EAL_Item_Review::$dimension1 as $k1 => $v1) {
-			foreach (EAL_Item_Review::$dimension2 as $k2 => $v2) {
+		foreach (EAL_Review::$dimension1 as $k1 => $v1) {
+			foreach (EAL_Review::$dimension2 as $k2 => $v2) {
 				$sqlScore .= "{$k1}_{$k2} tinyint unsigned, \n";
 			}
 		}

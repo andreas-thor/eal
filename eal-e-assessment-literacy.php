@@ -113,6 +113,7 @@ function WPCB_dashboard_setup() {
 	wp_add_dashboard_widget('dashboard_user', 		'User Overview', 		'WPCP_dashboard_user' );	
 }
 
+
 function WPCP_dashboard_items() {
 
 	$objects = [new CPT_Item(), new CPT_ItemSC(), new CPT_ItemMC(), new CPT_Review()];
@@ -123,9 +124,9 @@ function WPCP_dashboard_items() {
 	}
 	
 	printf ('<table border="0">');
-	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-format-aside" 	style="display:inline">&nbsp;</div> All Items</td>			<td align="right" style="width:4em"><a href="edit.php?post_type=item">%1$d</a></td>		<td align="right" style="width:10em">&nbsp;(%2$d pending review)</td></tr>', $counts[0]->publish+$counts[0]->pending+$counts[0]->draft, $counts[0]->draft);
-	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-marker" 			style="display:inline">&nbsp;</div> Single Choice</td>		<td align="right" style="width:4em"><a href="edit.php?post_type=itemsc">%1$d</a></td>	<td align="right" style="width:10em">&nbsp;(%2$d pending review)</td></tr>', $counts[1]->publish+$counts[1]->pending+$counts[1]->draft, $counts[1]->draft);
-	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-forms" 			style="display:inline">&nbsp;</div> Multiple Choice</td>	<td align="right" style="width:4em"><a href="edit.php?post_type=itemmc">%1$d</a></td>	<td align="right" style="width:10em">&nbsp;(%2$d pending review)</td></tr>', $counts[2]->publish+$counts[2]->pending+$counts[2]->draft, $counts[2]->draft);
+	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-format-aside" 	style="display:inline">&nbsp;</div> All Items</td>			<td align="right" style="width:4em"><a href="edit.php?post_type=item">%1$d</a></td>		<td align="right" style="width:10em">&nbsp;(%2$d pending review)</td></tr>', $counts[0]->publish+$counts[0]->pending+$counts[0]->draft, $counts[0]->pending);
+	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-marker" 			style="display:inline">&nbsp;</div> Single Choice</td>		<td align="right" style="width:4em"><a href="edit.php?post_type=itemsc">%1$d</a></td>	<td align="right" style="width:10em">&nbsp;(%2$d pending review)</td></tr>', $counts[1]->publish+$counts[1]->pending+$counts[1]->draft, $counts[1]->pending);
+	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-forms" 			style="display:inline">&nbsp;</div> Multiple Choice</td>	<td align="right" style="width:4em"><a href="edit.php?post_type=itemmc">%1$d</a></td>	<td align="right" style="width:10em">&nbsp;(%2$d pending review)</td></tr>', $counts[2]->publish+$counts[2]->pending+$counts[2]->draft, $counts[2]->pending);
 	printf ('</table><hr>');
  	printf ('<table border="0">');
 	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-admin-comments" 	style="display:inline">&nbsp;</div> Reviews</td>			<td align="right" style="width:4em"><a href="edit.php?post_type=review">%1$d</a></td></tr>', $counts[3]->publish+$counts[3]->pending+$counts[3]->draft);
@@ -405,7 +406,7 @@ function create_eal_page_taxonomies () { }
 register_activation_hook( __FILE__, array ('eal_item', 'createTables') );
 register_activation_hook( __FILE__, array ('eal_itemsc', 'createTables') );
 register_activation_hook( __FILE__, array ('eal_itemmc', 'createTables') );
-register_activation_hook( __FILE__, array ('eal_item_review', 'createTables') );
+register_activation_hook( __FILE__, array ('eal_review', 'createTables') );
 register_activation_hook( __FILE__, array ('eal_learnout', 'createTables') );
 
 

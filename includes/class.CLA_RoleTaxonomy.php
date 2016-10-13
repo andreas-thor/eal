@@ -161,10 +161,12 @@ class RoleTaxonomy {
 	
 	public static function getCurrentRole () {
 
-		$current_role = get_user_meta (get_current_user_id(), 'current_role', true);
-		if ($current_role == "administrator") return $result;
-		if (substr($current_role, 0, 7) == "editor_") return "editor";
 		return "author";
+		
+// 		$current_role = get_user_meta (get_current_user_id(), 'current_role', true);
+// 		if ($current_role == "administrator") return $result;
+// 		if (substr($current_role, 0, 7) == "editor_") return "editor";
+// 		return "author";
 	}
 	
 	
@@ -174,15 +176,19 @@ class RoleTaxonomy {
 		
 		$result = array ("name" => "", "label" => "");
 		
-		if ((!isset($current_role)) ||  ($current_role== "")) return $result;
-		if ($current_role == "administrator") return $result;
-		$pos = strpos($current_role, "_");
-		if ($pos != FALSE) {
-			$domain = substr($current_role, $pos+1);
-			$result["name"] = $domain;
-			$result["label"] = RoleTaxonomy::$domains[$domain];
-		}
+		$result["name"] = "paedagogik";
+		$result["label"] = RoleTaxonomy::$domains["paedagogik"];
 		return $result;
+		
+// 		if ((!isset($current_role)) ||  ($current_role== "")) return $result;
+// 		if ($current_role == "administrator") return $result;
+// 		$pos = strpos($current_role, "_");
+// 		if ($pos != FALSE) {
+// 			$domain = substr($current_role, $pos+1);
+// 			$result["name"] = $domain;
+// 			$result["label"] = RoleTaxonomy::$domains[$domain];
+// 		}
+// 		return $result;
 		
 	}
 	

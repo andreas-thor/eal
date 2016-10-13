@@ -1,7 +1,7 @@
 Allgemeine ToDO
 ====
 
-- Navigation in Tabellen
+- [DONE] Navigation in Tabellen
   * Klick auf Learning Outcome --> show all Items of if LO
   * Klick auf Author
   * Klick auf Level
@@ -9,7 +9,8 @@ Allgemeine ToDO
   -- eigene fields im SELECT explizit angeben
   -- Frage: Welche Infos in der Tabelle?
   
-  
+
+ - Nutzerrechte und Gruppen definieren
  - Actions
    * View for Items, Review und Learning Outcome --> all users (status 
    * Edit for Items, Revuew und Learning Outcome --> for item author + editor
@@ -54,10 +55,9 @@ Task Pool Generierung
   - Hierarchie mit Einrückung
   - Topic2 ausblendbar (Checkbox)
 
-Explorer
+[DONE] Explorer
 * Schwierigkeitsgrad (10 Gruppen) als Kriterium
 
-Nutzerrechte und Gruppen definieren
 
 Testinstallation bereitstellen (dbserv)
 
@@ -157,3 +157,27 @@ DONE * Bei Item: Anforderungsstufe des Learning Outcomes nicht vorgeben; aber Po
 	
 
 
+
+
+## 
+
+für die reviews:
+* aggregierten wert mit in item tabelle bei insert/delete review aktualisieren
+* den auslesen zum sortieren ("welche Items habe noch kein Review?")
+* beim Anzeigen: "Add" immer anzeigen und eine collapsable Liste der einzelnen Reviews (mit Javascript; Reviews durch Datum + evtl. Autor gekennzeichnet) 
+
+
+für die topic taxonomy
+* nicht mit Rekursion; sondern mit gertterms alle holen und dann in eigenes Array parentid -> list of termids speichern
+// (term_id -> Term [was ja parent_id hat]) speichern
+* hierarchie in "Show all topic" filter ?
+* man kann in topics klicken
+* topic2 als Pfad?
+
+
+## Install
+
+place single-{posttype}.php files into the active theme directory so that they refer to the php files in the plugin, e.g.,
+
+file "...themes/active-theme/single-itemmc.php" contains
+<?php include(dirname(__FILE__) . "/../../plugins/eal/theme/single-itemmc.php"); ?>
