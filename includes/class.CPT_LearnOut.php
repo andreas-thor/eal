@@ -29,8 +29,9 @@ class CPT_LearnOut extends CPT_Object {
 		$this->label = "Learn. Outcome";
 		$this->menu_pos = 0;
 		
+		$args['supports'] = array( 'title');
 		
-		parent::init();
+		parent::init($args);
 		
 	}
 	
@@ -47,15 +48,17 @@ class CPT_LearnOut extends CPT_Object {
 		$learnout = new EAL_LearnOut();
 		$learnout->load();
 	
-		if ($learnout->domain != RoleTaxonomy::getCurrentDomain()["name"]) {
-			wp_die ("Learning outcome does not belong to your current domain!");
+		$domain = RoleTaxonomy::getCurrentRoleDomain();
+		if (($domain["name"] != "") && ($learnout->domain != $domain["name"])) {
+			wp_die ("Learning outcome  does not belong to your current domain!");
 		}
-	
 		global $post;
+		
+		?><style> #minor-publishing { display: none; } </style> <?php
 		
 		add_meta_box('mb_description', 'Beschreibung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'learnout_description', 'value' => $learnout->description) );
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $learnout->level, 'prefix' => 'learnout'));
-		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getCurrentDomain()["label"], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => RoleTaxonomy::getCurrentDomain()["name"] ));
+		add_meta_box('mb_item_taxonomy', RoleTaxonomy::$domains[$learnout->domain], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $learnout->domain ));
 		
 		
 		
@@ -191,9 +194,12 @@ class CPT_LearnOut extends CPT_Object {
 	}
 	
 	public function WPCB_posts_join ($join, $checktype=TRUE) {
+		
 		global $wp_query, $wpdb;
+		
 		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
-			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} L ON (L.id = {$wpdb->posts}.ID AND L.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
+			$domain = RoleTaxonomy::getCurrentRoleDomain();
+			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} L ON (L.id = {$wpdb->posts}.ID " . (($domain["name"]!="") ? "AND L.domain = '" . $domain["name"] . "')" : ")");
 			$join .= " JOIN {$wpdb->users} U ON (U.id = {$wpdb->posts}.post_author) ";
 		}
 		return $join;
@@ -237,7 +243,12 @@ class CPT_LearnOut extends CPT_Object {
 	
 
 	
-
+	public function WPCB_post_row_actions($actions, $post){
+	
+		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
+		return $actions;
+	}
+	
 	
 	
 	function add_bulk_actions() {

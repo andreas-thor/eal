@@ -35,7 +35,15 @@ class EAL_LearnOut {
 		$this->level["FW"] = isset ($_POST['learnout_level_FW']) ? $_POST['learnout_level_FW'] : null;
 		$this->level["KW"] = isset ($_POST['learnout_level_KW']) ? $_POST['learnout_level_KW'] : null;
 		$this->level["PW"] = isset ($_POST['learnout_level_PW']) ? $_POST['learnout_level_PW'] : null;
-		$this->domain = RoleTaxonomy::getCurrentDomain()["name"];
+		
+		$this->domain = isset ($_POST["domain"]) ? $_POST["domain"] : "";
+		if (($this->domain == "") && (isset($_POST['tax_input']))) {
+			foreach ($_POST['tax_input'] as $key => $value) {
+				$this->domain = $key;
+				break;
+			}
+		}
+		
 	}
 	
 	
@@ -53,8 +61,7 @@ class EAL_LearnOut {
 			$this->level["FW"] = 0;
 			$this->level["KW"] = 0;
 			$this->level["PW"] = 0;
-			$this->domain = RoleTaxonomy::getCurrentDomain()["name"];
-				
+			$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
 				
 		} else {
 			$this->loadById($post->ID);
@@ -131,7 +138,7 @@ class EAL_LearnOut {
 				JOIN {$wpdb->prefix}posts P
 				ON (L.id = P.id)
 				WHERE P.post_status = 'publish'
-				AND L.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "'
+				AND L.domain = '" . RoleTaxonomy::getCurrentRoleDomain()["name"] . "'
 				ORDER BY id
 				");
 		

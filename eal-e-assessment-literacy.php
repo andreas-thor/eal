@@ -136,7 +136,7 @@ function WPCP_dashboard_items() {
 function WPCP_dashboard_metadata() {
 
 	printf ('<table border="0">');
-	$domain = RoleTaxonomy::getCurrentDomain();
+	$domain = RoleTaxonomy::getCurrentRoleDomain();
 	if ($domain["name"]!="") {
 		$term_count = wp_count_terms( $domain["name"], array( 'hide_empty' => false ));
 		printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-networking" 		style="display:inline">&nbsp;</div> %1$s</td>			<td align="right" style="width:4em"><a href="edit-tags.php?taxonomy=%2$s">%3$d</a></td></tr>', $domain["label"], $domain["name"], $term_count);
@@ -197,16 +197,17 @@ function set_eal_admin_menu_entries () {
  	global $menu, $submenu;
  	
  	
- 	$domain = RoleTaxonomy::getCurrentDomain();
- 	if ($domain["name"]!="") {
  	
-	 	add_menu_page('eal_page_items', 'Items', 'edit_posts', 'edit.php?post_type=item', '' /*'create_eal_page_items'*/, 'dashicons-format-aside', 31);
-	 	add_submenu_page( 'edit.php?post_type=item', 'All Items', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> All Items', 'edit_posts', 'edit.php?post_type=item');
-	 	add_submenu_page( 'edit.php?post_type=item', 'Single Choice', '<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div> Single Choice', 'edit_posts', 'edit.php?post_type=itemsc');
-	 	add_submenu_page( 'edit.php?post_type=item', 'Multiple Choice', '<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div> Multiple Choice', 'edit_posts', 'edit.php?post_type=itemmc');
-	 	add_submenu_page( 'edit.php?post_type=item', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import-items', array ('PAG_Item_Import', 'createPage'));
-	 	add_submenu_page( 'edit.php?post_type=item', 'Reviews', '<div class="dashicons-before dashicons-admin-comments" style="display:inline">&nbsp;</div> Reviews', 'edit_posts', 'edit.php?post_type=review');
+ 	add_menu_page('eal_page_items', 'Items', 'edit_posts', 'edit.php?post_type=item', '' /*'create_eal_page_items'*/, 'dashicons-format-aside', 31);
+ 	add_submenu_page( 'edit.php?post_type=item', 'All Items', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> All Items', 'edit_posts', 'edit.php?post_type=item');
+ 	add_submenu_page( 'edit.php?post_type=item', 'Single Choice', '<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div> Single Choice', 'edit_posts', 'edit.php?post_type=itemsc');
+ 	add_submenu_page( 'edit.php?post_type=item', 'Multiple Choice', '<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div> Multiple Choice', 'edit_posts', 'edit.php?post_type=itemmc');
+ 	add_submenu_page( 'edit.php?post_type=item', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import-items', array ('PAG_Item_Import', 'createPage'));
+ 	add_submenu_page( 'edit.php?post_type=item', 'Reviews', '<div class="dashicons-before dashicons-admin-comments" style="display:inline">&nbsp;</div> Reviews', 'edit_posts', 'edit.php?post_type=review');
 	 	 
+ 	
+ 	$domain = RoleTaxonomy::getCurrentRoleDomain ();
+ 	
 	 	/* TODO: first sub menu should open menu */
 // 	 	$menuslug = 'metadata';
 	 	$taxurl = 'edit-tags.php?taxonomy=' . $domain["name"]; 
@@ -218,10 +219,12 @@ function set_eal_admin_menu_entries () {
 // 	 	add_submenu_page( $menuslug, 'Learning Outcomes', '<div class="dashicons-before dashicons-welcome-learn-more" style="display:inline">&nbsp;</div> Learn. Outcomes', 'edit_posts', 'edit.php?post_type=learnout');
 
 	 	
-	 	add_menu_page('eal_page_metadata', 'Metadata', 'edit_posts', 'edit.php?post_type=learnout', '' /*'create_eal_page_items'*/, 'dashicons-tag', 32);
-	 	add_submenu_page( 'edit.php?post_type=learnout', 'Learning Outcomes', '<div class="dashicons-before dashicons-welcome-learn-more" style="display:inline">&nbsp;</div> Learn. Outcomes', 'edit_posts', 'edit.php?post_type=learnout');
-	 	add_submenu_page( 'edit.php?post_type=learnout', $domain["label"], '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> ' . $domain["label"], 'edit_posts', $taxurl);
-	 	add_submenu_page( 'edit.php?post_type=learnout', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', 'WPCB_import_topics');
+	add_menu_page('eal_page_metadata', 'Metadata', 'edit_posts', 'edit.php?post_type=learnout', '' /*'create_eal_page_items'*/, 'dashicons-tag', 32);
+	add_submenu_page( 'edit.php?post_type=learnout', 'Learning Outcomes', '<div class="dashicons-before dashicons-welcome-learn-more" style="display:inline">&nbsp;</div> Learn. Outcomes', 'edit_posts', 'edit.php?post_type=learnout');
+	if ($domain ["name"] != "") {
+		add_submenu_page ( 'edit.php?post_type=learnout', $domain ["label"], '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> ' . $domain ["label"], 'edit_posts', $taxurl );
+	}
+ 	add_submenu_page( 'edit.php?post_type=learnout', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', 'WPCB_import_topics');
 	 		 
 	 	
 // LEZTE	 	
@@ -230,7 +233,6 @@ function set_eal_admin_menu_entries () {
 // 	 	add_submenu_page( 'metadata', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', 'WPCB_import_topics');
 // 	 	add_submenu_page( 'metadata', 'Learning Outcomes', '<div class="dashicons-before dashicons-welcome-learn-more" style="display:inline">&nbsp;</div> Learn. Outcomes', 'edit_posts', 'edit.php?post_type=learnout');
 	 	 
- 	}
  	
  	
 
@@ -488,8 +490,8 @@ function my_new_toolbar_item( $wp_admin_bar ) {
 	$wp_admin_bar->remove_menu ('wp-logo');
 	$wp_admin_bar->remove_menu ('site-name');
 	
-	$title  = "<div>" . RoleTaxonomy::getCurrentDomain()["label"];
-	$title .= (RoleTaxonomy::getCurrentRole()=="editor") ? '<div class="dashicons-before dashicons-admin-users" style="display:inline">&nbsp;</div>' : '';
+	$title  = "<div>" . RoleTaxonomy::getCurrentRoleDomain()["label"];
+	$title .= (RoleTaxonomy::getCurrentRoleType()=="editor") ? '<div class="dashicons-before dashicons-admin-users" style="display:inline">&nbsp;</div>' : '';
 	$title .= "</div>";
 	$wp_admin_bar->add_menu (array ("id" => "eal_currentRole", "title" => $title));
 }

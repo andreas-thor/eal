@@ -6,7 +6,7 @@ class RoleTaxonomy {
 	public static $domains = array (
 			
 		"paedagogik" 	=> "Allgemeine Paedagogik",
-		"topic" 	=> "Beispieltaxonomy",
+		"topic" 		=> "Beispieltaxonomy",
 		"datenbanken"	=> "Datenbanksysteme"
 	);	
 	
@@ -14,23 +14,15 @@ class RoleTaxonomy {
 	
 	public static function init () {
 
-		// remove default roles
+		// remove all roles (except administrator);
 		global $wp_roles;
 		foreach ($wp_roles->roles as $role => $value) {
-			
 			if ($role == 'administrator') continue;
-			
-			$pos = strpos ($role, '_');
-			if ($pos != FALSE) {
-// 				if (in_array (substr($role, $pos+1), array_keys (RoleTaxonomy::$domains))) continue;
-			}
-
 			remove_role ($role);
 		}
 		
 		// register all roles
 		foreach (RoleTaxonomy::$domains as $name => $label) {
-			
 			
 			// Add new taxonomy, make it hierarchical (like categories)
 			$labels = array (
@@ -60,7 +52,7 @@ class RoleTaxonomy {
 // 					'rewrite' => false
 			);
 			
-			register_taxonomy ( $name, array ('itemsc', 'itemmc') , $args );			
+			register_taxonomy ( $name, array ('itemsc', 'itemmc', 'learnout') , $args );			
 			
 			
 			
@@ -70,7 +62,9 @@ class RoleTaxonomy {
 // 				'delete_posts' => true,
 // 			));
 
-			add_role ('author_' . $name, 'Author @ ' . $label, array(
+			
+			// prefix "a_" --> author
+			add_role ('a_' . $name, 'Author @ ' . $label, array(
 					"delete_others_pages" => false,
 					"delete_others_posts" => false,
 					"delete_pages" => true,
@@ -99,7 +93,8 @@ class RoleTaxonomy {
 					"upload_files" => true
 			));
 			
-			add_role ('editor_' . $name, 'Editor @ ' . $label, array(
+			// prefix "e_" --> editor
+			add_role ('e_' . $name, 'Editor @ ' . $label, array(
 				"delete_others_pages" => true,
 				"delete_others_posts" => true,
 				"delete_pages" => true,
@@ -159,42 +154,37 @@ class RoleTaxonomy {
 		update_user_meta ($user_id, 'current_role', $_REQUEST["userroles"]);
 	}
 	
-	public static function getCurrentRole () {
+	
+	public static function getCurrentRoleType () {
 
-		return "author";
+		$current_role = get_user_meta (get_current_user_id(), 'current_role', true);
 		
-// 		$current_role = get_user_meta (get_current_user_id(), 'current_role', true);
-// 		if ($current_role == "administrator") return $result;
-// 		if (substr($current_role, 0, 7) == "editor_") return "editor";
-// 		return "author";
+		if ($current_role == "administrator") 		return "administrator";
+		if (substr($current_role, 0, 2) == "e_") 	return "editor";
+		if (substr($current_role, 0, 2) == "a_") 	return "author";
+		
+		return "";
 	}
 	
 	
-	public static function getCurrentDomain () {
-		
-		$current_role = get_user_meta (get_current_user_id(), 'current_role', true);
+	public static function getCurrentRoleDomain () {
 		
 		$result = array ("name" => "", "label" => "");
 		
-		$result["name"] = "paedagogik";
-		$result["label"] = RoleTaxonomy::$domains["paedagogik"];
-		return $result;
+		$current_role = get_user_meta (get_current_user_id(), 'current_role', true);
+		if ((!isset($current_role)) ||  ($current_role== "")) return $result;
+		if ($current_role == "administrator") return $result;
 		
-// 		if ((!isset($current_role)) ||  ($current_role== "")) return $result;
-// 		if ($current_role == "administrator") return $result;
-// 		$pos = strpos($current_role, "_");
-// 		if ($pos != FALSE) {
-// 			$domain = substr($current_role, $pos+1);
-// 			$result["name"] = $domain;
-// 			$result["label"] = RoleTaxonomy::$domains[$domain];
-// 		}
-// 		return $result;
+		$result["name"] = substr($current_role, 2);
+		$result["label"] = RoleTaxonomy::$domains[$result["name"]];
+
+		return $result;
 		
 	}
 	
 	
 	/**
-	 * Specifies if current user can edit itemm
+	 * Specifies if current user can edit item
 	 * @param unknown $post
 	 */
 	public static function canEditItemPost ($post) {
@@ -203,20 +193,29 @@ class RoleTaxonomy {
 		if ($post->post_status == "draft") return FALSE;
 
 		$current_role = get_user_meta (get_current_user_id(), 'current_role', true);
-		if (substr($current_role, 0, 7) == "editor_") return TRUE;	// editor
+		
+		if ($current_role == "administrator") 		return TRUE;	// admin
+		if (substr($current_role, 0, 2) == "e_") 	return TRUE;	// editor
+		if (substr($current_role, 0, 2) == "a_") 	return FALSE;	// author
+		
 		return FALSE;
 	}
 	
 	
 	/**
-	 * Specifies if current user can edit itemm
+	 * Specifies if current user can edit review
 	 * @param unknown $post
 	 */
 	public static function canEditReviewPost ($post) {
 	
 		if ($post->post_author == get_current_user_id()) return TRUE;	// current user
+		
 		$current_role = get_user_meta (get_current_user_id(), 'current_role', true);
-		if (substr($current_role, 0, 7) == "editor_") return TRUE;	// editor
+		
+		if ($current_role == "administrator") 		return TRUE;	// admin
+		if (substr($current_role, 0, 2) == "e_") 	return TRUE;	// editor
+		if (substr($current_role, 0, 2) == "a_") 	return FALSE;	// author
+		
 		return FALSE;
 	}
 	

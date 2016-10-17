@@ -82,28 +82,33 @@ class CPT_Item extends CPT_Object{
 		add_filter('pre_get_shortlink', '__return_empty_string' );
 		
 		
-		add_filter( 'views_edit-' . $this->type, array ($this, 'wpse14230_views_edit_post'));
-
-		
-		
-			
 		
 	}
 
 
 	
+
 	
+
+	public function WPCB_post_row_actions($actions, $post){
 	
-	public function wpse14230_views_edit_post( $views )
-	{
-// 		unset ($views["all"]);
-		return $views;
+		// 		unset ($actions['view']);
+		// 		unset ($actions['edit']);
+		// 		unset ($actions['inline hide-if-no-js']);
+		// 		return $actions;
+	
+		if ($post->post_type != $this->type) return $actions;
+	
+		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
+		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
+	
+		if (!RoleTaxonomy::canEditItemPost($post)) {		// "Edit" & "Trash" only if editable by user
+			unset ($actions['edit']);
+			unset ($actions['trash']);
+		}
+	
+		return $actions;
 	}
-	
-	
-
-	
-
 	
 
 	
@@ -141,20 +146,32 @@ class CPT_Item extends CPT_Object{
 	
 		global $item, $post;
 		
-		if ($item->domain != RoleTaxonomy::getCurrentDomain()["name"]) {
+		$domain = RoleTaxonomy::getCurrentRoleDomain();
+		if (($domain["name"] != "") && ($item->domain != $domain["name"])) {
 			wp_die ("Item does not belong to your current domain!");
 		}
 		
+		// remove Publish button for authors
+		if (RoleTaxonomy::getCurrentRoleType() == "author") {
+			?><style> #publishing-action { display: none; } </style> <?php
+		}
+		
+		// remove publishing date and visibility		
+		?><style> 
+			#visibility { display: none; }
+			div.curtime { display: none; }
+		</style> <?php
 		
 		$post->post_title .= "\x03";	// we add ASCII 03 to modify the title
 		
 		add_meta_box('mb_learnout', 'Learning Outcome', array ($this, 'WPCB_mb_learnout'), $this->type, 'normal', 'default', array ('learnout' => $item->getLearnOut()));
+		
+		
 		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_description', 'value' => $item->description) );
 		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_question', 'value' => $item->question));
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $item->level, 'default' => (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level) ));
 		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($this, 'WPCB_mb_answers'), $this->type, 'normal', 'default');
-		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getCurrentDomain()["label"], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => RoleTaxonomy::getCurrentDomain()["name"] ));
-		
+		add_meta_box('mb_item_taxonomy', RoleTaxonomy::$domains[$item->domain], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $item->domain ));
 	}
 	
 	
@@ -203,6 +220,16 @@ class CPT_Item extends CPT_Object{
 	
 	public function WPCB_mb_learnout ($post, $vars) {
 	
+		?>
+		<script>
+// 			jQuery(document).ready(function() {
+// 				jQuery("div#visibility").remove();
+// 				jQuery("span#timestamp").parent().remove();
+// 			});
+		</script>
+		<?php 
+											
+		
 		$learnout = $vars['args']['learnout'];
 		if ($learnout != null) {
 			echo ("<div class='misc-pub-section'><b>{$learnout->title}</b>");
@@ -220,17 +247,19 @@ class CPT_Item extends CPT_Object{
 
 	
 	/**
-	 * Join to item table; restrict to items of current domain
+	 * Join to item table; restrict to items of current domain (if set)
 	 * join to learning outcome (if available)
 	 * {@inheritDoc}
 	 * @see CPT_Object::WPCB_posts_join()
 	 */
 	
 	public function WPCB_posts_join ($join, $checktype=TRUE) {
+		
 		global $wp_query, $wpdb;
 	
 		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
-			$join .= " JOIN {$wpdb->prefix}eal_item I ON (I.id = {$wpdb->posts}.ID AND I.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
+			$domain = RoleTaxonomy::getCurrentRoleDomain();
+			$join .= " JOIN {$wpdb->prefix}eal_item I ON (I.id = {$wpdb->posts}.ID " . (($domain["name"] != "") ? "AND I.domain = '" . $domain["name"] . "')" : ")"); 
 			$join .= " JOIN {$wpdb->users} U ON (U.id = {$wpdb->posts}.post_author) ";
 			$join .= " LEFT OUTER JOIN {$wpdb->prefix}eal_learnout L ON (L.id = I.learnout_id)";
 		}
@@ -240,7 +269,9 @@ class CPT_Item extends CPT_Object{
 	
 	// define the posts_fields callback
 	public function WPCB_posts_fields ( $array ) {
+		
 		global $wp_query, $wpdb;
+		
 		if ($wp_query->query["post_type"] == $this->type) {
 			$array .= ", I.title AS item_title";
 			$array .= ", I.type AS item_type";
@@ -297,7 +328,14 @@ class CPT_Item extends CPT_Object{
 				$where = str_replace( "{$wpdb->posts}.post_type = 'item'", "{$wpdb->posts}.post_type LIKE 'item%'", $where);
 			}
 
-			if (isset ($_REQUEST["item_type"]) && ($_REQUEST['item_type'] != "0")) 		$where .= " AND I.type = '{$_REQUEST['item_type']}'";
+			// if current role type = author --> show all items except drafts from others
+			if (RoleTaxonomy::getCurrentRoleType()=="author") {
+				$where .= "AND ({$wpdb->posts}.post_status != 'draft' OR {$wpdb->posts}.post_author = " . get_current_user_id() . ")";
+			}
+			
+			if (isset ($_REQUEST["item_type"])  && ($_REQUEST['item_type'] != "0")) 		$where .= " AND I.type = '{$_REQUEST['item_type']}'";
+			if (isset ($_REQUEST["post_status"]) && ($_REQUEST['post_status'] != "0")) 		$where .= " AND {$wpdb->posts}.post_status = '" . $_REQUEST['post_status'] . "'";
+			
 			if (isset ($_REQUEST["learnout_id"])) 										$where .= " AND L.id = {$_REQUEST['learnout_id']}";
 			if (isset ($_REQUEST['item_author'])) 										$where .= " AND {$wpdb->posts}.post_author 			= " . $_REQUEST['item_author'];
 			if (isset ($_REQUEST['item_points'])) 										$where .= " AND I.points  	= " . $_REQUEST['item_points'];
@@ -308,7 +346,7 @@ class CPT_Item extends CPT_Object{
 
 			if (isset ($_REQUEST['taxonomy']) && ($_REQUEST['taxonomy']>0))	{
 				
-				$children = get_term_children( $_REQUEST['taxonomy'], RoleTaxonomy::getCurrentDomain()["name"] );
+				$children = get_term_children( $_REQUEST['taxonomy'], RoleTaxonomy::getCurrentRoleDomain()["name"] );
 				array_push($children, $_REQUEST['taxonomy']);
 				$where .= sprintf (' AND %1$s.ID IN (SELECT TR.object_id FROM %2$s TT JOIN %3$s TR ON (TT.term_taxonomy_id = TR.term_taxonomy_id) WHERE TT.term_id IN ( %4$s ))',
 					$wpdb->posts , $wpdb->term_taxonomy, $wpdb->term_relationships, implode(', ', $children));

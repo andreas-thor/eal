@@ -90,35 +90,20 @@ abstract class CPT_Object {
 		add_action('load-edit.php', array ($this, 'custom_bulk_action'));
 		
 		add_filter( 'wp_count_posts', array ($this, 'WPCB_count_posts'), 10, 3);
-		add_filter( 'views_edit-{$this->type}', array ($this, 'WPCP_views_edit'));
+		
+		add_filter( "views_edit-{$this->type}", function( $views )
+		{
+			$remove_views = [ 'all','publish','future','sticky','draft','pending','trash','mine' ];
+			foreach( (array) $remove_views as $view ) {
+				if (isset( $views[$view] )) unset( $views[$view] );
+			}
+			return $views;
+		} );
+		
 		
 	}		
 	
 	
-	public function WPCP_views_edit ($views) {
-		unset($views['mine']);
-		return $views;
-	}
-	
-	public function WPCB_post_row_actions($actions, $post){
-	
-		unset ($actions['view']);
-		unset ($actions['edit']);
-		unset ($actions['inline hide-if-no-js']);
-		return $actions;
-	
-		// 		if ($post->post_type != $this->type) return $actions;
-	
-		// 		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
-		// 		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
-	
-		// 		if (!RoleTaxonomy::canEditItemPost($post)) {		// "Edit" & "Trash" only if editable by user
-		// 			unset ($actions['edit']);
-		// 			unset ($actions['trash']);
-		// 		}
-	
-		// 		return $actions;
-	}
 	
 
 	function custom_bulk_action() {
@@ -254,7 +239,7 @@ abstract class CPT_Object {
 		global $post;
 	
 		// "s" is search string
-		$basic_url = remove_query_arg (array ("s", "item_type", "item_author", "review_author", "learnout_author", "item_points", "taxonomy", "level_FW", "level_KW", "level_PW", "learnout_id"));
+		$basic_url = remove_query_arg (array ("s", "item_type", "item_author", "review_author", "learnout_author", "item_points", "taxonomy", "level_FW", "level_KW", "level_PW", "learnout_id", "post_status"));
 	
 		switch ( $column ) {
 				
@@ -263,10 +248,13 @@ abstract class CPT_Object {
 				if ($post->post_status == "draft") echo (' &mdash; <span class="post-state"><i>Draft</i></span>');
 				if ($post->post_status == "pending") echo (' &mdash; <span class="post-state"><b>Pending</b></span>');
 				
-				printf ('<div class="row-actions">');
-				printf ('<span class="view"><a href="admin.php?page=view&itemid=%1$d" title="View">View</a></span>', $post->ID);
-				printf ('<span class="edit"> | <a href="post.php?post_type=item&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->ID);
-				printf (' | <span class="inline hide-if-no-js"></span></div>');
+// 				printf ('<div class="row-actions">');
+// 				printf ('<span class="view"><a href="admin.php?page=view&itemid=%1$d" title="View">View</a></span>', $post->ID);
+				
+// 				if (RoleTaxonomy::canEditItemPost($post)) {
+// 					printf ('<span class="edit"> | <a href="post.php?post_type=item&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->ID);
+// 				}
+// 				printf (' | <span class="inline hide-if-no-js"></span></div>');
 				
 				
 				break;
@@ -274,19 +262,19 @@ abstract class CPT_Object {
 			case 'review_title':
 				printf ('<a href="%1$s">[%2$s]</a>', add_query_arg ('item_id', $post->item_id, $basic_url), $post->item_title);
 				if ($post->post_status == "draft") echo (' &mdash; <span class="post-state"><i>Draft</i></span>');
-				printf ('<div class="row-actions">');
-				printf ('<span class="view"><a href="admin.php?page=view&reviewid=%1$d" title="View">View</a></span>', $post->ID);
-				printf ('<span class="edit"> | <a href="post.php?post_type=review&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->ID);
-				printf (' | <span class="inline hide-if-no-js"></span></div>');
+// 				printf ('<div class="row-actions">');
+// 				printf ('<span class="view"><a href="admin.php?page=view&reviewid=%1$d" title="View">View</a></span>', $post->ID);
+// 				printf ('<span class="edit"> | <a href="post.php?post_type=review&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->ID);
+// 				printf (' | <span class="inline hide-if-no-js"></span></div>');
 				break;
 				
 			case 'learnout_title':
 				printf ($post->learnout_title);
 				if ($post->post_status == "draft") echo (' &mdash; <span class="post-state"><i>Draft</i></span>');
-				printf ('<div class="row-actions">');
-				printf ('<span class="view"><a href="admin.php?page=view&learnoutid=%1$d" title="View">View</a></span>', $post->ID);
-				printf ('<span class="edit"> | <a href="post.php?post_type=learnout&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->ID);
-				printf (' | <span class="inline hide-if-no-js"></span></div>');
+// 				printf ('<div class="row-actions">');
+// 				printf ('<span class="view"><a href="admin.php?page=view&learnoutid=%1$d" title="View">View</a></span>', $post->ID);
+// 				printf ('<span class="edit"> | <a href="post.php?post_type=learnout&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->ID);
+// 				printf (' | <span class="inline hide-if-no-js"></span></div>');
 				break;
 			
 			case 'item_type':
@@ -295,7 +283,7 @@ abstract class CPT_Object {
 				break;
 	
 			case 'taxonomy':
-				foreach (wp_get_post_terms($post->ID, RoleTaxonomy::getCurrentDomain()["name"]) as $term) {
+				foreach (wp_get_post_terms($post->ID, RoleTaxonomy::getCurrentRoleDomain()["name"]) as $term) {
 					printf ('<a href="%1$s">%2$s</a><br/>', add_query_arg ('taxonomy', $term->term_id , $basic_url), $term->name);
 				}
 				
@@ -478,6 +466,7 @@ abstract class CPT_Object {
 		foreach ( $results as $row ) {
 			$counts[ $row['post_status'] ] = $row['num_posts'];
 		}
+		$counts ['mine'] = 7;
 		return (object) $counts;
 	}
 
@@ -489,7 +478,7 @@ abstract class CPT_Object {
 		global $typenow, $wp_query;
 	
 		// an array of all the taxonomyies you want to display. Use the taxonomy name or slug
-		$taxonomies = array(RoleTaxonomy::getCurrentDomain()["name"]);
+		$taxonomies = array(RoleTaxonomy::getCurrentRoleDomain()["name"]);
 	
 		// must set this to the post type you want the filter(s) displayed on
 		if( $typenow == $this->type ){
@@ -501,13 +490,24 @@ abstract class CPT_Object {
 				printf ('<option value="itemsc" %1$s>Single Choice</option>', 	($selected=="itemsc") ? "selected" : "");
 				printf ('<option value="itemmc" %1$s>Multiple Choice</option>', ($selected=="itemmc") ? "selected" : "");
 				printf ('</select>');
+				
+				$selected = isset($_REQUEST["post_status"]) ? $_REQUEST["post_status"] : "0";
+				printf ('<select class="postform" name="post_status">');
+				printf ('<option value="0" %1$s>All Item Statuses</option>', 		($selected=="0") ? "selected" : "");
+				printf ('<option value="draft" %1$s>Draft</option>', 		($selected=="draft") ? "selected" : "");
+				printf ('<option value="pending" %1$s>Pending</option>', ($selected=="pending") ? "selected" : "");
+				printf ('<option value="publish" %1$s>Published</option>', ($selected=="publish") ? "selected" : "");
+				printf ('</select>');
 			}
+			
+			
+	
 				
-				
+			
 			
 			wp_dropdown_categories(array(
 					'show_option_all' =>  __("Show All Topics"),
-					'taxonomy'        =>  RoleTaxonomy::getCurrentDomain()["name"],
+					'taxonomy'        =>  RoleTaxonomy::getCurrentRoleDomain()["name"],
 					'name'            =>  'taxonomy',
 					'orderby'         =>  'name',
 					'selected'        =>  isset($wp_query->query['taxonomy']) ? $wp_query->query['taxonomy'] :'',

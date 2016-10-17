@@ -42,6 +42,22 @@ class CPT_Review extends CPT_Object {
 	}
 	
 	
+	public function WPCB_post_row_actions($actions, $post){
+
+		if ($post->post_type != $this->type) return $actions;
+		
+		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
+		$actions['view'] = "<a href='admin.php?page=view&reviewid={$post->ID}'>View</a>"; // add "View"
+		
+		if (!RoleTaxonomy::canEditReviewPost($post)) {		// "Edit" & "Trash" only if editable by user
+			unset ($actions['edit']);
+			unset ($actions['trash']);
+		}
+		
+		return $actions;
+	}
+	
+	
 	function add_bulk_actions() {
 	
 		global $post_type;
@@ -78,9 +94,12 @@ class CPT_Review extends CPT_Object {
 		$review = new EAL_Review();
 		$review->load();
 		
-		if ($review->getItem()->domain != RoleTaxonomy::getCurrentDomain()["name"]) {
+		$domain = RoleTaxonomy::getCurrentRoleDomain();
+		if (($domain["name"] != "") && ($review->getItem()->domain != $domain["name"])) {
 			wp_die ("Reviewed item does not belong to your current domain!");
 		}
+		
+		?><style> #minor-publishing { display: none; } </style> <?php
 		
 		add_meta_box('mb_item', 'Item: ' . $review->getItem()->title, array ($this, 'WPCB_mb_item'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_score', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($this, 'WPCB_mb_score'), $this->type, 'normal', 'default' );
@@ -172,8 +191,10 @@ class CPT_Review extends CPT_Object {
 	public function WPCB_posts_join ($join, $checktype = TRUE) {
 		global $wp_query, $wpdb;
 		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) { 
+			$domain = RoleTaxonomy::getCurrentRoleDomain();
+				
 			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} AS R ON (R.id = {$wpdb->posts}.ID) ";
-			$join .= " JOIN {$wpdb->prefix}eal_item AS I ON (I.id = R.item_id AND I.domain = '" . RoleTaxonomy::getCurrentDomain()["name"] . "')";
+			$join .= " JOIN {$wpdb->prefix}eal_item AS I ON (I.id = R.item_id " . ( ($domain["name"]!="") ? "AND I.domain = '" . $domain["name"] . "')" : ")");
 			$join .= " JOIN {$wpdb->posts} AS postitem ON (I.id = postitem.id) ";
 			$join .= " JOIN {$wpdb->users} UI ON (UI.id = postitem.post_author) ";
 			$join .= " JOIN {$wpdb->users} UR ON (UR.id = {$wpdb->posts}.post_author) ";

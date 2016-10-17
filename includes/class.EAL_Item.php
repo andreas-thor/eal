@@ -58,7 +58,15 @@ class EAL_Item {
 		$this->learnout_id = isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : (isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : null);
 		$this->learnout = null;		// lazy loading
 		$this->difficulty = null;
-		$this->domain = RoleTaxonomy::getCurrentDomain()["name"];
+		
+		// 		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
+		$this->domain = isset ($_POST["domain"]) ? $_POST["domain"] : ""; 
+		if (($this->domain == "") && (isset($_POST['tax_input']))) {
+			foreach ($_POST['tax_input'] as $key => $value) {
+				$this->domain = $key;
+				break;
+			}
+		}
 	}
 	
 	
@@ -72,6 +80,7 @@ class EAL_Item {
 		$_POST['item_level_PW'] = $this->level["PW"];
 		$_POST['learnout_id'] = $this->learnout_id;
 		$_POST['difficulty'] = $this->difficulty;
+		$_POST['domain'] = $this->domain;
 	}
 	
 	
@@ -96,7 +105,7 @@ class EAL_Item {
 			$this->learnout = null;
 			$this->difficulty = null;
 			
-			$this->domain = RoleTaxonomy::getCurrentDomain()["name"];
+			$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
 				
 		} else {
 			$this->loadById($post->ID);
