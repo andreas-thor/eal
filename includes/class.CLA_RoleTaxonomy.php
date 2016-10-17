@@ -203,7 +203,7 @@ class RoleTaxonomy {
 	
 	
 	/**
-	 * Specifies if current user can edit review
+	 * Specifies if current user can edit review 
 	 * @param unknown $post
 	 */
 	public static function canEditReviewPost ($post) {

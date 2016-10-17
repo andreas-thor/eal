@@ -92,11 +92,6 @@ class CPT_Item extends CPT_Object{
 
 	public function WPCB_post_row_actions($actions, $post){
 	
-		// 		unset ($actions['view']);
-		// 		unset ($actions['edit']);
-		// 		unset ($actions['inline hide-if-no-js']);
-		// 		return $actions;
-	
 		if ($post->post_type != $this->type) return $actions;
 	
 		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"

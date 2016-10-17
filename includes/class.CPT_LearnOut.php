@@ -29,9 +29,7 @@ class CPT_LearnOut extends CPT_Object {
 		$this->label = "Learn. Outcome";
 		$this->menu_pos = 0;
 		
-		$args['supports'] = array( 'title');
-		
-		parent::init($args);
+		parent::init(array ('supports' => array( 'title')));
 		
 	}
 	
@@ -245,8 +243,18 @@ class CPT_LearnOut extends CPT_Object {
 	
 	public function WPCB_post_row_actions($actions, $post){
 	
+		if ($post->post_type != $this->type) return $actions;
+		
 		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
+		$actions['view'] = "<a href='admin.php?page=view&learnoutid={$post->ID}'>View</a>"; // add "View"
+		
+		if (!RoleTaxonomy::canEditItemPost($post)) {		// "Edit" & "Trash" only if editable by user
+			unset ($actions['edit']);
+			unset ($actions['trash']);
+		}
+		
 		return $actions;
+		
 	}
 	
 	
