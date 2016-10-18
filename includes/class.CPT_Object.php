@@ -176,8 +176,8 @@ abstract class CPT_Object {
 		);
 		
 		// TODO: HTML Layout geht verloren!!! mit oder ohne???
-		echo (wp_editor($vars['args']['value'] , $vars['args']['name'], $editor_settings ));
-// 		echo (wp_editor(wpautop(stripslashes($vars['args']['value'])) , $vars['args']['name'], $editor_settings ));
+// 		echo (wp_editor($vars['args']['value'] , $vars['args']['name'], $editor_settings ));
+		echo (wp_editor(wpautop(stripslashes($vars['args']['value'])) , $vars['args']['name'], $editor_settings ));
 	}
 	
 	
@@ -243,6 +243,8 @@ abstract class CPT_Object {
 	
 		switch ( $column ) {
 				
+			case 'last_modified': echo ($post->post_modified); break;
+			
 			case 'item_title':
 				printf ($post->item_title);
 				if ($post->post_status == "draft") echo (' &mdash; <span class="post-state"><i>Draft</i></span>');
@@ -420,19 +422,20 @@ abstract class CPT_Object {
 	
 	
 	
-	public function WPCB_posts_orderby($orderby_statement) {
+// 	public function WPCB_posts_orderby($orderby_statement) {
 	
-		global $wp_query;
-		if ($wp_query->query["post_type"] == $this->type) {
-			if ($wp_query->get( 'orderby' ) == "FW") $orderby_statement = "level_FW " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "PW") $orderby_statement = "level_PW " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "KW") $orderby_statement = "level_KW " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "Reviews") $orderby_statement = "reviews " . $wp_query->get( 'order' );
-		}
+// 		global $wp_query;
+// 		if ($wp_query->query["post_type"] == $this->type) {
+// 			if ($wp_query->get( 'orderby' ) == "FW") $orderby_statement = "level_FW " . $wp_query->get( 'order' );
+// 			if ($wp_query->get( 'orderby' ) == "PW") $orderby_statement = "level_PW " . $wp_query->get( 'order' );
+// 			if ($wp_query->get( 'orderby' ) == "KW") $orderby_statement = "level_KW " . $wp_query->get( 'order' );
+// 			if ($wp_query->get( 'orderby' ) == "Reviews") $orderby_statement = "reviews " . $wp_query->get( 'order' );
+// 			if ($wp_query->get('orderby') == $this->table_columns['last_modified'])		$orderby_statement = "{$wpdb->posts}.post_modified {$wp_query->get('order')}";
+// 		}
 	
-		// 		$orderby_statement = "level_KW DESC";
-		return $orderby_statement;
-	}
+// 		// 		$orderby_statement = "level_KW DESC";
+// 		return $orderby_statement;
+// 	}
 	
 	
 	public function WPCB_posts_where($where, $checktype = TRUE) {

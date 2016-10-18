@@ -9,7 +9,7 @@ class CPT_Item extends CPT_Object{
 	public $table_columns = array (
 		'cb' => '<input type="checkbox" />',
 		'item_title' => 'Title',
-		'date' => 'Date',
+		'last_modified' => 'Date',
 		'item_type' => 'Type',
 		'taxonomy' => 'Taxonomy', 
 		'item_author' => 'Author',
@@ -141,9 +141,15 @@ class CPT_Item extends CPT_Object{
 	
 		global $item, $post;
 		
+		// check for correct domain 
 		$domain = RoleTaxonomy::getCurrentRoleDomain();
 		if (($domain["name"] != "") && ($item->domain != $domain["name"])) {
 			wp_die ("Item does not belong to your current domain!");
+		}
+		
+		// check for edit capabilities
+		if (!RoleTaxonomy::canEditItemPost($post)) {
+			wp_die ("You are not allowed to edit this item!");
 		}
 		
 		// remove Publish button for authors
@@ -290,12 +296,14 @@ class CPT_Item extends CPT_Object{
 	
 		global $wp_query, $wpdb;
 	
-// 		$orderby_statement = parent::WPCB_posts_orderby($orderby_statement);
-	
 		if ($wp_query->query["post_type"] == $this->type) {
 			
+			// default: last modified DESC
+			$orderby_statement = "{$wpdb->posts}.post_modified DESC";
+			
 			if ($wp_query->get('orderby') == $this->table_columns['item_title'])	 	$orderby_statement = "I.title {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['date'])		 		$orderby_statement = "{$wpdb->posts}.post_date {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['last_modified'])		$orderby_statement = "{$wpdb->posts}.post_modified {$wp_query->get('order')}";
+// 			if ($wp_query->get('orderby') == $this->table_columns['date'])		 		$orderby_statement = "{$wpdb->posts}.post_date {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['item_type']) 		$orderby_statement = "I.type {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['item_author'])	 	$orderby_statement = "U.user_login {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['item_points']) 		$orderby_statement = "I.points {$wp_query->get('order')}";

@@ -14,7 +14,7 @@ class CPT_ItemSC extends CPT_Item {
 		$this->label = "Single Choice";
 		$this->menu_pos = 0;
 		parent::init();
-		
+		unset($this->table_columns["item_type"]);
 	}
 	
 	

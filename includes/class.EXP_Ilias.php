@@ -111,6 +111,7 @@ class EXP_Ilias {
 			if ($item_id != "") $item->loadById($item_id);
 			
 			// get title and description + question 
+			$item->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
 			$item->title = $itemXML->getAttribute("title");
 			$descques = $xpath->evaluate ("./presentation/flow/material/mattext/text()", $itemXML)[0]->wholeText;
 			$descques = preg_replace_callback(				// replace image references

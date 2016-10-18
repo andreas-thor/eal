@@ -1,3 +1,16 @@
+Fragen für Meeting 20.10.2016
+==============================
+
+* Status für importierte Items (Draft, Pending Review, Published)
+* Published Items können durch Autor nicht mehr verändert werden (nur durch Editor)
+
+
+
+
+* Standardsortierung geht bei All Items, LO und Review ... aber nicht bei SC + MC???
+
+
+
 Allgemeine ToDO
 ====
 
@@ -10,11 +23,11 @@ Allgemeine ToDO
   -- Frage: Welche Infos in der Tabelle?
   
 
- - Nutzerrechte und Gruppen definieren
- - Actions
-   * View for Items, Review und Learning Outcome --> all users (status 
-   * Edit for Items, Revuew und Learning Outcome --> for item author + editor
-     - nur editor 
+
+ - [DONE] Nutzerrechte und Gruppen definieren
+  * sie wiki  
+
+
 
 - Import von Testergebnissen
   - Item-Attribut: Schwierigkeit

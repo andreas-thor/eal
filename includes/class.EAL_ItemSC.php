@@ -171,15 +171,15 @@ class EAL_ItemSC extends EAL_Item {
 			$res .= sprintf ("<h1 style='display:inline'>%s</span></h1>", $this->title, $this->id);
 			$res .= sprintf ("<div style='display:none'><span><a href=\"post.php?action=edit&post=%d\">Edit</a></span></div>", $this->id);
 			$res .= sprintf ("</div><br/>");
-			$res .= sprintf ("<div>%s</div>", $this->description);
-			$res .= "<div style='background-color:F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>{$this->question}";
-			$res .= "<form style='margin-top:1em'>";
+			$res .= sprintf ("<div>%s</div>", wpautop(stripslashes($this->description)));
+			$res .= sprintf ("<div style='background-color:F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>%s", wpautop(stripslashes($this->question)));
+			$res .= sprintf ("<form style='margin-top:1em'>");
 			
 			foreach ($this->answers as $a) {
-				$res .= "<div style='margin-top:1em'><input type='radio' name='x'>" . $a['answer'] . "</div>";
+				$res .= sprintf ("<div style='margin-top:1em'><input type='radio' name='x'>%s</div>", $a['answer']);
 			}
 			
-			$res .= "</form></div><br/>";
+			$res .= sprintf ("</form></div><br/>");
 				
 			
 		}

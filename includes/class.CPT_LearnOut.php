@@ -8,7 +8,7 @@ class CPT_LearnOut extends CPT_Object {
 	public $table_columns = array (
 		'cb' => '<input type="checkbox" />',
 		'learnout_title' => 'Title',
-		'date' => 'Date',
+		'last_modified' => 'Date',
 		'learnout_author' => 'Author', 
 		'level_FW' => 'FW',
 		'level_KW' => 'KW',
@@ -226,8 +226,13 @@ class CPT_LearnOut extends CPT_Object {
 		global $wpdb, $wp_query;
 		
 		if ($wp_query->query["post_type"] == $this->type) {
+			
+			// default: last modified DESC
+			$orderby_statement = "{$wpdb->posts}.post_modified DESC";
+			
 			if ($wp_query->get('orderby') == $this->table_columns['learnout_title'])	$orderby_statement = "learnout_title {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['date'])		 		$orderby_statement = "{$wpdb->posts}.post_date {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['last_modified'])		$orderby_statement = "{$wpdb->posts}.post_modified {$wp_query->get('order')}";
+// 			if ($wp_query->get('orderby') == $this->table_columns['date'])		 		$orderby_statement = "{$wpdb->posts}.post_date {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['learnout_author'])	$orderby_statement = "U.user_login {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['level_FW']) 			$orderby_statement = "L.level_FW {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['level_PW']) 			$orderby_statement = "L.level_PW {$wp_query->get('order')}";
@@ -248,13 +253,7 @@ class CPT_LearnOut extends CPT_Object {
 		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
 		$actions['view'] = "<a href='admin.php?page=view&learnoutid={$post->ID}'>View</a>"; // add "View"
 		
-		if (!RoleTaxonomy::canEditItemPost($post)) {		// "Edit" & "Trash" only if editable by user
-			unset ($actions['edit']);
-			unset ($actions['trash']);
-		}
-		
 		return $actions;
-		
 	}
 	
 	

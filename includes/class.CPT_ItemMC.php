@@ -12,6 +12,7 @@ class CPT_ItemMC extends CPT_Item {
 		$this->label = "Multiple Choice";
 		$this->menu_pos = 0;
 		parent::init();
+		unset($this->table_columns["item_type"]);
 	}
 	
 	

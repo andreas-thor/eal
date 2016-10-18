@@ -10,7 +10,7 @@ class CPT_Review extends CPT_Object {
 	public $table_columns = array (
 		'cb' => '<input type="checkbox" />', 
 		'review_title' => 'Title', 
-		'date' => 'Date', 
+		'last_modified' => 'Date', 
 		'item_type' => 'Type', 
 		'review_author' => 'Author Review', 
 		'item_author' => 'Author Item', 
@@ -213,8 +213,13 @@ class CPT_Review extends CPT_Object {
 		// 		$orderby_statement = parent::WPCB_posts_orderby($orderby_statement);
 	
 		if ($wp_query->query["post_type"] == $this->type) {
+			
+			// default: last modified DESC
+			$orderby_statement = "{$wpdb->posts}.post_modified DESC";
+			
 			if ($wp_query->get( 'orderby' ) == "Title")		 	$orderby_statement = "I.title " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "Date")		 	$orderby_statement = "{$wpdb->posts}.post_date " . $wp_query->get( 'order' );
+			if ($wp_query->get( 'orderby' ) == $this->table_columns['last_modified'])		$orderby_statement = "{$wpdb->posts}.post_modified {$wp_query->get('order')}";
+// 			if ($wp_query->get( 'orderby' ) == "Date")		 	$orderby_statement = "{$wpdb->posts}.post_date " . $wp_query->get( 'order' );
 			if ($wp_query->get( 'orderby' ) == "Type") 			$orderby_statement = "I.type " . $wp_query->get( 'order' );
 			if ($wp_query->get( 'orderby' ) == "Author Review")	$orderby_statement = "UR.user_login " . $wp_query->get( 'order' );
 			if ($wp_query->get( 'orderby' ) == "Author Item") 	$orderby_statement = "UI.user_login " . $wp_query->get( 'order' );
