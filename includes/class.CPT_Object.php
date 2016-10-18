@@ -146,7 +146,7 @@ abstract class CPT_Object {
 			$postids = $_REQUEST['post'];
 			if (!is_array($postids)) $postids = [$postids];
 
-			$basket_old = get_user_meta(get_current_user_id(), 'itembasket', true);
+			$basket_old = RoleTaxonomy::getCurrentBasket(); // get_user_meta(get_current_user_id(), 'itembasket', true);
 			if ($basket_old == null) $basket_old = array();
 			if (count($basket_old) == 0) $basket_old = [-1];	// dummy basket to make sure SQLL works
 			
@@ -155,7 +155,7 @@ abstract class CPT_Object {
 			$sql .= sprintf('( %1$s IN (%2$s) OR I.id IN (%3$s) )',  ($_REQUEST['post_type']=='learnout') ? 'I.learnout_id' : 'I.id', join(", ", $postids), join(", ", $basket_old));
 			$itemids = $wpdb->get_col ($sql);
 	
-			$x = update_user_meta( get_current_user_id(), 'itembasket', $itemids);
+			RoleTaxonomy::setCurrentBasket($itemids); // $x = update_user_meta( get_current_user_id(), 'itembasket', $itemids);
 	
 	
 		}

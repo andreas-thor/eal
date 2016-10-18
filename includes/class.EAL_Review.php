@@ -218,7 +218,7 @@ class EAL_Review {
 		$res .= sprintf ("</div><br/>");
 		$res .= sprintf ("<div>%s</div>", $this->getScoreHTML(FALSE));
 		$res .= CPT_Object::getLevelHTML('review_' . $this->id, $this->level,  $this->getItem()->level, "disabled", 1, '');
-		$res .= sprintf ("<div>%s</div>", $this->feedback);
+		$res .= sprintf ("<div>%s</div>", wpautop(stripslashes($this->feedback)));
 		$res .= "<br/>";
 		
 	

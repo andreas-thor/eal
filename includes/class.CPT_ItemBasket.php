@@ -51,7 +51,7 @@ class CPT_ItemBasket extends CPT_Item {
 		
 		if ($wp_list_table->current_action() == 'remove_from_basket') {
 			
-			$b_old = get_user_meta(get_current_user_id(), 'itembasket', true);
+			$b_old = RoleTaxonomy::getCurrentBasket(); // get_user_meta(get_current_user_id(), 'itembasket', true);
 			$b_new = $b_old;
 
 			if (isset($_REQUEST["post"])) {
@@ -63,7 +63,7 @@ class CPT_ItemBasket extends CPT_Item {
 			if ($_REQUEST['itemids']!=null) {
 				$b_new = array_diff ($b_old, $_REQUEST['itemids']);
 			}
-			$x = update_user_meta( get_current_user_id(), 'itembasket', $b_new, $b_old );
+			RoleTaxonomy::setCurrentBasket($b_new); // $x = update_user_meta( get_current_user_id(), 'itembasket', $b_new, $b_old );
 		
 		}
 	

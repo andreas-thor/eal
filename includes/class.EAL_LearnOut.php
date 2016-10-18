@@ -160,7 +160,7 @@ class EAL_LearnOut {
 		$res .= sprintf ("<h1 style='display:inline'>%s</span></h1>", $this->title, $this->id);
 		$res .= sprintf ("<div style='display:none'><span><a href=\"post.php?action=edit&post=%d\">Edit</a></span></div>", $this->id);
 		$res .= sprintf ("</div><br/>");
-		$res .= sprintf ("<div>%s</div>", $this->description);
+		$res .= sprintf ("<div>%s</div>", wpautop(stripslashes($this->description)));
 		$res .= CPT_Object::getLevelHTML('learnout_' . $this->id, $this->level, null, "disabled", 0, '');
 		$res .= "<br/>";
 	

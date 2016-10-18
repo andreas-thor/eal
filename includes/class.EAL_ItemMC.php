@@ -154,30 +154,25 @@ class EAL_ItemMC extends EAL_Item {
 		 
 		
 		if ($forReview) {
-			$res = "<div>{$this->description}</div>";
-			 
-			$answerLine = '<tr align="left">
-	                           <td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
-	                           <td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
-	                           <td>%s</td>
-	                    </tr>';
-			 
-			//           $res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}<ul style='list-style: none;margin-top:1em;'>";
-			$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}";
-			 
-			$res .= "<table style='font-size: 100%'>";
+			$res  = sprintf ("<div>%s</div>", wpautop(stripslashes($this->description)));
+			$res .= sprintf ("<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>%s", wpautop(stripslashes($this->question)));
+			$res .= sprintf ("<table style='font-size: 100%%'>");
 			 
 			 
 			foreach ($this->answers as $a) {
 				//                  $res .= "<li><input type='checkbox' " . (($a['positive']>$a['negative']) ? 'checked' : '') . ">{$a['answer']}</input></li>";
-				$res .= sprintf($answerLine,
+				$res .= sprintf('<tr align="left">
+	                           		<td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
+	                           		<td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
+	                           		<td>%s</td>
+								 </tr>',
 						$a['positive'], ($a['positive']>$a['negative'] ? 'bold' : 'normal'),
 						$a['negative'], ($a['negative']>$a['positive'] ? 'bold' : 'normal'),
 						$a['answer']);
 			}
 		
 			//           $res .= "</ul></div>";
-			$res .= "</table></div>";
+			$res .= sprintf ("</table></div>");
 			 
 			
 			// 		$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}<ul style='list-style: none;margin-top:1em;'>";

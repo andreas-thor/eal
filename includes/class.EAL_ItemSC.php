@@ -152,9 +152,9 @@ class EAL_ItemSC extends EAL_Item {
 		
 		if ($forReview) {
 		
-			$res  = "<div>{$this->description}</div>";
-			$res .= "<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>{$this->question}";
-			$res .= "<table style='font-size: 100%'>";
+			$res  = sprintf ("<div>%s</div>", wpautop(stripslashes($this->description)));
+			$res .= sprintf ("<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>%s", wpautop(stripslashes($this->question)));
+			$res .= sprintf ("<table style='font-size: 100%%'>");
 			
 			foreach ($this->answers as $a) {
 				$res .= sprintf('<tr align="left"><td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td><td>%s</td></tr>', 
@@ -163,7 +163,7 @@ class EAL_ItemSC extends EAL_Item {
 						$a['answer']);	// cell value
 			}
 		
-			$res .= "</table></div>";
+			$res .= sprintf ("</table></div>");
 		
 		} else {
 			

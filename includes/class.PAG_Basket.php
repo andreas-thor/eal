@@ -16,19 +16,26 @@ class PAG_Basket {
 	
 		// load all items from basket
 		$items = array ();
-		$itemids = get_user_meta(get_current_user_id(), 'itembasket', true);
+		$itemids = RoleTaxonomy::getCurrentBasket(); // get_user_meta(get_current_user_id(), 'itembasket', true);
 		if ($itemids == null) $itemids = array();
+		$itemids_new = array();
 		foreach ($itemids as $item_id) {
+			
 			$post = get_post($item_id);
 			if ($post == null) continue;
+			
 			$item = null;
 			if ($post->post_type == 'itemsc') $item = new EAL_ItemSC();
 			if ($post->post_type == 'itemmc') $item = new EAL_ItemMC();
 			if ($item == null) continue;
 			$item->loadById($item_id);
+			if ((RoleTaxonomy::getCurrentRoleDomain()["name"]!="") && ($item->domain!=RoleTaxonomy::getCurrentRoleDomain()["name"])) continue;
+				
 			array_push($items, $item);
+			array_push($itemids_new, $item_id);
 		}
 		
+		RoleTaxonomy::setCurrentBasket($itemids_new); // update_user_meta (get_current_user_id(), 'itembasket', $itemids_new);
 		return $items;
 		
 	}
@@ -100,7 +107,7 @@ class PAG_Basket {
 			}
 
 			// fallback: get items from basket
-			if (count($itemids) == 0) $itemids = get_user_meta(get_current_user_id(), 'itembasket', true);
+			if (count($itemids) == 0) $itemids = RoleTaxonomy::getCurrentBasket(); // get_user_meta(get_current_user_id(), 'itembasket', true);
 		}
 		
 		

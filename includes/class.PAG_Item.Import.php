@@ -35,20 +35,17 @@ class PAG_Item_Import {
 							<td><select style='width:12em' name="format"><option>ILIAS 5</option></select></td>
 						</tr>
 						<tr>
-							<th><label>New Items</label></th>
+							<th><label>Items</label></th>
 							<td>
 								<fieldset> 
-									<input type="radio" id="new_create" name="newitem" value="create" checked> <label for="new_create"> Create new items (add metadata later)</label><br> 
-									<input type="radio" id="new_ignore" name="newitem" value="ignore"> <label for="new_ignore"> Ignore (no new items are created)</label>
-								</fieldset>
-							</td>
-						</tr>
-						<tr>
-							<th><label>Known Items</label></th>
-							<td>
-								<fieldset> 
-									<input type="radio" id="known_update" name="knownitem" value="update"> <label for="known_update"> Update Items (except metadata)</label><br> 
-									<input type="radio" id="known_ignore" name="knownitem" value="ignore" checked> <label for="known_ignore"> Ignore (items remain unchanged)</label>
+									<input  id="items_create_and_update" type="radio" 	name="newitem" value="create_and_update" checked> 
+									<label for="items_create_and_update"> Create new items and update existing items</label><br>
+									 
+									<input  id="items_create" type="radio"				name="newitem" value="create"> 
+									<label for="items_create"> Create new items only (existing items remain unchanged)</label><br>
+									
+									<input  id="items_update" type="radio"				name="newitem" value="update"> 
+									<label for="items_update"> Update existing items only (no new items are created)</label>
 								</fieldset>
 							</td>
 						</tr>

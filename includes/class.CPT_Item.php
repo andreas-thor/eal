@@ -360,7 +360,7 @@ class CPT_Item extends CPT_Object{
 			
 				$where = str_replace( "{$wpdb->posts}.post_type = 'itembasket'", "{$wpdb->posts}.post_type LIKE 'item%'", $where);
 				
-				$basket = get_user_meta(get_current_user_id(), 'itembasket', true);
+				$basket = RoleTaxonomy::getCurrentBasket(); // get_user_meta(get_current_user_id(), 'itembasket', true);
 				if (is_array($basket) && (count($basket)>0)) {
 					$where .= " AND I.ID IN (" . implode(",", $basket) . ") ";
 				} else {

@@ -38,6 +38,7 @@ require_once 'includes/class.PAG_Basket.php';
 require_once 'includes/class.PAG_Explorer.php';
 require_once 'includes/class.PAG_Generator.php';
 require_once 'includes/class.PAG_Item.Import.php';
+require_once 'includes/class.PAG_TaxonomyImport.php';
 
 require_once 'includes/class.CLA_RoleTaxonomy.php';
 
@@ -110,7 +111,7 @@ function WPCB_dashboard_setup() {
 	
 	wp_add_dashboard_widget('dashboard_items', 		'Item Overview', 		'WPCP_dashboard_items' );	
 	wp_add_dashboard_widget('dashboard_metadata', 	'Metadata Overview', 	'WPCP_dashboard_metadata' );	
-	wp_add_dashboard_widget('dashboard_user', 		'User Overview', 		'WPCP_dashboard_user' );	
+// 	wp_add_dashboard_widget('dashboard_user', 		'User Overview', 		'WPCP_dashboard_user' );	
 }
 
 
@@ -124,9 +125,9 @@ function WPCP_dashboard_items() {
 	}
 	
 	printf ('<table border="0">');
-	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-format-aside" 	style="display:inline">&nbsp;</div> All Items</td>			<td align="right" style="width:4em"><a href="edit.php?post_type=item">%1$d</a></td>		<td align="right" style="width:10em">&nbsp;(%2$d pending review)</td></tr>', $counts[0]->publish+$counts[0]->pending+$counts[0]->draft, $counts[0]->pending);
-	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-marker" 			style="display:inline">&nbsp;</div> Single Choice</td>		<td align="right" style="width:4em"><a href="edit.php?post_type=itemsc">%1$d</a></td>	<td align="right" style="width:10em">&nbsp;(%2$d pending review)</td></tr>', $counts[1]->publish+$counts[1]->pending+$counts[1]->draft, $counts[1]->pending);
-	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-forms" 			style="display:inline">&nbsp;</div> Multiple Choice</td>	<td align="right" style="width:4em"><a href="edit.php?post_type=itemmc">%1$d</a></td>	<td align="right" style="width:10em">&nbsp;(%2$d pending review)</td></tr>', $counts[2]->publish+$counts[2]->pending+$counts[2]->draft, $counts[2]->pending);
+	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-format-aside" 	style="display:inline">&nbsp;</div> All Items</td>			<td align="right" style="width:4em"><a href="edit.php?post_type=item">%1$d</a></td>		<td align="right" style="width:10em">&nbsp;(<a href="edit.php?post_type=item&post_status=pending">%2$d</a> pending review)</td></tr>',   $counts[0]->publish+$counts[0]->pending+$counts[0]->draft, $counts[0]->pending);
+	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-marker" 			style="display:inline">&nbsp;</div> Single Choice</td>		<td align="right" style="width:4em"><a href="edit.php?post_type=itemsc">%1$d</a></td>	<td align="right" style="width:10em">&nbsp;(<a href="edit.php?post_type=itemsc&post_status=pending">%2$d</a> pending review)</td></tr>', $counts[1]->publish+$counts[1]->pending+$counts[1]->draft, $counts[1]->pending);
+	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-forms" 			style="display:inline">&nbsp;</div> Multiple Choice</td>	<td align="right" style="width:4em"><a href="edit.php?post_type=itemmc">%1$d</a></td>	<td align="right" style="width:10em">&nbsp;(<a href="edit.php?post_type=itemmc&post_status=pending">%2$d</a> pending review)</td></tr>', $counts[2]->publish+$counts[2]->pending+$counts[2]->draft, $counts[2]->pending);
 	printf ('</table><hr>');
  	printf ('<table border="0">');
 	printf ('<tr><td style="width:11em"><div class="dashicons-before dashicons-admin-comments" 	style="display:inline">&nbsp;</div> Reviews</td>			<td align="right" style="width:4em"><a href="edit.php?post_type=review">%1$d</a></td></tr>', $counts[3]->publish+$counts[3]->pending+$counts[3]->draft);
@@ -156,10 +157,11 @@ function WPCP_dashboard_user() {
 	printf ('<table border="0">');
 	$user = wp_get_current_user();
 	foreach ($user->roles as $role) {
-		printf ('<tr><td><div class="dashicons-before dashicons-admin-users" 	style="display:inline">&nbsp;</div> %2$s %1$s %3$s</td></tr>', 
+		printf ('<tr><td><div class="dashicons-before %4$s" 	style="display:inline">&nbsp;</div> %2$s %1$s %3$s</td></tr>', 
 			$wp_roles->roles[$role]["name"], 
 			(get_user_meta ($user->ID, 'current_role', true)==$role) ? "<b>" : "",
-			(get_user_meta ($user->ID, 'current_role', true)==$role) ? "</b>" : "");
+			(get_user_meta ($user->ID, 'current_role', true)==$role) ? "</b>" : "",
+			(substr($role, 0, 2) == "a_") ? "dashicons-admin-users" : "dashicons-groups");
 	}
 	printf ('</table>');
 }
@@ -224,8 +226,9 @@ function set_eal_admin_menu_entries () {
 	if ($domain ["name"] != "") {
 		add_submenu_page ( 'edit.php?post_type=learnout', $domain ["label"], '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> ' . $domain ["label"], 'edit_posts', $taxurl );
 	}
- 	add_submenu_page( 'edit.php?post_type=learnout', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', 'WPCB_import_topics');
-	 		 
+//  	add_submenu_page( 'edit.php?post_type=learnout', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', 'WPCB_import_topics');
+ 	add_submenu_page( 'edit.php?post_type=learnout', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import-taxonomy', array ('PAG_Taxonomy_Import', 'createPage'));
+ 	
 	 	
 // LEZTE	 	
 // 	 	add_menu_page('eal_page_metadata', 'Metadata', 'edit_posts', 'metadata', '' /* array ('PAG_Metadata', 'createTable')*/, 'dashicons-tag', 32);
@@ -238,8 +241,7 @@ function set_eal_admin_menu_entries () {
 
  	
         	
-    
-    $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
+    $c = count (RoleTaxonomy::getCurrentBasket()); //  $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
     add_menu_page('eal_page_basket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'edit_posts', 'edit.php?post_type=itembasket', '' /*'create_eal_page_items'*/, 'dashicons-cart', 34);
     add_submenu_page( 'edit.php?post_type=itembasket', 'Table', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> Table', 'edit_posts', 'edit.php?post_type=itembasket');
     add_submenu_page( 'edit.php?post_type=itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_posts', 'ist-blueprint', array ('PAG_Explorer', 'createPage'));
@@ -256,128 +258,6 @@ function set_eal_admin_menu_entries () {
 
 // register AJAX-PHP-function
 add_action( 'wp_ajax_load_items', array ('PAG_Explorer', 'load_items_callback') );
-
-
-
-
-
-
-
-function WPCB_import_topics () {
-	// 	foreach ($GLOBALS["eal_itemtypes"] as $id => $name) {
-	// 		$html .= '<a class="add-new-h2" href="post-new.php?post_type=' . $id . '">Add ' . $name . '</a>';
-	// 	}
-	
-	
-
-	
-	if ($_POST['action']=='Upload') {
-		//	checks for errors and that file is uploaded
-		if (($_FILES['uploadedfile']['error'] == UPLOAD_ERR_OK) && (is_uploaded_file($_FILES['uploadedfile']['tmp_name']))) { 
-			
-	
-					$level = -1;
-					$lastParent = array (-1 => $_POST['topicroot']);
-					foreach (file ($_FILES['uploadedfile']['tmp_name'], FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
-						
-						$identSize = strlen($line) - strlen(ltrim($line));
-						if ($identSize > $level) $level++;
-						if ($identSize < $level) $level = max (0, $level-1);
-
-						$x = wp_insert_term( utf8_encode(trim($line)), 'topic', array('parent' => $lastParent[$level-1]) );
-						$lastParent[$level] = ($x instanceof WP_Error) ? $x->error_data['term_exists'] : $x['term_id'];
-						
-						
-					}
-					
-		}
-	}
-	
-	
-?>	
-
-		<div class="wrap">
-		
-			<h1>Topics</h1>
-			
-			<h2>Upload Terms</h2>
-			<form  enctype="multipart/form-data" action="admin.php?page=import-tags" method="post">
-				<table class="form-table">
-					<tbody>
-						<tr class="user-first-name-wrap">
-							<th><label>File</label></th>
-							<td><input class="menu-name regular-text menu-item-textbox input-with-default-title" name="uploadedfile" type="file" size="30" accept="text/*"></td>
-						</tr>
-						<tr class="user-first-name-wrap">
-							<th><label>Parent</label></th>
-							<td>
-<?php  
-								wp_dropdown_categories(array(
-									'show_option_none' =>  __("None"),
-									'option_none_value' => 0, 
-									'taxonomy'        =>  'topic',
-									'name'            =>  'topicroot',
-									'value_field'	  =>  'id',
-									'orderby'         =>  'name',
-									'selected'        =>  '',
-									'hierarchical'    =>  true,
-									'depth'           =>  0,
-									'show_count'      =>  false, // Show # listings in parens
-									'hide_empty'      =>  false, // Don't show businesses w/o listings
-								));
-?>
-							</td>
-						</tr>
-						<tr>
-							<th>
-								<input type="submit" name="action" class="button button-primary" value="Upload">
-							</th>
-							<td></td>
-						</tr>
-					</tbody>
-				</table>
-			</form>
-			
-			
-			<h2>Download Topic Terms</h2>
-			<form action="options.php" method="post" name="options">
-				<table class="form-table">
-					<tbody>
-						<tr class="user-first-name-wrap">
-							<th><label>Parent</label></th>
-							<td>
-<?php  
-								wp_dropdown_categories(array(
-									'show_option_none' =>  __("None"),
-									'option_none_value' => 0, 
-									'taxonomy'        =>  'topic',
-									'name'            =>  'topicroot',
-									'value_field'	  =>  'id',
-									'orderby'         =>  'name',
-									'selected'        =>  '',
-									'hierarchical'    =>  true,
-									'depth'           =>  0,
-									'show_count'      =>  false, // Show # listings in parens
-									'hide_empty'      =>  false, // Don't show businesses w/o listings
-								));
-?>
-								
-								
-							</td>
-						</tr>
-						<tr>
-							<th><input type="submit" name="action" class="button button-primary" value="Download"></th>
-							<td></td>
-						</tr>
-					</tbody>
-				</table>
-			</form>
-		</div>	
-			
-
-<?php 
-	
-}
 
 
 
@@ -490,10 +370,15 @@ function my_new_toolbar_item( $wp_admin_bar ) {
 	$wp_admin_bar->remove_menu ('wp-logo');
 	$wp_admin_bar->remove_menu ('site-name');
 	
-	$title  = "<div><a class='ab-item' href='" . site_url() . "/wp-admin/profile.php'>" . RoleTaxonomy::getCurrentRoleDomain()["label"];
-	$title .= (RoleTaxonomy::getCurrentRoleType()=="editor") ? '<div class="dashicons-before dashicons-admin-users" style="display:inline">&nbsp;</div>' : '';
-	$title .= "</a></div>";
-	$wp_admin_bar->add_menu (array ("id" => "eal_currentRole", "title" => $title));
+// 	$title  = "<div>";
+// 	$title .= sprintf ("<div class='dashicons-before %s' style='display:inline'>&nbsp;", (RoleTaxonomy::getCurrentRoleType()=="author") ? "dashicons-admin-users" :  "dashicons-groups");
+	$title .= sprintf ("%s %s", site_url(), RoleTaxonomy::getCurrentRoleDomain()["label"]);
+// 	$title .= sprintf ("<a class='ab-item' href='%s/wp-admin/profile.php'>%s</a></div>", site_url(), RoleTaxonomy::getCurrentRoleDomain()["label"]);
+	
+// 	$wp_admin_bar->add_menu (array ("id" => "eal_currentRole", "title" => $title, "meta" => array ("class" => sprintf ("dashicons-before %s", (RoleTaxonomy::getCurrentRoleType()=="author") ? "dashicons-admin-users" :  "dashicons-groups"))));
+
+	
+	$wp_admin_bar->add_menu (array ("id" => "eal_currentRole", "href" => sprintf ('%s/wp-admin/profile.php', site_url()), "title" => sprintf ("<div class='wp-menu-image dashicons-before %s'>&nbsp;%s</div>", (RoleTaxonomy::getCurrentRoleType()=="author") ? "dashicons-admin-users" :  "dashicons-groups", RoleTaxonomy::getCurrentRoleDomain()["label"])));
 }
 
 

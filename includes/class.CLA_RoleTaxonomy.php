@@ -12,6 +12,16 @@ class RoleTaxonomy {
 	
 	
 	
+	public static function getCurrentBasket () {
+		$itemids = get_user_meta(get_current_user_id(), 'itembasket_' . RoleTaxonomy::getCurrentRoleDomain()["name"], true);
+		if ($itemids == null) $itemids = array ();
+		return $itemids;
+	}
+	
+	public static function setCurrentBasket ($itemids) {
+		update_user_meta (get_current_user_id(), 'itembasket_' . RoleTaxonomy::getCurrentRoleDomain()["name"], $itemids);
+	}
+	
 	public static function init () {
 
 		// remove all roles (except administrator);
