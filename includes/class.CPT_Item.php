@@ -9,6 +9,7 @@ class CPT_Item extends CPT_Object{
 	public $table_columns = array (
 		'cb' => '<input type="checkbox" />',
 		'item_title' => 'Title',
+		'id' => 'ID',
 		'last_modified' => 'Date',
 		'item_type' => 'Type',
 		'taxonomy' => 'Taxonomy', 
@@ -19,7 +20,9 @@ class CPT_Item extends CPT_Object{
 		'level_PW' => 'PW',
 		'no_of_reviews' => 'Reviews',
 		'item_learnout' => 'Learn. Out.',
-		'difficulty' => 'Difficulty'
+		'difficulty' => 'Difficulty',
+		'note' => 'Note',
+		'flag' => 'Flag'
 	);
 	
 	
@@ -110,7 +113,7 @@ class CPT_Item extends CPT_Object{
 	function add_bulk_actions() {
 	
 		global $post_type;
-		if ($post_type != $this->type) return;
+//  		if ($post_type != $this->type) return;
 	
 ?>
 		<script type="text/javascript">
@@ -124,7 +127,22 @@ class CPT_Item extends CPT_Object{
 			        jQuery('<option>').val('bulk').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('view').text('<?php _e('View Items')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('trash').text('<?php _e('Trash Items')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('add_to_basket').text('<?php _e('Add Items To Basket')?>').appendTo("select[name='" + s + "']");
+
+			        <?php if ($post_type == "itembasket") { ?> 
+				        jQuery('<option>').val('remove_from_basket').text('<?php _e('Remove Items From Basket')?>').appendTo("select[name='" + s + "']");
+					<?php } else { ?>
+				        jQuery('<option>').val('add_to_basket').text('<?php _e('Add Items To Basket')?>').appendTo("select[name='" + s + "']");
+					<?php } ?>
+
+			        jQuery('<option disabled>').val('--').text('<?php _e('-----')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('mark').text('<?php _e('Mark Items')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('unmark').text('<?php _e('Unmark Items')?>').appendTo("select[name='" + s + "']");
+
+			        jQuery('<option disabled>').val('--').text('<?php _e('-----')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('setpublished').text('<?php _e('Publish Items')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('setpending').text('<?php _e('Set Items To Pending Review')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('setdraft').text('<?php _e('Revert Items To Draft')?>').appendTo("select[name='" + s + "']");
+			        
 			      });
 			});			    
 	    </script>
@@ -167,12 +185,13 @@ class CPT_Item extends CPT_Object{
 		
 		add_meta_box('mb_learnout', 'Learning Outcome', array ($this, 'WPCB_mb_learnout'), $this->type, 'normal', 'default', array ('learnout' => $item->getLearnOut()));
 		
-		
 		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_description', 'value' => $item->description) );
 		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_question', 'value' => $item->question));
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $item->level, 'default' => (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level) ));
 		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($this, 'WPCB_mb_answers'), $this->type, 'normal', 'default');
 		add_meta_box('mb_item_taxonomy', RoleTaxonomy::$domains[$item->domain], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $item->domain ));
+		add_meta_box('mb_item_note_flag', 'Note', array ($this, 'WPCB_mb_note_flag'), $this->type, 'normal', 'default', array ('note' => $item->note, 'flag' => $item->flag ));
+		
 	}
 	
 	
@@ -244,7 +263,15 @@ class CPT_Item extends CPT_Object{
 		
 	}
 	
+	public function WPCB_mb_note_flag ($post, $vars) {
 	
+		$flag = $vars['args']['flag'] > 0 ? $vars['args']['flag'] : 0;
+		
+		printf ("<div class='misc-pub-section'>");
+		printf ("<input type='checkbox' name='item_flag' value='1' %s>", $flag==1 ? "checked" : "");
+		printf ("<input type='text' name='item_note' value='%s'>", $vars['args']['note']);
+		printf ("</div>");
+	}
 
 	
 	/**
@@ -286,6 +313,8 @@ class CPT_Item extends CPT_Object{
 			$array .= ", L.title AS learnout_title";
 			$array .= ", L.id AS learnout_id ";
 			$array .= ", I.difficulty as difficulty ";
+			$array .= ", I.note as note ";
+			$array .= ", I.flag as flag ";
 		}
 		return $array;
 	}
@@ -313,6 +342,9 @@ class CPT_Item extends CPT_Object{
 			if ($wp_query->get('orderby') == $this->table_columns['no_of_reviews'])		$orderby_statement = "no_of_reviews {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['item_learnout'])		$orderby_statement = "L.title {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['difficulty']) 		$orderby_statement = "I.difficulty {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['note']) 				$orderby_statement = "I.note {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['flag']) 				$orderby_statement = "I.flag {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['id']) 				$orderby_statement = "I.id {$wp_query->get('order')}";
 		}
 	
 		return $orderby_statement;
@@ -346,7 +378,12 @@ class CPT_Item extends CPT_Object{
 			if (isset ($_REQUEST['level_PW']) && ($_REQUEST['level_PW']>0)) 			$where .= " AND I.level_PW 	= " . $_REQUEST['level_PW'];
 			if (isset ($_REQUEST['level_KW']) && ($_REQUEST['level_KW']>0)) 			$where .= " AND I.level_KW	= " . $_REQUEST['level_KW'];
 			if (isset ($_REQUEST['learnout_id']))										$where .= " AND I.learnout_id = " . $_REQUEST['learnout_id'];
-
+			if (isset ($_REQUEST['flag']))	{
+				if ($_REQUEST['flag'] == 1) 											$where .= " AND I.flag = 1";
+				if ($_REQUEST['flag'] == 2) 											$where .= " AND (I.flag != 1 OR I.flag IS NULL)";
+			}
+			
+			
 			if (isset ($_REQUEST['taxonomy']) && ($_REQUEST['taxonomy']>0))	{
 				
 				$children = get_term_children( $_REQUEST['taxonomy'], RoleTaxonomy::getCurrentRoleDomain()["name"] );
@@ -386,7 +423,7 @@ class CPT_Item extends CPT_Object{
 // 		if (!isset ($wpquery->query['s'])) return $search;
 		
 		
-		$search = sprintf (' AND ( L.Title LIKE "%%%1$s%%" OR I.Title LIKE "%%%1$s%%" OR U.user_login LIKE "%%%1$s%%" )', $wpquery->query['s']);
+		$search = sprintf (' AND ( L.Title LIKE "%%%1$s%%" OR I.note LIKE "%%%1$s%%" OR I.Title LIKE "%%%1$s%%" OR U.user_login LIKE "%%%1$s%%" )', $wpquery->query['s']);
 		return $search;
 		// 		$a = 7;
 	}

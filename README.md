@@ -5,7 +5,7 @@
 
 ## Install
 * Install Wordpress on Apache Server
-* Add EAs.LiT plugin
 * Add [Multiple Roles Plugin](https://de.wordpress.org/plugins/multiple-roles/) 
+* Add EAs.LiT plugin
 * Increase Apache File Upload Size (2MB is usually too small if you want to upload items)
-
+* Set date / time format and time zone 

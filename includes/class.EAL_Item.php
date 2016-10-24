@@ -18,9 +18,13 @@ class EAL_Item {
 	public $learnout_id;
 	
 	public $difficulty;
+	public $note;
+	public $flag;
 	
 	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	public static $level_type = ["FW", "KW", "PW"];
+	
+	public static $flag_icon = ["", "dashicons-star-filled", "dashicons-flag", "dashicons-yes", "dashicons-no"];
 	
 	public static $category_value_label = [
 			"type" => ["itemsc" => "Single Choice", "itemmc" => "Multiple Choice"],
@@ -59,6 +63,9 @@ class EAL_Item {
 		$this->learnout = null;		// lazy loading
 		$this->difficulty = null;
 		
+		$this->note = isset ($_POST['item_note']) ? $_POST['item_note'] : null;
+		$this->flag = isset ($_POST['item_flag']) ? $_POST['item_flag'] : null;
+		
 		// 		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
 		$this->domain = isset ($_POST["domain"]) ? $_POST["domain"] : ""; 
 		if (($this->domain == "") && (isset($_POST['tax_input']))) {
@@ -81,6 +88,8 @@ class EAL_Item {
 		$_POST['learnout_id'] = $this->learnout_id;
 		$_POST['difficulty'] = $this->difficulty;
 		$_POST['domain'] = $this->domain;
+		$_POST['item_note'] = $this->note;
+		$_POST['item_flag'] = $this->flag;
 	}
 	
 	
@@ -106,6 +115,8 @@ class EAL_Item {
 			$this->difficulty = null;
 			
 			$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
+			$this->note = "";
+			$this->flag = 0;
 				
 		} else {
 			$this->loadById($post->ID);
@@ -131,6 +142,8 @@ class EAL_Item {
 		$this->learnout = null; // lazy loading
 		$this->difficulty = $sqlres['difficulty'];
 		$this->domain = $sqlres['domain'];
+		$this->note = $sqlres['note'];
+		$this->flag = $sqlres['flag'];
 	}
 	
 	
@@ -154,9 +167,11 @@ class EAL_Item {
 					'difficulty' => $this->difficulty,
 					'learnout_id' => $this->learnout_id,
 					'type' => $this->type,
-					'domain' => $this->domain
+					'domain' => $this->domain,
+					'note' => $this->note,
+					'flag' => $this->flag
 			),
-			array('%d','%s','%s','%s','%d','%d','%d','%d','%f','%d','%s','%s')
+			array('%d','%s','%s','%s','%d','%d','%d','%d','%f','%d','%s','%s','%s','%d')
 			);
 	}
 	
@@ -212,6 +227,8 @@ class EAL_Item {
 			learnout_id bigint(20) unsigned,
 			type varchar(20) NOT NULL,
 			domain varchar(50) NOT NULL,
+			note text,
+			flag tinyint,
 			PRIMARY KEY  (id),
 			KEY index_type (type),
 			KEY index_domain (domain)

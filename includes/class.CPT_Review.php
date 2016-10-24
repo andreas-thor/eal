@@ -9,7 +9,8 @@ class CPT_Review extends CPT_Object {
 
 	public $table_columns = array (
 		'cb' => '<input type="checkbox" />', 
-		'review_title' => 'Title', 
+		'review_title' => 'Title',
+		'item_id' => 'Item ID', 
 		'last_modified' => 'Date', 
 		'item_type' => 'Type', 
 		'review_author' => 'Author Review', 
@@ -180,6 +181,15 @@ class CPT_Review extends CPT_Object {
 			$array .= ", UR.user_login as review_author";				
 			$array .= ", UR.id as review_author_id";
 			$array .= ", ABS(COALESCE(I.level_FW,0)-COALESCE(R.level_FW,0))+ABS(COALESCE(I.level_KW,0)-COALESCE(R.level_KW,0))+ABS(COALESCE(I.level_PW,0)-COALESCE(R.level_PW,0)) AS change_level";
+			$array .= ", COALESCE (R.description_correctness, 0) AS description_correctness";
+			$array .= ", COALESCE (R.description_relevance, 0) AS description_relevance";
+			$array .= ", COALESCE (R.description_wording, 0) AS description_wording";
+			$array .= ", COALESCE (R.question_correctness, 0) AS question_correctness";
+			$array .= ", COALESCE (R.question_relevance, 0) AS question_relevance";
+			$array .= ", COALESCE (R.question_wording, 0) AS question_wording";
+			$array .= ", COALESCE (R.answers_correctness, 0) AS answers_correctness";
+			$array .= ", COALESCE (R.answers_relevance, 0) AS answers_relevance";
+			$array .= ", COALESCE (R.answers_wording, 0) AS answers_wording";
 			$array .= ", R.overall";
 				
 		}

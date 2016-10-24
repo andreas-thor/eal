@@ -100,7 +100,8 @@ abstract class CPT_Object {
 			return $views;
 		} );
 		
-		
+		// quick edit is currently not supported
+		add_action( 'quick_edit_custom_box', array ($this , 'WPCB_quick_edit_custom_box'), 10, 2 );
 	}		
 	
 	
@@ -137,6 +138,37 @@ abstract class CPT_Object {
 			}
 				
 		}
+		
+		if (($wp_list_table->current_action() == 'mark') || ($wp_list_table->current_action() == 'unmark')) {
+			if (substr ($_REQUEST['post_type'], 0, 4) == 'item') {
+				
+				/* get array of postids */
+				$postids = $_REQUEST['post'];
+				if (!is_array($postids)) $postids = [$postids];
+				if (count ($postids)>0) {
+					$sql = sprintf ("UPDATE {$wpdb->prefix}eal_item SET flag = %d WHERE id IN (%s)", ($wp_list_table->current_action() == 'mark') ? 1 : 0, join (",", $postids));
+					$wpdb->query ($sql);
+				}
+				
+			}
+		}
+		
+		if (($wp_list_table->current_action() == 'setpublished') || ($wp_list_table->current_action() == 'setpending') || ($wp_list_table->current_action() == 'setdraft')) {
+			
+			$status = "publish";
+			if ($wp_list_table->current_action() == 'setpending') $status = "pending";
+			if ($wp_list_table->current_action() == 'setdraft') $status = "draft";
+			
+			/* get array of postids */
+			$postids = $_REQUEST['post'];
+			if (!is_array($postids)) $postids = [$postids];
+			if (count ($postids)>0) {
+				$sql = sprintf ("UPDATE {$wpdb->posts} SET post_status = '%s' WHERE id IN (%s)", $status, join (",", $postids));
+				$wpdb->query ($sql);
+			}
+		}
+		
+		
 	
 		
 		/* Add Items to Basket */
@@ -158,6 +190,25 @@ abstract class CPT_Object {
 			RoleTaxonomy::setCurrentBasket($itemids); // $x = update_user_meta( get_current_user_id(), 'itembasket', $itemids);
 	
 	
+		}
+		
+		
+		if ($wp_list_table->current_action() == 'remove_from_basket') {
+				
+			$b_old = RoleTaxonomy::getCurrentBasket(); // get_user_meta(get_current_user_id(), 'itembasket', true);
+			$b_new = $b_old;
+		
+			if (isset($_REQUEST["post"])) {
+				$b_new = array_diff ($b_old, $_REQUEST['post']);
+			}
+			if ($_REQUEST['itemid']!=null) {
+				$b_new = array_diff ($b_old, [$_REQUEST['itemid']]);
+			}
+			if ($_REQUEST['itemids']!=null) {
+				$b_new = array_diff ($b_old, $_REQUEST['itemids']);
+			}
+			RoleTaxonomy::setCurrentBasket($b_new); // $x = update_user_meta( get_current_user_id(), 'itembasket', $b_new, $b_old );
+		
 		}
 	
 	}		
@@ -239,11 +290,24 @@ abstract class CPT_Object {
 		global $post;
 	
 		// "s" is search string
-		$basic_url = remove_query_arg (array ("s", "item_type", "item_author", "review_author", "learnout_author", "item_points", "taxonomy", "level_FW", "level_KW", "level_PW", "learnout_id", "post_status"));
+		$basic_url = remove_query_arg (array ("s", "item_type", "item_author", "review_author", "learnout_author", "item_points", "taxonomy", "level_FW", "level_KW", "level_PW", "learnout_id", "post_status", "flag"));
 	
+		
 		switch ( $column ) {
 				
-			case 'last_modified': echo ($post->post_modified); break;
+			case 'id': echo ($post->ID); break;
+			
+			case 'item_id': 
+				printf ("%s <div class='row-actions'><span class='view'><a href='admin.php?page=view&itemid=%s' title='View'>View</a></span><span class='inline hide-if-no-js'></span></div>", $post->item_id, $post->item_id);
+				break;
+				
+			case 'note': echo ($post->note); break;
+			case 'flag': if ($post->flag == 1) 
+				printf ('<a href="%1$s"><span class="dashicons dashicons-yes">&nbsp</span></a>', add_query_arg ('flag', 1, $basic_url));
+				break;
+			
+				
+			case 'last_modified': echo (get_post_modified_time(get_option('date_format') . ' ' . get_option('time_format'), false, $post, true)); break; 
 			
 			case 'item_title':
 				printf ($post->item_title);
@@ -336,16 +400,16 @@ abstract class CPT_Object {
 	
 			case 'no_of_reviews':
 				echo ("{$post->no_of_reviews}<div class='row-actions'>");
-				if ($post->no_of_reviews>0) echo ("<span class='view'><a href='edit.php?post_type=review&item_id={$post->ID}' title='Show All Review'>Show&nbsp;All&nbsp;Reviews</a> | </span>");
-				echo ("<span class='edit'><a href='post-new.php?post_type=review&item_id={$post->ID}' title='Add New Review'>Add&nbsp;New&nbsp;Review</a></span>");
+				if ($post->no_of_reviews>0) echo ("<span class='view'><a href='edit.php?post_type=review&item_id={$post->ID}' title='Show All Review'>List</a> | </span>");
+				echo ("<span class='edit'><a href='post-new.php?post_type=review&item_id={$post->ID}' title='Add New Review'>Add</a></span>");
 				echo ("<span class='inline hide-if-no-js'></span></div>");
 				break;
 				
 			case 'no_of_items':
 				echo ("{$post->no_of_items}<div class='row-actions'>");
-				if ($post->no_of_items>0) echo ("<span class='view'><a href='edit.php?post_type=item&learnout_id={$post->ID}' title='Show All Items'>Show&nbsp;All&nbsp;Items</a> | </span>");
-				echo ("<span class='edit'><a href='post-new.php?post_type=itemsc&learnout_id={$post->ID}' title='Add New SC'>Add New SC</a> | </span>");
-				echo ("<span class='edit'><a href='post-new.php?post_type=itemmc&learnout_id={$post->ID}' title='Add New MC'>Add New MC</a></span>");
+				if ($post->no_of_items>0) echo ("<span class='view'><a href='edit.php?post_type=item&learnout_id={$post->ID}' title='List All Items'>List</a> | </span>");
+				echo ("<span class='edit'><a href='post-new.php?post_type=itemsc&learnout_id={$post->ID}' title='Add New SC'>Add SC</a> | </span>");
+				echo ("<span class='edit'><a href='post-new.php?post_type=itemmc&learnout_id={$post->ID}' title='Add New MC'>Add MC</a></span>");
 				echo ("<span class='inline hide-if-no-js'></span></div>");
 				break;
 				
@@ -503,11 +567,6 @@ abstract class CPT_Object {
 				printf ('</select>');
 			}
 			
-			
-	
-				
-			
-			
 			wp_dropdown_categories(array(
 					'show_option_all' =>  __("Show All Topics"),
 					'taxonomy'        =>  RoleTaxonomy::getCurrentRoleDomain()["name"],
@@ -531,9 +590,58 @@ abstract class CPT_Object {
 				}
 				echo ("</select>");
 			}
+			
+			if (substr ($this->type, 0, 4) == 'item') {
+				
+				$flag == 0;
+				if (isset ($_REQUEST["flag"])) $flag = $_REQUEST["flag"];
+				
+				printf ("<select class='postform' name='flag'>");
+				printf ("<option value='0' %s>All Flags</option>", ($flag==0) ? "selected" : "");
+				printf ("<option value='1' %s>Marked</option>", ($flag==1) ? "selected" : "");
+				printf ("<option value='2' %s>Unmarked</option>", ($flag==2) ? "selected" : "");
+				printf ("</select>");
+			}
+			
 		}
 	}
 	
+	// currently not used
+	public function WPCB_quick_edit_custom_box($column_name, $post_type) {
+	
+		if ($post_type != $this->type) return;
+		
+		if ($column_name == "item_title") {
+
+			global $post, $item;
+					
+			printf ("<fieldset class='inline-edit-col-left'><div class='inline-edit-group'>");
+			printf ("<label><span class='title'>Flag</span><input type='checkbox' name='item_flag' id='item_flag_id' value='1' %s/></label>", $item->flag==1 ? "checked" : ""); 
+			printf ("</div></fieldset>");
+		            
+			printf ("<fieldset class='inline-edit-col-right'><div class='inline-edit-group'>");
+			printf ("<label><span class='title'>Flag</span><input type='checkbox' name='item_flag' id='item_flag_id' value='1' %s/></label>", $item->flag==1 ? "checked" : "");
+			printf ("</div></fieldset>");
+				
+			
+		            ?>
+		            		            
+<script type="text/javascript">         
+        jQuery(document).ready( function($) {
+//             $('span:contains("Title")').each(function (i) { $(this).parent().remove(); });
+//             $('span:contains("Status")').each(function (i) { $(this).parent().remove(); });
+//             $('span:contains("Slug")').each(function (i) { $(this).parent().remove(); });
+//             $('span:contains("Password")').each(function (i) { $(this).parent().parent().remove(); });
+//             $('span:contains("Date")').each(function (i) { $(this).parent().remove(); });
+//             $('.inline-edit-date').each(function (i) { $(this).remove(); });
+        });    
+    </script>		            
+		            
+		            
+		            
+		            <?php
+		}
+	}
 	
 	
 }
