@@ -211,73 +211,8 @@ class EAL_Review {
 	
 	
 	
-	public function getPreviewHTML ($forReview = TRUE) {
-			
 	
-		$res  = sprintf ("<div onmouseover=\"this.children[1].style.display='inline';\"  onmouseout=\"this.children[1].style.display='none';\">");
-		$res .= sprintf ("<h1 style='display:inline'>[%s]</span></h1>", $this->getItem()->title);
-		$res .= sprintf ("<div style='display:none'><span><a href=\"post.php?action=edit&post=%d\">Edit</a></span></div>", $this->id);
-		$res .= sprintf ("</div><br/>");
-		$res .= sprintf ("<div>%s</div>", $this->getScoreHTML(FALSE));
-		$res .= CPT_Object::getLevelHTML('review_' . $this->id, $this->level,  $this->getItem()->level, "disabled", 1, '');
-		$res .= sprintf ("<div>%s</div>", wpautop(stripslashes($this->feedback)));
-		$res .= "<br/>";
-		
-	
-		return $res;
-			
-	}
-	
-	
-	public function getScoreHTML ($editable) {
-	
-		
-		$values = ["gut", "Korrektur", "ungeeignet"];
-	
-	
-		$html_head = "<tr><th></th>";
-		foreach (EAL_Review::$dimension2 as $k2 => $v2) {
-			$html_head .= "<th style='padding:0.5em'>{$v2}</th>";
-		}
-		$html_head .= "</tr>";
-			
-		if ($editable) {
 
-?>			
-			<script>
-				var $ = jQuery.noConflict();
-				
-				function setRowGood (e) {
-					$(e).parent().parent().find("input").each ( function() {
-	 					if (this.value==1) this.checked = true;
-					});
-				}
-			</script>
-<?php 
-			
-		}
-		
-		$html_rows = "";
-		foreach (EAL_Review::$dimension1 as $k1 => $v1) {
-			$html_rows .= "<tr><td valign='top'style='padding:0.5em'>{$v1}<br/>";
-			if ($editable) $html_rows .= "<a onclick=\"setRowGood(this);\">(alle gut)</a>";
-			$html_rows .= "</td>";
-			foreach (EAL_Review::$dimension2 as $k2 => $v2) {
-				$html_rows .= "<td style='padding:0.5em; border-style:solid; border-width:1px;'>";
-				foreach ($values as $k3 => $v3) {
-					$checked = ($this->score[$k1][$k2]==$k3+1);
-					$html_rows .= "<input type='radio' id='{$k1}_{$k2}_{k3}' name='review_{$k1}_{$k2}' value='" . ($k3+1) . "'";
-					$html_rows .= ($editable || $checked) ? "" : " disabled";
-					$html_rows .= ($checked ? " checked='checked'" : "") . ">" . $v3 . "<br/>";
-				}
-				$html_rows .= "</td>";
-			}
-			$html_rows .= "</tr>";
-		}
-				
-		return "<form><table style='font-size:100%'>{$html_head}{$html_rows}</table></form>";
-				
-	}
 	
 	
 

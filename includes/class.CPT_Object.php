@@ -298,7 +298,8 @@ abstract class CPT_Object {
 			case 'id': echo ($post->ID); break;
 			
 			case 'item_id': 
-				printf ("%s <div class='row-actions'><span class='view'><a href='admin.php?page=view&itemid=%s' title='View'>View</a></span><span class='inline hide-if-no-js'></span></div>", $post->item_id, $post->item_id);
+				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('item_id', $post->item_id, $basic_url), $post->item_id);
+				printf ("<div class='row-actions'><span class='view'><a href='admin.php?page=view&itemid=%s' title='View'>View</a></span><span class='inline hide-if-no-js'></span></div>", $post->item_id);
 				break;
 				
 			case 'note': echo ($post->note); break;
@@ -326,7 +327,8 @@ abstract class CPT_Object {
 				break;
 				
 			case 'review_title':
-				printf ('<a href="%1$s">[%2$s]</a>', add_query_arg ('item_id', $post->item_id, $basic_url), $post->item_title);
+// 				printf ('<a href="%1$s">[%2$s]</a>', add_query_arg ('item_id', $post->item_id, $basic_url), $post->item_title);
+				printf ('[%s]', $post->item_title);
 				if ($post->post_status == "draft") echo (' &mdash; <span class="post-state"><i>Draft</i></span>');
 // 				printf ('<div class="row-actions">');
 // 				printf ('<span class="view"><a href="admin.php?page=view&reviewid=%1$d" title="View">View</a></span>', $post->ID);

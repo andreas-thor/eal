@@ -475,7 +475,7 @@ class CPT_Item extends CPT_Object{
 		}
 		
 		// Level-Table
-		$res .= sprintf ("<div>%s</div><br/>", CPT_Object::getLevelHTML("item" . $item->id, $item->level, (is_null($learnout) ? null : $learnout->level), "disabled", 1, 'checkLOLevel'));
+		$res .= sprintf ("<div>%s</div><br/>", CPT_Object::getLevelHTML("item" . $item->id, $item->level, (is_null($learnout) ? null : $learnout->level), "disabled", 1, ''));
 			
 		// Taxonomy Terms: Name of Taxonomy and list of terms (if available) 
 		$res .= sprintf ("<div><b>%s</b>:", RoleTaxonomy::$domains[$item->domain]);

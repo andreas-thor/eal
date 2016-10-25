@@ -131,10 +131,10 @@ class PAG_Basket {
 				
 			if ($item != null) {
 				$item->loadById($item_id);
-				$html_select .= "<option value='{$count}'>{$item->title}</option>";
+				$html_select .= sprintf ("<option value='%d'>%s</option>", $count, ($post->post_type == 'review') ? $item->getItem()->title : $item->title);
 				$html_list .= sprintf (
 					"<div style='margin-top:2em;'><hr/>%s<br style='clear:both;'/></div>",
-					substr($post->post_type, 0, 4) == "item" ? CPT_Item::getHTML_Item($item, FALSE) : $item->getPreviewHTML(FALSE));
+					substr($post->post_type, 0, 4) == "item" ? CPT_Item::getHTML_Item($item, FALSE) : (($post->post_type == 'learnout') ? CPT_LearnOut::getHTML_LearnOut($item) : CPT_Review::getHTML_Review($item)));
 				$count++;
 				array_push($items, $item);
 			}
