@@ -96,73 +96,37 @@ class CPT_ItemSC extends CPT_Item {
 	
 	
 	
-	
-	
-	static function CPT_set_table_order ($pieces, $query ) {
-	}
+	public static function getHTML_Answers (EAL_ItemSC $item, $forReview = TRUE) {
 		
+		$res = "";
+		
+		if ($forReview) {
 			
+			foreach ($item->answers as $a) {
+				$res .= sprintf('<tr align="left"><td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td><td>%s</td></tr>',
+						$a['points'],	// input value
+						($a['points']>0 ? 'bold' : 'normal'),	// font-weight
+						$a['answer']);	// cell value
+			}
+			
+			return sprintf ("<table style='font-size: 100%%'>%s</table>", $res);
+			
+		} else {
+			
+			foreach ($item->answers as $a) {
+				$res .= sprintf ("<div style='margin-top:1em'><input type='radio' name='x'>%s</div>", $a['answer']);
+			}
+			return sprintf ("<form style='margin-top:1em'>%s</form>", $res);
+			
+		}
+		
+	}
 	
 	
 
-	static function CPT_contextual_help( $contextual_help, $screen_id, $screen ) {
-		
-	}
 }
 
 	
-
-
-// 	public static function CPT_save_post ($post_id, $post) {
-
-// 		$item = parent::CPT_save_post($post_id, $post);
-// 		global $wpdb;
-
-// 		$wpdb->replace(
-// 				$wpdb->prefix . 'eal_itemsc',
-// 				$item[0],
-// 				$item[1]
-// 		);
-
-// 		/** TODO: Sanitize all values */
-// 		/** TODO: DELETE all answers; INSERT new answers */
-
-
-// 		if (isset($_POST['answer'])) {
-
-// 			$values = array();
-// 			$insert = array();
-// 			$kmax = 0;
-
-// 			foreach ($_POST['answer'] as $k => $v) {
-// 				array_push($values, $post_id, $k+1, $v, $_POST['points'][$k]);
-// 				array_push($insert, "(%d, %d, %s, %d)");
-// 				$kmax = $k+1;
-
-// 			}
-
-// 			$query = "REPLACE INTO {$wpdb->prefix}eal_itemsc_answer (item_id, id, answer, points) VALUES ";
-// 			$query .= implode(', ', $insert);
-// 			$wpdb->query( $wpdb->prepare("$query ", $values));
-// 			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_itemmc_answer WHERE item_id=%d AND id>%d", array ($post_id, $kmax)));
-
-// 		}
-
-// 	}
-
-// 	public static function CPT_delete_post ($post_id)  {
-// 		global $wpdb;
-// 		$wpdb->delete( '{$wpdb->prefix}eal_itemsc', array( 'id' => $post_id ), array( '%d' ) );
-// 		$wpdb->delete( '{$wpdb->prefix}eal_itemsc_answer', array( 'item_id' => $post_id ), array( '%d' ) );
-
-// 	}
-
-// 	public static function CPT_load_post ()  {
-
-// 		global $post, $item;
-// 		if ($post->post_type != 'itemsc') return;
-// 		$item = new EAL_ItemSC($post);
-// 	}
 
 
 

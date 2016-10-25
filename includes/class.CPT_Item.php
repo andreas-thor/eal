@@ -46,46 +46,18 @@ class CPT_Item extends CPT_Object{
 		$classname = get_called_class();
 		
 		
-		// TODO: Delete post hook 
-		
-
-		
-		
-		
-		
-		add_filter("xxxposts_clauses", array ($classname, 'CPT_set_table_order'), 1, 2 );
-		
-		
-		
-		
-// 		add_action("pre_get_posts", array ($classname, 'CPT_set_table_order'));
-		
-// 		if ( is_admin() ) {
-// 			add_filter( 'request', array( $classname, 'CPT_set_table_order' ) );
-// 		}
-		
-		
-		
-// 		add_action ("load-$name", array ($name, 'CPT_load_post'), 10);
-// 		add_action ("edit_form_advanced", array ($name, 'CPT_load_post'), 10);
 		
 		add_filter('post_updated_messages', array ($this, 'WPCB_post_updated_messages') );
-		add_action('contextual_help', array ($classname, 'CPT_contextual_help' ), 10, 3);
-
+		add_action('contextual_help', array ($this, 'WPCB_contextual_help' ), 10, 3);
 		
 		add_action ("save_post_revision", array ("eal_{$this->type}", 'save'), 10, 2);
 		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
 		
-		
 		add_filter('posts_search', array ($this ,'WPCB_post_search'), 10, 2);
-		
 		
 		/* hide shortlink block */
 		add_filter('get_sample_permalink_html', '__return_empty_string', 10, 5);
 		add_filter('pre_get_shortlink', '__return_empty_string' );
-		
-		
-		
 	}
 
 
@@ -422,10 +394,8 @@ class CPT_Item extends CPT_Object{
 		if (empty ($search)) return $search;
 // 		if (!isset ($wpquery->query['s'])) return $search;
 		
-		
 		$search = sprintf (' AND ( L.Title LIKE "%%%1$s%%" OR I.note LIKE "%%%1$s%%" OR I.Title LIKE "%%%1$s%%" OR U.user_login LIKE "%%%1$s%%" )', $wpquery->query['s']);
 		return $search;
-		// 		$a = 7;
 	}
 	
  
@@ -454,13 +424,139 @@ class CPT_Item extends CPT_Object{
 	
 	
 	
-	static function CPT_contextual_help( $contextual_help, $screen_id, $screen ) {
+
+	public function WPCB_contextual_help( $contextual_help, $screen_id, $screen ) {
 	
+	
+		$screen->add_help_tab( array(
+				'id' => 'you_custom_id', // unique id for the tab
+				'title' => 'Custom Help', // unique visible title for the tab
+				'content' => '<h3>Help Title</h3><p>Help content</p>', //actual help text
+		));
+	
+		$screen->add_help_tab( array(
+				'id' => 'you_custom_id_2', // unique id for the second tab
+				'title' => 'Vignette', // unique visible title for the second tab
+				'content' => '<h3>Vignette</h3><p>Verwenden Sie Vignetten zur Kontextualisierung und/oder zur Anwendungsorientierung des Items.</p>', //actual help text
+		));
+	
+	
+	
+	
+		// 		if ( 'itemmc' == $screen->id ) {
+	
+		// 			$contextual_help = '<h2>Products</h2>
+		//     <p>Products show the details of the items that we sell on the website. You can see a list of them on this page in reverse chronological order - the latest one we added is first.</p>
+		//     <p>You can view/edit the details of each product by clicking on its name, or you can perform bulk actions using the dropdown menu and selecting multiple items.</p>
+		// 		<h1>Hallo</h1><h2>jhjh</h2><p>jkjkj</p>
+	
+		// 		';
+	
+		// 		} elseif ( 'edit-itemmc' == $screen->id ) {
+	
+		// 			$contextual_help = '<h2>Editing products</h2>
+		//     <p>This page allows you to view/modify product details. Please make sure to fill out the available boxes with the appropriate details (product image, price, brand) and <strong>not</strong> add these details to the product description.</p>';
+	
+		// 		}
+		return $contextual_help;
 	}
 	
-
-
 	
+
+	public static function getHTML_Metadata (EAL_Item $item) {
+	
+		// Status and Id 
+		$res = sprintf ("<div>%s (%d)</div><br/>", $item->getStatusString(), $item->id);
+		
+		// Learning Outcome (Title + Description), if available
+		$learnout = $item->getLearnOut();
+		if (!is_null($learnout)) {
+			$res .= sprintf ("<div><b>%s</b>: %s</div><br/>", $learnout->title, $learnout->description);
+		}
+		
+		// Level-Table
+		$res .= sprintf ("<div>%s</div><br/>", CPT_Object::getLevelHTML("item" . $item->id, $item->level, (is_null($learnout) ? null : $learnout->level), "disabled", 1, 'checkLOLevel'));
+			
+		// Taxonomy Terms: Name of Taxonomy and list of terms (if available) 
+		$res .= sprintf ("<div><b>%s</b>:", RoleTaxonomy::$domains[$item->domain]);
+		$terms = wp_get_post_terms( $item->id, $item->domain, array("fields" => "names"));
+		if (count($terms)>0) {
+			$res .= sprintf ("<div style='margin-left:1em'>");	
+			foreach ($terms as $t) {
+				$res .= sprintf ("%s</br>", $t);	
+			}
+			$res .= sprintf ("</div>");
+		}
+		$res .= sprintf ("</div>");
+		
+		return $res;
+	}
+	
+	
+	
+	
+	public static function getHTML_Item (EAL_Item $item, $forReview = TRUE) {
+			
+		$answers_html = ""; 
+		switch (get_class($item)) {
+			case 'EAL_ItemSC': $answers_html = CPT_ItemSC::getHTML_Answers($item, $forReview); break; 	
+			case 'EAL_ItemMC': $answers_html = CPT_ItemMC::getHTML_Answers($item, $forReview); break; 	
+		}
+		
+		if ($forReview) {
+	
+			// description
+			$item_html  = sprintf ("<div>%s</div>", wpautop(stripslashes($item->description)));
+				
+			// question and answers
+			$item_html .= sprintf ("<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>");
+			$item_html .= sprintf ("%s", wpautop(stripslashes($item->question)));
+			$item_html .= sprintf ("%s", $answers_html);
+			$item_html .= sprintf ("</div>");
+	
+			return sprintf ("<div>%s</div>", $item_html);
+	
+		} else {
+				
+			// head line (incl. option to edit)
+			$item_html  = sprintf ("
+				<div onmouseover=\"this.children[1].style.display='inline';\"  onmouseout=\"this.children[1].style.display='none';\">
+					<h1 style='display:inline'>%s</span></h1>
+					<div style='display:none'>
+						<span><a href=\"post.php?action=edit&post=%d\">Edit</a></span>
+					</div>
+				</div>", $item->title, $item->id);
+	
+			// description
+			$item_html .= sprintf ("<div>%s</div>", wpautop(stripslashes($item->description)));
+				
+			// question and answers
+			$item_html .= sprintf ("<div style='background-color:#F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>");
+			$item_html .= sprintf ("%s", wpautop(stripslashes($item->question)));
+			$item_html .= sprintf ("%s", $answers_html);
+			$item_html .= sprintf ("</div>");
+				
+				
+			return sprintf ("
+				<div id='poststuff'>
+					<div id='post-body' class='metabox-holder columns-2'>
+						<div class='postbox-container' id='postbox-container-2'>
+							<div class='meta-box-sortables ui-sortable'>
+								%s
+							</div>
+						</div>
+						<div class='postbox-container' id='postbox-container-1'>
+							<div style='background-color:#FFFFFF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>
+								%s
+							</div>
+						</div>
+					</div>
+				</div>"
+				, $item_html
+				, CPT_Item::getHTML_Metadata($item));
+				
+		}
+	}	
 
 
 

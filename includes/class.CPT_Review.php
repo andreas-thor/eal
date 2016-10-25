@@ -121,7 +121,7 @@ class CPT_Review extends CPT_Object {
 	
 		global $review;
 		if (!is_null($review->getItem())) {
-			$html = $review->getItem()->getPreviewHTML();
+			$html = CPT_Item::getHTML_Item($review->getItem());
 			echo $html;
 		}
 	}

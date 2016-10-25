@@ -122,7 +122,9 @@ class EAL_Review {
 		$this->level["KW"] = $sqlres['level_KW'];
 		$this->level["PW"] = $sqlres['level_PW'];
 		$this->feedback = $sqlres['feedback'];
-		$this->overall = $sqlres['overall'];;
+		$this->overall = $sqlres['overall'];
+		
+		return $this;
 		
 	}
 	

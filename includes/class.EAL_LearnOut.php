@@ -10,7 +10,6 @@ class EAL_LearnOut {
 	public $id;
 	public $title;
 	public $description;
-	public $question;
 	
 	public $level;
 	

@@ -146,46 +146,6 @@ class EAL_ItemSC extends EAL_Item {
 	}
 	
 	
-	public function getPreviewHTML ($forReview = TRUE) {
-			
-		$res = "";
-		
-		if ($forReview) {
-		
-			$res  = sprintf ("<div>%s</div>", wpautop(stripslashes($this->description)));
-			$res .= sprintf ("<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>%s", wpautop(stripslashes($this->question)));
-			$res .= sprintf ("<table style='font-size: 100%%'>");
-			
-			foreach ($this->answers as $a) {
-				$res .= sprintf('<tr align="left"><td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td><td>%s</td></tr>', 
-						$a['points'],	// input value 
-						($a['points']>0 ? 'bold' : 'normal'),	// font-weight
-						$a['answer']);	// cell value
-			}
-		
-			$res .= sprintf ("</table></div>");
-		
-		} else {
-			
-			$res  = sprintf ("<div onmouseover=\"this.children[1].style.display='inline';\"  onmouseout=\"this.children[1].style.display='none';\">");
-			$res .= sprintf ("<h1 style='display:inline'>%s</span></h1>", $this->title, $this->id);
-			$res .= sprintf ("<div style='display:none'><span><a href=\"post.php?action=edit&post=%d\">Edit</a></span></div>", $this->id);
-			$res .= sprintf ("</div><br/>");
-			$res .= sprintf ("<div>%s</div>", wpautop(stripslashes($this->description)));
-			$res .= sprintf ("<div style='background-color:F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>%s", wpautop(stripslashes($this->question)));
-			$res .= sprintf ("<form style='margin-top:1em'>");
-			
-			foreach ($this->answers as $a) {
-				$res .= sprintf ("<div style='margin-top:1em'><input type='radio' name='x'>%s</div>", $a['answer']);
-			}
-			
-			$res .= sprintf ("</form></div><br/>");
-				
-			
-		}
-	
-		return $res;
-	}
 	
 	
 	

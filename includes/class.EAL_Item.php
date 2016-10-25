@@ -201,7 +201,15 @@ class EAL_Item {
 	
 	public function getPoints() { return -1; }
 	
-	public function getPreviewHTML ($forReview = TRUE) { }
+	public function getStatusString () {
+		
+		switch (get_post_status($this->id)) {
+			case 'publish': return 'Published';
+			case 'pending': return 'Pending Review';
+			case 'draft': return 'Draft';
+		}
+		return 'Unknown';
+	}
 	
 	
 	/**

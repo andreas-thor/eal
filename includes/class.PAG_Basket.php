@@ -89,7 +89,7 @@ class PAG_Basket {
 			if (is_string($_REQUEST['learnoutids'])) $itemids = explode (",", $_REQUEST["learnoutids"]);
 		}
 
-		if (count($itemids)==0) {  // learning outcomes found --> get reviews
+		if (count($itemids)==0) {  // no learning outcomes found --> get reviews
 			$post_label = "Review";
 			if ($_REQUEST['reviewid'] != null) $itemids = [$_REQUEST['reviewid']];
 			if ($_REQUEST['reviewids'] != null) {
@@ -132,12 +132,15 @@ class PAG_Basket {
 			if ($item != null) {
 				$item->loadById($item_id);
 				$html_select .= "<option value='{$count}'>{$item->title}</option>";
-				$html_list .= "<div style='margin-top:2em;'>" . $item->getPreviewHTML(FALSE) . "</div>";
+				$html_list .= sprintf (
+					"<div style='margin-top:2em;'><hr/>%s<br style='clear:both;'/></div>",
+					substr($post->post_type, 0, 4) == "item" ? CPT_Item::getHTML_Item($item, FALSE) : $item->getPreviewHTML(FALSE));
 				$count++;
 				array_push($items, $item);
 			}
 		}
-		$html_select .= "</select></form>";
+		$html_select .= "</select>&nbsp;&nbsp;&nbsp;<input type='checkbox' checked 
+			onChange='for (x=0; x<this.form.nextSibling.childNodes.length; x++) { this.form.nextSibling.childNodes[x].querySelector(\"#postbox-container-1\").style.display = (this.checked==true) ? \"block\" :  \"none\"; }'/> Show Metadata</form>";
 		
 		
 		if ($post_label=="Item") {
