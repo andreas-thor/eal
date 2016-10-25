@@ -187,14 +187,14 @@ class EXP_Ilias {
 				$postarr['post_title'] = $itemXML->getAttribute("title");
 				$postarr['post_status'] = 'publish';
 				$postarr['post_type'] = $item_type;
+				$postarr['post_content'] = microtime();	
 				$item_id = wp_insert_post ($postarr);	// returns the item_id of the created post / item
 			} else {
 				
 				$post = get_post ($item_id);
 				$old_title = $post->post_title;
 				$post->post_title = $itemXML->getAttribute("title");	
-				// we add ASCII-03 to make sure wh have a new revision
-				if ($old_title == $post->post_title) $post->post_title .= "\x03";
+				$post->post_content = microtime();	// ensures revision
 				wp_update_post ($post);				
 			}
 			

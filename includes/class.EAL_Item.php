@@ -51,7 +51,7 @@ class EAL_Item {
 	public function init ($post_id, $post) {
 	
 		$this->id = $post_id;
-		$this->title = trim ($post->post_title, "\x03");	// we remove the ASCII-03 character (we added this during loaded to make Wordpress save a revision even if the title does not change)
+		$this->title = $post->post_title;
 		$this->description = isset($_POST['item_description']) ? $_POST['item_description'] : null;
 		$this->question = isset ($_POST['item_question']) ? $_POST['item_question'] : null;
 
@@ -90,6 +90,7 @@ class EAL_Item {
 		$_POST['domain'] = $this->domain;
 		$_POST['item_note'] = $this->note;
 		$_POST['item_flag'] = $this->flag;
+		$_POST['post_content'] = microtime();
 	}
 	
 	

@@ -153,10 +153,7 @@ class CPT_Item extends CPT_Object{
 			div.curtime { display: none; }
 		</style> <?php
 		
-		$post->post_title .= "\x03";	// we add ASCII 03 to modify the title
-		
 		add_meta_box('mb_learnout', 'Learning Outcome', array ($this, 'WPCB_mb_learnout'), $this->type, 'normal', 'default', array ('learnout' => $item->getLearnOut()));
-		
 		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_description', 'value' => $item->description) );
 		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_question', 'value' => $item->question));
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $item->level, 'default' => (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level) ));
@@ -238,6 +235,9 @@ class CPT_Item extends CPT_Object{
 	public function WPCB_mb_note_flag ($post, $vars) {
 	
 		$flag = $vars['args']['flag'] > 0 ? $vars['args']['flag'] : 0;
+		
+		// we dynamically set the value of $POST["post_content"] to make sure that we have revision
+		printf ("<input type='hidden' id='post_content' name='post_content'  value='%s'>", microtime());
 		
 		printf ("<div class='misc-pub-section'>");
 		printf ("<input type='checkbox' name='item_flag' value='1' %s>", $flag==1 ? "checked" : "");
