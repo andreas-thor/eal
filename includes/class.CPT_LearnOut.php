@@ -9,6 +9,7 @@ class CPT_LearnOut extends CPT_Object {
 		'cb' => '<input type="checkbox" />',
 		'learnout_title' => 'Title',
 		'last_modified' => 'Date',
+		'taxonomy' => 'Taxonomy',
 		'learnout_author' => 'Author', 
 		'level_FW' => 'FW',
 		'level_KW' => 'KW',
@@ -52,11 +53,11 @@ class CPT_LearnOut extends CPT_Object {
 		}
 		global $post;
 		
-		?><style> #minor-publishing { display: none; } </style> <?php
+		?>  <style> #minor-publishing { display: none; } </style> <?php
 		
 		add_meta_box('mb_description', 'Beschreibung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'learnout_description', 'value' => $learnout->description) );
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $learnout->level, 'prefix' => 'learnout'));
-		add_meta_box('mb_item_taxonomy', RoleTaxonomy::$domains[$learnout->domain], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $learnout->domain ));
+		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$learnout->domain], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $learnout->domain ));
 		
 		
 		
@@ -290,7 +291,7 @@ class CPT_LearnOut extends CPT_Object {
 		$res  = sprintf ("<div>%s</div><br/>", CPT_Object::getLevelHTML("lo" . $lo->id, $lo->level, null, "disabled", 0, ''));
 			
 		// Taxonomy Terms: Name of Taxonomy and list of terms (if available)
-		$res .= sprintf ("<div><b>%s</b>:", RoleTaxonomy::$domains[$lo->domain]);
+		$res .= sprintf ("<div><b>%s</b>:", RoleTaxonomy::getDomains()[$lo->domain]);
 		$terms = wp_get_post_terms( $lo->id, $lo->domain, array("fields" => "names"));
 		if (count($terms)>0) {
 			$res .= sprintf ("<div style='margin-left:1em'>");

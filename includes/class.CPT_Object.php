@@ -17,6 +17,14 @@ abstract class CPT_Object {
 	
 	public function init($args = array()) {
 		
+		
+		if (($this->type == "learnout") || ($this->type == "review")) {
+			$cap_type = $this->type;
+		} else {
+			$cap_type = "item";
+		}
+		
+		
 		register_post_type( $this->type,
 			array_merge (
 				array(
@@ -40,17 +48,22 @@ abstract class CPT_Object {
 // 						'edit_posts' => ($this->type == 'item') ? 'do_not_allow' : 'edit_posts', // false < WP 4.5, credit @Ewout
 // 					), 
 						
-// 				'capabilities' => array(
-// 					'publish_posts' => 'publish_{$this->type}s',
-// 					'edit_posts' => 'edit_{$this->type}s',
-// 					'edit_others_posts' => 'edit_others_{$this->type}s',
-// 					'delete_posts' => 'delete_{$this->type}s',
-// 					'delete_others_posts' => 'delete_others_{$this->type}s',
-// 					'read_private_posts' => 'read_private_{$this->type}s',
-// 					'edit_post' => 'edit_{$this->type}',
-// 					'delete_post' => 'delete_{$this->type}',
-// 					'read_post' => 'read_{$this->type}'
-// 				),
+					'capabilities' => array(
+						"edit_posts" => "edit_{$cap_type}s",
+						"edit_others_posts" => "edit_others_{$cap_type}s",
+						"edit_published_posts" => "edit_published_{$cap_type}s",
+						"edit_private_posts" => "edit_private_{$cap_type}s",
+						"publish_posts" => "publish_{$cap_type}s",
+						"delete_posts" => "delete_{$cap_type}s",
+						"delete_others_posts" => "delete_others_{$cap_type}s",
+						"delete_published_posts" => "delete_published_{$cap_type}s",
+						"delete_private_posts" => "delete_private_{$cap_type}s",
+						"read_private_posts" => "read_private_{$cap_type}s",
+						"edit_post" => "edit_{$cap_type}",
+						"delete_post" => "delete_{$cap_type}",
+						"read_post" => "read_{$cap_type}"
+					),
+					'map_meta_cap' => true,	// http://wordpress.stackexchange.com/questions/108338/capabilities-and-custom-post-types
 						
 					'public' => false,
 					'menu_position' => $this->menu_pos,

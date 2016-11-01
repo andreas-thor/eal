@@ -1,15 +1,12 @@
 <?php
 
+require_once("class.CONF_Taxonomy.php");
+
 class RoleTaxonomy {
 	
 
-	public static $domains = array (
-			
-		"paedagogik" 	=> "Allgemeine Paedagogik",
-		"topic" 		=> "Beispieltaxonomy",
-		"datenbanken"	=> "Datenbanksysteme"
-	);	
 	
+
 	
 	
 	public static function getCurrentBasket () {
@@ -22,6 +19,10 @@ class RoleTaxonomy {
 		update_user_meta (get_current_user_id(), 'itembasket_' . RoleTaxonomy::getCurrentRoleDomain()["name"], $itemids);
 	}
 	
+	public static function getDomains() {
+		return Taxonomy::$domains;
+	}
+	
 	public static function init () {
 
 		// remove all roles (except administrator);
@@ -32,7 +33,7 @@ class RoleTaxonomy {
 		}
 		
 		// register all roles
-		foreach (RoleTaxonomy::$domains as $name => $label) {
+		foreach (RoleTaxonomy::getDomains() as $name => $label) {
 			
 			// Add new taxonomy, make it hierarchical (like categories)
 			$labels = array (
@@ -84,7 +85,7 @@ class RoleTaxonomy {
 					"delete_published_pages" => true,
 					"delete_published_posts" => true,
 					"edit_others_pages" => false,
-					"edit_others_posts" => false,
+					"edit_others_posts" => true,
 					"edit_pages" => true,
 					"edit_posts" => true,
 					"edit_private_pages" => true,
@@ -100,7 +101,53 @@ class RoleTaxonomy {
 					"read_private_pages" => true,
 					"read_private_posts" => true,
 					"unfiltered_html" => true,
-					"upload_files" => true
+					"upload_files" => true,
+					
+					
+					"edit_items" => TRUE, 
+					"edit_others_items" => TRUE, 
+					"edit_published_items" => TRUE, 
+					"edit_private_items" => TRUE, 
+					"publish_items" => FALSE, 
+					"delete_items" => TRUE, 
+					"delete_others_items" => TRUE, 
+					"delete_published_items" => TRUE, 
+					"delete_private_items" => TRUE, 
+					"read_private_items" => TRUE, 
+					"edit_item" => TRUE, 
+					"delete_item" => TRUE, 
+					"read_item" => TRUE, 
+								
+					"edit_learnouts" => TRUE,
+					"edit_others_learnouts" => TRUE,
+					"edit_published_learnouts" => TRUE,
+					"edit_private_learnouts" => TRUE,
+					"publish_learnouts" => TRUE,
+					"delete_learnouts" => TRUE,
+					"delete_others_learnouts" => TRUE,
+					"delete_published_learnouts" => TRUE,
+					"delete_private_learnouts" => TRUE,
+					"read_private_learnouts" => TRUE,
+					"edit_learnout" => TRUE,
+					"delete_learnout" => TRUE,
+					"read_learnout" => TRUE,
+					
+					"edit_reviews" => TRUE,
+					"edit_others_reviews" => TRUE,
+					"edit_published_reviews" => TRUE,
+					"edit_private_reviews" => TRUE,
+					"publish_reviews" => TRUE,
+					"delete_reviews" => TRUE,
+					"delete_others_reviews" => TRUE,
+					"delete_published_reviews" => TRUE,
+					"delete_private_reviews" => TRUE,
+					"read_private_reviews" => TRUE,
+					"edit_review" => TRUE,
+					"delete_review" => TRUE,
+					"read_review" => TRUE				
+					
+
+						
 			));
 			
 			// prefix "e_" --> editor
@@ -130,7 +177,50 @@ class RoleTaxonomy {
 				"read_private_pages" => true,
 				"read_private_posts" => true,
 				"unfiltered_html" => true, 
-				"upload_files" => true
+				"upload_files" => true,
+					
+
+					"edit_items" => TRUE, 
+					"edit_others_items" => TRUE, 
+					"edit_published_items" => TRUE, 
+					"edit_private_items" => TRUE, 
+					"publish_items" => TRUE, 
+					"delete_items" => TRUE, 
+					"delete_others_items" => TRUE, 
+					"delete_published_items" => TRUE, 
+					"delete_private_items" => TRUE, 
+					"read_private_items" => TRUE, 
+					"edit_item" => TRUE, 
+					"delete_item" => TRUE, 
+					"read_item" => TRUE, 
+								
+					"edit_learnouts" => TRUE,
+					"edit_others_learnouts" => TRUE,
+					"edit_published_learnouts" => TRUE,
+					"edit_private_learnouts" => TRUE,
+					"publish_learnouts" => TRUE,
+					"delete_learnouts" => TRUE,
+					"delete_others_learnouts" => TRUE,
+					"delete_published_learnouts" => TRUE,
+					"delete_private_learnouts" => TRUE,
+					"read_private_learnouts" => TRUE,
+					"edit_learnout" => TRUE,
+					"delete_learnout" => TRUE,
+					"read_learnout" => TRUE,
+					
+					"edit_reviews" => TRUE,
+					"edit_others_reviews" => TRUE,
+					"edit_published_reviews" => TRUE,
+					"edit_private_reviews" => TRUE,
+					"publish_reviews" => TRUE,
+					"delete_reviews" => TRUE,
+					"delete_others_reviews" => TRUE,
+					"delete_published_reviews" => TRUE,
+					"delete_private_reviews" => TRUE,
+					"read_private_reviews" => TRUE,
+					"edit_review" => TRUE,
+					"delete_review" => TRUE,
+					"read_review" => TRUE
 			));
 		}				
 		
@@ -186,7 +276,7 @@ class RoleTaxonomy {
 		if ($current_role == "administrator") return $result;
 		
 		$result["name"] = substr($current_role, 2);
-		$result["label"] = RoleTaxonomy::$domains[$result["name"]];
+		$result["label"] = RoleTaxonomy::getDomains()[$result["name"]];
 
 		return $result;
 		

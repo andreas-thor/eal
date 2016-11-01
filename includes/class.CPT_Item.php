@@ -158,7 +158,7 @@ class CPT_Item extends CPT_Object{
 		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_question', 'value' => $item->question));
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $item->level, 'default' => (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level) ));
 		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($this, 'WPCB_mb_answers'), $this->type, 'normal', 'default');
-		add_meta_box('mb_item_taxonomy', RoleTaxonomy::$domains[$item->domain], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $item->domain ));
+		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$item->domain], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $item->domain ));
 		add_meta_box('mb_item_note_flag', 'Note', array ($this, 'WPCB_mb_note_flag'), $this->type, 'normal', 'default', array ('note' => $item->note, 'flag' => $item->flag ));
 		
 	}
@@ -478,7 +478,7 @@ class CPT_Item extends CPT_Object{
 		$res .= sprintf ("<div>%s</div><br/>", CPT_Object::getLevelHTML("item" . $item->id, $item->level, (is_null($learnout) ? null : $learnout->level), "disabled", 1, ''));
 			
 		// Taxonomy Terms: Name of Taxonomy and list of terms (if available) 
-		$res .= sprintf ("<div><b>%s</b>:", RoleTaxonomy::$domains[$item->domain]);
+		$res .= sprintf ("<div><b>%s</b>:", RoleTaxonomy::getDomains()[$item->domain]);
 		$terms = wp_get_post_terms( $item->id, $item->domain, array("fields" => "names"));
 		if (count($terms)>0) {
 			$res .= sprintf ("<div style='margin-left:1em'>");	
