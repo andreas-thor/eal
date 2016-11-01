@@ -90,7 +90,7 @@ class CPT_Review extends CPT_Object {
 	
 	public function WPCB_register_meta_box_cb () {
 	
-		global $review;
+		global $review, $post;
 		
 		$review = new EAL_Review();
 		$review->load();
@@ -99,6 +99,12 @@ class CPT_Review extends CPT_Object {
 		if (($domain["name"] != "") && ($review->getItem()->domain != $domain["name"])) {
 			wp_die ("Reviewed item does not belong to your current domain!");
 		}
+		
+		// check for edit capabilities
+		if (!RoleTaxonomy::canEditReviewPost($post)) {
+			wp_die ("You are not allowed to edit this review!");
+		}
+		
 		
 		?><style> #minor-publishing { display: none; } </style> <?php
 		
