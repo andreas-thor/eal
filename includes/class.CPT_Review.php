@@ -309,8 +309,8 @@ class CPT_Review extends CPT_Object {
 		$overall_String = "";
 		switch ($review->overall) {
 			case 1: $overall_String = "Item akzeptiert"; break;
-			case 2: $overall_String = "Item akzeptiert"; break;
-			case 3: $overall_String = "Item akzeptiert"; break;
+			case 2: $overall_String = "Item Item &uuml;berarbeiten"; break;
+			case 3: $overall_String = "Item abgelehnt"; break;
 		}
 		$review_meta  = sprintf ("<div><b>%s</b></div><br />", $overall_String );
 		$review_meta .= sprintf ("<div>%s</div><br/>", CPT_Object::getLevelHTML('review_' . $review->id, $review->level,  $review->getItem()->level, "disabled", 1, ''));

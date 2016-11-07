@@ -211,9 +211,20 @@ class CPT_LearnOut extends CPT_Object {
 	
 		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
 			if (isset ($_REQUEST['learnout_author'])) 	$where .= " AND {$wpdb->posts}.post_author 	= " . $_REQUEST['learnout_author'];
-			if (isset ($_REQUEST['level_FW'])) 			$where .= " AND L.level_FW 	= " . $_REQUEST['level_FW'];
-			if (isset ($_REQUEST['level_PW'])) 			$where .= " AND L.level_PW 	= " . $_REQUEST['level_PW'];
-			if (isset ($_REQUEST['level_KW'])) 			$where .= " AND L.level_KW	= " . $_REQUEST['level_KW'];
+			if (isset ($_REQUEST['level_FW']) && ($_REQUEST['level_FW']>0)) 			$where .= " AND L.level_FW 	= " . $_REQUEST['level_FW'];
+			if (isset ($_REQUEST['level_PW']) && ($_REQUEST['level_PW']>0)) 			$where .= " AND L.level_PW 	= " . $_REQUEST['level_PW'];
+			if (isset ($_REQUEST['level_KW']) && ($_REQUEST['level_KW']>0)) 			$where .= " AND L.level_KW	= " . $_REQUEST['level_KW'];
+			
+			
+			if (isset ($_REQUEST['taxonomy']) && ($_REQUEST['taxonomy']>0))	{
+			
+				$children = get_term_children( $_REQUEST['taxonomy'], RoleTaxonomy::getCurrentRoleDomain()["name"] );
+				array_push($children, $_REQUEST['taxonomy']);
+				$where .= sprintf (' AND %1$s.ID IN (SELECT TR.object_id FROM %2$s TT JOIN %3$s TR ON (TT.term_taxonomy_id = TR.term_taxonomy_id) WHERE TT.term_id IN ( %4$s ))',
+						$wpdb->posts , $wpdb->term_taxonomy, $wpdb->term_relationships, implode(', ', $children));
+			
+			}
+			
 		}
 	
 	

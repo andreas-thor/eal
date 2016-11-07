@@ -256,6 +256,10 @@ class EXP_Ilias {
 	
 	public function generateExport ($itemids) {
 
+		if (!file_exists(plugin_dir_path(__FILE__) . "../download")) {
+			mkdir(plugin_dir_path(__FILE__) . "../download", 0777, true);
+		}
+		
 		$docid = time();
 		$name = "{$docid}__0__qpl_1";
 		$zipname = plugin_dir_path(__FILE__) . "../download/{$name}.zip";

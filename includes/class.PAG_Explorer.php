@@ -49,12 +49,14 @@ class PAG_Explorer {
 		if (($name == "topic1") || ($name == "topic2")) {
 			
 			$res = array();
-			foreach (wp_get_post_terms($item->id, 'topic') as $term) {
+
+			
+			foreach (wp_get_post_terms($item->id, RoleTaxonomy::getCurrentRoleDomain()["name"]) as $term) {
 				
 				$termhier = array($term->name);
 				$parentId = $term->parent;
 				while ($parentId>0) {
-					$parentTerm = get_term ($parentId, 'topic');
+					$parentTerm = get_term ($parentId, RoleTaxonomy::getCurrentRoleDomain()["name"]);
 					$termhier = array_merge (array ($parentTerm->name), $termhier);
 					$parentId = $parentTerm->parent;
 				}
