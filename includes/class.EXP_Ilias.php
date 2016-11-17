@@ -11,13 +11,17 @@ class EXP_Ilias {
 	private $name;
 	private $dir;
 	
+	/**
+	 * 
+	 * @param unknown $file
+	 * @return array (EAL_ITEM) = array der items im ZIP file ; string with error message in case of failure
+	 */
 	public function import ($file) {
 		
 		$zip = new ZipArchive;
 		if (substr ($file['name'], -4) != ".zip") {
 			// TODO: error handling
-			echo "Error! File is not a zip file";
-			return;
+			return "Error! File is not a zip file";
 		}
 		
 		$this->name = substr ($file['name'], 0, strlen ($file['name'])-4); // remove extension ".zip"
@@ -31,7 +35,7 @@ class EXP_Ilias {
 				
 			/* process main document: qpl (Question Pool) or tst (Test) */
 			$file_qpl_tst = file_get_contents ("{$this->dir}/{$this->name}/{$this->name}.xml"); 
-			if ($file_qpl_tst == false) return;	// TODO: Error Handling
+			if ($file_qpl_tst == false) return "Could not find QPL file";	
 			
 			/* get the list of itemids */
 			$doc_qpl_tst = new DOMDocument();
@@ -41,26 +45,30 @@ class EXP_Ilias {
 			/* get the QTI document (that contains the questions) */
 			$isQPL = (strpos("{$this->dir}/{$this->name}/{$this->name}.xml", '_qpl_') == FALSE) ? FALSE : TRUE;
 			$file_qti = file_get_contents ("{$this->dir}/{$this->name}/" . str_replace( ($isQPL?'_qpl_':'_tst_'), '_qti_', $this->name) . ".xml"); //     $this->zip->getFromName("{$this->name}/" . str_replace('_qpl_', '_qti_', $this->name) . ".xml");
-			if ($file_qti == false) return;	// TODO: Error Handling
+			if ($file_qti == false) return "Could not find QTI file";
 
 			/* load the items based on the QTO document and the list of itemids */
 			$doc_qti = new DOMDocument();
 			$doc_qti->loadXML($file_qti);
-			$itemids = $this->parseQTI($doc_qti, $itemids);		// XML-ID => EAL-ID (all Items have an Id here)
-			
+			$items = $this->parseQTI($doc_qti, $itemids);		// XML-ID => EAL-ID (all Items have an Id here)
+
+			/*
 			if (!$isQPL) {
-				/* get and load test results*/
+				// get and load test results
 				$file_results = file_get_contents ("{$this->dir}/{$this->name}/" . str_replace( '_tst_', '_results_', $this->name) . ".xml"); //     $this->zip->getFromName("{$this->name}/" . str_replace('_qpl_', '_qti_', $this->name) . ".xml");
 				if ($file_results == false) return;	// TODO: Error Handling
 				
 				$doc_results = new DOMDocument();
 				$doc_results->loadXML($file_results);
-				$this->parseResults($doc_results, $itemids);
+				$results = $this->parseResults($doc_results, $itemids);
 			}
+			*/
 			
 			$zip->close();
+			
+			return $items;
 		} else {
-			echo 'Fehler, Code:' . $res;
+			return "Error when opening file. " . $res;
 		}
 		
 	}
@@ -83,9 +91,15 @@ class EXP_Ilias {
 	}
 	
 	
-
+	/**
+	 * 
+	 * @param DOMDocument $doc
+	 * @param $itemids: array (qref -> item_id) ... if item_id is available 
+	 * @return array (qref -> item) return the item object for each qref (if the item is already in the database, it has been loaded and updated with the values)
+	 */
 	public function parseQTI (DOMDocument $doc, $itemids) {
-		
+
+		$items = array ();
 		$root = $doc->documentElement;
 		$xpath = new DOMXPath($doc);
 
@@ -178,32 +192,46 @@ class EXP_Ilias {
 			}
 				
 			
+			// update Item id (for newly created items)
+			$items[$itemXML->getAttribute("ident")] = $item;
+		}
+		
+		return $items;
+	}
+	
+	
+	public function saveItems (array $items) {
+		
+		foreach ($items as $item) {
+			
 			$item->setPOST();
-			
-			if ($item_id == "") {
-			
+				
+			if ($item->id == "") {
+					
 				$postarr = array ();
 				$postarr['ID'] = 0;	// no EAL-ID
 				$postarr['post_title'] = $itemXML->getAttribute("title");
 				$postarr['post_status'] = 'publish';
 				$postarr['post_type'] = $item_type;
-				$postarr['post_content'] = microtime();	
+				$postarr['post_content'] = microtime();
 				$item_id = wp_insert_post ($postarr);	// returns the item_id of the created post / item
 			} else {
-				
-				$post = get_post ($item_id);
-				$old_title = $post->post_title;
-				$post->post_title = $itemXML->getAttribute("title");	
-				$post->post_content = microtime();	// ensures revision
-				wp_update_post ($post);				
-			}
 			
-			// update Item id (for newly created items)
-			$itemids[$itemXML->getAttribute("ident")] = $item_id;
+				$post = get_post ($item->id);
+				$old_title = $post->post_title;
+				$post->post_title = $itemXML->getAttribute("title");
+				$post->post_content = microtime();	// ensures revision
+				wp_update_post ($post);
+			}
 		}
 		
-		return $itemids;
+		
+		
 	}
+	
+	
+	
+	
 	
 	public function parseResults (DOMDocument $doc, $itemids) {
 	

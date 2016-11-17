@@ -630,25 +630,29 @@ abstract class CPT_Object {
 
 			global $post, $item;
 					
+// 			post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy", "title" => "", "args" => array ( "taxonomy" => $item->domain )) );
+			
 			printf ("<fieldset class='inline-edit-col-left'><div class='inline-edit-group'>");
-			printf ("<label><span class='title'>Flag</span><input type='checkbox' name='item_flag' id='item_flag_id' value='1' %s/></label>", $item->flag==1 ? "checked" : ""); 
+// 			printf ("<label><span class='title'>Flag</span><input type='checkbox' name='item_flag' id='item_flag_id' value='1' %s/></label>", $item->flag==1 ? "checked" : ""); 
+			printf ("<label><span class='title'>Title</span><span class='input-text-wrap'><input type='text' name='post_title' class='ptitle' value=''></span></label>");
 			printf ("</div></fieldset>");
 		            
-			printf ("<fieldset class='inline-edit-col-right'><div class='inline-edit-group'>");
-			printf ("<label><span class='title'>Flag</span><input type='checkbox' name='item_flag' id='item_flag_id' value='1' %s/></label>", $item->flag==1 ? "checked" : "");
-			printf ("</div></fieldset>");
+// 			printf ("<fieldset class='inline-edit-col-right'><div class='inline-edit-group'>");
+// 			printf ("<label><span class='title'>Flag</span><input type='checkbox' name='item_flag' id='item_flag_id' value='1' %s/></label>", $item->flag==1 ? "checked" : "");
+// 			printf ("</div></fieldset>");
 				
+			
 			
 		            ?>
 		            		            
 <script type="text/javascript">         
         jQuery(document).ready( function($) {
-//             $('span:contains("Title")').each(function (i) { $(this).parent().remove(); });
-//             $('span:contains("Status")').each(function (i) { $(this).parent().remove(); });
-//             $('span:contains("Slug")').each(function (i) { $(this).parent().remove(); });
-//             $('span:contains("Password")').each(function (i) { $(this).parent().parent().remove(); });
-//             $('span:contains("Date")').each(function (i) { $(this).parent().remove(); });
-//             $('.inline-edit-date').each(function (i) { $(this).remove(); });
+            $('span:contains("Title")').each(function (i) { $(this).parent().remove(); });
+            $('span:contains("Status")').each(function (i) { $(this).parent().remove(); });
+            $('span:contains("Slug")').each(function (i) { $(this).parent().remove(); });
+            $('span:contains("Password")').each(function (i) { $(this).parent().parent().remove(); });
+            $('span:contains("Date")').each(function (i) { $(this).parent().remove(); });
+            $('.inline-edit-date').each(function (i) { $(this).remove(); });
         });    
     </script>		            
 		            

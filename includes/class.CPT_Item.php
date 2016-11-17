@@ -69,7 +69,7 @@ class CPT_Item extends CPT_Object{
 	
 		if ($post->post_type != $this->type) return $actions;
 	
-		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
+// 		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
 		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
 	
 		if (!RoleTaxonomy::canEditItemPost($post)) {		// "Edit" & "Trash" only if editable by user
