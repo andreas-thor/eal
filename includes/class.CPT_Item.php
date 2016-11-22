@@ -463,19 +463,23 @@ class CPT_Item extends CPT_Object{
 	
 	
 
-	public static function getHTML_Metadata (EAL_Item $item) {
+	public static function getHTML_Metadata (EAL_Item $item, $editable, $namePrefix) {
 	
 		// Status and Id 
 		$res = sprintf ("<div>%s (%d)</div><br/>", $item->getStatusString(), $item->id);
 		
 		// Learning Outcome (Title + Description), if available
 		$learnout = $item->getLearnOut();
-		if (!is_null($learnout)) {
-			$res .= sprintf ("<div><b>%s</b>: %s</div><br/>", $learnout->title, $learnout->description);
+		if ($editable) {
+			$res .= sprintf ("<div>%s</div>", EAL_LearnOut::getListOfLearningOutcomes($learnout == null ? 0 : $learnout->id, $namePrefix));
+		} else {
+			if (!is_null($learnout)) {
+				$res .= sprintf ("<div><b>%s</b>: %s</div><br/>", $learnout->title, $learnout->description);
+			}
 		}
 		
 		// Level-Table
-		$res .= sprintf ("<div>%s</div><br/>", CPT_Object::getLevelHTML("item" . $item->id, $item->level, (is_null($learnout) ? null : $learnout->level), "disabled", 1, ''));
+		$res .= sprintf ("<div>%s</div><br/>", CPT_Object::getLevelHTML($namePrefix, $item->level, (is_null($learnout) ? null : $learnout->level), $editable?"":"disabled", 1, ''));
 			
 		// Taxonomy Terms: Name of Taxonomy and list of terms (if available) 
 		$res .= sprintf ("<div><b>%s</b>:", RoleTaxonomy::getDomains()[$item->domain]);
@@ -495,7 +499,7 @@ class CPT_Item extends CPT_Object{
 	
 	
 	
-	public static function getHTML_Item (EAL_Item $item, $forReview = TRUE) {
+	public static function getHTML_Item (EAL_Item $item, $forReview = TRUE, $editableMeta = FALSE, $namePrefix = "") {
 			
 		$answers_html = ""; 
 		switch (get_class($item)) {
@@ -553,7 +557,7 @@ class CPT_Item extends CPT_Object{
 					</div>
 				</div>"
 				, $item_html
-				, CPT_Item::getHTML_Metadata($item));
+				, CPT_Item::getHTML_Metadata($item, $editableMeta, $namePrefix));
 				
 		}
 	}	

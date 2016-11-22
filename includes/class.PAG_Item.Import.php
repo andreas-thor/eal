@@ -18,39 +18,108 @@ class PAG_Item_Import {
 				
 				// TODO: check file format parameter (ILIAS5, ...)
 				$ilias = new EXP_Ilias();
-				$items = $ilias->import($_FILES['uploadedfile']);
+				$items = $ilias->uploadFile($_FILES['uploadedfile']);
 
 				if (is_string($items)) {
 					printf ("<div class='wrap'><h1>%s</h1></div>", $items);
 				} else {
-					PAG_Item_Import::HTML_itemlist($items);
+					PAG_Item_Import::HTML_itemlist($items, $ilias->dir, $ilias->name);
 				}				
 				
 			}
 		}
 		
+		if ($_POST['action']=='import') {
+			
+			$ilias = new EXP_Ilias($_POST['file_dir'], $_POST['file_name']);
+			$items = $ilias->loadAllItems();
+			
+			foreach ($_POST["import"] as $importIdent) {
+				
+				$item = $items[$importIdent];
+				
+				// update with metadata
+				$item->learnout_id = $_POST[$importIdent . '_learnout_id'];
+				$item->level["FW"] = $_POST[$importIdent . '__level_FW'];
+				$item->level["KW"] = $_POST[$importIdent . '__level_KW'];
+				$item->level["PW"] = $_POST[$importIdent . '__level_PW'];
+				
+				// save
+				$ilias->saveItem($item);
+				printf ("<br/>Save item with id %s and ident %s", $item->id, $importIdent);
+				
+				
+			}
+			
+		}
+		
+		
 	}
 	
 	
-	public static function HTML_itemlist(array $items) {
-		
-		$lines = array ();
-		foreach ($items as $item) {
+	public static function HTML_itemlist(array $items, string $dir, string $name) {
+?>
+
+		<script type="text/javascript">
+
+		jQuery(document).ready(function($) {
+			$('.previewButton').click(function(){
+				console.log ($(this).parent().parent().siblings("div").children(":last-child"));
+				$(this).parent().parent().siblings("div").children(":last-child").css({display:"none"});
+				$(this).parent().parent().children(":last-child").toggle();
+			});
+
+
+			$('.importAll').change(function(){
+				$(this).siblings("div").find(".importCheckbox").prop("checked",this.checked);
+				noofchecked = $(this).parent().parent().parent().find(".importCheckbox:checked").length;
+				$("#importButton").text("Import " + noofchecked + " Item(s)");
+			});
+
 			
-			array_push($lines, sprintf (
-				"<tr><td>%s</td><td><div>%s</div></td></tr>", $item->title, CPT_Item::getHTML_Item($item)	
-			));
-		}
-		
+			$('.importCheckbox').change(function(){
+				noofchecked = $(this).parent().parent().parent().find(".importCheckbox:checked").length;
+				$(this).parent().parent().parent().find(".importAll").prop("checked", noofchecked == ($(this).parent().parent().parent().find(".importCheckbox").length));
+				$("#importButton").text("Import " + noofchecked + " Item(s)");
+			});
+			
+		});
+		</script>
+
+<?php 		
 
 		
 		printf ("<div class='wrap'><h1>Select Items & Test Results for Import</h1>");
-		printf ("<table>");
-		foreach ($lines as $line) {
-			print ($line);
+		printf ("<form enctype='multipart/form-data' action='admin.php?page=import-items' method='post'>");
+		printf ("<input type='hidden' name='file_dir' value='%s'>", $dir);
+		printf ("<input type='hidden' name='file_name' value='%s'>", $name);
+		printf ("<div style='margin-top:2em'>");
+		printf ("<input class='importAll' type='checkbox' value='1' checked>&nbsp;");
+		printf ("<button id='importButton' type='submit' name='action' value='import'>Import %s Items</button>", count($items));
+		
+		foreach ($items as $ident=>$item) {
+
+// 			if ($item->type == "itemsc") $symbol = "<span class='dashicons dashicons-marker'></span>";
+// 			if ($item->type == "itemmc") $symbol = "<span class='dashicons dashicons-forms'></span>";
+			
+			printf ("					
+				<div style='margin-top:2em;'>
+					<hr/>
+					<div style='margin-top:0em;'>
+						<input class='importCheckbox' type='checkbox' name='import[]' value='%s' checked>&nbsp;
+						<input class='previewButton' type='button' value='Preview'></input>&nbsp;
+						%s %s
+						
+					</div>
+					<div style='margin-top:2em; display:none'>
+						%s
+						<br style='clear:both;'/>
+					</div>
+				</div>
+				", $ident, $item->title, $symbol, CPT_Item::getHTML_Item($item, FALSE, TRUE, $ident . "_"));
 		}
 
-		printf ("</table></div>");
+		printf ("</div></form></div>");
 		
 		
 	}

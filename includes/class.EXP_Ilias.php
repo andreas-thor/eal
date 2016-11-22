@@ -8,15 +8,20 @@ require_once ("class.EAL_ItemMC.php");
 class EXP_Ilias {
 
 	
-	private $name;
-	private $dir;
+	public $name;
+	public $dir;
+	
+	function __construct($a_dir = NULL, $a_name = NULL) {
+		$this->dir = $a_dir;
+		$this->name = $a_name;
+	}
 	
 	/**
 	 * 
 	 * @param unknown $file
 	 * @return array (EAL_ITEM) = array der items im ZIP file ; string with error message in case of failure
 	 */
-	public function import ($file) {
+	public function uploadFile ($file) {
 		
 		$zip = new ZipArchive;
 		if (substr ($file['name'], -4) != ".zip") {
@@ -32,45 +37,53 @@ class EXP_Ilias {
 
 			$this->dir = sys_get_temp_dir() . "/eal" . microtime(TRUE);
 			$zip->extractTo($this->dir);
-				
-			/* process main document: qpl (Question Pool) or tst (Test) */
-			$file_qpl_tst = file_get_contents ("{$this->dir}/{$this->name}/{$this->name}.xml"); 
-			if ($file_qpl_tst == false) return "Could not find QPL file";	
-			
-			/* get the list of itemids */
-			$doc_qpl_tst = new DOMDocument();
-			$doc_qpl_tst->loadXML($file_qpl_tst);
-			$itemids = $this->parseQPL_TST($doc_qpl_tst);		// XML-ID => EAL-ID (if available)
-			
-			/* get the QTI document (that contains the questions) */
-			$isQPL = (strpos("{$this->dir}/{$this->name}/{$this->name}.xml", '_qpl_') == FALSE) ? FALSE : TRUE;
-			$file_qti = file_get_contents ("{$this->dir}/{$this->name}/" . str_replace( ($isQPL?'_qpl_':'_tst_'), '_qti_', $this->name) . ".xml"); //     $this->zip->getFromName("{$this->name}/" . str_replace('_qpl_', '_qti_', $this->name) . ".xml");
-			if ($file_qti == false) return "Could not find QTI file";
-
-			/* load the items based on the QTO document and the list of itemids */
-			$doc_qti = new DOMDocument();
-			$doc_qti->loadXML($file_qti);
-			$items = $this->parseQTI($doc_qti, $itemids);		// XML-ID => EAL-ID (all Items have an Id here)
-
-			/*
-			if (!$isQPL) {
-				// get and load test results
-				$file_results = file_get_contents ("{$this->dir}/{$this->name}/" . str_replace( '_tst_', '_results_', $this->name) . ".xml"); //     $this->zip->getFromName("{$this->name}/" . str_replace('_qpl_', '_qti_', $this->name) . ".xml");
-				if ($file_results == false) return;	// TODO: Error Handling
-				
-				$doc_results = new DOMDocument();
-				$doc_results->loadXML($file_results);
-				$results = $this->parseResults($doc_results, $itemids);
-			}
-			*/
-			
 			$zip->close();
-			
-			return $items;
+				
+			return $this->loadAllItems();
+
 		} else {
 			return "Error when opening file. " . $res;
 		}
 		
+	}
+	
+	
+	
+	public function loadAllItems () {
+		
+		/* process main document: qpl (Question Pool) or tst (Test) */
+		$file_qpl_tst = file_get_contents ("{$this->dir}/{$this->name}/{$this->name}.xml");
+		if ($file_qpl_tst == false) return "Could not find QPL file";
+			
+		/* get the list of itemids */
+		$doc_qpl_tst = new DOMDocument();
+		$doc_qpl_tst->loadXML($file_qpl_tst);
+		$itemids = $this->parseQPL_TST($doc_qpl_tst);		// XML-ID => EAL-ID (if available)
+			
+		/* get the QTI document (that contains the questions) */
+		$isQPL = (strpos("{$this->dir}/{$this->name}/{$this->name}.xml", '_qpl_') == FALSE) ? FALSE : TRUE;
+		$file_qti = file_get_contents ("{$this->dir}/{$this->name}/" . str_replace( ($isQPL?'_qpl_':'_tst_'), '_qti_', $this->name) . ".xml"); //     $this->zip->getFromName("{$this->name}/" . str_replace('_qpl_', '_qti_', $this->name) . ".xml");
+		if ($file_qti == false) return "Could not find QTI file";
+		
+		/* load the items based on the QTO document and the list of itemids */
+		$doc_qti = new DOMDocument();
+		$doc_qti->loadXML($file_qti);
+		$items = $this->parseQTI($doc_qti, $itemids);		// XML-ID => EAL-ID (all Items have an Id here)
+		
+		/*
+		 if (!$isQPL) {
+		 // get and load test results
+		 $file_results = file_get_contents ("{$this->dir}/{$this->name}/" . str_replace( '_tst_', '_results_', $this->name) . ".xml"); //     $this->zip->getFromName("{$this->name}/" . str_replace('_qpl_', '_qti_', $this->name) . ".xml");
+		 if ($file_results == false) return;	// TODO: Error Handling
+		
+		 $doc_results = new DOMDocument();
+		 $doc_results->loadXML($file_results);
+		 $results = $this->parseResults($doc_results, $itemids);
+		 }
+		 */
+			
+			
+		return $items;		
 	}
 	
 	/**
@@ -200,32 +213,30 @@ class EXP_Ilias {
 	}
 	
 	
-	public function saveItems (array $items) {
+	public function saveItem ($item) {
 		
-		foreach ($items as $item) {
+		$item->setPOST();
 			
-			$item->setPOST();
+		if ($item->id == "") {
 				
-			if ($item->id == "") {
-					
-				$postarr = array ();
-				$postarr['ID'] = 0;	// no EAL-ID
-				$postarr['post_title'] = $itemXML->getAttribute("title");
-				$postarr['post_status'] = 'publish';
-				$postarr['post_type'] = $item_type;
-				$postarr['post_content'] = microtime();
-				$item_id = wp_insert_post ($postarr);	// returns the item_id of the created post / item
-			} else {
-			
-				$post = get_post ($item->id);
-				$old_title = $post->post_title;
-				$post->post_title = $itemXML->getAttribute("title");
-				$post->post_content = microtime();	// ensures revision
-				wp_update_post ($post);
-			}
+			$postarr = array ();
+			$postarr['ID'] = 0;	// no EAL-ID
+			$postarr['post_title'] = $item->title;
+			$postarr['post_status'] = 'draft';
+			$postarr['post_type'] = $item->type;
+			$postarr['post_content'] = microtime();
+			$item->id = wp_insert_post ($postarr);	// returns the item_id of the created post / item
+		
+		} else {
+		
+			$post = get_post ($item->id);
+			$old_title = $post->post_title;
+			$post->post_title = $item->title;
+			$post->post_content = microtime();	// ensures revision
+			wp_update_post ($post);
 		}
 		
-		
+		$item->save2DB();
 		
 	}
 	

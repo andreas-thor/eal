@@ -128,7 +128,7 @@ class EAL_LearnOut {
 	}
 	
 	
-	public static function getListOfLearningOutcomes ($learnout_id) {
+	public static function getListOfLearningOutcomes ($learnout_id, $namePrefix = "") {
 		
 		global $wpdb;
 		$sqlres = $wpdb->get_results( "
@@ -138,10 +138,10 @@ class EAL_LearnOut {
 				ON (L.id = P.id)
 				WHERE P.post_status = 'publish'
 				AND L.domain = '" . RoleTaxonomy::getCurrentRoleDomain()["name"] . "'
-				ORDER BY id
+				ORDER BY L.title
 				");
 		
-		$html .= "<select align='right' name='learnout_id'>";
+		$html .= "<select align='right' name='{$namePrefix}learnout_id'>";
 		$html .= "<option value='0'" . (($learnout_id == 0) ? " selected" : "") . ">None</option>";
 		foreach ($sqlres as $pos => $sqlrow) {
 			$html .= "<option value='{$sqlrow->id}'" . (($learnout_id==$sqlrow->id) ? " selected" : "") . ">{$sqlrow->title}</option>";
