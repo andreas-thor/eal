@@ -213,7 +213,7 @@ class EXP_Ilias {
 	}
 	
 	
-	public function saveItem ($item) {
+	public function saveItem ($item, $terms) {
 		
 		$item->setPOST();
 			
@@ -225,6 +225,7 @@ class EXP_Ilias {
 			$postarr['post_status'] = 'draft';
 			$postarr['post_type'] = $item->type;
 			$postarr['post_content'] = microtime();
+			$postarr['tax_input'] = array ($item->domain => $terms);
 			$item->id = wp_insert_post ($postarr);	// returns the item_id of the created post / item
 		
 		} else {
@@ -233,10 +234,11 @@ class EXP_Ilias {
 			$old_title = $post->post_title;
 			$post->post_title = $item->title;
 			$post->post_content = microtime();	// ensures revision
+			wp_set_post_terms($item->id, $terms, $item->domain, FALSE );
 			wp_update_post ($post);
 		}
 		
-		$item->save2DB();
+// 		$item->save2DB();
 		
 	}
 	

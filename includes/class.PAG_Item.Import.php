@@ -45,7 +45,7 @@ class PAG_Item_Import {
 				$item->level["PW"] = $_POST[$importIdent . '__level_PW'];
 				
 				// save
-				$ilias->saveItem($item);
+				$ilias->saveItem($item, $_POST[$importIdent . '__taxonomy']);
 				printf ("<br/>Save item with id %s and ident %s", $item->id, $importIdent);
 				
 				

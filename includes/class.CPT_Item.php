@@ -50,7 +50,10 @@ class CPT_Item extends CPT_Object{
 		add_filter('post_updated_messages', array ($this, 'WPCB_post_updated_messages') );
 		add_action('contextual_help', array ($this, 'WPCB_contextual_help' ), 10, 3);
 		
-		add_action ("save_post_revision", array ("eal_{$this->type}", 'save'), 10, 2);
+		if ($this->type != "itembasket") {
+			add_action ("save_post_revision", array ("eal_{$this->type}", 'save'), 10, 2);
+		}
+		
 		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
 		
 		add_filter('posts_search', array ($this ,'WPCB_post_search'), 10, 2);
@@ -462,6 +465,25 @@ class CPT_Item extends CPT_Object{
 	}
 	
 	
+	private static function getHTML_TopicHierarchy ($namePrefix, $terms, $parent, $selected) {
+		
+		$res .= "";
+		foreach ($terms as $term) {
+			if ($term->parent != $parent) continue;
+			
+			$res .= sprintf ('
+				<li id="%4$s-%1$d">
+					<label class="selectit">
+					<input value="%1$d" type="checkbox" %3$s name="%4$s_taxonomy[]" id="in-%4$s-%1$d"> %2$s</label>
+					<ul class="children">%5$s</ul>
+				</li>',  
+				$term->term_id, $term->name, in_array ($term->term_id, $selected)?"checked":"", 
+				$namePrefix,	
+				CPT_Item::getHTML_TopicHierarchy($namePrefix, $terms, $term->term_id, $selected));
+		}
+		
+		return $res;		
+	}
 
 	public static function getHTML_Metadata (EAL_Item $item, $editable, $namePrefix) {
 	
@@ -483,14 +505,36 @@ class CPT_Item extends CPT_Object{
 			
 		// Taxonomy Terms: Name of Taxonomy and list of terms (if available) 
 		$res .= sprintf ("<div><b>%s</b>:", RoleTaxonomy::getDomains()[$item->domain]);
-		$terms = wp_get_post_terms( $item->id, $item->domain, array("fields" => "names"));
-		if (count($terms)>0) {
-			$res .= sprintf ("<div style='margin-left:1em'>");	
-			foreach ($terms as $t) {
-				$res .= sprintf ("%s</br>", $t);	
+		if ($editable) {
+
+			$res .= sprintf ('
+				<div class="inside">
+					<div class="categorydiv">
+						<div id="topic-all" class="tabs-panel"><input type="hidden" name="%1$s_taxonomy[]" value="0">
+							<ul id="topicchecklist" data-wp-lists="list:topic" class="categorychecklist form-no-clear">
+							%2$s
+							</ul>
+						</div>
+					</div>
+				</div>', 
+				$namePrefix, 
+				CPT_Item::getHTML_TopicHierarchy($namePrefix, get_terms( array('taxonomy' => $item->domain, 'hide_empty' => false) ), 0, wp_get_post_terms( $item->id, $item->domain, array("fields" => "ids"))));
+				
+		} else {
+
+			$terms = wp_get_post_terms( $item->id, $item->domain, array("fields" => "names"));
+			if (count($terms)>0) {
+				$res .= sprintf ("<div style='margin-left:1em'>");
+				foreach ($terms as $t) {
+					$res .= sprintf ("%s</br>", $t);
+				}
+				$res .= sprintf ("</div>");
 			}
-			$res .= sprintf ("</div>");
+				
 		}
+		
+		
+		
 		$res .= sprintf ("</div>");
 		
 		return $res;
