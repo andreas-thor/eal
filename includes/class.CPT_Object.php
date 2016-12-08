@@ -114,7 +114,7 @@ abstract class CPT_Object {
 		} );
 		
 		// quick edit is currently not supported
-		add_action( 'quick_edit_custom_box', array ($this , 'WPCB_quick_edit_custom_box'), 10, 2 );
+		// add_action( 'quick_edit_custom_box', array ($this , 'WPCB_quick_edit_custom_box'), 10, 2 );
 	}		
 	
 	

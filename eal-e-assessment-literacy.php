@@ -392,9 +392,9 @@ function myposttype_admin_css() {
 
 	if (!isset($_REQUEST['page'])) {
 		switch ($_REQUEST['post_type']) {
-			case 'item': ?> jQuery(jQuery(".wrap h1")[0]).replaceWith ('<h1>All Items <a href="<?php echo (site_url()); ?>/wp-admin/post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a><a href="<?php echo (site_url()); ?>/wp-admin/post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a></h1>'); <?php break;  	
-			case 'itembasket': ?> jQuery(jQuery(".wrap h1")[0]).replaceWith ('<h1>Item Basket</h1>'); <?php break;			
-			case 'review': ?> jQuery(jQuery(".wrap h1")[0]).replaceWith ('<h1>All Reviews</h1>'); <?php break;			
+			case 'item': ?> jQuery(jQuery(".wrap a")[0]).remove();  jQuery(jQuery(".wrap h1")[0]).replaceWith ('<h1>All Items <a href="<?php echo (site_url()); ?>/wp-admin/post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a><a href="<?php echo (site_url()); ?>/wp-admin/post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a></h1>'); <?php break;
+			case 'itembasket': ?> jQuery(jQuery(".wrap a")[0]).remove(); jQuery(jQuery(".wrap h1")[0]).replaceWith ('<h1>Item Basket</h1>');  <?php break;			
+			case 'review': ?> jQuery(jQuery(".wrap a")[0]).remove(); jQuery(jQuery(".wrap h1")[0]).replaceWith ('<h1>All Reviews</h1>');  <?php break;			
 		}
 	}
 	

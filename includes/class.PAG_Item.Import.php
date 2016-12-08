@@ -7,7 +7,7 @@ class PAG_Item_Import {
 	public static function createPage () {
 		
 		if ((!isset($_POST['action'])) || ($_POST['action']=='')) {
-			PAG_Item_Import::HTML_uploadForm();
+ 			PAG_Item_Import::HTML_uploadForm();
 		}
 		
 		if ($_POST['action']=='upload') {
@@ -26,6 +26,8 @@ class PAG_Item_Import {
 					PAG_Item_Import::HTML_itemlist($items, $ilias->dir, $ilias->name);
 				}				
 				
+			} else {
+				printf ("<div class='wrap'><h1>Error %s</h1></div>", $_FILES['uploadedfile']['error']);
 			}
 		}
 		
@@ -58,8 +60,8 @@ class PAG_Item_Import {
 	
 	
 	public static function HTML_itemlist(array $items, string $dir, string $name) {
+		
 ?>
-
 		<script type="text/javascript">
 
 		jQuery(document).ready(function($) {
@@ -85,7 +87,6 @@ class PAG_Item_Import {
 			
 		});
 		</script>
-
 <?php 		
 
 		

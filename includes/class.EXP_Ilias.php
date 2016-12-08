@@ -463,7 +463,12 @@ class EXP_Ilias {
 					}
 					$xml_RC->appendChild ($xml_CV);
 					
-					$xml_SV = $dom->createElement("setvar", ($checked==1) ? $answer['positive'] : $answer['negative']);
+// 					if ($item->type == "itemsc") array_push ($item->answers, array ("answer" => $v["text"], "points" => $v["positive"]));
+// 					if ($item->type == "itemmc") array_push ($item->answers, array ("answer" => $v["text"], "positive" => $v["positive"], "negative" => $v["negative"]));
+						
+					if ($item->type == "itemsc") $xml_SV = $dom->createElement("setvar", ($checked==1) ? $answer['points'] : 0);
+					if ($item->type == "itemmc") $xml_SV = $dom->createElement("setvar", ($checked==1) ? $answer['positive'] : $answer['negative']);
+								
 					$xml_SV->setAttribute ("action", "Add");
 					$xml_RC->appendChild ($xml_SV);
 					

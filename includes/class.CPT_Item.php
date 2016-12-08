@@ -72,7 +72,7 @@ class CPT_Item extends CPT_Object{
 	
 		if ($post->post_type != $this->type) return $actions;
 	
-// 		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
+		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
 		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
 	
 		if (!RoleTaxonomy::canEditItemPost($post)) {		// "Edit" & "Trash" only if editable by user
@@ -99,7 +99,7 @@ class CPT_Item extends CPT_Object{
 				htmlselect.forEach(function (s, i, o) {
 						  		
 					jQuery("select[name='" + s + "'] > option").remove();
-			        jQuery('<option>').val('bulk').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('-1').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('view').text('<?php _e('View Items')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('trash').text('<?php _e('Trash Items')?>').appendTo("select[name='" + s + "']");
 

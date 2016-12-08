@@ -179,7 +179,7 @@ class PAG_Basket {
 		}
 		
 		
-		if (count($itemids)>1) {
+		if ((count($itemids)>1) || (count($itemids)==1)) {
 			print $html_select;
 			print "<div style='margin-top:2em'>{$html_list}{$html_info}</div>";
 		} else {
