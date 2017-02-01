@@ -33,7 +33,7 @@ class PAG_Generator {
 	 * @param unknown $max array of max values (see above)
 	 * @param array overlap determines min/max overlap of pools (min=$overlap[0], max=overlap[1])
 	 */
-	function __construct($items, $min, $max, $overlap) {
+	function __construct($items, $min, $max, $overlap, $topic1, $min_topic1, $max_topic1) {
 	
 		$this->maxPools = 10;
 		$this->countPools = 0;
@@ -42,41 +42,63 @@ class PAG_Generator {
 		$this->items = array_values ($items);	// make sure items are indexed for 0 to n-1
 			
 		// generate MASKs
-		$this->MASK = array();
-		for ($i=0; $i<count($min); $i++) {
-			array_push ($this->MASK, 1 << $i);
+		$this->MASK = array(array(), array());
+			for ($i=0; $i<count($min); $i++) {
+			array_push ($this->MASK[0], 1 << $i);
 		}
-	
-		$this->item_vectors = array();
+		for ($i=0; $i<count($topic1); $i++) {
+			array_push ($this->MASK[1], 1 << $i);
+		}
+		
+		$this->item_vectors = array(array (), array());
 		$remaining = array();
 		$size = count($this->items);
 		foreach ($this->items as $idx => $item) {
 			array_push ($remaining, $idx);	// reverse order since we pop later
 			$vector = 1;	// = += $this->MASK[0]
-			if ($item->type == "itemsc") $vector += $this->MASK[1];
-			if ($item->type == "itemmc") $vector += $this->MASK[2];
-			if ($item->level["FW"] > 0)  $vector += $this->MASK[3];
-			if ($item->level["KW"] > 0)  $vector += $this->MASK[4];
-			if ($item->level["PW"] > 0)  $vector += $this->MASK[5];
+			if ($item->type == "itemsc") $vector += $this->MASK[0][1];
+			if ($item->type == "itemmc") $vector += $this->MASK[0][2];
+			if ($item->level["FW"] > 0)  $vector += $this->MASK[0][3];
+			if ($item->level["KW"] > 0)  $vector += $this->MASK[0][4];
+			if ($item->level["PW"] > 0)  $vector += $this->MASK[0][5];
 			for ($level=1; $level<=6; $level++) {
-				if (($item->level["FW"]==$level) || ($item->level["KW"]==$level) || ($item->level["PW"]==$level))  $vector += $this->MASK[$level+5];
+				if (($item->level["FW"]==$level) || ($item->level["KW"]==$level) || ($item->level["PW"]==$level))  $vector += $this->MASK[0][$level+5];
 			}
-			array_push($this->item_vectors, $vector);
+			array_push($this->item_vectors[0], $vector);
+				
+			$vector = 0;
+			$termids = PAG_Explorer::getValuesByKey("topic1", $item, true, true);
+			for ($pos=0; $pos<count($topic1); $pos++) {
+				if (in_array ($topic1[$pos], $termids)) $vector += $this->MASK[1][$pos];
+			}
+			array_push($this->item_vectors[1], $vector);
+				
 		}
 	
-		$values_current = array();
-		$values_remaining = array();
+		$values_current = array(array(), array());
+		$values_remaining = array(array(), array());
+		
 		for ($idx=0; $idx<count($min); $idx++) {
-			array_push ($values_current, 0);
+			array_push ($values_current[0], 0);
 			$val_remaining = 0;
 			foreach ($remaining as $item) {
-				if (($this->item_vectors[$item] & $this->MASK[$idx]) > 0) $val_remaining++;
+				if (($this->item_vectors[0][$item] & $this->MASK[0][$idx]) > 0) $val_remaining++;
 			}
-			array_push($values_remaining, $val_remaining);
+			array_push($values_remaining[0], $val_remaining);
 		}
+		
+		for ($idx=0; $idx<count($topic1); $idx++) {
+			array_push ($values_current[1], 0);
+			$val_remaining = 0;
+			foreach ($remaining as $item) {
+				if (($this->item_vectors[1][$item] & $this->MASK[1][$idx]) > 0) $val_remaining++;
+			}
+			array_push($values_remaining[1], $val_remaining);
+		}
+		
 	
-		$this->min = $min;
-		$this->max = $max;
+		$this->min = array ($min, $min_topic1);
+		$this->max = array ($max, $max_topic1);
 		$this->overlap = $overlap;
 	
 		$this->addOneItem (array(), $remaining, $values_current, $values_remaining);
@@ -126,20 +148,21 @@ class PAG_Generator {
 		
 		
 		
-
-		for ($idx=0; $idx<count($this->MASK); $idx++) {
-
-			// Invalid pool -> Greater than maximum
-			if ($this->max[$idx] < $values_current[$idx]) {
-				return;	
-			}
-
-			if ($this->min[$idx] > $values_current[$idx]) { 	// minimum currently not yet reached
-				// Prune search space -->  minimum can not be reached anamore
-				if ($this->min[$idx] > ($values_current[$idx]+$values_remaining[$idx]) ) {
-					return; 	
+		for ($maskType=0; $maskType<2; $maskType++) {
+			for ($idx=0; $idx<count($this->MASK[$maskType]); $idx++) {
+	
+				// Invalid pool -> Greater than maximum
+				if ($this->max[$maskType][$idx] < $values_current[$maskType][$idx]) {
+					return;	
 				}
-				$allTrue = FALSE;	// condition not yet satisfied (below minimum)
+	
+				if ($this->min[$maskType][$idx] > $values_current[$maskType][$idx]) { 	// minimum currently not yet reached
+					// Prune search space -->  minimum can not be reached anamore
+					if ($this->min[$maskType][$idx] > ($values_current[$maskType][$idx]+$values_remaining[$maskType][$idx]) ) {
+						return; 	
+					}
+					$allTrue = FALSE;	// condition not yet satisfied (below minimum)
+				}
 			}
 		}
 
@@ -154,25 +177,65 @@ class PAG_Generator {
 	
 		while (count($remaining)>0) {
 				
+			
 			// determin the best idx for next
 			$bestIdx = 0;
+			$bestMaskType = 0;
 			$bestBenefit = -1;
-			for ($idx=0; $idx<count($this->MASK); $idx++) {
-				if (($values_remaining[$idx]>0) && ($this->min[$idx] > $values_current[$idx])) {
-					if ($bestBenefit < ($this->min[$idx] - $values_current[$idx])/$values_remaining[$idx]) {
-						$bestBenefit = ($this->min[$idx] - $values_current[$idx])/$values_remaining[$idx];
-						$bestIdx = $idx;
+			for ($maskType=0; $maskType<2; $maskType++) {	// only Topics considered!!!
+				for ($idx=0; $idx<count($this->MASK[$maskType]); $idx++) {
+					if (($values_remaining[$maskType][$idx]>0) && ($this->min[$maskType][$idx] > $values_current[$maskType][$idx])) {
+						if ($bestBenefit < ($this->min[$maskType][$idx] - $values_current[$maskType][$idx])/$values_remaining[$maskType][$idx]) {
+							$bestBenefit = ($this->min[$maskType][$idx] - $values_current[$maskType][$idx])/$values_remaining[$maskType][$idx];
+							$bestIdx = $idx;
+							$bestMaskType = $maskType;
+						}
 					}
 				}
 			}
 				
 			// determine first item where MASK[best_idx] ist set 
 			foreach ($remaining as $key => $value) {
-				if (($this->item_vectors[$value] & $this->MASK[$bestIdx]) > 0) {
+				if (($this->item_vectors[$bestMaskType][$value] & $this->MASK[$bestMaskType][$bestIdx]) > 0) {
 					$toRemove = $key;
 					break;
 				}
 			}
+			
+/*			
+			$toRemove = -1;
+			$bestScore = 0;
+			foreach ($remaining as $key => $value) {
+				
+				$score = 0;
+				for ($maskType=0; $maskType<2; $maskType++) {
+					for ($idx=0; $idx<count($this->MASK[$maskType]); $idx++) {
+				
+						if (($this->item_vectors[$maskType][$value] & $this->MASK[$maskType][$idx]) > 0) {
+							if ($values_current[$maskType][$idx] < $this->min[$maskType][$idx]) {
+								$score = $score+1;
+							} else {
+								$score = $score-1;
+							}
+							
+							if ($values_current[$maskType][$idx] >= $this->max[$maskType][$idx]) {
+								$score = $score - 1000000;
+							}
+						}
+					}
+				}
+				
+				if (($score>$bestScore) || ($toRemove==-1)) {
+					$toRemove = $key;
+					$bestScore = $score;
+				}
+				
+			}
+*/			
+// 			error_log("Current is " . print_r($current, true) . "; adding " . $remaining[$toRemove], 0);
+// 			error_log("Current");
+				
+			
 			$add = $remaining[$toRemove];	// item that will be added to the pool
 			unset($remaining[$toRemove]);
 				
@@ -181,18 +244,20 @@ class PAG_Generator {
 				
 			array_push($current_new, $add);
 				
-			$values_current_new = array();
-			$values_remaining_new = array();
+			$values_current_new = array(array(), array());
+			$values_remaining_new = array(array(), array());
 				
-			for ($idx=0; $idx<count($this->MASK); $idx++) {
-	
-				if (($this->item_vectors[$add] & $this->MASK[$idx]) > 0) {
-					array_push ($values_current_new, $values_current[$idx]+1);
-					array_push ($values_remaining_new, $values_remaining[$idx]-1);
-					$values_remaining[$idx] = $values_remaining[$idx]-1;
-				} else {
-					array_push ($values_current_new, $values_current[$idx]);
-					array_push ($values_remaining_new, $values_remaining[$idx]);
+			for ($maskType=0; $maskType<2; $maskType++) {
+				for ($idx=0; $idx<count($this->MASK[$maskType]); $idx++) {
+		
+					if (($this->item_vectors[$maskType][$add] & $this->MASK[$maskType][$idx]) > 0) {
+						array_push ($values_current_new[$maskType], $values_current[$maskType][$idx]+1);
+						array_push ($values_remaining_new[$maskType], $values_remaining[$maskType][$idx]-1);
+						$values_remaining[$maskType][$idx] = $values_remaining[$maskType][$idx]-1;
+					} else {
+						array_push ($values_current_new[$maskType], $values_current[$maskType][$idx]);
+						array_push ($values_remaining_new[$maskType], $values_remaining[$maskType][$idx]);
+					}
 				}
 			}
 			$this->addOneItem($current_new, $remaining_new, $values_current_new, $values_remaining_new);
@@ -261,9 +326,9 @@ class PAG_Generator {
 		foreach ($categories as $category) {
 			
 			$html .= sprintf("<tr><th style='padding-bottom:0.5em;'><label>%s</label></th></tr>", EAL_Item::$category_label[$category]);
-			foreach (PAG_Explorer::groupBy ($category, $items, NULL, true) as $catval => $catitems) {
+			foreach (PAG_Explorer::groupBy ($category, $items, NULL, true, true) as $catval => $catitems) {
 				
-				$html .= sprintf("<tr><td style='padding-top:0px; padding-bottom:0px;'><label>%s</label></td>", ($category == "topic1") ? $catval : EAL_Item::$category_value_label[$category][$catval]);
+				$html .= sprintf("<tr><td style='padding-top:0px; padding-bottom:0px;'><label>%s</label></td>", ($category == "topic1") ? get_term($catval, RoleTaxonomy::getCurrentRoleDomain()["name"])->name : EAL_Item::$category_value_label[$category][$catval]);
 				$html .= PAG_Generator::minMaxField($category . "_" . $catval, count($catitems));
 				$html .= sprintf("</tr>");
 			}
@@ -277,6 +342,17 @@ class PAG_Generator {
 		
 		// (re-)generate pools
 		if ($_REQUEST['action'] == 'generate') {
+			
+			$topic1 = array();
+			$min_topic1 = array();
+			$max_topic1 = array(); 
+			
+			foreach (PAG_Explorer::groupBy ("topic1", $items, NULL, true, true) as $catval => $catitems) {
+				array_push($topic1, $catval);
+				array_push($min_topic1, $_SESSION["min_topic1" . "_" . $catval]);
+				array_push($max_topic1, $_SESSION["max_topic1" . "_" . $catval]);
+			}
+			
 			$pool = new PAG_Generator(
 				$items,
 				array (	$_SESSION['min_number'], $_SESSION['min_type_itemsc'], $_SESSION['min_type_itemmc'], 
@@ -285,7 +361,8 @@ class PAG_Generator {
 				array (	$_SESSION['max_number'], $_SESSION['max_type_itemsc'], $_SESSION['max_type_itemmc'],
 						$_SESSION['max_dim_FW'], $_SESSION['max_dim_KW'], $_SESSION['max_dim_PW'],
 						$_SESSION['max_level_1'], $_SESSION['max_level_2'], $_SESSION['max_level_3'], $_SESSION['max_level_4'], $_SESSION['max_level_5'], $_SESSION['max_level_6']),
-				array ( $_SESSION['min_overlap'], $_SESSION['max_overlap'])
+				array ( $_SESSION['min_overlap'], $_SESSION['max_overlap']),
+				$topic1, $min_topic1, $max_topic1
 			);
 			
 			$_SESSION['generated_pools'] = $pool->generatedPools;

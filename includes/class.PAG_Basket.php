@@ -23,6 +23,7 @@ class PAG_Basket {
 			
 			$post = get_post($item_id);
 			if ($post == null) continue;
+			if ($post->post_status == 'trash') continue;
 			
 			$item = null;
 			if ($post->post_type == 'itemsc') $item = new EAL_ItemSC();
@@ -157,6 +158,9 @@ class PAG_Basket {
 				$html_info .= sprintf("<tr><th style='padding-bottom:0.5em;'><label>%s</label></th></tr>", EAL_Item::$category_label[$category]);
 				foreach (PAG_Explorer::groupBy ($category, $items, NULL, true) as $catval => $catitems) {
 			
+					
+					// topic id statt topic name
+					
 					$html_info .= sprintf("<tr><td style='padding-top:0px; padding-bottom:0px;'><label>%s</label></td>", ($category == "topic1") ? $catval : EAL_Item::$category_value_label[$category][$catval]);
 					$html_info .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
 					$html_info .= sprintf("<input style='width:5em' type='number' value='%d' readonly/>", count($catitems));

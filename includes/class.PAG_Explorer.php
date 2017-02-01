@@ -24,7 +24,7 @@ class PAG_Explorer {
 		return $k;
 	}
 	
-	private static function getValuesByKey ($name, $item, $parent) {
+	public static function getValuesByKey ($name, $item, $parent, $useTopicIds) {
 		
 		if (($name == null) || ($name=="none")) return [0];
 		
@@ -53,11 +53,11 @@ class PAG_Explorer {
 			
 			foreach (wp_get_post_terms($item->id, RoleTaxonomy::getCurrentRoleDomain()["name"]) as $term) {
 				
-				$termhier = array($term->name);
+				$termhier = $useTopicIds ? array($term->term_id) : array($term->name);
 				$parentId = $term->parent;
 				while ($parentId>0) {
 					$parentTerm = get_term ($parentId, RoleTaxonomy::getCurrentRoleDomain()["name"]);
-					$termhier = array_merge (array ($parentTerm->name), $termhier);
+					$termhier = array_merge ($useTopicIds ? array ($parentTerm->term_id) : array ($parentTerm->name), $termhier);
 					$parentId = $parentTerm->parent;
 				}
 				
@@ -85,7 +85,7 @@ class PAG_Explorer {
 	 * @return array ( value => EAL_Item[] )
 	 */
 	
-	public static function groupBy ($name, $items, $parent, $complete) {
+	public static function groupBy ($name, $items, $parent, $complete, $useTopicIds=false) {
 	
 		$res = array();
 		$complete = true;
@@ -98,7 +98,7 @@ class PAG_Explorer {
 		}
 		
 		foreach ($items as $item) {
-			$values = PAG_Explorer::getValuesByKey($name, $item, $parent);
+			$values = PAG_Explorer::getValuesByKey($name, $item, $parent, $useTopicIds);
 			foreach ($values as $value) {
 				if ($res[$value] == null) $res[$value] = array();
 				array_push ($res[$value], $item);

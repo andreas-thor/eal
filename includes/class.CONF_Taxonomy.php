@@ -10,7 +10,8 @@ class Taxonomy {
 	);
 	
 // 	public static $domains = array (
-// 			"potpourri" 	=> "Potpourri"
+// 			"potpourri" 	=> "Potpourri",
+// 			"praxis" 	=> "Praxisaufgabe"
 // 	);
 	
 	
