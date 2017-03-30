@@ -143,12 +143,14 @@ add_action ('admin_menu', function () {
 
  	global $menu, $submenu;
  	
- 	add_menu_page('eal_page_items', 'Items', 'edit_posts', 'edit.php?post_type=item', '', 'dashicons-format-aside', 31);
- 	add_submenu_page( 'edit.php?post_type=item', 'All Items', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> All Items', 'edit_posts', 'edit.php?post_type=item');
- 	add_submenu_page( 'edit.php?post_type=item', 'Single Choice', '<div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div> Single Choice', 'edit_posts', 'edit.php?post_type=itemsc');
- 	add_submenu_page( 'edit.php?post_type=item', 'Multiple Choice', '<div class="dashicons-before dashicons-forms" style="display:inline">&nbsp;</div> Multiple Choice', 'edit_posts', 'edit.php?post_type=itemmc');
+ 	
+ 	add_menu_page('eal_page_items', 'Items', 'edit_posts', 'edit.php?post_type=item', '', (new CPT_Item())->dashicon, 31);
+ 	foreach ([new CPT_Item(), new CPT_ItemSC(), new CPT_ItemMC()] as $object) {
+ 		add_submenu_page( 'edit.php?post_type=item', $object->label, '<div class="dashicons-before ' . $object->dashicon . '" style="display:inline">&nbsp;</div> ' . $object->label, 'edit_posts', 'edit.php?post_type=' . $object->type);
+ 	}
  	add_submenu_page( 'edit.php?post_type=item', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import-items', array ('PAG_Item_Import', 'createPage'));
- 	add_submenu_page( 'edit.php?post_type=item', 'Reviews', '<div class="dashicons-before dashicons-admin-comments" style="display:inline">&nbsp;</div> Reviews', 'edit_posts', 'edit.php?post_type=review');
+ 	$object = new CPT_Review();
+ 	add_submenu_page( 'edit.php?post_type=item', $object->label, '<div class="dashicons-before ' . $object->dashicon . '" style="display:inline">&nbsp;</div> ' . $object->label, 'edit_posts', 'edit.php?post_type=' . $object->type);
 	 	 
  	
  	$domain = RoleTaxonomy::getCurrentRoleDomain ();

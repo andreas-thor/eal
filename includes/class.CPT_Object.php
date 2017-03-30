@@ -39,10 +39,6 @@ abstract class CPT_Object {
 						'parent' => 'Parent Item'
 					),
 		
-// 					'capabilities' => array(
-// 						'edit_posts' => ($this->type == 'item') ? 'do_not_allow' : 'edit_posts', // false < WP 4.5, credit @Ewout
-// 					), 
-						
 					'capabilities' => array(
 						"edit_posts" => "edit_{$this->cap_type}s",
 						"edit_others_posts" => "edit_others_{$this->cap_type}s",
@@ -81,12 +77,19 @@ abstract class CPT_Object {
 		// Manage table of items (what columns to show; what columns are sortable
 		add_filter("manage_{$this->type}_posts_columns" , array ($this, 'WPCB_manage_posts_columns'));
 		add_filter("manage_edit-{$this->type}_sortable_columns", array ($this, 'WPCB_manage_edit_sortable_columns'));
-		add_action("manage_{$this->type}_posts_custom_column" , array ($this, 'WPCB_manage_posts_custom_column'), 10, 2 );
+// 		add_action("manage_{$this->type}_posts_custom_column" , array ($this, 'WPCB_manage_posts_custom_column'), 10, 2 );
+		
+
+		add_action("manage_{$this->type}_posts_custom_column" , function ($column, $post_id) { $this->WPCB_manage_posts_custom_column ($column, $post_id); }, 10, 2 );
+		
 		
 		// Generate databses query to retrieve all data
 		add_filter('posts_join', array ($this, 'WPCB_posts_join'));
 		add_filter('posts_fields', array ($this, 'WPCB_posts_fields'), 10, 1 );
-		add_filter('posts_orderby', array ($this, 'WPCB_posts_orderby'), 10, 1 );
+		
+// 		add_filter('posts_orderby', array ($this, 'WPCB_posts_orderby'), 10, 1 );
+		add_filter('posts_orderby', function ($orderby_statement) { $this->WPCB_posts_orderby($orderby_statement); } , 10, 1 );
+		
 		add_filter('posts_where', array ($this, 'WPCB_posts_where'), 10, 1 );
 		
 		add_filter('post_row_actions', array ($this , 'WPCB_post_row_actions'), 10, 2);
@@ -354,16 +357,13 @@ abstract class CPT_Object {
 				break;
 			
 			case 'item_type':
-				if ($post->item_type == "itemsc") printf ('<a href="%1$s"><div class="dashicons-before dashicons-marker" style="display:inline">&nbsp;</div></a>', add_query_arg ('item_type', "itemsc", $basic_url));
-				if ($post->item_type == "itemmc") printf ('<a href="%1$s"><div class="dashicons-before dashicons-forms"  style="display:inline">&nbsp;</div></a>', add_query_arg ('item_type', "itemmc", $basic_url));
+				printf ('<a href="%1$s"><div class="dashicons-before %2$s" style="display:inline">&nbsp;</div></a>', add_query_arg ('item_type', $post->item_type, $basic_url), $this->dashicon);
 				break;
 	
 			case 'taxonomy':
 				foreach (wp_get_post_terms($post->ID, RoleTaxonomy::getCurrentRoleDomain()["name"]) as $term) {
 					printf ('<a href="%1$s">%2$s</a><br/>', add_query_arg ('taxonomy', $term->term_id , $basic_url), $term->name);
 				}
-				
-				
 				break;
 				
 			case 'item_author':
@@ -378,10 +378,10 @@ abstract class CPT_Object {
 				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('learnout_author', $post->learnout_author_id, $basic_url), $post->learnout_author);
 				break;
 					
-			case 'difficulty': echo ($post->difficulty); break;
+			case 'difficulty': 
+				printf ($post->difficulty); 
+				break;
 				
-			
-			
 			case 'item_points':
 				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('item_points', $post->item_points, $basic_url), $post->item_points);
 				break;
