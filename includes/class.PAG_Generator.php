@@ -1,6 +1,6 @@
 <?php 
 
-require_once ("class.EAL_Item.php");
+require_once ("eal/EAL_Item.php");
 require_once ("class.PAG_Basket.php");
 require_once ("class.PAG_Explorer.php");
 

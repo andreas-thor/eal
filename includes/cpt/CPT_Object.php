@@ -77,24 +77,20 @@ abstract class CPT_Object {
 		// Manage table of items (what columns to show; what columns are sortable
 		add_filter("manage_{$this->type}_posts_columns" , array ($this, 'WPCB_manage_posts_columns'));
 		add_filter("manage_edit-{$this->type}_sortable_columns", array ($this, 'WPCB_manage_edit_sortable_columns'));
-// 		add_action("manage_{$this->type}_posts_custom_column" , array ($this, 'WPCB_manage_posts_custom_column'), 10, 2 );
+		add_action("manage_{$this->type}_posts_custom_column" , array ($this, 'WPCB_manage_posts_custom_column'), 10, 2 );
 		
 
-		add_action("manage_{$this->type}_posts_custom_column" , function ($column, $post_id) { $this->WPCB_manage_posts_custom_column ($column, $post_id); }, 10, 2 );
-		
-		
 		// Generate databses query to retrieve all data
 		add_filter('posts_join', array ($this, 'WPCB_posts_join'));
 		add_filter('posts_fields', array ($this, 'WPCB_posts_fields'), 10, 1 );
 		
-// 		add_filter('posts_orderby', array ($this, 'WPCB_posts_orderby'), 10, 1 );
-		add_filter('posts_orderby', function ($orderby_statement) { $this->WPCB_posts_orderby($orderby_statement); } , 10, 1 );
+		add_filter('posts_orderby', array ($this, 'WPCB_posts_orderby'), 10, 1 );
 		
 		add_filter('posts_where', array ($this, 'WPCB_posts_where'), 10, 1 );
 		
 		add_filter('post_row_actions', array ($this , 'WPCB_post_row_actions'), 10, 2);
 		
-		add_action( 'restrict_manage_posts', array ($this, 'WPCB_restrict_manage_posts') );
+		add_action('restrict_manage_posts', array ($this, 'WPCB_restrict_manage_posts') );
 		add_filter('months_dropdown_results', '__return_empty_array');	// TODO: Implement Date Filter for All Items (currently for none, because it only works for real item types)
 		
 		add_action('admin_footer-edit.php', array ($this, 'add_bulk_actions'));

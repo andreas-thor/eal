@@ -1,6 +1,6 @@
 <?php
 
-require_once("class.CONF_Taxonomy.php");
+require_once(__DIR__ . "/../easlit_taxonomies.php");
 
 class RoleTaxonomy {
 	

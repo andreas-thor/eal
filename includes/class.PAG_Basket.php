@@ -1,10 +1,10 @@
 <?php 
 
-require_once ("class.EAL_Item.php");
-require_once ("class.EAL_ItemSC.php");
-require_once ("class.EAL_ItemMC.php");
-require_once ("class.EAL_LearnOut.php");
-require_once ("class.EAL_Review.php");
+require_once ("eal/EAL_Item.php");
+require_once ("eal/EAL_ItemSC.php");
+require_once ("eal/EAL_ItemMC.php");
+require_once ("eal/EAL_LearnOut.php");
+require_once ("eal/EAL_Review.php");
 require_once ("class.EXP_Ilias.php");
 
 class PAG_Basket {

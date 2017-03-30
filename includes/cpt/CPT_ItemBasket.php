@@ -1,6 +1,6 @@
 <?php
 
-require_once("class.CPT_Item.php");
+require_once("CPT_Item.php");
 
 
 

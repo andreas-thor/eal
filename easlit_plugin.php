@@ -1,21 +1,21 @@
 <?php
 /*
- Plugin Name: EAL // E-Assessment Literacy
+ Plugin Name: EAs.LiT (E-Assessment Literacy Tool)
  Plugin URI: https://github.com/andreas-thor/eal
- Description: Plugin for E-Assessment Literacy. It delivers several custom post types (items, reviews) and setting pages.
+ Description: Kollaborative, qualitätsgesicherte Erstellung von Items für E-Assessments. 
  Version: 1.0
  Author: Andreas Thor
  EMail: dr.andreas.thor@googlemail.com
  */
 
 
-require_once 'includes/class.CPT_Item.php';
-require_once 'includes/class.CPT_ItemBasket.php';
-require_once 'includes/class.CPT_ItemSC.php';
-require_once 'includes/class.CPT_ItemMC.php';
-require_once 'includes/class.CPT_LearnOut.php';
+require_once 'includes/cpt/CPT_Item.php';
+require_once 'includes/cpt/CPT_ItemBasket.php';
+require_once 'includes/cpt/CPT_ItemSC.php';
+require_once 'includes/cpt/CPT_ItemMC.php';
+require_once 'includes/cpt/CPT_LearnOut.php';
 
-require_once 'includes/class.CPT_Review.php';
+require_once 'includes/cpt/CPT_Review.php';
 
 require_once 'includes/class.PAG_Metadata.php';
 require_once 'includes/class.PAG_Basket.php';
@@ -146,7 +146,7 @@ add_action ('admin_menu', function () {
  	
  	add_menu_page('eal_page_items', 'Items', 'edit_posts', 'edit.php?post_type=item', '', (new CPT_Item())->dashicon, 31);
  	foreach ([new CPT_Item(), new CPT_ItemSC(), new CPT_ItemMC()] as $object) {
- 		add_submenu_page( 'edit.php?post_type=item', $object->label, '<div class="dashicons-before ' . $object->dashicon . '" style="display:inline">&nbsp;</div> ' . $object->label, 'edit_posts', 'edit.php?post_type=' . $object->type);
+ 		add_submenu_page( 'edit.php?post_type=item', $object->label, '<div class="dashicons-before ' . $object->dashicon . '" style="display:inline">&nbsp;</div> ' . $object->label, 'edit_posts', "edit.php?post_type={$object->type}");
  	}
  	add_submenu_page( 'edit.php?post_type=item', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import-items', array ('PAG_Item_Import', 'createPage'));
  	$object = new CPT_Review();

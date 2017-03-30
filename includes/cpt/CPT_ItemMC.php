@@ -1,7 +1,7 @@
 <?php
 
-require_once("class.CPT_Item.php");
-require_once("class.EAL_ItemMC.php");
+require_once("CPT_Item.php");
+require_once(__DIR__ . "/../eal/EAL_ItemMC.php");
 
 class CPT_ItemMC extends CPT_Item {
 	

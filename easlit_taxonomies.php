@@ -18,7 +18,8 @@ class Taxonomy {
 	public static $domains = array (
 			"paedagogik" 	=> "Allgemeine Paedagogik",
 			"topic" 		=> "Beispieltaxonomy",
-			"datenbanken"	=> "Datenbanksysteme"
+			"datenbanken"	=> "Datenbanksysteme",
+			"hallo"  => "Hallo"
 	);
 	
 // 	public static $domains = array (

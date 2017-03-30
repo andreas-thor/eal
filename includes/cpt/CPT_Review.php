@@ -2,8 +2,8 @@
 
 // TODO: Delete Review (in POst Tabelle) --> löschen in Review-Tabelle
 
-require_once ("class.CPT_Object.php");
-require_once ("class.EAL_Review.php");
+require_once ("CPT_Object.php");
+require_once (__DIR__ . "/../eal/EAL_Review.php");
 
 class CPT_Review extends CPT_Object {
 

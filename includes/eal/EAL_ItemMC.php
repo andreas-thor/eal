@@ -1,6 +1,6 @@
 <?php
 
-require_once ("class.EAL_Item.php");
+require_once ("EAL_Item.php");
 
 class EAL_ItemMC extends EAL_Item {
 	

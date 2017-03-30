@@ -1,7 +1,7 @@
 <?php
 
-require_once("class.CPT_Object.php");
-require_once("class.EAL_LearnOut.php");
+require_once("CPT_Object.php");
+require_once(__DIR__ . "/../eal/EAL_LearnOut.php");
 
 class CPT_LearnOut extends CPT_Object {
 	

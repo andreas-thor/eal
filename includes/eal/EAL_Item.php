@@ -1,6 +1,6 @@
 <?php
 
-require_once 'class.CLA_RoleTaxonomy.php';
+require_once (__DIR__ . "/../class.CLA_RoleTaxonomy.php");
 
 
 class EAL_Item {

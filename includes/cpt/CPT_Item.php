@@ -1,7 +1,7 @@
 <?php
 
-require_once("class.CPT_Object.php");
-require_once("class.CLA_RoleTaxonomy.php");
+require_once("CPT_Object.php");
+require_once(__DIR__ . "/../class.CLA_RoleTaxonomy.php");
 
 class CPT_Item extends CPT_Object{
 	
