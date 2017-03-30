@@ -5,18 +5,26 @@ require_once("class.EAL_LearnOut.php");
 
 class CPT_LearnOut extends CPT_Object {
 	
-	public $table_columns = array (
-		'cb' => '<input type="checkbox" />',
-		'learnout_title' => 'Title',
-		'last_modified' => 'Date',
-		'taxonomy' => 'Taxonomy',
-		'learnout_author' => 'Author', 
-		'level_FW' => 'FW',
-		'level_KW' => 'KW',
-		'level_PW' => 'PW',
-		'no_of_items' => 'Items'
-	);
+	public function __construct() {
 	
+		$this->type = "learnout";
+		$this->label = "Learn. Outcome";
+		$this->menu_pos = 0;
+		$this->cap_type = $this->type;
+		$this->dashicon = "dashicons-welcome-learn-more";
+	
+		$this->table_columns = array (
+			'cb' => '<input type="checkbox" />',
+			'learnout_title' => 'Title',
+			'last_modified' => 'Date',
+			'taxonomy' => 'Taxonomy',
+			'learnout_author' => 'Author', 
+			'level_FW' => 'FW',
+			'level_KW' => 'KW',
+			'level_PW' => 'PW',
+			'no_of_items' => 'Items'
+		);
+	}	
 	
 	/*
 	 * #######################################################################
@@ -25,13 +33,7 @@ class CPT_LearnOut extends CPT_Object {
 	 */
 	
 	public function init($args = array()) {
-		
-		$this->type = "learnout";
-		$this->label = "Learn. Outcome";
-		$this->menu_pos = 0;
-		
-		parent::init(array ('supports' => array( 'title')));
-		
+		parent::init(array_merge ($args, array ('supports' => array( 'title'))));
 	}
 	
 	

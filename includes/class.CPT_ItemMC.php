@@ -6,13 +6,22 @@ require_once("class.EAL_ItemMC.php");
 class CPT_ItemMC extends CPT_Item {
 	
 	
-	public function init($args = array()) {
-
+	
+	public function __construct() {
+	
+		parent::__construct();
+	
 		$this->type = "itemmc";
 		$this->label = "Multiple Choice";
 		$this->menu_pos = 0;
-		parent::init();
+		$this->dashicon = "dashicons-forms";
+		
 		unset($this->table_columns["item_type"]);
+	}
+	
+	
+	public function init($args = array()) {
+		parent::init($args);
 	}
 	
 	

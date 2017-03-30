@@ -7,18 +7,27 @@ require_once ("class.EAL_Review.php");
 
 class CPT_Review extends CPT_Object {
 
-	public $table_columns = array (
-		'cb' => '<input type="checkbox" />', 
-		'review_title' => 'Title',
-		'item_id' => 'Item ID', 
-		'last_modified' => 'Date', 
-		'item_type' => 'Type', 
-		'review_author' => 'Author Review', 
-		'item_author' => 'Author Item', 
-		'score' => 'Score', 
-		'change_level' => 'Level', 
-		'overall' => 'Overall'
-	);
+	public function __construct() {
+	
+		$this->type = "review";
+		$this->label = "Item Review";
+		$this->menu_pos = -1;
+		$this->cap_type = $this->type;
+		$this->dashicon = "dashicons-admin-comments";
+	
+		$this->table_columns = array (
+			'cb' => '<input type="checkbox" />', 
+			'review_title' => 'Title',
+			'item_id' => 'Item ID', 
+			'last_modified' => 'Date', 
+			'item_type' => 'Type', 
+			'review_author' => 'Author Review', 
+			'item_author' => 'Author Item', 
+			'score' => 'Score', 
+			'change_level' => 'Level', 
+			'overall' => 'Overall'
+		);
+	}
 	
 
 	/*
@@ -29,16 +38,9 @@ class CPT_Review extends CPT_Object {
 	
 	public function init($args = array()) {
 
-		$this->menu_pos = -1;
-		$this->type = "review";
-		$this->label = "Item Review";
-		parent::init(array ('supports' => false, 'taxonomies' => array()));
+		parent::init(array_merge ($args, array ('supports' => false, 'taxonomies' => array())));
 		
-		
-		
-
 		// TODO: delete review
-		
 		add_filter('post_updated_messages', array ($this, 'WPCB_post_updated_messages') );
 	}
 	

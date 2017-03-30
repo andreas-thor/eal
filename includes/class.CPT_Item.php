@@ -6,25 +6,35 @@ require_once("class.CLA_RoleTaxonomy.php");
 class CPT_Item extends CPT_Object{
 	
 	
-	public $table_columns = array (
-		'cb' => '<input type="checkbox" />',
-		'item_title' => 'Title',
-		'id' => 'ID',
-		'last_modified' => 'Date',
-		'item_type' => 'Type',
-		'taxonomy' => 'Taxonomy', 
-		'item_author' => 'Author',
-		'item_points' => 'Points',
-		'level_FW' => 'FW',
-		'level_KW' => 'KW',
-		'level_PW' => 'PW',
-		'no_of_reviews' => 'Reviews',
-		'item_learnout' => 'Learn. Out.',
-		'difficulty' => 'Difficulty',
-		'note' => 'Note',
-		'flag' => 'Flag'
-	);
 	
+	
+	public function __construct() {
+		
+		$this->type = "item";
+		$this->label = "All Items";
+		$this->menu_pos = 0;
+		$this->cap_type = "item";
+		$this->dashicon = "dashicons-format-aside";
+		
+		$this->table_columns = array (
+				'cb' => '<input type="checkbox" />',
+				'item_title' => 'Title',
+				'id' => 'ID',
+				'last_modified' => 'Date',
+				'item_type' => 'Type',
+				'taxonomy' => 'Taxonomy',
+				'item_author' => 'Author',
+				'item_points' => 'Points',
+				'level_FW' => 'FW',
+				'level_KW' => 'KW',
+				'level_PW' => 'PW',
+				'no_of_reviews' => 'Reviews',
+				'item_learnout' => 'Learn. Out.',
+				'difficulty' => 'Difficulty',
+				'note' => 'Note',
+				'flag' => 'Flag'
+		);
+	}
 	
 	
 	/*
@@ -35,18 +45,8 @@ class CPT_Item extends CPT_Object{
 	
 	public function init($args = array()) {
 		
-		if (!isset($this->type)) {
-			$this->type = "item";
-			$this->label = "Item";
-			$this->menu_pos = 0;
-		}
-		
-		parent::init();
+		parent::init($args);
 
-		$classname = get_called_class();
-		
-		
-		
 		add_filter('post_updated_messages', array ($this, 'WPCB_post_updated_messages') );
 		add_action('contextual_help', array ($this, 'WPCB_contextual_help' ), 10, 3);
 		

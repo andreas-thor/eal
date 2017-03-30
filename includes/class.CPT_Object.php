@@ -6,8 +6,11 @@ abstract class CPT_Object {
 	public $type;
 	public $label;
 	public $menu_pos;
+	public $cap_type;
 	
-	public $table_columns;	// to be set by sub-classes
+	public $table_columns;	
+	public $dashicon;
+	
 	
 	/*
 	 * #######################################################################
@@ -16,14 +19,6 @@ abstract class CPT_Object {
 	 */
 	
 	public function init($args = array()) {
-		
-		
-		if (($this->type == "learnout") || ($this->type == "review")) {
-			$cap_type = $this->type;
-		} else {
-			$cap_type = "item";
-		}
-		
 		
 		register_post_type( $this->type,
 			array_merge (
@@ -49,19 +44,19 @@ abstract class CPT_Object {
 // 					), 
 						
 					'capabilities' => array(
-						"edit_posts" => "edit_{$cap_type}s",
-						"edit_others_posts" => "edit_others_{$cap_type}s",
-						"edit_published_posts" => "edit_published_{$cap_type}s",
-						"edit_private_posts" => "edit_private_{$cap_type}s",
-						"publish_posts" => "publish_{$cap_type}s",
-						"delete_posts" => "delete_{$cap_type}s",
-						"delete_others_posts" => "delete_others_{$cap_type}s",
-						"delete_published_posts" => "delete_published_{$cap_type}s",
-						"delete_private_posts" => "delete_private_{$cap_type}s",
-						"read_private_posts" => "read_private_{$cap_type}s",
-						"edit_post" => "edit_{$cap_type}",
-						"delete_post" => "delete_{$cap_type}",
-						"read_post" => "read_{$cap_type}"
+						"edit_posts" => "edit_{$this->cap_type}s",
+						"edit_others_posts" => "edit_others_{$this->cap_type}s",
+						"edit_published_posts" => "edit_published_{$this->cap_type}s",
+						"edit_private_posts" => "edit_private_{$this->cap_type}s",
+						"publish_posts" => "publish_{$this->cap_type}s",
+						"delete_posts" => "delete_{$this->cap_type}s",
+						"delete_others_posts" => "delete_others_{$this->cap_type}s",
+						"delete_published_posts" => "delete_published_{$this->cap_type}s",
+						"delete_private_posts" => "delete_private_{$this->cap_type}s",
+						"read_private_posts" => "read_private_{$this->cap_type}s",
+						"edit_post" => "edit_{$this->cap_type}",
+						"delete_post" => "delete_{$this->cap_type}",
+						"read_post" => "read_{$this->cap_type}"
 					),
 					'map_meta_cap' => true,	// http://wordpress.stackexchange.com/questions/108338/capabilities-and-custom-post-types
 						

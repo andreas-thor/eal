@@ -239,7 +239,7 @@ class RoleTaxonomy {
 	
 	public static function showCurrentRole (WP_User $user) {
 	
-		print ("<h2>Role Management</h2>");
+		print ("<h2 id='roleman'>Role Management</h2>");
 		print ("<table class='form-table'><tbody><tr class='user-email-wrap'><th><label for='currentRole'>Current Role</label></th><td>");
 	
 		global $wp_roles;
