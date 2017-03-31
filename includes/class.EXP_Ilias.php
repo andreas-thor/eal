@@ -133,9 +133,8 @@ class EXP_Ilias {
 			}
 
 			// initialize item
-			if ($item_type == "itemsc") $item = new EAL_ItemSC();
-			if ($item_type == "itemmc") $item = new EAL_ItemMC();
-			if ($item_id != "") $item->loadById($item_id);
+			if ($item_type == "itemsc") $item = new EAL_ItemSC($item_id);
+			if ($item_type == "itemmc") $item = new EAL_ItemMC($item_id);
 			
 			// get title and description + question 
 			$item->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
@@ -363,7 +362,7 @@ class EXP_Ilias {
 			if ($post == null) continue;
 			
 			if ($post->post_type == 'itemsc') {
-				$item = new EAL_ItemSC();
+				$item = new EAL_ItemSC($item_id);
 				$item_data = array (
 					"questiontype" => "SINGLE CHOICE QUESTION",
 					"ident" => "MCSR",
@@ -371,7 +370,7 @@ class EXP_Ilias {
 				);
 			}
 			if ($post->post_type == 'itemmc') {
-				$item = new EAL_ItemMC();
+				$item = new EAL_ItemMC($item_id);
 				$item_data = array (
 					"questiontype" => "MULTIPLE CHOICE QUESTION",
 					"ident" => "MCMR",
@@ -379,8 +378,6 @@ class EXP_Ilias {
 				);
 			}
 			
-			$item->loadById($item_id);
-
 			$xml_IT = $dom->createElement("item");
 			$xml_IT->setAttribute("ident", "il_0_qst_{$item_id}");
 			$xml_IT->setAttribute("title", $item->title);

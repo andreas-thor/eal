@@ -58,10 +58,8 @@ class EAL_Review {
 			$post = get_post($this->item_id);
 			if ($post == null) return null;
 	
-			if ($post->post_type == 'itemsc') $this->item = new EAL_ItemSC();
-			if ($post->post_type == 'itemmc') $this->item = new EAL_ItemMC();
-			
-			$this->item->loadById($this->item_id);
+			if ($post->post_type == 'itemsc') $this->item = new EAL_ItemSC($this->item_id);
+			if ($post->post_type == 'itemmc') $this->item = new EAL_ItemMC($this->item_id);
 		}
 		return $this->item;
 	}

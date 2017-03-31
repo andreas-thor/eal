@@ -1,5 +1,7 @@
 <?php
 
+require_once(__DIR__ . "/../eal/EAL_ItemBasket.php");
+
 abstract class CPT_Object {
 	
 	
@@ -180,42 +182,22 @@ abstract class CPT_Object {
 		
 		/* Add Items to Basket */
 		if ($wp_list_table->current_action() == 'add_to_basket') {
-
-			/* get array of postids */
 			$postids = $_REQUEST['post'];
 			if (!is_array($postids)) $postids = [$postids];
-
-			$basket_old = RoleTaxonomy::getCurrentBasket(); // get_user_meta(get_current_user_id(), 'itembasket', true);
-			if ($basket_old == null) $basket_old = array();
-			if (count($basket_old) == 0) $basket_old = [-1];	// dummy basket to make sure SQLL works
-			
-			/* get Items from Learning Outcomes */
-			$sql  = "SELECT P.id FROM {$wpdb->prefix}eal_item I JOIN {$wpdb->prefix}posts P ON (P.ID = I.ID) WHERE P.post_parent = 0 AND ";
-			$sql .= sprintf('( %1$s IN (%2$s) OR I.id IN (%3$s) )',  ($_REQUEST['post_type']=='learnout') ? 'I.learnout_id' : 'I.id', join(", ", $postids), join(", ", $basket_old));
-			$itemids = $wpdb->get_col ($sql);
-	
-			RoleTaxonomy::setCurrentBasket($itemids); // $x = update_user_meta( get_current_user_id(), 'itembasket', $itemids);
-	
-	
+			if ($_REQUEST['post_type']=='learnout') {
+				EAL_ItemBasket::addByLearnOut($postids);	
+			} else {
+				EAL_ItemBasket::add($postids);
+			}
 		}
 		
-		
+		/* Remove from Basket */
 		if ($wp_list_table->current_action() == 'remove_from_basket') {
-				
-			$b_old = RoleTaxonomy::getCurrentBasket(); // get_user_meta(get_current_user_id(), 'itembasket', true);
-			$b_new = $b_old;
-		
-			if (isset($_REQUEST["post"])) {
-				$b_new = array_diff ($b_old, $_REQUEST['post']);
-			}
-			if ($_REQUEST['itemid']!=null) {
-				$b_new = array_diff ($b_old, [$_REQUEST['itemid']]);
-			}
-			if ($_REQUEST['itemids']!=null) {
-				$b_new = array_diff ($b_old, $_REQUEST['itemids']);
-			}
-			RoleTaxonomy::setCurrentBasket($b_new); // $x = update_user_meta( get_current_user_id(), 'itembasket', $b_new, $b_old );
-		
+			$remove = array ();
+			if (isset($_REQUEST["post"])) 	$remove = $_REQUEST['post'];
+			if ($_REQUEST['itemid']!=null) 	$remove = [$_REQUEST['itemid']];
+			if ($_REQUEST['itemids']!=null) $remove = $_REQUEST['itemids'];
+			EAL_ItemBasket::remove($remove);
 		}
 	
 	}		

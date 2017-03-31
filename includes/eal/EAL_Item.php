@@ -39,34 +39,65 @@ class EAL_Item {
 			"topic1" => "Topic Stufe 1"
 	];
 	
-	function __construct() {
+	function __construct(int $item_id = -1) {
+		
+		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
+		
+		$this->id = -1;
+		$this->title = '';
+		$this->description = '';
+		$this->question = '';
+			
 		$this->level = ["FW" => null, "KW" => null, "PW" => null];
+		$this->learnout = null;
+		$this->learnout_id = null;
+
+		$this->difficulty = null;
+		$this->note = "";
+		$this->flag = 0;
+		
+		if ($item_id != -1) {
+			$this->loadFromDB($item_id);
+		} else {
+			if ($_POST["post_type"] == $this->type) {
+				$this->loadFromPOSTRequest();
+			} else {
+				global $post;
+					
+				if ($post->post_type != $this->type) return;
+				if (get_post_status($post->ID)=='auto-draft') {
+					$this->id = $post->ID;
+					$this->learnout_id = isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : (isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : null);
+				} else {
+					$this->loadFromDB($post->ID);
+				}
+		
+			}
+		}		
 	}
 	
-	/**
-	 * Create new item from _POST
-	 * @param unknown $post_id
-	 * @param unknown $post
-	 */
-	public function init ($post_id, $post) {
 	
-		$this->id = $post_id;
-		$this->title = $post->post_title;
+	/**
+	 * Initialize item from _POST Request data
+	 */
+	protected function loadFromPOSTRequest () {
+	
+		$this->id = $_POST["post_ID"];
+		$this->title = $_POST["post_title"];
 		$this->description = isset($_POST['item_description']) ? $_POST['item_description'] : null;
 		$this->question = isset ($_POST['item_question']) ? $_POST['item_question'] : null;
 
 		$this->level["FW"] = isset ($_POST['item_level_FW']) ? $_POST['item_level_FW'] : null;
 		$this->level["KW"] = isset ($_POST['item_level_KW']) ? $_POST['item_level_KW'] : null;
 		$this->level["PW"] = isset ($_POST['item_level_PW']) ? $_POST['item_level_PW'] : null;
-		
 		$this->learnout_id = isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : (isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : null);
 		$this->learnout = null;		// lazy loading
-		$this->difficulty = null;
 		
+		$this->difficulty = null;
 		$this->note = isset ($_POST['item_note']) ? $_POST['item_note'] : null;
 		$this->flag = isset ($_POST['item_flag']) ? $_POST['item_flag'] : null;
 		
-		// 		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
+		// 	$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
 		$this->domain = isset ($_POST["domain"]) ? $_POST["domain"] : ""; 
 		if (($this->domain == "") && (isset($_POST['tax_input']))) {
 			foreach ($_POST['tax_input'] as $key => $value) {
@@ -95,38 +126,44 @@ class EAL_Item {
 	
 	
 	
-	public function load () {
+// 	public static function load ($item_id) {
 		
-		global $post;
-		
-		if (get_post_status($post->ID)=='auto-draft') {
-				
-			/* Create new item */
-			$this->id = $post->ID;
-			$this->title = '';
-			$this->description = '';
-			$this->question = '';
-			
-			$this->level["FW"] = 0;
-			$this->level["KW"] = 0;
-			$this->level["PW"] = 0;
-			
-			$this->learnout_id = isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : (isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : null);
-			$this->learnout = null;
-			$this->difficulty = null;
-			
-			$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
-			$this->note = "";
-			$this->flag = 0;
-				
-		} else {
-			$this->loadById($post->ID);
-		}
-		
-	}
+// 	}
 	
 	
-	public function loadById ($item_id) {
+// 	public function load () {
+		
+// 		global $post;
+		
+// 		if (get_post_status($post->ID)=='auto-draft') {
+				
+// 			/* Create new item */
+// 			$this->id = $post->ID;
+// 			$this->title = '';
+// 			$this->description = '';
+// 			$this->question = '';
+			
+// 			$this->level["FW"] = 0;
+// 			$this->level["KW"] = 0;
+// 			$this->level["PW"] = 0;
+			
+// 			$this->learnout_id = isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : (isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : null);
+// 			$this->learnout = null;
+// 			$this->difficulty = null;
+			
+// 			$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
+// 			$this->note = "";
+// 			$this->flag = 0;
+				
+// 		} else {
+// 			$this->loadById($post->ID);
+// 		}
+		
+// 	}
+	
+	
+	protected function loadFromDB (int $item_id) {
+		
 		global $wpdb;
 		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_item WHERE id = {$item_id} AND type ='{$this->type}'", ARRAY_A);
 		

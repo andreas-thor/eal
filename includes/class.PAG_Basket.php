@@ -26,10 +26,9 @@ class PAG_Basket {
 			if ($post->post_status == 'trash') continue;
 			
 			$item = null;
-			if ($post->post_type == 'itemsc') $item = new EAL_ItemSC();
-			if ($post->post_type == 'itemmc') $item = new EAL_ItemMC();
+			if ($post->post_type == 'itemsc') $item = new EAL_ItemSC($item_id);
+			if ($post->post_type == 'itemmc') $item = new EAL_ItemMC($item_id);
 			if ($item == null) continue;
-			$item->loadById($item_id);
 			if ((RoleTaxonomy::getCurrentRoleDomain()["name"]!="") && ($item->domain!=RoleTaxonomy::getCurrentRoleDomain()["name"])) continue;
 				
 			array_push($items, $item);
@@ -125,13 +124,13 @@ class PAG_Basket {
 			if ($post == null) continue;
 			
 			$item = null;
-			if ($post->post_type == 'itemsc') $item = new EAL_ItemSC();
-			if ($post->post_type == 'itemmc') $item = new EAL_ItemMC();
+			if ($post->post_type == 'itemsc') $item = new EAL_ItemSC($item_id);
+			if ($post->post_type == 'itemmc') $item = new EAL_ItemMC($item_id);
 			if ($post->post_type == 'learnout') $item = new EAL_LearnOut();
 			if ($post->post_type == 'review') $item = new EAL_Review();
 				
 			if ($item != null) {
-				$item->loadById($item_id);
+// 				$item->loadById($item_id);
 				$html_select .= sprintf ("<option value='%d'>%s</option>", $count, ($post->post_type == 'review') ? $item->getItem()->title : $item->title);
 				$html_list .= sprintf (
 					"<div style='margin-top:2em;'><hr/>%s<br style='clear:both;'/></div>",

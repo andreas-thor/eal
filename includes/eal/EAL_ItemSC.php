@@ -7,9 +7,18 @@ class EAL_ItemSC extends EAL_Item {
 	public $answers;
 	
 	
-	function __construct() {
-		parent::__construct();
+	function __construct(int $item_id = -1) {
 		$this->type = "itemsc";
+		$this->answers = array (
+			array ('answer' => '', 'points' => 1),
+			array ('answer' => '', 'points' => 0),
+			array ('answer' => '', 'points' => 0),
+			array ('answer' => '', 'points' => 0));
+		
+		parent::__construct($item_id);
+		
+		
+		
 	}
 	
 	
@@ -18,9 +27,9 @@ class EAL_ItemSC extends EAL_Item {
 	 * @param unknown $post_id
 	 * @param unknown $post
 	 */
-	public function init ($post_id, $post) {
+	protected function loadFromPOSTRequest () {
 		
-		parent::init($post_id, $post);
+		parent::loadFromPOSTRequest();
 		
 		$this->answers = array();
 		if (isset($_POST['answer'])) {
@@ -28,8 +37,6 @@ class EAL_ItemSC extends EAL_Item {
 				array_push ($this->answers, array ('answer' => $v, 'points' => $_POST['points'][$k]));
 			}
 		}
-		
-// 		print_r ($this->answers);
 	}
 	
 	public function setPOST () {
@@ -51,30 +58,30 @@ class EAL_ItemSC extends EAL_Item {
 	 * @param string $eal_posttype
 	 */
 	
-	public function load () {
+// 	public function load () {
 
-		global $post;
-		if ($post->post_type != $this->type) return;
+// 		global $post;
+// 		if ($post->post_type != $this->type) return;
 		
 	
-		if (get_post_status($post->ID)=='auto-draft') {
+// 		if (get_post_status($post->ID)=='auto-draft') {
 				
-			parent::load($eal_posttype);
-			$this->answers = array (
-					array ('answer' => '', 'points' => 1),
-					array ('answer' => '', 'points' => 0),
-					array ('answer' => '', 'points' => 0),
-					array ('answer' => '', 'points' => 0)
-			);
+// 			parent::load($eal_posttype);
+// 			$this->answers = array (
+// 					array ('answer' => '', 'points' => 1),
+// 					array ('answer' => '', 'points' => 0),
+// 					array ('answer' => '', 'points' => 0),
+// 					array ('answer' => '', 'points' => 0)
+// 			);
 				
-		} else {
-			$this->loadById($post->ID);
-		}
-	}
+// 		} else {
+// 			$this->loadById($post->ID);
+// 		}
+// 	}
 	
-	public function loadById ($item_id) {
+	protected function loadFromDB (int $item_id) {
 		
-		parent::loadById($item_id);
+		parent::loadFromDB($item_id);
 	
 		global $wpdb;
 		$this->answers = array();
@@ -120,7 +127,6 @@ class EAL_ItemSC extends EAL_Item {
 	
 		if ($_POST["post_type"]!="itemsc") return;
 		$item = new EAL_ItemSC();
-		$item->init($post_id, $post);
 		$item->save2DB();
 	}
 	

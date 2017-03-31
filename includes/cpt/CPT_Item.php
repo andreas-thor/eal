@@ -370,15 +370,12 @@ class CPT_Item extends CPT_Object{
 			
 			if ($this->type == "itembasket") {
 			
+				// consider all items (no matter what type) ...
 				$where = str_replace( "{$wpdb->posts}.post_type = 'itembasket'", "{$wpdb->posts}.post_type LIKE 'item%'", $where);
 				
-				$basket = RoleTaxonomy::getCurrentBasket(); // get_user_meta(get_current_user_id(), 'itembasket', true);
-				if (is_array($basket) && (count($basket)>0)) {
-					$where .= " AND I.ID IN (" . implode(",", $basket) . ") ";
-				} else {
-					$where .= " AND (1=2) ";
-				}
-				
+				// ... that are in the basket
+				$basket = EAL_ItemBasket::get();
+				$where .= (count($basket)>0) ? " AND I.ID IN (" . implode(",", $basket) . ") " : " AND (1=2) ";
 			}
 		}
 	

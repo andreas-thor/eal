@@ -186,7 +186,7 @@ add_action ('admin_menu', function () {
 
  	
         	
-    $c = count (RoleTaxonomy::getCurrentBasket()); //  $c = count(get_user_meta(get_current_user_id(), 'itembasket', true));
+    $c = count (EAL_ItemBasket::get()); 
     add_menu_page('eal_page_basket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'edit_posts', 'edit.php?post_type=itembasket', '', 'dashicons-cart', 34);
     add_submenu_page( 'edit.php?post_type=itembasket', 'Table', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> Table', 'edit_posts', 'edit.php?post_type=itembasket');
     add_submenu_page( 'edit.php?post_type=itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_posts', 'ist-blueprint', array ('PAG_Explorer', 'createPage'));
