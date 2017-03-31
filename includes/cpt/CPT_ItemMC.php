@@ -22,6 +22,8 @@ class CPT_ItemMC extends CPT_Item {
 	
 	public function init($args = array()) {
 		parent::init($args);
+		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
+		
 	}
 	
 	

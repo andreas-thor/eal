@@ -95,7 +95,6 @@ class CPT_Review extends CPT_Object {
 		global $review, $post;
 		
 		$review = new EAL_Review();
-		$review->load();
 		
 		$domain = RoleTaxonomy::getCurrentRoleDomain();
 		if (($domain["name"] != "") && ($review->getItem()->domain != $domain["name"])) {

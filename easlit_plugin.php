@@ -151,7 +151,7 @@ add_action ('admin_menu', function () {
  	add_submenu_page( 'edit.php?post_type=item', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import-items', array ('PAG_Item_Import', 'createPage'));
  	$object = new CPT_Review();
  	add_submenu_page( 'edit.php?post_type=item', $object->label, '<div class="dashicons-before ' . $object->dashicon . '" style="display:inline">&nbsp;</div> ' . $object->label, 'edit_posts', 'edit.php?post_type=' . $object->type);
-	 	 
+ 	
  	
  	$domain = RoleTaxonomy::getCurrentRoleDomain ();
  	
@@ -190,10 +190,18 @@ add_action ('admin_menu', function () {
     add_menu_page('eal_page_basket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'edit_posts', 'edit.php?post_type=itembasket', '', 'dashicons-cart', 34);
     add_submenu_page( 'edit.php?post_type=itembasket', 'Table', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> Table', 'edit_posts', 'edit.php?post_type=itembasket');
     add_submenu_page( 'edit.php?post_type=itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_posts', 'ist-blueprint', array ('PAG_Explorer', 'createPage'));
+
     add_submenu_page( 'edit.php?post_type=itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view', array ('PAG_Basket', 'createPageView'));
+    
+    add_submenu_page( 'view', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_review', array ('PAG_Basket', 'createPageView'));
+   
+    /*
+     * Viewer Seiten pro Typ 
+     * Callable ist dann getList Funktion in Klasse, z.B. HTML_Item::getList
+     */
+    
     add_submenu_page( 'edit.php?post_type=itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'generator', array ('PAG_Generator', 'createPage'));
     
- 	
     
     
 });
@@ -274,7 +282,7 @@ add_action( 'admin_head', function () {
 
 add_filter('login_headerurl', function () { return 'https://github.com/andreas-thor/eal'; });
 add_filter('login_headertitle', function () {	return 'EAs.LiT'; });
-add_filter('admin_footer_text', '__return_empty_string', 11 );
+add_filter('admin_footer_text', function () { return plugin_dir_url(__FILE__); } , 11 );
 add_filter('update_footer', '__return_empty_string', 11 );
 
 

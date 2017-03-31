@@ -39,6 +39,8 @@ class EAL_Item {
 			"topic1" => "Topic Stufe 1"
 	];
 	
+	
+	
 	function __construct(int $item_id = -1) {
 		
 		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
@@ -77,6 +79,13 @@ class EAL_Item {
 	}
 	
 	
+	public static function load (string $item_type, int $item_id) {
+		if ($item_type == 'itemsc') return new EAL_ItemSC($item_id);
+		if ($item_type == 'itemmc') return new EAL_ItemMC($item_id);
+		return null;
+	}
+	
+	
 	/**
 	 * Initialize item from _POST Request data
 	 */
@@ -108,6 +117,32 @@ class EAL_Item {
 	}
 	
 	
+	protected function loadFromDB (int $item_id) {
+	
+		global $wpdb;
+		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_item WHERE id = {$item_id} AND type ='{$this->type}'", ARRAY_A);
+	
+		$this->id = $sqlres['id'];
+		$this->title = $sqlres['title'];
+		$this->description = $sqlres['description'];
+		$this->question = $sqlres['question'];
+	
+		$this->level["FW"] = $sqlres['level_FW'];
+		$this->level["KW"] = $sqlres['level_KW'];
+		$this->level["PW"] = $sqlres['level_PW'];
+	
+		$this->learnout_id = $sqlres['learnout_id'];
+		$this->learnout = null; // lazy loading
+		$this->difficulty = $sqlres['difficulty'];
+		$this->domain = $sqlres['domain'];
+		$this->note = $sqlres['note'];
+		$this->flag = $sqlres['flag'];
+	}
+	
+	
+
+	
+	
 	public function setPOST () {
 		
 		$_POST['post_type'] = $this->type;
@@ -126,68 +161,15 @@ class EAL_Item {
 	
 	
 	
-// 	public static function load ($item_id) {
-		
-// 	}
+
 	
 	
-// 	public function load () {
-		
-// 		global $post;
-		
-// 		if (get_post_status($post->ID)=='auto-draft') {
-				
-// 			/* Create new item */
-// 			$this->id = $post->ID;
-// 			$this->title = '';
-// 			$this->description = '';
-// 			$this->question = '';
-			
-// 			$this->level["FW"] = 0;
-// 			$this->level["KW"] = 0;
-// 			$this->level["PW"] = 0;
-			
-// 			$this->learnout_id = isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : (isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : null);
-// 			$this->learnout = null;
-// 			$this->difficulty = null;
-			
-// 			$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
-// 			$this->note = "";
-// 			$this->flag = 0;
-				
-// 		} else {
-// 			$this->loadById($post->ID);
-// 		}
-		
-// 	}
-	
-	
-	protected function loadFromDB (int $item_id) {
-		
-		global $wpdb;
-		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_item WHERE id = {$item_id} AND type ='{$this->type}'", ARRAY_A);
-		
-		$this->id = $sqlres['id'];
-		$this->title = $sqlres['title'];
-		$this->description = $sqlres['description'];
-		$this->question = $sqlres['question'];
-		
-		$this->level["FW"] = $sqlres['level_FW'];
-		$this->level["KW"] = $sqlres['level_KW'];
-		$this->level["PW"] = $sqlres['level_PW'];
-		
-		$this->learnout_id = $sqlres['learnout_id'];
-		$this->learnout = null; // lazy loading
-		$this->difficulty = $sqlres['difficulty'];
-		$this->domain = $sqlres['domain'];
-		$this->note = $sqlres['note'];
-		$this->flag = $sqlres['flag'];
-	}
+
 	
 	
 	public static function save ($post_id, $post) { }
 	
-	public function save2DB () {
+	protected function saveToDB () {
 		
 		global $wpdb;
 		
@@ -230,14 +212,13 @@ class EAL_Item {
 		if (is_null ($this->learnout_id )) return null;
 		
 		if (is_null ($this->learnout)) {
-			$this->learnout = new EAL_LearnOut();
-			$this->learnout->loadById($this->learnout_id);
+			$this->learnout = new EAL_LearnOut($this->learnout_id);
 		}
 		
 		return $this->learnout;
 	}
 	
-	public function getPoints() { return -1; }
+	protected function getPoints() { return -1; }
 	
 	public function getStatusString () {
 		

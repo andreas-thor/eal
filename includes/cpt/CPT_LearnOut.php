@@ -47,7 +47,6 @@ class CPT_LearnOut extends CPT_Object {
 	
 		global $learnout;
 		$learnout = new EAL_LearnOut();
-		$learnout->load();
 	
 		$domain = RoleTaxonomy::getCurrentRoleDomain();
 		if (($domain["name"] != "") && ($learnout->domain != $domain["name"])) {

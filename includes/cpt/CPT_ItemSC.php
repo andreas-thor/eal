@@ -24,6 +24,7 @@ class CPT_ItemSC extends CPT_Item {
 	
 	public function init($args = array()) {
 		parent::init($args);
+		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
 	}
 	
 	
@@ -31,7 +32,7 @@ class CPT_ItemSC extends CPT_Item {
 	
 		if (get_post ($compare_from->post_parent)->post_type != "itemsc") return $diff;
 		
-		$eal_From = new EAL_ItemSC($compare_from->ID);
+		$eal_From = new EAL_ItemSC(($compare_from->ID == null) ? -1 : $compare_from->ID);
 		$eal_To = new EAL_ItemSC($compare_to->ID);
 	
 		$diff[0] = $eal_From->compareTitle ($eal_To);

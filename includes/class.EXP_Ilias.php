@@ -133,8 +133,7 @@ class EXP_Ilias {
 			}
 
 			// initialize item
-			if ($item_type == "itemsc") $item = new EAL_ItemSC($item_id);
-			if ($item_type == "itemmc") $item = new EAL_ItemMC($item_id);
+			$item = EAL_Item::load($item_type, $item_id);
 			
 			// get title and description + question 
 			$item->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];

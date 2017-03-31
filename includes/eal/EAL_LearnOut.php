@@ -16,20 +16,40 @@ class EAL_LearnOut {
 	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	
 	
-	function __construct() {
+	function __construct(int $item_id = -1) {
+		
 		$this->type = 'learnout';
+		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
+		$this->id = -1;
+		$this->title = '';
+		$this->description = 'Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage ...';
 		$this->level = ["FW" => null, "KW" => null, "PW" => null];
+		
+		if ($item_id != -1) {
+			$this->loadFromDB($item_id);
+		} else {
+			if ($_POST["post_type"] == $this->type) {
+				$this->loadFromPOSTRequest();
+			} else {
+				global $post;
+					
+				if ($post->post_type != $this->type) return;
+				if (get_post_status($post->ID)=='auto-draft') {
+					$this->id = $post->ID;
+				} else {
+					$this->loadFromDB($post->ID);
+				}
+			}
+		}	
 	}
 	
 	/**
-	 * Create new item from _POST
-	 * @param unknown $post_id
-	 * @param unknown $post
+	 * Initialize learning outcome from _POST Request data
 	 */
-	public function init ($post_id, $post) {
+	protected function loadFromPOSTRequest () {
 	
-		$this->id = $post_id;
-		$this->title = $post->post_title;
+		$this->id = $_POST["post_ID"];
+		$this->title = $_POST["post_title"];
 		$this->description = isset($_POST['learnout_description']) ? $_POST['learnout_description'] : null;
 		$this->level["FW"] = isset ($_POST['learnout_level_FW']) ? $_POST['learnout_level_FW'] : null;
 		$this->level["KW"] = isset ($_POST['learnout_level_KW']) ? $_POST['learnout_level_KW'] : null;
@@ -45,31 +65,10 @@ class EAL_LearnOut {
 		
 	}
 	
+
 	
 	
-	
-	public function load () {
-		
-		global $post;
-		
-		if (get_post_status($post->ID)=='auto-draft') {
-				
-			$this->id = $post->ID;
-			$this->title = '';
-			$this->description = 'Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage ...';
-			$this->level["FW"] = 0;
-			$this->level["KW"] = 0;
-			$this->level["PW"] = 0;
-			$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
-				
-		} else {
-			$this->loadById($post->ID);
-		}
-		
-	}
-	
-	
-	public function loadById ($item_id) {
+	protected function loadFromDB ($item_id) {
 		
 		global $wpdb;
 		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE id = {$item_id}", ARRAY_A);
@@ -105,26 +104,30 @@ class EAL_LearnOut {
 	}
 	
 	
+	
+	protected function saveToDB() {
+		
+		global $wpdb;
+		$wpdb->replace(
+		"{$wpdb->prefix}eal_{$this->type}",
+		array(
+				'id' => $this->id,
+				'title' => $this->title,
+				'description' => $this->description,
+				'level_FW' => $this->level["FW"],
+				'level_KW' => $this->level["KW"],
+				'level_PW' => $this->level["PW"],
+				'domain' => $this->domain
+		),
+		array('%d','%s','%s','%d','%d','%d','%s')
+		);
+	}
+	
 	public static function save ($post_id, $post) {
 	
-		global $wpdb;
 		$item = new EAL_LearnOut();
-		$item->init($post_id, $post);
-	
-		$wpdb->replace(
-			"{$wpdb->prefix}eal_{$item->type}",
-			array(
-					'id' => $item->id,
-					'title' => $item->title,
-					'description' => $item->description,
-					'level_FW' => $item->level["FW"],
-					'level_KW' => $item->level["KW"],
-					'level_PW' => $item->level["PW"],
-					'domain' => $item->domain
-			),
-			array('%d','%s','%s','%d','%d','%d','%s')
-		);
-	
+		if ($_POST["post_type"] != $item->type) return;
+		$item->saveToDB();
 	}
 	
 	

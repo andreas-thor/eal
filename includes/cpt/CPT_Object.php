@@ -125,6 +125,7 @@ abstract class CPT_Object {
 	
 		$wp_list_table = _get_list_table('WP_Posts_List_Table');
 	
+		$a = $wp_list_table->current_action();
 	
 		if ($wp_list_table->current_action() == 'view') {
 		
@@ -141,7 +142,7 @@ abstract class CPT_Object {
 			}
 
 			if ($_REQUEST['post_type'] == 'review') {
-				$sendback = add_query_arg( 'reviewids', $_REQUEST['post'], 'edit.php?page=view&post_type=itembasket' );
+				$sendback = add_query_arg( 'reviewids', $_REQUEST['post'], 'admin.php?page=view_review' );
 				wp_redirect($sendback);
 				exit();
 			}

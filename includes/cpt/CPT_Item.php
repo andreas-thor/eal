@@ -54,7 +54,6 @@ class CPT_Item extends CPT_Object{
 			add_action ("save_post_revision", array ("eal_{$this->type}", 'save'), 10, 2);
 		}
 		
-		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
 		
 		add_filter('posts_search', array ($this ,'WPCB_post_search'), 10, 2);
 		

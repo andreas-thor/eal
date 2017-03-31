@@ -94,9 +94,9 @@ class EAL_ItemSC extends EAL_Item {
 	
 	
 	
-	public function save2DB() {
+	protected function saveToDB() {
 		
-		parent::save2DB();
+		parent::saveToDB();
 		
 		global $wpdb;
 		
@@ -125,9 +125,9 @@ class EAL_ItemSC extends EAL_Item {
 	
 	public static function save ($post_id, $post) {
 	
-		if ($_POST["post_type"]!="itemsc") return;
 		$item = new EAL_ItemSC();
-		$item->save2DB();
+		if ($_POST["post_type"] != $item->type) return;
+		$item->saveToDB();
 	}
 	
 	
@@ -137,11 +137,10 @@ class EAL_ItemSC extends EAL_Item {
 		parent::delete($post_id);
 		global $wpdb;
 		$wpdb->delete( '{$wpdb->prefix}eal_itemsc', array( 'item_id' => $post_id ), array( '%d' ) );
-		
 	}
 	
 	
-	public function getPoints() {
+	protected function getPoints() {
 	
 		$result = 0;
 		foreach ($this->answers as $a) {

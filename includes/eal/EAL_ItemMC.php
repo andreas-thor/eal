@@ -93,15 +93,15 @@ class EAL_ItemMC extends EAL_Item {
 	
 	public static function save ($post_id, $post) {
 	
-		if ($_POST["post_type"]!="itemmc") return;
 		$item = new EAL_ItemMC();
-		$item->save2DB();
+		if ($_POST["post_type"] != $item->type) return;
+		$item->saveToDB();
 	}
 	
 	
-	public function save2DB () {
+	protected function saveToDB() {
 	
-		parent::save2DB();
+		parent::saveToDB();
 		
 		global $wpdb;
 		
@@ -139,7 +139,7 @@ class EAL_ItemMC extends EAL_Item {
 	
 	
 	
-	public function getPoints() { 
+	protected function getPoints() { 
 		
 		$result = 0;
 		foreach ($this->answers as $a) {
