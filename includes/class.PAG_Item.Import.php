@@ -117,7 +117,7 @@ class PAG_Item_Import {
 						<br style='clear:both;'/>
 					</div>
 				</div>
-				", $ident, $item->title, $symbol, CPT_Item::getHTML_Item($item, FALSE, TRUE, $ident . "_"));
+				", $ident, $item->title, $symbol, HTML_Item::getHTML_Item($item, FALSE, TRUE, $ident . "_"));
 		}
 
 		printf ("</div></form></div>");

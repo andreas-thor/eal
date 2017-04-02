@@ -7,6 +7,13 @@ require_once ("eal/EAL_LearnOut.php");
 require_once ("eal/EAL_Review.php");
 require_once ("class.EXP_Ilias.php");
 
+require_once ("html/HTML_Object.php");
+require_once ("html/HTML_Item.php");
+require_once ("html/HTML_ItemSC.php");
+require_once ("html/HTML_ItemMC.php");
+require_once ("html/HTML_LearnOut.php");
+require_once ("html/HTML_Review.php");
+
 class PAG_Basket {
 
 	
@@ -132,7 +139,7 @@ class PAG_Basket {
 				$html_select .= sprintf ("<option value='%d'>%s</option>", $count, ($post->post_type == 'review') ? $item->getItem()->title : $item->title);
 				$html_list .= sprintf (
 					"<div style='margin-top:2em;'><hr/>%s<br style='clear:both;'/></div>",
-					substr($post->post_type, 0, 4) == "item" ? CPT_Item::getHTML_Item($item, FALSE) : (($post->post_type == 'learnout') ? CPT_LearnOut::getHTML_LearnOut($item) : CPT_Review::getHTML_Review($item)));
+					substr($post->post_type, 0, 4) == "item" ? HTML_Item::getHTML_Item($item, FALSE) : (($post->post_type == 'learnout') ? HTML_LearnOut::getHTML_LearnOut($item) : HTML_Review::getHTML_Review($item)));
 				$count++;
 				array_push($items, $item);
 			}
