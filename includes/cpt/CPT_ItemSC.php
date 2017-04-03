@@ -56,48 +56,7 @@ class CPT_ItemSC extends CPT_Item {
 	public function WPCB_mb_answers ($post, $vars) {
 	
 		global $item;
-	
-		$b = get_taxonomy( 'topic' );
-		
-		
-		$answerLine = '<tr>
-				<td><input type="text" name="answer[]" value="%s" size="25" /></td>
-				<td><input type="text" name="points[]" value="%d" size="5" /></td>
-				<td>
-					<button type="button" onclick="addAnswer(this);">&nbsp;+&nbsp;</button>
-					&nbsp;&nbsp;
-					<button class="removeanswer" type="button" onclick="removeAnswer(this);">&nbsp;-&nbsp;</button>
-				</td>
-			</tr>';
-	
-	
-		?>
-			<script>
-	
-				var $ =jQuery.noConflict();
-				
-				function addAnswer (e) { 
-					// add new answer option after current line
-					$(e).parent().parent().after('<?php echo (preg_replace("/\r\n|\r|\n/",'', sprintf($answerLine, '', 0, 0))); ?>' );
-				}
-	
-				function removeAnswer (e) {
-					// delete current answer options but make sure that header + at least one option remain
-					if ($(e).parent().parent().parent().children().size() > 2) {
-						$(e).parent().parent().remove();
-					}
-				}
-				
-			</script>
-	
-	<?php	
-			
-			printf ('<table>');
-			printf ('<tr align="left"><th>%s</th><th>%s</th><th>%s</th></tr>', 'Antwort-Text', 'Punkte', 'Aktionen');
-			foreach ($item->answers as $a) { 
-				printf($answerLine, $a['answer'], $a['points']);
-			}
-			printf ('</table>');
+		print (HTML_ItemSC::getHTML_Answers($item, HTML_Object::VIEW_EDITOR));
 	}
 		
 	

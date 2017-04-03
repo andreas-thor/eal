@@ -5,6 +5,12 @@ require_once (__DIR__ . "/../eal/EAL_Item.php");
 
 class HTML_Object {
 	
+	const VIEW_STUDENT = 1;
+	const VIEW_REVIEWER = 2;
+	const VIEW_EDITOR = 3;
+	
+	
+	
 	public static function getLevelHTML ($prefix, $level, $default, $disabled, $background, $callback) {
 	
 		?>

@@ -131,11 +131,11 @@ class EAL_LearnOut {
 	}
 	
 	
-	public static function getListOfLearningOutcomes ($learnout_id, $namePrefix = "") {
+	public static function getListOfLearningOutcomes () {
 		
 		global $wpdb;
-		$sqlres = $wpdb->get_results( "
-				SELECT L.id, L.title
+		return $wpdb->get_results( "
+				SELECT L.id, L.title, L.description
 				FROM {$wpdb->prefix}eal_learnout L
 				JOIN {$wpdb->prefix}posts P
 				ON (L.id = P.id)
@@ -144,14 +144,21 @@ class EAL_LearnOut {
 				ORDER BY L.title
 				");
 		
-		$html .= "<select align='right' name='{$namePrefix}learnout_id'>";
-		$html .= "<option value='0'" . (($learnout_id == 0) ? " selected" : "") . ">None</option>";
-		foreach ($sqlres as $pos => $sqlrow) {
-			$html .= "<option value='{$sqlrow->id}'" . (($learnout_id==$sqlrow->id) ? " selected" : "") . ">{$sqlrow->title}</option>";
-		}
-		$html .= "</select>";
+// 		$result = array ();
+// 		foreach ($sqlres as $pos => $sqlrow) {
+// 			$result[$sqlrow->id] = $sqlrow->title;
+// 		}
 		
-		return $html;
+// 		return $result;
+		
+// 		$html .= "<select align='right' name='{$namePrefix}learnout_id'>";
+// 		$html .= "<option value='0'" . (($learnout_id == 0) ? " selected" : "") . ">None</option>";
+// 		foreach ($sqlres as $pos => $sqlrow) {
+// 			$html .= "<option value='{$sqlrow->id}'" . (($learnout_id==$sqlrow->id) ? " selected" : "") . ">{$sqlrow->title}</option>";
+// 		}
+// 		$html .= "</select>";
+		
+// 		return $html;
 	}
 	
 	

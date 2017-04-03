@@ -110,6 +110,7 @@ class CPT_Review extends CPT_Object {
 		?><style> #minor-publishing { display: none; } </style> <?php
 		
 		add_meta_box('mb_item', 'Item: ' . $review->getItem()->title, array ($this, 'WPCB_mb_item'), $this->type, 'normal', 'default' );
+		add_meta_box('mb_learnout', 'Learning Outcome', array ($this, 'WPCB_mb_learnout'), $this->type, 'side', 'default', array ('learnout' => $review->getItem()->getLearnOut()));
 		add_meta_box('mb_score', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($this, 'WPCB_mb_score'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'normal', 'default', array ('level' => $review->level, 'prefix' => 'review', 'default' => $review->getItem()->level, 'background' => 1 ));
 		add_meta_box('mb_feedback', 'Feedback', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'review_feedback', 'value' => $review->feedback));
@@ -118,11 +119,6 @@ class CPT_Review extends CPT_Object {
 	}
 		
 		
-	
-	
-	
-	
-
 	
 	public function WPCB_mb_item ($post, $vars) {
 	
@@ -150,8 +146,7 @@ class CPT_Review extends CPT_Object {
 
 	public function WPCB_mb_overall ($post, $vars) {
 	
-		global $review;
-?>
+		?>
 		<script>
 			var $ = jQuery.noConflict();
 			
@@ -163,18 +158,18 @@ class CPT_Review extends CPT_Object {
 				}
 			}
 		</script>
-
-
-<?php 
-		printf ("<input type='hidden' id='item_id' name='item_id'  value='%d'>", $review->item_id);
-		print  ("<table style='font-size:100%'>");
-		printf ("<tr><td><input type='radio' id='review_overall_0' name='review_overall' value='1' %s onclick='setAccept();'>Item akzeptiert</td></tr>", (($review->overall==1) ? "checked" : ""));
-		printf ("<tr><td><input type='radio' id='review_overall_1' name='review_overall' value='2' %s>Item &uuml;berarbeiten</td></tr>", (($review->overall==2) ? "checked" : ""));
-		printf ("<tr><td><input type='radio' id='review_overall_2' name='review_overall' value='3' %s>Item abgelehnt</td></tr>", (($review->overall==3) ? "checked" : ""));
-		print  ("</table>");
+		<?php
+		
+		global $review;
+		print (HTML_Review::getHTML_Overall($review, HTML_Object::VIEW_EDITOR, "setAccept()"));
 	}
 	
 	
+	public function WPCB_mb_learnout ($post, $vars) {
+	
+		global $review;
+		print (HTML_Item::getHTML_LearningOutcome($review->getItem(), HTML_Object::VIEW_REVIEWER));
+	}
 	
 	
 	public function WPCB_posts_fields ( $array ) {

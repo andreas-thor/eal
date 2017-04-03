@@ -9,7 +9,7 @@ class HTML_Learnout {
 	public static function getHTML_Metadata (EAL_LearnOut $lo) {
 	
 		// Level-Table
-		$res  = sprintf ("<div>%s</div><br/>", self::getLevelHTML("lo" . $lo->id, $lo->level, null, "disabled", 0, ''));
+		$res  = sprintf ("<div>%s</div><br/>", HTML_Object::getLevelHTML("lo" . $lo->id, $lo->level, null, "disabled", 0, ''));
 			
 		// Taxonomy Terms: Name of Taxonomy and list of terms (if available)
 		$res .= sprintf ("<div><b>%s</b>:", RoleTaxonomy::getDomains()[$lo->domain]);

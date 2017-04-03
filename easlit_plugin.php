@@ -282,7 +282,7 @@ add_action( 'admin_head', function () {
 
 add_filter('login_headerurl', function () { return 'https://github.com/andreas-thor/eal'; });
 add_filter('login_headertitle', function () {	return 'EAs.LiT'; });
-add_filter('admin_footer_text', function () { return plugin_dir_url(__FILE__); } , 11 );
+add_filter('admin_footer_text', function () { return ''; /* return plugin_dir_url(__FILE__); */ } , 11 );
 add_filter('update_footer', '__return_empty_string', 11 );
 
 

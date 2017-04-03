@@ -179,7 +179,7 @@ class CPT_Item extends CPT_Object{
 	
 	public function WPCB_mb_level ($post, $vars) {
 		
-?>
+		?>
 		<script>
 			function checkLOLevel (e, levIT, levITs, levLO, levLOs) {
 				if (levIT == levLO) return;
@@ -197,43 +197,20 @@ class CPT_Item extends CPT_Object{
 				
 			}
 		</script>
-<?php		
-		
-// 		$vars['args']['callback'] = 'checkLOLevel';
+		<?php		
 		
 		global $item;
 		print (HTML_Object::getLevelHTML("item", $item->level, (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level), "", 0, 'checkLOLevel'));
-		
-// 		return parent::WPCB_mb_level($post, $vars);
-		
 	}
 	
 	
 	
 	public function WPCB_mb_learnout ($post, $vars) {
 	
-		?>
-		<script>
-// 			jQuery(document).ready(function() {
-// 				jQuery("div#visibility").remove();
-// 				jQuery("span#timestamp").parent().remove();
-// 			});
-		</script>
-		<?php 
-											
-		
-		$learnout = $vars['args']['learnout'];
-		if ($learnout != null) {
-			echo ("<div class='misc-pub-section'><b>{$learnout->title}</b>");
-			if (strlen($learnout->description)>0) {
-				echo (": {$learnout->description}");
-			}
-			echo ("</div>");
-		}
-		echo ("<hr>");
-		echo (EAL_LearnOut::getListOfLearningOutcomes($learnout == null ? 0 : $learnout->id));
-		
+		global $item;
+		print (HTML_Item::getHTML_LearningOutcome($item, HTML_Object::VIEW_EDITOR));
 	}
+	
 	
 	public function WPCB_mb_note_flag ($post, $vars) {
 	
@@ -242,10 +219,16 @@ class CPT_Item extends CPT_Object{
 		// we dynamically set the value of $POST["post_content"] to make sure that we have revision
 		printf ("<input type='hidden' id='post_content' name='post_content'  value='%s'>", microtime());
 		
-		printf ("<div class='misc-pub-section'>");
-		printf ("<input type='checkbox' name='item_flag' value='1' %s>", $flag==1 ? "checked" : "");
-		printf ("<input type='text' name='item_note' value='%s'>", $vars['args']['note']);
-		printf ("</div>");
+// 		printf ("<div class='misc-pub-section'>");
+// 		printf ("<input type='checkbox' name='item_flag' value='1' %s>", $flag==1 ? "checked" : "");
+// 		printf ("<input type='text' name='item_note' value='%s'>", $vars['args']['note']);
+// 		printf ("</div>");
+		
+		printf ('
+			<div class="form-field">
+				<input type="checkbox" name="xxxitem_flag" value="1" >
+				<input name="tag-name" id="tag-name" value="" size="40" aria-required="true" type="text">
+			</div>');
 	}
 
 	

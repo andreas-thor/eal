@@ -6,7 +6,7 @@ require_once ("HTML_ItemSC.php");
 require_once (__DIR__ . "/../eal/EAL_Item.php");
 
 
-class HTML_Item {
+class HTML_Item  {
 	
 	
 	private static function getHTML_TopicHierarchy ($namePrefix, $terms, $parent, $selected) {
@@ -29,6 +29,47 @@ class HTML_Item {
 		return $res;
 	}
 	
+	
+	public static function getHTML_LearningOutcome (EAL_Item $item, int $viewType, String $namePrefix = "") {
+		
+		$result = "";
+		$learnout = $item->getLearnOut();
+		$learnout_id = ($learnout == null) ? -1 : $learnout->id;
+		
+		
+		if ($viewType == HTML_Object::VIEW_REVIEWER) {
+			
+			$result = sprintf ("
+				<select disabled style='width:100%%' align='right'>
+					<option selected>%s</none>
+				</select>
+				<div class='misc-pub-section'>%s</div>"
+				, ($learnout==null) ? "None" : $learnout->title, ($learnout==null) ? "" : $learnout->description);
+			
+		}
+		
+		if ($viewType == HTML_Object::VIEW_EDITOR) {
+		
+			$allLO = EAL_LearnOut::getListOfLearningOutcomes();
+			
+			$htmlList  = "<select onchange='for (x=0; x<this.nextSibling.childNodes.length; x++) { this.nextSibling.childNodes[x].style.display = (this.selectedIndex == x) ? \"block\" : \"none\"; }' style='width:100%' align='right' name='{$namePrefix}learnout_id'>";
+			$htmlList .= "<option value='0'" . (($learnout == null) ? " selected" : "") . ">None</option>";
+			$htmlDesc  = "<div></div>";
+			
+			foreach ($allLO as $pos => $lo) {
+				$htmlList .= "<option value='{$lo->id}'" . (($learnout_id==$lo->id) ? " selected" : "") . ">{$lo->title}</option>";
+				$htmlDesc .= sprintf ("<div style='display:%s'>%s</div>", ($learnout_id==$lo->id) ? "block" : "none", $lo->description);
+			}
+			$htmlList .= "</select>";
+			
+			$result = sprintf ("%s<div class='misc-pub-section'>%s</div>", $htmlList, $htmlDesc);
+		}
+		
+		
+		return $result;
+	}
+	
+	
 	public static function getHTML_Metadata (EAL_Item $item, $editable, $namePrefix) {
 	
 		// Status and Id
@@ -36,13 +77,9 @@ class HTML_Item {
 	
 		// Learning Outcome (Title + Description), if available
 		$learnout = $item->getLearnOut();
-		if ($editable) {
-			$res .= sprintf ("<div>%s</div>", EAL_LearnOut::getListOfLearningOutcomes($learnout == null ? 0 : $learnout->id, $namePrefix));
-		} else {
-			if (!is_null($learnout)) {
-				$res .= sprintf ("<div><b>%s</b>: %s</div><br/>", $learnout->title, $learnout->description);
-			}
-		}
+		
+		$res .= self::getHTML_LearningOutcome($item, HTML_Object::VIEW_REVIEWER);
+
 	
 		// Level-Table
 		$res .= sprintf ("<div>%s</div><br/>", HTML_Object::getLevelHTML($namePrefix, $item->level, (is_null($learnout) ? null : $learnout->level), $editable?"":"disabled", 1, ''));
@@ -89,12 +126,13 @@ class HTML_Item {
 	
 	public static function getHTML_Item (EAL_Item $item, $forReview = TRUE, $editableMeta = FALSE, $namePrefix = "") {
 			
-		$answers_html = "";
-		switch (get_class($item)) {
-			case 'EAL_ItemSC': $answers_html = HTML_ItemSC::getHTML_Answers($item, $forReview); break;
-			case 'EAL_ItemMC': $answers_html = HTML_ItemMC::getHTML_Answers($item, $forReview); break;
-		}
+ 		$answers_html = "";
+ 		switch (get_class($item)) {
+ 			case 'EAL_ItemSC': $answers_html = HTML_ItemSC::getHTML_Answers($item, HTML_Object::VIEW_STUDENT); break;
+ 			case 'EAL_ItemMC': $answers_html = HTML_ItemMC::getHTML_Answers($item, HTML_Object::VIEW_STUDENT); break;
+ 		}
 	
+		
 		if ($forReview) {
 	
 			// description
