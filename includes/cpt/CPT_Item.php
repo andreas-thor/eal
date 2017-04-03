@@ -214,21 +214,11 @@ class CPT_Item extends CPT_Object{
 	
 	public function WPCB_mb_note_flag ($post, $vars) {
 	
-		$flag = $vars['args']['flag'] > 0 ? $vars['args']['flag'] : 0;
-		
 		// we dynamically set the value of $POST["post_content"] to make sure that we have revision
 		printf ("<input type='hidden' id='post_content' name='post_content'  value='%s'>", microtime());
 		
-// 		printf ("<div class='misc-pub-section'>");
-// 		printf ("<input type='checkbox' name='item_flag' value='1' %s>", $flag==1 ? "checked" : "");
-// 		printf ("<input type='text' name='item_note' value='%s'>", $vars['args']['note']);
-// 		printf ("</div>");
-		
-		printf ('
-			<div class="form-field">
-				<input type="checkbox" name="xxxitem_flag" value="1" >
-				<input name="tag-name" id="tag-name" value="" size="40" aria-required="true" type="text">
-			</div>');
+		global $item;
+		print (HTML_Item::getHTML_NoteFlag($item, HTML_Object::VIEW_EDITOR));
 	}
 
 	

@@ -29,6 +29,23 @@ class HTML_Item  {
 		return $res;
 	}
 	
+
+	public static function getHTML_NoteFlag (EAL_Item $item, int $viewType) {
+		
+		// 		printf ("<div class='misc-pub-section'>");
+		// 		printf ("<input type='checkbox' name='item_flag' value='1' %s>", $flag==1 ? "checked" : "");
+		// 		printf ("<input type='text' name='item_note' value='%s'>", $vars['args']['note']);
+		// 		printf ("</div>");
+		
+		return sprintf ('
+			<div class="form-field">
+				<input type="checkbox" name="item_flag" value="1" %s %s>
+				<input name="item_note" value="%s" size="40" aria-required="true" type="text" %s>
+			</div>',
+			$item->flag == 1 ? "checked" : "", $viewType == HTML_Object::VIEW_EDITOR ? "" : "disabled", 
+			$item->note, $viewType == HTML_Object::VIEW_EDITOR ? "" : "readonly");
+		
+	}
 	
 	public static function getHTML_LearningOutcome (EAL_Item $item, int $viewType, String $namePrefix = "") {
 		
@@ -79,7 +96,8 @@ class HTML_Item  {
 		$learnout = $item->getLearnOut();
 		
 		$res .= self::getHTML_LearningOutcome($item, HTML_Object::VIEW_REVIEWER);
-
+		$res .= self::getHTML_NoteFlag($item, HTML_Object::VIEW_REVIEWER);
+		
 	
 		// Level-Table
 		$res .= sprintf ("<div>%s</div><br/>", HTML_Object::getLevelHTML($namePrefix, $item->level, (is_null($learnout) ? null : $learnout->level), $editable?"":"disabled", 1, ''));
