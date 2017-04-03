@@ -14,8 +14,10 @@ require_once 'includes/cpt/CPT_ItemBasket.php';
 require_once 'includes/cpt/CPT_ItemSC.php';
 require_once 'includes/cpt/CPT_ItemMC.php';
 require_once 'includes/cpt/CPT_LearnOut.php';
-
 require_once 'includes/cpt/CPT_Review.php';
+
+require_once 'includes/page/VIEW_Item.php';
+
 
 require_once 'includes/class.PAG_Metadata.php';
 require_once 'includes/class.PAG_Basket.php';
@@ -194,7 +196,8 @@ add_action ('admin_menu', function () {
     add_submenu_page( 'edit.php?post_type=itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view', array ('PAG_Basket', 'createPageView'));
     
     add_submenu_page( 'view', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_review', array ('PAG_Basket', 'createPageView'));
-   
+    add_submenu_page( 'view', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_item', array ('VIEW_Item', 'viewItem'));
+    
     /*
      * Viewer Seiten pro Typ 
      * Callable ist dann getList Funktion in Klasse, z.B. HTML_Item::getList

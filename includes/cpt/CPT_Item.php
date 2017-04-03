@@ -162,23 +162,18 @@ class CPT_Item extends CPT_Object{
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $item->level, 'default' => (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level) ));
 		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($this, 'WPCB_mb_answers'), $this->type, 'normal', 'default');
 		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$item->domain], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $item->domain ));
-		add_meta_box('mb_item_note_flag', 'Note', array ($this, 'WPCB_mb_note_flag'), $this->type, 'normal', 'default', array ('note' => $item->note, 'flag' => $item->flag ));
+		add_meta_box('mb_item_note_flag', 'Notiz', array ($this, 'WPCB_mb_note_flag'), $this->type, 'normal', 'default', array ('note' => $item->note, 'flag' => $item->flag ));
 		
 	}
 	
 	
-	public function WPCB_mb_taxonomy ($post, $vars) {
-		post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy", "title" => "", "args" => $vars['args']) );
+	public function WPCB_mb_learnout ($post, $vars) {
+		global $item;
+		print (HTML_Item::getHTML_LearningOutcome($item, HTML_Object::VIEW_EDITOR));
 	}
-	
-	
-	public function WPCB_mb_answers ($post, $vars) { 
-		wp_die ("<pre>Can not call WPCB_mb_answers on CPT_Item.</pre>");
-	}
-	
 	
 	public function WPCB_mb_level ($post, $vars) {
-		
+	
 		?>
 		<script>
 			function checkLOLevel (e, levIT, levITs, levLO, levLOs) {
@@ -204,11 +199,12 @@ class CPT_Item extends CPT_Object{
 	}
 	
 	
+	public function WPCB_mb_answers ($post, $vars) {
+		wp_die ("<pre>Can not call WPCB_mb_answers on CPT_Item.</pre>");
+	}
 	
-	public function WPCB_mb_learnout ($post, $vars) {
-	
-		global $item;
-		print (HTML_Item::getHTML_LearningOutcome($item, HTML_Object::VIEW_EDITOR));
+	public function WPCB_mb_taxonomy ($post, $vars) {
+		post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy", "title" => "", "args" => $vars['args']) );
 	}
 	
 	
@@ -221,6 +217,8 @@ class CPT_Item extends CPT_Object{
 		print (HTML_Item::getHTML_NoteFlag($item, HTML_Object::VIEW_EDITOR));
 	}
 
+	
+	
 	
 	/**
 	 * Join to item table; restrict to items of current domain (if set)

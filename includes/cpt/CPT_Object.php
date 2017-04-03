@@ -130,7 +130,8 @@ abstract class CPT_Object {
 		if ($wp_list_table->current_action() == 'view') {
 		
 			if (substr ($_REQUEST['post_type'], 0, 4) == 'item') {
-				$sendback = add_query_arg( 'itemids', $_REQUEST['post'], 'edit.php?page=view&post_type=itembasket' );
+// 				$sendback = add_query_arg( 'itemids', $_REQUEST['post'], 'edit.php?page=view&post_type=itembasket' );
+				$sendback = add_query_arg( 'itemids', $_REQUEST['post'], 'admin.php?page=view_item' );
 				wp_redirect($sendback);
 				exit();
 			}

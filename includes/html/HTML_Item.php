@@ -32,17 +32,12 @@ class HTML_Item  {
 
 	public static function getHTML_NoteFlag (EAL_Item $item, int $viewType) {
 		
-		// 		printf ("<div class='misc-pub-section'>");
-		// 		printf ("<input type='checkbox' name='item_flag' value='1' %s>", $flag==1 ? "checked" : "");
-		// 		printf ("<input type='text' name='item_note' value='%s'>", $vars['args']['note']);
-		// 		printf ("</div>");
-		
 		return sprintf ('
 			<div class="form-field">
 				<input type="checkbox" name="item_flag" value="1" %s %s>
-				<input name="item_note" value="%s" size="40" aria-required="true" type="text" %s>
+				<input name="item_note" value="%s" width="10%%" aria-required="true"  %s>
 			</div>',
-			$item->flag == 1 ? "checked" : "", $viewType == HTML_Object::VIEW_EDITOR ? "" : "disabled", 
+			$item->flag == 1 ? "checked" : "", $viewType == HTML_Object::VIEW_EDITOR ? "" : "onclick='return false;'", 
 			$item->note, $viewType == HTML_Object::VIEW_EDITOR ? "" : "readonly");
 		
 	}
@@ -56,12 +51,14 @@ class HTML_Item  {
 		
 		if ($viewType == HTML_Object::VIEW_REVIEWER) {
 			
-			$result = sprintf ("
-				<select disabled style='width:100%%' align='right'>
-					<option selected>%s</none>
-				</select>
-				<div class='misc-pub-section'>%s</div>"
-				, ($learnout==null) ? "None" : $learnout->title, ($learnout==null) ? "" : $learnout->description);
+			if ($learnout->id > 0) {
+				$result = sprintf ("
+					<select style='width:100%%' align='right'>
+						<option selected style='display:none'>%s</none>
+					</select>
+					<div class='misc-pub-section'>%s</div>"
+					, ($learnout==null) ? "None" : $learnout->title, ($learnout==null) ? "" : $learnout->description);
+			}
 			
 		}
 		
@@ -89,21 +86,34 @@ class HTML_Item  {
 	
 	public static function getHTML_Metadata (EAL_Item $item, $editable, $namePrefix) {
 	
+		
+		
 		// Status and Id
-		$res = sprintf ("<div>%s (%d)</div><br/>", $item->getStatusString(), $item->id);
+		$res = sprintf ('<div class="misc-pub-section misc-pub-post-status">Status: %s (ID=%d)</div><br/>', $item->getStatusString(), $item->id);
 	
 		// Learning Outcome (Title + Description), if available
 		$learnout = $item->getLearnOut();
 		
-		$res .= self::getHTML_LearningOutcome($item, HTML_Object::VIEW_REVIEWER);
-		$res .= self::getHTML_NoteFlag($item, HTML_Object::VIEW_REVIEWER);
+		$res .= sprintf ('
+			<div id="mb_learnout" class="postbox ">
+				<h2 class="hndle"><span>Learning Outcome</span></h2>
+				<div class="inside">%s</div>
+			</div>', self::getHTML_LearningOutcome($item, HTML_Object::VIEW_REVIEWER));
+// 		$res .= self::getHTML_LearningOutcome($item, HTML_Object::VIEW_REVIEWER);
 		
 	
 		// Level-Table
-		$res .= sprintf ("<div>%s</div><br/>", HTML_Object::getLevelHTML($namePrefix, $item->level, (is_null($learnout) ? null : $learnout->level), $editable?"":"disabled", 1, ''));
+		$res .= sprintf ('
+			<div id="mb_learnout" class="postbox ">
+				
+				<h2 class="hndle"><span>Anforderungsstufe</span></h2>
+				<div class="inside">%s</div>
+			</div>', HTML_Object::getLevelHTML($namePrefix, $item->level, (is_null($learnout) ? null : $learnout->level), $editable?"":"disabled", 1, ''));		
+		
+// 		$res .= sprintf ("<div>%s</div><br/>", HTML_Object::getLevelHTML($namePrefix, $item->level, (is_null($learnout) ? null : $learnout->level), $editable?"":"disabled", 1, ''));
 			
 		// Taxonomy Terms: Name of Taxonomy and list of terms (if available)
-		$res .= sprintf ("<div><b>%s</b>:", RoleTaxonomy::getDomains()[$item->domain]);
+// 		$res .= sprintf ("<div><b>%s</b>:", RoleTaxonomy::getDomains()[$item->domain]);
 		if ($editable) {
 	
 			$res .= sprintf ('
@@ -122,19 +132,35 @@ class HTML_Item  {
 		} else {
 	
 			$terms = wp_get_post_terms( $item->id, $item->domain, array("fields" => "names"));
-			if (count($terms)>0) {
-				$res .= sprintf ("<div style='margin-left:1em'>");
-				foreach ($terms as $t) {
-					$res .= sprintf ("%s</br>", $t);
-				}
-				$res .= sprintf ("</div>");
+			$termCheckboxes = "";
+			foreach ($terms as $t) {
+				$termCheckboxes .= sprintf ("<input type='checkbox' checked onclick='return false;'>%s<br/>", $t);
 			}
-	
+				
+			$res .= sprintf ('
+				<div class="postbox ">
+					<h2 class="hndle"><span>%s</span></h2>
+					<div class="inside">%s</div>
+				</div>', 
+				RoleTaxonomy::getDomains()[$item->domain],
+				$termCheckboxes);
+				
+				
 		}
 	
+		
+		$res .= sprintf ('
+				<div class="postbox ">
+					<h2 class="hndle"><span>Notiz</span></h2>
+					<div class="inside">%s</div>
+				</div>',
+				self::getHTML_NoteFlag($item, HTML_Object::VIEW_REVIEWER));
+		
+// 		$res .= self::getHTML_NoteFlag($item, HTML_Object::VIEW_REVIEWER);
+		
 	
 	
-		$res .= sprintf ("</div>");
+// 		$res .= sprintf ("</div>");
 	
 		return $res;
 	}
@@ -142,30 +168,47 @@ class HTML_Item  {
 	
 	
 	
-	public static function getHTML_Item (EAL_Item $item, $forReview = TRUE, $editableMeta = FALSE, $namePrefix = "") {
+	public static function getHTML_Item (EAL_Item $item, int $viewType, $namePrefix = "") {
 			
  		$answers_html = "";
  		switch (get_class($item)) {
- 			case 'EAL_ItemSC': $answers_html = HTML_ItemSC::getHTML_Answers($item, HTML_Object::VIEW_STUDENT); break;
- 			case 'EAL_ItemMC': $answers_html = HTML_ItemMC::getHTML_Answers($item, HTML_Object::VIEW_STUDENT); break;
+ 			case 'EAL_ItemSC': $answers_html = HTML_ItemSC::getHTML_Answers($item, $viewType); break;
+ 			case 'EAL_ItemMC': $answers_html = HTML_ItemMC::getHTML_Answers($item, $viewType); break;
  		}
 	
-		
-		if ($forReview) {
+		$result = "";
+ 		if ($viewType == HTML_Object::VIEW_REVIEWER) {
+ 			$result = sprintf ("
+ 				<div>
+ 					<div>%s</div>
+ 					<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>
+ 						<div>%s</div>
+ 						<div>%s</div>
+ 					</div>
+ 				</div>", 
+ 				wpautop(stripslashes($item->description)),
+ 				wpautop(stripslashes($item->question)),
+ 				$answers_html
+ 			);
+ 		}
+ 		
+ 		if ($viewType == HTML_Object::VIEW_STUDENT) {
 	
-			// description
-			$item_html  = sprintf ("<div>%s</div>", wpautop(stripslashes($item->description)));
-	
-			// question and answers
-			$item_html .= sprintf ("<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>");
-			$item_html .= sprintf ("%s", wpautop(stripslashes($item->question)));
-			$item_html .= sprintf ("%s", $answers_html);
-			$item_html .= sprintf ("</div>");
-	
-			return sprintf ("<div>%s</div>", $item_html);
-	
-		} else {
-	
+ 			$result = sprintf ("
+ 				<div>
+ 					<div>%s</div>
+ 					<div style='background-color:#F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>
+ 						<div>%s</div>
+ 						<div>%s</div>
+ 					</div>
+ 				</div>",
+ 				wpautop(stripslashes($item->description)),
+ 				wpautop(stripslashes($item->question)),
+ 				$answers_html
+ 			);
+/* 			
+ 			
+ 			
 			// head line (incl. option to edit)
 			$item_html  = sprintf ("
 				<div onmouseover=\"this.children[1].style.display='inline';\"  onmouseout=\"this.children[1].style.display='none';\">
@@ -192,6 +235,9 @@ class HTML_Item  {
 							<div class='meta-box-sortables ui-sortable'>
 								%s
 							</div>
+							<div class='meta-box-sortables ui-sortable'>
+								<h2>Reviews</h2>
+							</div>
 						</div>
 						<div class='postbox-container' id='postbox-container-1'>
 							<div style='background-color:#FFFFFF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>
@@ -203,7 +249,11 @@ class HTML_Item  {
 					, $item_html
 					, self::getHTML_Metadata($item, $editableMeta, $namePrefix));
 	
-		}
+		
+		*/
+ 		}
+ 		
+ 		return $result;
 	}
 	
 	

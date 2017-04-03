@@ -139,7 +139,7 @@ class PAG_Basket {
 				$html_select .= sprintf ("<option value='%d'>%s</option>", $count, ($post->post_type == 'review') ? $item->getItem()->title : $item->title);
 				$html_list .= sprintf (
 					"<div style='margin-top:2em;'><hr/>%s<br style='clear:both;'/></div>",
-					substr($post->post_type, 0, 4) == "item" ? HTML_Item::getHTML_Item($item, FALSE) : (($post->post_type == 'learnout') ? HTML_LearnOut::getHTML_LearnOut($item) : HTML_Review::getHTML_Review($item)));
+					substr($post->post_type, 0, 4) == "item" ? HTML_Item::getHTML_Item($item, HTML_Object::VIEW_STUDENT) : (($post->post_type == 'learnout') ? HTML_LearnOut::getHTML_LearnOut($item) : HTML_Review::getHTML_Review($item)));
 				$count++;
 				array_push($items, $item);
 			}
