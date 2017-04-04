@@ -9,6 +9,32 @@ require_once (__DIR__ . "/../eal/EAL_Item.php");
 class HTML_Item  {
 	
 	
+	public static function getHTML_Status (EAL_Item $item, int $viewType) {
+	
+		$result = "";
+		$status = $item->getStatusString();
+		
+		if ($viewType == HTML_Object::VIEW_EDITOR) {
+			$result .= sprintf ("<table style='font-size:100%%'>");
+			$result .= sprintf ("<tr><td><input type='radio' id='item_status_0' name='item_%s_status' value='1' %s>Published</td></tr>", $item->id, (($status=="Published") ? "checked" : ""));
+			$result .= sprintf ("<tr><td><input type='radio' id='item_status_1' name='item_%s_status' value='2' %s>Pending Review</td></tr>", $item->id, (($status=="Pending Review") ? "checked" : ""));
+			$result .= sprintf ("<tr><td><input type='radio' id='item_status_2' name='item_%s_status' value='3' %s>Draft</td></tr>", $item->id, (($status=="Draft") ? "checked" : ""));
+			$result .= sprintf ("</table>");
+		}
+	
+		if ($viewType == HTML_Object::VIEW_REVIEWER) {
+			$result .= sprintf ("<table style='font-size:100%%'>");
+			$result .= sprintf ("<tr><td><input type='radio' id='item_status_0' name='item_%s_status' value='1' %s>Published</td></tr>", $item->id, (($status=="Published") ? "checked" : "disabled"));
+			$result .= sprintf ("<tr><td><input type='radio' id='item_status_1' name='item_%s_status' value='2' %s>Pending Review</td></tr>", $item->id, (($status=="Pending Review") ? "checked" : "disabled"));
+			$result .= sprintf ("<tr><td><input type='radio' id='item_status_2' name='item_%s_status' value='3' %s>Draft</td></tr>", $item->id, (($status=="Draft") ? "checked" : "disabled"));
+			$result .= sprintf ("</table>");
+		}
+	
+		return $result;
+	
+	}
+	
+	
 	private static function getHTML_TopicHierarchy ($namePrefix, $terms, $parent, $selected) {
 	
 		$res .= "";
@@ -86,11 +112,14 @@ class HTML_Item  {
 	
 	public static function getHTML_Metadata (EAL_Item $item, $editable, $namePrefix) {
 	
-		
-		
 		// Status and Id
-		$res = sprintf ('<div class="misc-pub-section misc-pub-post-status">Status: %s (ID=%d)</div><br/>', $item->getStatusString(), $item->id);
-	
+// 		$res = sprintf ('<div class="misc-pub-section misc-pub-post-status">Status: %s (ID=%d)</div><br/>', $item->getStatusString(), $item->id);
+		$res = sprintf ('
+			<div id="mb_status" class="postbox ">
+				<h2 class="hndle"><span>Item (ID=%d)</span></h2>
+				<div class="inside">%s</div>
+			</div>', $item->id, self::getHTML_Status($item, HTML_Object::VIEW_REVIEWER));
+		
 		// Learning Outcome (Title + Description), if available
 		$learnout = $item->getLearnOut();
 		

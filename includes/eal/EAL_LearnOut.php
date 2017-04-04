@@ -16,7 +16,7 @@ class EAL_LearnOut {
 	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	
 	
-	function __construct(int $item_id = -1) {
+	function __construct(int $learnout_id = -1) {
 		
 		$this->type = 'learnout';
 		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
@@ -25,8 +25,8 @@ class EAL_LearnOut {
 		$this->description = 'Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage ...';
 		$this->level = ["FW" => null, "KW" => null, "PW" => null];
 		
-		if ($item_id != -1) {
-			$this->loadFromDB($item_id);
+		if ($learnout_id != -1) {
+			$this->loadFromDB($learnout_id);
 		} else {
 			if ($_POST["post_type"] == $this->type) {
 				$this->loadFromPOSTRequest();

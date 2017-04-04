@@ -126,7 +126,16 @@ abstract class CPT_Object {
 		$wp_list_table = _get_list_table('WP_Posts_List_Table');
 	
 		$a = $wp_list_table->current_action();
-	
+
+		
+		if ($wp_list_table->current_action() == 'view_learnout') {
+		
+			$sendback = add_query_arg( 'learnoutids', $_REQUEST['post'], 'admin.php?page=view_learnout' );
+			wp_redirect($sendback);
+			exit();
+		}
+		
+
 		if ($wp_list_table->current_action() == 'view') {
 		
 			if (substr ($_REQUEST['post_type'], 0, 4) == 'item') {
@@ -249,7 +258,7 @@ abstract class CPT_Object {
 			
 			case 'item_id': 
 				printf ('<a href="%1$s">%2$s</a>', add_query_arg ('item_id', $post->item_id, $basic_url), $post->item_id);
-				printf ("<div class='row-actions'><span class='view'><a href='admin.php?page=view&itemid=%s' title='View'>View</a></span><span class='inline hide-if-no-js'></span></div>", $post->item_id);
+				printf ("<div class='row-actions'><span class='view'><a href='admin.php?page=view_item&itemid=%s' title='View'>View</a></span><span class='inline hide-if-no-js'></span></div>", $post->item_id);
 				break;
 				
 			case 'note': echo ($post->note); break;
@@ -341,7 +350,7 @@ abstract class CPT_Object {
 				printf ('<a href="%1$s">%2$s</a>', add_query_arg ("learnout_id", $post->learnout_id, $basic_url), $post->learnout_title);
 				if ($post->learnout_id > 0) {
 					printf ('<div class="row-actions">');
-					printf ('<span class="view"><a href="admin.php?page=view&learnoutid=%1$d" title="View">View</a></span>', $post->learnout_id);
+					printf ('<span class="view"><a href="admin.php?page=view_learnout&learnoutid=%1$d" title="View">View</a></span>', $post->learnout_id);
 					printf (' | <span class="edit"><a href="post.php?post_type=learnout&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->learnout_id);
 					printf ('<span class="inline hide-if-no-js"></span></div>');
 				}
