@@ -21,7 +21,23 @@ class HTML_Item  {
 			$result .= sprintf ("<tr><td><input type='radio' id='item_status_2' name='item_%s_status' value='3' %s>Draft</td></tr>", $item->id, (($status=="Draft") ? "checked" : ""));
 			$result .= sprintf ("</table>");
 		}
-	
+
+		if ($viewType == HTML_Object::VIEW_IMPORT) {
+			$result .= sprintf ("<table style='font-size:100%%'>");
+			
+			if ($item->id > 0) {
+				$result .= sprintf ("<tr><td><input type='radio' id='item_status_0' name='item_%s_status' value='1' %s>Updated as Published</td></tr>", $item->id, (($status=="Published") ? "checked" : ""));
+				$result .= sprintf ("<tr><td><input type='radio' id='item_status_1' name='item_%s_status' value='2' %s>Updated as Pending Review</td></tr>", $item->id, (($status=="Pending Review") ? "checked" : ""));
+				$result .= sprintf ("<tr><td><input type='radio' id='item_status_2' name='item_%s_status' value='3' %s>Updated as Draft</td></tr>", $item->id, (($status=="Draft") ? "checked" : ""));
+			}
+			$result .= sprintf ("<tr><td><input type='radio' id='item_status_3' name='item_%s_status' value='4' %s>New as Published</td></tr>", $item->id, "");
+			$result .= sprintf ("<tr><td><input type='radio' id='item_status_4' name='item_%s_status' value='5' %s>New as Pending Review</td></tr>", $item->id, "");
+			$result .= sprintf ("<tr><td><input type='radio' id='item_status_5' name='item_%s_status' value='6' %s>New as Draft</td></tr>", $item->id, $item->id<0 ? "checked" : "");
+			$result .= sprintf ("<tr><td><input type='radio' id='item_status_6' name='item_%s_status' value='7' %s>Do not Import</td></tr>", $item->id, "");
+			$result .= sprintf ("</table>");
+		}
+		
+		
 		if ($viewType == HTML_Object::VIEW_REVIEWER) {
 			$result .= sprintf ("<table style='font-size:100%%'>");
 			$result .= sprintf ("<tr><td><input type='radio' id='item_status_0' name='item_%s_status' value='1' %s>Published</td></tr>", $item->id, (($status=="Published") ? "checked" : "disabled"));
@@ -63,8 +79,8 @@ class HTML_Item  {
 				<input type="checkbox" name="item_flag" value="1" %s %s>
 				<input name="item_note" value="%s" width="10%%" aria-required="true"  %s>
 			</div>',
-			$item->flag == 1 ? "checked" : "", $viewType == HTML_Object::VIEW_EDITOR ? "" : "onclick='return false;'", 
-			$item->note, $viewType == HTML_Object::VIEW_EDITOR ? "" : "readonly");
+			$item->flag == 1 ? "checked" : "", ($viewType == HTML_Object::VIEW_EDITOR)  || ($viewType == HTML_Object::VIEW_IMPORT) ? "" : "onclick='return false;'", 
+			$item->note, ($viewType == HTML_Object::VIEW_EDITOR) || ($viewType == HTML_Object::VIEW_IMPORT) ? "" : "readonly");
 		
 	}
 	
@@ -88,7 +104,7 @@ class HTML_Item  {
 			
 		}
 		
-		if ($viewType == HTML_Object::VIEW_EDITOR) {
+		if (($viewType == HTML_Object::VIEW_EDITOR) || ($viewType == HTML_Object::VIEW_IMPORT)){
 		
 			$allLO = EAL_LearnOut::getListOfLearningOutcomes();
 			
@@ -110,7 +126,7 @@ class HTML_Item  {
 	}
 	
 	
-	public static function getHTML_Metadata (EAL_Item $item, $editable, $namePrefix) {
+	public static function getHTML_Metadata (EAL_Item $item, int $viewType, $namePrefix) {
 	
 		// Status and Id
 // 		$res = sprintf ('<div class="misc-pub-section misc-pub-post-status">Status: %s (ID=%d)</div><br/>', $item->getStatusString(), $item->id);
@@ -118,7 +134,7 @@ class HTML_Item  {
 			<div id="mb_status" class="postbox ">
 				<h2 class="hndle"><span>Item (ID=%d)</span></h2>
 				<div class="inside">%s</div>
-			</div>', $item->id, self::getHTML_Status($item, HTML_Object::VIEW_REVIEWER));
+			</div>', $item->id, self::getHTML_Status($item, $viewType));
 		
 		// Learning Outcome (Title + Description), if available
 		$learnout = $item->getLearnOut();
@@ -127,7 +143,7 @@ class HTML_Item  {
 			<div id="mb_learnout" class="postbox ">
 				<h2 class="hndle"><span>Learning Outcome</span></h2>
 				<div class="inside">%s</div>
-			</div>', self::getHTML_LearningOutcome($item, HTML_Object::VIEW_REVIEWER));
+			</div>', self::getHTML_LearningOutcome($item, $viewType));
 // 		$res .= self::getHTML_LearningOutcome($item, HTML_Object::VIEW_REVIEWER);
 		
 	
@@ -137,13 +153,13 @@ class HTML_Item  {
 				
 				<h2 class="hndle"><span>Anforderungsstufe</span></h2>
 				<div class="inside">%s</div>
-			</div>', HTML_Object::getLevelHTML($namePrefix, $item->level, (is_null($learnout) ? null : $learnout->level), $editable?"":"disabled", 1, ''));		
+			</div>', HTML_Object::getLevelHTML($namePrefix, $item->level, (is_null($learnout) ? null : $learnout->level), (($viewType == HTML_Object::VIEW_IMPORT) || ($viewType == HTML_Object::VIEW_EDITOR))?"":"disabled", 1, ''));		
 		
 // 		$res .= sprintf ("<div>%s</div><br/>", HTML_Object::getLevelHTML($namePrefix, $item->level, (is_null($learnout) ? null : $learnout->level), $editable?"":"disabled", 1, ''));
 			
 		// Taxonomy Terms: Name of Taxonomy and list of terms (if available)
 // 		$res .= sprintf ("<div><b>%s</b>:", RoleTaxonomy::getDomains()[$item->domain]);
-		if ($editable) {
+		if (($viewType == HTML_Object::VIEW_IMPORT) || ($viewType == HTML_Object::VIEW_EDITOR)) {
 	
 			$res .= sprintf ('
 				<div class="inside">
@@ -183,7 +199,7 @@ class HTML_Item  {
 					<h2 class="hndle"><span>Notiz</span></h2>
 					<div class="inside">%s</div>
 				</div>',
-				self::getHTML_NoteFlag($item, HTML_Object::VIEW_REVIEWER));
+				self::getHTML_NoteFlag($item, $viewType));
 		
 // 		$res .= self::getHTML_NoteFlag($item, HTML_Object::VIEW_REVIEWER);
 		
@@ -221,7 +237,7 @@ class HTML_Item  {
  			);
  		}
  		
- 		if ($viewType == HTML_Object::VIEW_STUDENT) {
+ 		if (($viewType == HTML_Object::VIEW_STUDENT) || ($viewType == HTML_Object::VIEW_IMPORT)) {
 	
  			$result = sprintf ("
  				<div>

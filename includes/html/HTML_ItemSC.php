@@ -18,7 +18,7 @@ class HTML_ItemSC  {
 		$html_Answers = "";
 		$result = "";
 		
-		if ($viewType == HTML_Object::VIEW_STUDENT) {
+		if (($viewType == HTML_Object::VIEW_STUDENT) || ($viewType == HTML_Object::VIEW_IMPORT)) {
 
 			// answer as radio buttons ...
 			foreach ($item->answers as $a) {

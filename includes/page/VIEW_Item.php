@@ -43,7 +43,7 @@ class VIEW_Item {
 				</div>"
 				, $item->title
 				, HTML_Item::getHTML_Item($item, HTML_Object::VIEW_STUDENT)
-				, HTML_Item::getHTML_Metadata($item, FALSE, "")
+				, HTML_Item::getHTML_Metadata($item, HTML_Object::VIEW_STUDENT, "")
 			);
 			
 			$count++;

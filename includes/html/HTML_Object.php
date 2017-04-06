@@ -8,6 +8,7 @@ class HTML_Object {
 	const VIEW_STUDENT = 1;
 	const VIEW_REVIEWER = 2;
 	const VIEW_EDITOR = 3;
+	const VIEW_IMPORT = 4;
 	
 	
 	
