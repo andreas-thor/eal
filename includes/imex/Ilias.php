@@ -96,7 +96,8 @@ class Ilias extends ImportExport {
 		$items = array ();
 		$root = $doc->documentElement;
 		$xpath = new DOMXPath($doc);
-	
+		$countItems = 0;
+		
 		foreach ($xpath->evaluate("//item", $doc->documentElement) as $itemXML) {
 				
 			// determine ident (==item_id) if available and item type
@@ -115,6 +116,8 @@ class Ilias extends ImportExport {
 	
 			// initialize item
 			$item = EAL_Item::load($item_type, is_numeric($item_id) ? $item_id : -1);
+			$countItems++;
+			if ($item->id == -1) $item->id = -$countItems;
 				
 			// get title and description + question
 			$item->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];

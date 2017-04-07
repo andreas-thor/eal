@@ -11,13 +11,13 @@ class HTML_ItemMC  {
 	 * @param int $viewType STUDENT (read only, answers only), REVIEWER (read only, points), EDITOR (editable) 
 	 */
 	
-	public static function getHTML_Answers (EAL_ItemMC $item, int $viewType) {
+	public static function getHTML_Answers (EAL_ItemMC $item, int $viewType, string $prefix="") {
 	
 		
 		$html_Answers = "";
 		$result = "";
 		
-		if (($viewType == HTML_Object::VIEW_STUDENT) || ($viewType == HTML_Object::VIEW_IMPORT)) {
+		if ($viewType == HTML_Object::VIEW_STUDENT) {
 		
 			// answer as check buttons ...
 			foreach ($item->answers as $a) {
@@ -34,19 +34,20 @@ class HTML_ItemMC  {
 		}
 		
 		
-		if ($viewType == HTML_Object::VIEW_REVIEW) {
+		if (($viewType == HTML_Object::VIEW_REVIEW) || ($viewType == HTML_Object::VIEW_IMPORT)) {
 		
 			// answers a table line with 3 columns (answers, checked points, unchecked points); points>0 in bold ...
 			foreach ($item->answers as $a) {
 				$html_Answers .= sprintf('
 					<tr align="left">
-	                	<td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
-	                    <td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
-	                    <td>%s</td>
+						<td style="width:100%%-6em"><input type="text" name="%sanswer[]" value="%s" size="255" style="width:100%%; font-weight:%s" readonly/></td>
+						<td style="width:3em"><input type="text" name="%spositive[]" value="%d" size="1" readonly/></td>
+						<td style="width:3em"><input type="text" name="%snegative[]" value="%d" size="1" readonly/></td>
 					</tr>',
-					$a['positive'], ($a['positive']>$a['negative'] ? 'bold' : 'normal'),
-					$a['negative'], ($a['negative']>$a['positive'] ? 'bold' : 'normal'),
-					$a['answer']);
+					$prefix, $a['answer'], ($a['positive']>$a['negative'] ? 'bold' : 'normal'),  
+					$prefix, $a['positive'], 
+					$prefix, $a['negative']
+					);
 			}
 			
 			// ... packaged in a table
@@ -61,10 +62,10 @@ class HTML_ItemMC  {
 			// used to be inserted dynamically when new answer is added
 			$answerLine = '
 				<tr>
-					<td><input type="text" name="answer[]" value="%s" size="25" /></td>
-					<td><input type="text" name="positive[]" value="%d" size="5" /></td>
-					<td><input type="text" name="negative[]" value="%d" size="5" /></td>
-					<td>
+					<td style="width:100%%-12em"><input type="text" name="' . $prefix . 'answer[]" value="%s" size="255" style="width:100%%" /></td>
+					<td style="width:3em"><input type="text" name="' . $prefix . 'positive[]" value="%d" size="1" /></td>
+					<td style="width:3em"><input type="text" name="' . $prefix . 'negative[]" value="%d" size="1" /></td>
+					<td style="width:6em">
 						<a class="button" onclick="addAnswer(this);">&nbsp;+&nbsp;</button>
 						<a class="button" onclick="removeAnswer(this);">&nbsp;-&nbsp;</button>
 					</td>

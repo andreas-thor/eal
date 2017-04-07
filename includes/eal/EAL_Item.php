@@ -45,7 +45,7 @@ class EAL_Item {
 		
 		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
 		
-		$this->id = -1;
+		$this->id = $item_id;
 		$this->title = '';
 		$this->description = '';
 		$this->question = '';
@@ -58,7 +58,7 @@ class EAL_Item {
 		$this->note = "";
 		$this->flag = 0;
 		
-		if ($item_id != -1) {
+		if ($item_id > 0) {
 			$this->loadFromDB($item_id);
 		} else {
 			if ($_POST["post_type"] == $this->type) {

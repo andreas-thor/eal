@@ -30,8 +30,12 @@ class PAG_Import {
 				printf ("<div class='wrap'><h1>Error %s</h1></div>", $_FILES['uploadedfile']['error']);
 			}
 		}
-		
+
 		if ($_POST['action']=='import') {
+		
+		}
+		
+		if ($_POST['action']=='import2') {
 			
 			$ilias = new EXP_Ilias($_POST['file_dir'], $_POST['file_name']);
 			$items = $ilias->loadAllItems();
@@ -111,8 +115,8 @@ class PAG_Import {
 							<br style='clear:both;'/>
 						</div>"
 					, $item->title
-					, HTML_Item::getHTML_Item($item, HTML_Object::VIEW_IMPORT)
-					, HTML_Item::getHTML_Metadata($item, HTML_Object::VIEW_IMPORT, "")
+					, HTML_Item::getHTML_Item($item, HTML_Object::VIEW_IMPORT, "import_{$item->id}_")
+					, HTML_Item::getHTML_Metadata($item, HTML_Object::VIEW_IMPORT, "import_{$item->id}_")
 					);
 				
 			$count++;
@@ -123,15 +127,18 @@ class PAG_Import {
 			<div class='wrap'>
 				<h1>Item Viewer</h1>
 				<form>
-					 <select onChange='for (x=0; x<this.form.nextElementSibling.children.length; x++) {  this.form.nextElementSibling.children[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'>
+					 <select onChange='for (x=0; x<this.form.nextElementSibling.lastElementChild.children.length; x++) {  this.form.nextElementSibling.lastElementChild.children[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'>
 						<option value='-1' selected>[All %d Items]</option>
 						%s
 					</select>
-					<input type='checkbox' checked onChange='for (x=0; x<this.form.nextElementSibling.children.length; x++) { this.form.nextElementSibling.children[x].querySelector(\"#postbox-container-1\").style.display = (this.checked==true) ? \"block\" :  \"none\"; }'/> Show Metadata
+					<input type='checkbox' checked onChange='for (x=0; x<this.form.nextElementSibling.lastElementChild.children.length; x++) { this.form.nextElementSibling.lastElementChild.children[x].querySelector(\"#postbox-container-1\").style.display = (this.checked==true) ? \"block\" :  \"none\"; }'/> Show Metadata
 				</form>
-				<div>%s</div>
+				<form  enctype='multipart/form-data' action='admin.php?page=%s' method='post'>
+				<input id='submit' type='submit' name = 'Import'    value = 'import'>
+					<div>%s</div>
+				</form>
 			</div>",
-				count($itemids), $html_select, $html_items
+				count($itemids), $html_select, $_REQUEST["page"], $html_items 
 		);
 		
 /*		

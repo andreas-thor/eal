@@ -13,12 +13,12 @@ class HTML_ItemSC  {
 	 * @param int $viewType STUDENT (read only, answers only), REVIEWER (read only, points), EDITOR (editable) 
 	 */
 	
-	public static function getHTML_Answers (EAL_ItemSC $item, int $viewType) {
+	public static function getHTML_Answers (EAL_ItemSC $item, int $viewType, string $prefix="") {
 	
 		$html_Answers = "";
 		$result = "";
 		
-		if (($viewType == HTML_Object::VIEW_STUDENT) || ($viewType == HTML_Object::VIEW_IMPORT)) {
+		if ($viewType == HTML_Object::VIEW_STUDENT) {
 
 			// answer as radio buttons ...
 			foreach ($item->answers as $a) {
@@ -35,16 +35,17 @@ class HTML_ItemSC  {
 		}
 		
 		
-		if ($viewType == HTML_Object::VIEW_REVIEW) {
+		if (($viewType == HTML_Object::VIEW_REVIEW) || ($viewType == HTML_Object::VIEW_IMPORT)) {
 
 			// answers a table line with 2 columns (answers, points); points>0 in bold ...
 			foreach ($item->answers as $a) {
 				$html_Answers .= sprintf('
 					<tr align="left">
-						<td><input type="text" value="%d" size="1" readonly style="font-weight:%s"/></td>
-						<td>%s</td>
+						<td style="width:100%%-3em"><input type="text" name="%sanswer[]" value="%s" style="width:100%%; font-weight:%s" size="255" readonly/></td>
+						<td style="width:3em"><input type="text" name="%spoints[]" value="%d" size="1"  readonly /></td>
 					</tr>', 
-					$a['points'], ($a['points']>0 ? 'bold' : 'normal'),	$a['answer']);
+					$prefix, $a['answer'], ($a['points']>0 ? 'bold' : 'normal'),
+					$prefix, $a['points'] );
 			}
 				
 			// ... packaged in a table
@@ -57,9 +58,9 @@ class HTML_ItemSC  {
 			// used to be inserted dynamically when new answer is added
 			$answerLine = '
 				<tr>
-					<td><input type="text" name="answer[]" value="%s" size="25"</td>
-					<td><input type="text" name="points[]" value="%d" size="5" /></td>
-					<td>
+					<td style="width:100%%-9em"><input type="text" name="' . $prefix . 'answer[]" value="%s" style="width:100%%" size="255"</td>
+					<td style="width:3em"><input type="text" name="' . $prefix . 'points[]" value="%d" size="1" /></td>
+					<td style="width:6em">
 						<a class="button" onclick="addAnswer(this);">&nbsp;+&nbsp;</a>
 						<a class="button" onclick="removeAnswer(this);">&nbsp;-&nbsp;</a>
 					</td>

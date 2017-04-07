@@ -197,8 +197,12 @@ class HTML_Item  {
 		
 		return sprintf ('
 			<div class="form-field">
-				<input type="checkbox" name="%sitem_flag" value="1" %s %s>
-				<input name="%sitem_note" value="%s" width="10%%" aria-required="true"  %s>
+				<table>
+					<tr>
+						<td style="width:1em"><input  type="checkbox" name="%sitem_flag" value="1" %s %s></td>
+						<td style="width:100%%-1em"><input  name="%sitem_note" value="%s" style="width:100%%" size="255" aria-required="true" %s></td>
+					</tr>
+				</table>
 			</div>',
 			$prefix,
 			$item->flag == 1 ? "checked" : "", 
@@ -218,7 +222,7 @@ class HTML_Item  {
 			<div id="mb_status" class="postbox ">
 				<h2 class="hndle"><span>Item (%s)</span></h2>
 				<div class="inside">%s</div>
-			</div>', $item->id > 0 ? "ID=" . $item->id : "New", self::getHTML_Status($item, $viewType));
+			</div>', $item->id > 0 ? "ID=" . $item->id : "New", self::getHTML_Status($item, $viewType, $prefix));
 		
 		
 		// Learning Outcome (Title + Description), if available
@@ -265,27 +269,33 @@ class HTML_Item  {
 			
  		$answers_html = "";
  		switch (get_class($item)) {
- 			case 'EAL_ItemSC': $answers_html = HTML_ItemSC::getHTML_Answers($item, $viewType); break;
- 			case 'EAL_ItemMC': $answers_html = HTML_ItemMC::getHTML_Answers($item, $viewType); break;
+ 			case 'EAL_ItemSC': $answers_html = HTML_ItemSC::getHTML_Answers($item, $viewType, $namePrefix); break;
+ 			case 'EAL_ItemMC': $answers_html = HTML_ItemMC::getHTML_Answers($item, $viewType, $namePrefix); break;
  		}
 	
 		$result = "";
- 		if ($viewType == HTML_Object::VIEW_REVIEW) {
+ 		if (($viewType == HTML_Object::VIEW_REVIEW) || ($viewType == HTML_Object::VIEW_IMPORT)) {
  			$result = sprintf ("
  				<div>
  					<div>%s</div>
- 					<div style='background-color:F2F6FF; margin-top:2em; padding:1em;'>
+ 					<div style='background-color:F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>
  						<div>%s</div>
  						<div>%s</div>
+						<input type='hidden' id='%sitem_description' name='%sitem_description'  value='%s'>
+ 						<input type='hidden' id='%sitem_question' name='%sitem_question'  value='%s'>
+						<input type='hidden' id='%spost_content' name='%spost_content'  value='%s'>
  					</div>
  				</div>", 
  				wpautop(stripslashes($item->description)),
  				wpautop(stripslashes($item->question)),
- 				$answers_html
+ 				$answers_html,
+ 				$namePrefix, $namePrefix, htmlentities($item->description),	
+ 				$namePrefix, $namePrefix, htmlentities($item->question),
+ 				$namePrefix, $namePrefix, microtime()
  			);
  		}
  		
- 		if (($viewType == HTML_Object::VIEW_STUDENT) || ($viewType == HTML_Object::VIEW_IMPORT)) {
+ 		if ($viewType == HTML_Object::VIEW_STUDENT) {
 	
  			$result = sprintf ("
  				<div>
