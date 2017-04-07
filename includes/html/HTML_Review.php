@@ -6,7 +6,15 @@ require_once (__DIR__ . "/../eal/EAL_Review.php");
 class HTML_Review {
 	
 	
-	public static function getHTML_Review (EAL_Review $review) {
+	public static function getHTML_Level (EAL_Review $review, int $viewType, string $prefix="") {
+		
+		$disabled = TRUE;
+		if ($viewType == HTML_Object::VIEW_EDIT) $disabled = FALSE;
+		
+		return HTML_Object::getHTML_Level($prefix . 'review', $review->level, $review->getItem()->level, $disabled, TRUE, '');
+	}
+	
+	public static function getHTML_Review (EAL_Review $review, int $viewType, string $prefix="") {
 	
 		// Titel
 		$review_html  = sprintf ("
@@ -30,9 +38,9 @@ class HTML_Review {
 // 		}
 // 		$review_meta  = sprintf ("<div><b>%s</b></div><br />", $overall_String );
 
-		$review_meta .= sprintf ("<div>%s</div><br/>", HTML_Review::getHTML_Overall($review, HTML_Object::VIEW_REVIEWER));
-		$review_meta .= sprintf ("<div>%s</div><br/>", HTML_Object::getLevelHTML('review_' . $review->id, $review->level,  $review->getItem()->level, "disabled", 1, ''));
-	
+		$review_meta .= sprintf ("<div>%s</div><br/>", HTML_Review::getHTML_Overall($review, HTML_Object::VIEW_REVIEW));
+		$review_meta .= sprintf ("<div>%s</div><br/>", self::getHTML_Level($review, $viewType, $prefix));
+		
 	
 		return sprintf ("
 			<div id='poststuff'>
@@ -60,7 +68,7 @@ class HTML_Review {
 		
 		$result = "";
 		
-		if ($viewType == HTML_Object::VIEW_EDITOR) {
+		if ($viewType == HTML_Object::VIEW_EDIT) {
 			$result .= sprintf ("<input type='hidden' id='item_id' name='item_id'  value='%d'>", $review->item_id);
 			$result .= sprintf ("<table style='font-size:100%%'>");
 			$result .= sprintf ("<tr><td><input type='radio' id='review_overall_0' name='review_overall' value='1' %s onclick='%s;'>Item akzeptiert</td></tr>", (($review->overall==1) ? "checked" : ""), $callback);
@@ -69,7 +77,7 @@ class HTML_Review {
 			$result .= sprintf ("</table>");
 		}
 		
-		if ($viewType == HTML_Object::VIEW_REVIEWER) {
+		if ($viewType == HTML_Object::VIEW_REVIEW) {
 			$result .= sprintf ("<table style='font-size:100%%'>");
 			$result .= sprintf ("<tr><td><input type='radio' %s>Item akzeptiert</td></tr>", (($review->overall==1) ? "checked" : "disabled"));
 			$result .= sprintf ("<tr><td><input type='radio' %s>Item &uuml;berarbeiten</td></tr>", (($review->overall==2) ? "checked" : "disabled"));
@@ -94,7 +102,7 @@ class HTML_Review {
 		$html_head .= "</tr>";
 			
 		$html_script = "";
-		if ($viewType==HTML_Object::VIEW_EDITOR) {
+		if ($viewType==HTML_Object::VIEW_EDIT) {
 			$html_script = "
 				<script>
 					var $ = jQuery.noConflict();
@@ -110,14 +118,14 @@ class HTML_Review {
 		$html_rows = "";
 		foreach (EAL_Review::$dimension1 as $k1 => $v1) {
 			$html_rows .= "<tr><td valign='top'style='padding:0.5em'>{$v1}<br/>";
-			if ($viewType==HTML_Object::VIEW_EDITOR) $html_rows .= "<a onclick=\"setRowGood(this);\">(alle gut)</a>";
+			if ($viewType==HTML_Object::VIEW_EDIT) $html_rows .= "<a onclick=\"setRowGood(this);\">(alle gut)</a>";
 			$html_rows .= "</td>";
 			foreach (EAL_Review::$dimension2 as $k2 => $v2) {
 				$html_rows .= "<td style='padding:0.5em; border-style:solid; border-width:1px;'>";
 				foreach ($values as $k3 => $v3) {
 					$checked = ($review->score[$k1][$k2]==$k3+1);
 					$html_rows .= "<input type='radio' id='{$k1}_{$k2}_{k3}' name='review_{$k1}_{$k2}' value='" . ($k3+1) . "'";
-					$html_rows .= (($viewType==HTML_Object::VIEW_EDITOR) || $checked) ? "" : " disabled";
+					$html_rows .= (($viewType==HTML_Object::VIEW_EDIT) || $checked) ? "" : " disabled";
 					$html_rows .= ($checked ? " checked='checked'" : "") . ">" . $v3 . "<br/>";
 				}
 				$html_rows .= "</td>";

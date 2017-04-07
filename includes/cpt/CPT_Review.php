@@ -124,7 +124,7 @@ class CPT_Review extends CPT_Object {
 	
 		global $review;
 		if (!is_null($review->getItem())) {
-			$html = HTML_Item::getHTML_Item($review->getItem(), HTML_Object::VIEW_REVIEWER);
+			$html = HTML_Item::getHTML_Item($review->getItem(), HTML_Object::VIEW_REVIEW);
 			echo $html;
 		}
 	}
@@ -139,7 +139,7 @@ class CPT_Review extends CPT_Object {
 	public function WPCB_mb_level ($post, $vars) {
 
 		global $review;
-		print (HTML_Object::getLevelHTML('review', $review->level,  $review->getItem()->level, "", 1, ''));
+		print (HTML_Review::getHTML_Level($review, HTML_Object::VIEW_EDIT));
 	}
 	
 	
@@ -161,14 +161,14 @@ class CPT_Review extends CPT_Object {
 		<?php
 		
 		global $review;
-		print (HTML_Review::getHTML_Overall($review, HTML_Object::VIEW_EDITOR, "setAccept()"));
+		print (HTML_Review::getHTML_Overall($review, HTML_Object::VIEW_EDIT, "setAccept()"));
 	}
 	
 	
 	public function WPCB_mb_learnout ($post, $vars) {
 	
 		global $review;
-		print (HTML_Item::getHTML_LearningOutcome($review->getItem(), HTML_Object::VIEW_REVIEWER));
+		print (HTML_Item::getHTML_LearningOutcome($review->getItem(), HTML_Object::VIEW_REVIEW));
 	}
 	
 	

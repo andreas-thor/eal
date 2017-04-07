@@ -150,20 +150,8 @@ class CPT_LearnOut extends CPT_Object {
 	
 
 	public function WPCB_mb_level ($post, $vars) {
-	
-		?>
-		<script>
-			// callback javascript function is called when a new level is clicked --> matching verbs are shown
-			function showSuperVerbs (e, levIT, levITs, levLO, levLOs) {
-				var j = jQuery.noConflict();
-				j(document).find("#eal_superverbs").find("div").hide();
-				j(document).find("#eal_superverbs").find("div:eq(" + (levIT-1) + ")").show();
-			}
-		</script>
-		<?php		
-		
 		global $learnout;
-		print (HTML_Object::getLevelHTML('learnout', $learnout->level, null, "", 0, 'showSuperVerbs'));
+		print (HTML_Learnout::getHTML_Level($learnout, HTML_Object::VIEW_EDIT));
 	}
 		
 

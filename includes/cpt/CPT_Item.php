@@ -169,33 +169,12 @@ class CPT_Item extends CPT_Object{
 	
 	public function WPCB_mb_learnout ($post, $vars) {
 		global $item;
-		print (HTML_Item::getHTML_LearningOutcome($item, HTML_Object::VIEW_EDITOR));
+		print (HTML_Item::getHTML_LearningOutcome($item, HTML_Object::VIEW_EDIT));
 	}
 	
 	public function WPCB_mb_level ($post, $vars) {
-	
-		?>
-		<script>
-			function checkLOLevel (e, levIT, levITs, levLO, levLOs) {
-				if (levIT == levLO) return;
-
-				if (levLO == 0) {
-					alert (unescape ("Learning Outcome hat keine Anforderungsstufe f%FCr diese Wissensdimension."));
-					return;
-				}
-				
-				if (levIT > levLO) {
-					alert ("Learning Outcome hat niedrigere Anforderungsstufe! (" + levLOs + ")");
-				} else {
-					alert (unescape ("Learning Outcome hat h%F6here Anforderungsstufe! (") + levLOs + ")");
-				}	
-				
-			}
-		</script>
-		<?php		
-		
 		global $item;
-		print (HTML_Object::getLevelHTML("item", $item->level, (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level), "", 0, 'checkLOLevel'));
+		print (HTML_Item::getHTML_Level($item, HTML_Object::VIEW_EDIT));
 	}
 	
 	
@@ -214,7 +193,7 @@ class CPT_Item extends CPT_Object{
 		printf ("<input type='hidden' id='post_content' name='post_content'  value='%s'>", microtime());
 		
 		global $item;
-		print (HTML_Item::getHTML_NoteFlag($item, HTML_Object::VIEW_EDITOR));
+		print (HTML_Item::getHTML_NoteFlag($item, HTML_Object::VIEW_EDIT));
 	}
 
 	

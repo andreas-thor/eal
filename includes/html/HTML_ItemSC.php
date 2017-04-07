@@ -35,7 +35,7 @@ class HTML_ItemSC  {
 		}
 		
 		
-		if ($viewType == HTML_Object::VIEW_REVIEWER) {
+		if ($viewType == HTML_Object::VIEW_REVIEW) {
 
 			// answers a table line with 2 columns (answers, points); points>0 in bold ...
 			foreach ($item->answers as $a) {
@@ -52,7 +52,7 @@ class HTML_ItemSC  {
 		} 
 		
 		
-		if ($viewType == HTML_Object::VIEW_EDITOR) {
+		if ($viewType == HTML_Object::VIEW_EDIT) {
 		
 			// used to be inserted dynamically when new answer is added
 			$answerLine = '
