@@ -4,7 +4,7 @@ class VIEW_Item {
 
 	
 	public static function viewItemBasket () {
-		VIEW_Item::viewItem(EAL_ItemBasket::get());
+		VIEW_Item::viewItemWithReview(EAL_ItemBasket::get());
 	}
 	
 	public static function viewItem (array $itemids = array()) {
@@ -67,6 +67,96 @@ class VIEW_Item {
 			count($itemids), $html_select, $html_items
 		);
 	}
+	
+	
+	
+	
+	public static function viewItemWithReview (array $itemids = array(), array $reviewids = array()) {
+		
+		
+		$html_items = "";
+		$html_select = "";
+		$count = 0;
+		foreach ($itemids as $item_id) {
+			$post = get_post($item_id);
+			if ($post == null) continue;
+				
+			$item = EAL_Item::load($post->post_type, $item_id);
+
+			$html_reviews = "";
+			foreach ($item->getReviews() as $review) {
+				$html_reviews  .= HTML_Review::getHTML_Review($review, HTML_Object::VIEW_REVIEW);
+			}
+				
+			
+			
+			$html_select .= sprintf("<option value='%d'>%s</option>", $count, $item->title);
+			$html_items  .= sprintf("
+				<div id='poststuff'>
+					<hr/>
+					<div id='post-body' class='metabox-holder columns-2'>
+						<div class='postbox-container' id='postbox-container-2'>
+							<h1>%s</h1>%s
+						</div>
+						<div class='postbox-container' id='postbox-container-1'>
+							<div style='background-color:#FFFFFF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>
+							%s
+							</div>
+						</div>
+					</div>
+					<br style='clear:both;'/>
+					<div style='margin-left:3em'>
+						%s
+					</div>
+				</div>"
+					, $item->title
+					, HTML_Item::getHTML_Item($item, HTML_Object::VIEW_STUDENT)
+					, HTML_Item::getHTML_Metadata($item, HTML_Object::VIEW_STUDENT, $item->id)
+					, $html_reviews
+					);
+			
+				
+			
+			
+			
+			$count++;
+			
+		}
+		
+		printf ("
+			<div class='wrap'>
+				<h1>Item + Review Viewer</h1>
+				<form>
+					 <select onChange='for (x=0; x<this.form.nextElementSibling.children.length; x++) {  this.form.nextElementSibling.children[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'>
+						<option value='-1' selected>[All %d Items]</option>
+						%s
+					</select>
+					<input type='checkbox' checked onChange='for (x=0; x<this.form.nextElementSibling.children.length; x++) { this.form.nextElementSibling.children[x].querySelector(\"#postbox-container-1\").style.display = (this.checked==true) ? \"block\" :  \"none\"; }'/> Show Metadata
+				</form>
+				<div>%s</div>
+			</div>",
+				count($itemids), $html_select, $html_items
+				);
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	

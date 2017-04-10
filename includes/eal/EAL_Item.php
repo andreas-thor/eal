@@ -218,6 +218,31 @@ class EAL_Item {
 		return $this->learnout;
 	}
 	
+	
+	/**
+	 * 
+	 * @return array of EAL_Review
+	 */
+	public function getReviews (): array {
+		
+		
+		global $wpdb;
+		$sqlres = $wpdb->get_col ("
+			SELECT R.id 
+			FROM {$wpdb->prefix}eal_review R 
+			JOIN {$wpdb->prefix}posts RP ON (R.id = RP.id)
+			WHERE RP.post_parent=0 AND R.item_id = {$this->id} AND RP.post_status IN ('publish', 'pending', 'draft')");
+		
+		$res = array();
+		foreach ($sqlres as $review_id) {
+			array_push($res, new EAL_Review($review_id));
+		}
+		
+		return $res;
+	}
+	
+	
+	
 	protected function getPoints() { return -1; }
 	
 	public function getStatusString () {
