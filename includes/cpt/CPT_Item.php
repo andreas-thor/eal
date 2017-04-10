@@ -234,7 +234,7 @@ class CPT_Item extends CPT_Object{
 			$array .= ", I.level_PW AS level_PW";
 			$array .= ", I.level_KW AS level_KW";
 			$array .= ", I.points AS item_points";
-			$array .= ", (select count(*) from {$wpdb->prefix}eal_review AS R join {$wpdb->posts} AS RP ON (R.ID=RP.ID) where RP.post_parent=0 AND I.id = R.item_id) AS no_of_reviews";
+			$array .= ", (select count(*) from {$wpdb->prefix}eal_review AS R join {$wpdb->posts} AS RP ON (R.ID=RP.ID) where RP.post_parent=0 AND I.id = R.item_id AND RP.post_status IN ('publish', 'pending', 'draft')) AS no_of_reviews";
 			$array .= ", L.title AS learnout_title";
 			$array .= ", L.id AS learnout_id ";
 			$array .= ", I.difficulty as difficulty ";

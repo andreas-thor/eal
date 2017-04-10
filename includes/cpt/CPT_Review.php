@@ -20,7 +20,7 @@ class CPT_Review extends CPT_Object {
 			'review_title' => 'Title',
 			'item_id' => 'Item ID', 
 			'last_modified' => 'Date', 
-			'item_type' => 'Type', 
+// 			'item_type' => 'Type', 
 			'review_author' => 'Author Review', 
 			'item_author' => 'Author Item', 
 			'score' => 'Score', 
@@ -133,7 +133,7 @@ class CPT_Review extends CPT_Object {
 	public function WPCB_mb_score ($post, $vars) {
 		
 		global $review;
-		print (HTML_Review::getHTML_Score($review, TRUE));
+		print (HTML_Review::getHTML_Score($review, HTML_Object::VIEW_EDIT));
 	}
 	
 	public function WPCB_mb_level ($post, $vars) {

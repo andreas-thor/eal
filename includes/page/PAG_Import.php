@@ -9,132 +9,86 @@ class PAG_Import {
 	public static function createPage () {
 		
 		if ((!isset($_POST['action'])) || ($_POST['action']=='')) {
- 			self::HTML_uploadForm();
+ 			self::showUploadForm();
 		}
 		
 		if ($_POST['action']=='upload') {
-			//	checks for errors and that file is uploaded
-			if (($_FILES['uploadedfile']['error'] == UPLOAD_ERR_OK) && (is_uploaded_file($_FILES['uploadedfile']['tmp_name']))) {
-		
-				
-				
-				// TODO: check file format parameter (ILIAS5, ...)
-				$items = Ilias::import($_FILES['uploadedfile']);
-				if (is_string($items)) {
-					printf ("<div class='wrap'><h1>%s</h1></div>", $items);
-				} else {
-					self::HTML_itemlist($items); // , $ilias->dir, $ilias->name);
-				}				
-				
-			} else {
-				printf ("<div class='wrap'><h1>Error %s</h1></div>", $_FILES['uploadedfile']['error']);
-			}
+			self::showPreview();
 		}
 
 		if ($_POST['action']=='import') {
-		
-			foreach (explode (",", $_POST['itemids']) as $itemid) {
-				
-				$tempid = ($itemid>0) ? -$itemid : $itemid;
-				$prefix = "import_" . $itemid . "_";
-				
-				$status = '';
-				switch (abs ($_POST[$prefix."item_status"])) {
-					case  1: $status = 'publish'; break;
-					case  2: $status = 'pending'; break;
-					case  3: $status = 'draft'; break;
-				}
-				if ($status == '') continue;
-				
-				printf ("Item mit id " . $itemid . " und Status " . $status);
-				
-			
-				
-				$item = EAL_Item::load($_POST[$prefix."post_type"], $tempid, $prefix);
-				$terms = $_POST[$prefix."taxonomy"];
-				
-				if ($itemid<0) {
-					$postarr = array ();
-					$postarr['ID'] = 0;	// no EAL-ID
-					$postarr['post_title'] = $item->title;
-					$postarr['post_status'] = $status;
-					$postarr['post_type'] = $item->type;
-					$postarr['post_content'] = microtime();
-					$postarr['tax_input'] = array ($item->domain => $terms);
-					$item->id = wp_insert_post ($postarr);	// returns the item_id of the created post / item
-				} else {
-					$item->id = $itemid;
-					$post = get_post ($item->id);
-					$post->post_title = $item->title;
-					$post->status = $status;
-					$post->post_content = microtime();	// ensures revision
-					wp_set_post_terms($item->id, $terms, $item->domain, FALSE );
-					wp_update_post ($post);
-				}
-				
-				$item->saveToDB();
-			}
-		}
-		
-		if ($_POST['action']=='import2') {
-			
-			$ilias = new EXP_Ilias($_POST['file_dir'], $_POST['file_name']);
-			$items = $ilias->loadAllItems();
-			
-			foreach ($_POST["import"] as $importIdent) {
-				
-				$item = $items[$importIdent];
-				
-				// update with metadata
-				$item->learnout_id = $_POST[$importIdent . '_learnout_id'];
-				$item->level["FW"] = $_POST[$importIdent . '__level_FW'];
-				$item->level["KW"] = $_POST[$importIdent . '__level_KW'];
-				$item->level["PW"] = $_POST[$importIdent . '__level_PW'];
-				
-				// save
-				$ilias->saveItem($item, $_POST[$importIdent . '__taxonomy']);
-				printf ("<br/>Save item with id %s and ident %s", $item->id, $importIdent);
-				
-				
-			}
-			
-		}
-		
-		
+			self::doImport();
+		}		
 	}
 	
 	
-	public static function HTML_itemlist(array $items /*, string $dir, string $name*/) {
+	private static function doImport () {
 		
+		$res = "";
+		$count = 0;
+		foreach (explode (",", $_POST['itemids']) as $itemid) {
 		
+			$count++;
+			$tempid = ($itemid>0) ? -$itemid : $itemid;
+			$prefix = "import_" . $itemid . "_";
 		
-		$html_statusSummary = "
-			<br><br><table style='border-width:1px; font-size:100%'>
-				<tr>
-					<th><button type='submit' name = 'action' value = 'import' id='importstatussum_all'>Import 42 Items</button></th>
-					<th>New</th>
-					<th>Update</th>
-				</tr>
-				<tr>
-					<td>Published</td><td align='right' id='importstatussum_-1'></td><td align='right' id='importstatussum_1'></td>
-				</tr>
-				<tr>
-		<td>Pending Review</td><td align='right' id='importstatussum_-2'></td><td align='right' id='importstatussum_2'></td>
-				</tr>
-				<tr>
-		<td>Draft</td><td align='right' id='importstatussum_-3'></td><td align='right' id='importstatussum_3'></td>
-				</tr>
-				<tr>
-		<td>Do not Import</td><td align='right' id='importstatussum_0'></td><td></td>
-				</tr>
-			</table>
-		";
+			$status = '';
+			switch (abs ($_POST[$prefix."item_status"])) {
+				case  1: $status = 'publish'; break;
+				case  2: $status = 'pending'; break;
+				case  3: $status = 'draft'; break;
+			}
+			if ($status == '') {
+				$res .= sprintf ("<tr><td align='right'>%d.</td><td>Item ignored</td><td><b>%s</b></td></tr>", $count, $_POST[$prefix."post_title"]);
+				continue;
+			}
 		
+			$item = EAL_Item::load($_POST[$prefix."post_type"], $tempid, $prefix);
+			$terms = $_POST[$prefix."taxonomy"];
 		
+			if ($itemid<0) {
+				$postarr = array ();
+				$postarr['ID'] = 0;	// no EAL-ID
+				$postarr['post_title'] = $item->title;
+				$postarr['post_status'] = $status;
+				$postarr['post_type'] = $item->type;
+				$postarr['post_content'] = microtime();
+				$postarr['tax_input'] = array ($item->domain => $terms);
+				$item->id = wp_insert_post ($postarr);	// returns the item_id of the created post / item
+			} else {
+				$item->id = $itemid;
+				$post = get_post ($item->id);
+				$post->post_title = $item->title;
+				$post->status = $status;
+				$post->post_content = microtime();	// ensures revision
+				wp_set_post_terms($item->id, $terms, $item->domain, FALSE );
+				wp_update_post ($post);
+			}
 		
+			$item->saveToDB();
+			
+			$res .= sprintf ("<tr><td align='right'>%d.</td><td>Item %s</td><td><b>%s</b> (Id=%s)</td></tr>", $count, ($itemid<0) ? "created" : "updated", $item->title, $item->id);
+		}
 		
+		printf ("<div class='wrap'><h1>Import Summary</h1><table>%s</table></div>", $res);
+	}
+
+	
+	private static function showPreview () {
+	
+		//	checks for errors and that file is uploaded
+		if (!(($_FILES['uploadedfile']['error'] == UPLOAD_ERR_OK) && (is_uploaded_file($_FILES['uploadedfile']['tmp_name'])))) {
+			printf ("<div class='wrap'><h1>File Error: %s</h1></div>", $_FILES['uploadedfile']['error']);
+			return;
+		}
 		
-		
+		// TODO: check file format parameter (ILIAS5, ...)
+		$items = Ilias::import($_FILES['uploadedfile']);
+		if (is_string($items)) {
+			printf ("<div class='wrap'><h1>Import Error: %s</h1></div>", $items);
+			return;
+		}
+			
 		$html_items = "";
 		$html_select = "";
 		$count = 0;
@@ -143,25 +97,25 @@ class PAG_Import {
 			array_push($itemids, $item->id);
 			$html_select .= sprintf("<option value='%d'>%s</option>", $count, $item->title);
 			$html_items  .= sprintf("
-						<div id='poststuff'>
-							<hr/>
-							<div id='post-body' class='metabox-holder columns-2'>
-								<div class='postbox-container' id='postbox-container-2'>
-									<h1>%s</h1>%s
-								</div>
-								<div class='postbox-container' id='postbox-container-1'>
-									<div style='background-color:#FFFFFF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>
-									%s
-									</div>
-								</div>
+				<div id='poststuff'>
+					<hr/>
+					<div id='post-body' class='metabox-holder columns-2'>
+						<div class='postbox-container' id='postbox-container-2'>
+							<h1>%s</h1>%s
+						</div>
+						<div class='postbox-container' id='postbox-container-1'>
+							<div style='background-color:#FFFFFF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>
+							%s
 							</div>
-							<br style='clear:both;'/>
-						</div>"
-					, $item->title
-					, HTML_Item::getHTML_Item($item, HTML_Object::VIEW_IMPORT, "import_{$item->id}_")
-					, HTML_Item::getHTML_Metadata($item, HTML_Object::VIEW_IMPORT, "import_{$item->id}_")
-					);
-				
+						</div>
+					</div>
+					<br style='clear:both;'/>
+				</div>"
+				, $item->title
+				, HTML_Item::getHTML_Item($item, HTML_Object::VIEW_IMPORT, "import_{$item->id}_")
+				, HTML_Item::getHTML_Metadata($item, HTML_Object::VIEW_IMPORT, "import_{$item->id}_")
+				);
+		
 			$count++;
 		}
 
@@ -177,14 +131,18 @@ class PAG_Import {
 					<input type='checkbox' checked onChange='for (x=0; x<this.form.nextElementSibling.lastElementChild.children.length; x++) { this.form.nextElementSibling.lastElementChild.children[x].querySelector(\"#postbox-container-1\").style.display = (this.checked==true) ? \"block\" :  \"none\"; }'/> Show Metadata
 				</form>
 				<form  enctype='multipart/form-data' action='admin.php?page=%s' method='post'>
-					%s
+					<table style='border-width:1px; font-size:100%%'>
+						<tr><th><button type='submit' name = 'action' value = 'import' id='importstatussum_all'></button></th><th>New</th><th>Update</th></tr>
+						<tr><td>Published</td><td align='right' id='importstatussum_-1'></td><td align='right' id='importstatussum_1'></td></tr>
+						<tr><td>Pending Review</td><td align='right' id='importstatussum_-2'></td><td align='right' id='importstatussum_2'></td></tr>
+						<tr><td>Draft</td><td align='right' id='importstatussum_-3'></td><td align='right' id='importstatussum_3'></td></tr>
+						<tr><td>Do not Import</td><td align='right' id='importstatussum_0'></td><td></td></tr>
+					</table>
 					<input type='hidden' id='itemids' name='itemids'  value='%s'>
-				
 					<div>%s</div>
 				</form>
 			</div>",
-				
-				count($items), $html_select, $_REQUEST["page"], $html_statusSummary, join(",", $itemids), $html_items 
+			count($items), $html_select, $_REQUEST["page"], join(",", $itemids), $html_items 
 		);
 		
 		
@@ -212,111 +170,36 @@ class PAG_Import {
 					updateimportstatus();
 				}
 		
-				updateimportstatus();
 				
 				jQuery(document).ready(function($) {
-					$('.previewButton').click(function(){
-						console.log ($(this).parent().parent().siblings("div").children(":last-child"));
-						$(this).parent().parent().siblings("div").children(":last-child").css({display:"none"});
-						$(this).parent().parent().children(":last-child").toggle();
-					});
-		
-		
-					$('.importAll').change(function(){
-						$(this).siblings("div").find(".importCheckbox").prop("checked",this.checked);
-						noofchecked = $(this).parent().parent().parent().find(".importCheckbox:checked").length;
-						$("#importButton").text("Import " + noofchecked + " Item(s)");
-					});
-		
-		
 					$('.importstatus').change(function(){
 						updateimportstatus();
 					});
-		
-		
-					
-					$('.importCheckbox').change(function(){
-						noofchecked = $(this).parent().parent().parent().find(".importCheckbox:checked").length;
-						$(this).parent().parent().parent().find(".importAll").prop("checked", noofchecked == ($(this).parent().parent().parent().find(".importCheckbox").length));
-						$("#importButton").text("Import " + noofchecked + " Item(s)");
-					});
+					updateimportstatus();
 					
 				});
 				</script>
-				<?php 
-				
-		
-/*		
-		printf ("<div class='wrap'><h1>Select Items & Test Results for Import</h1>");
-		printf ("<form enctype='multipart/form-data' action='admin.php?page=import-items' method='post'>");
-// 		printf ("<input type='hidden' name='file_dir' value='%s'>", $dir);
-// 		printf ("<input type='hidden' name='file_name' value='%s'>", $name);
-		printf ("<div style='margin-top:2em'>");
-		printf ("<input class='importAll' type='checkbox' value='1' checked>&nbsp;");
-		printf ("<button id='importButton' type='submit' name='action' value='import'>Import %s Items</button>", count($items));
-		
-		foreach ($items as $ident=>$item) {
-
-// 			if ($item->type == "itemsc") $symbol = "<span class='dashicons dashicons-marker'></span>";
-// 			if ($item->type == "itemmc") $symbol = "<span class='dashicons dashicons-forms'></span>";
-			
-			printf ("					
-				<div style='margin-top:2em;'>
-					<hr/>
-					<div style='margin-top:0em;'>
-						<input class='importCheckbox' type='checkbox' name='import[]' value='%s' checked>&nbsp;
-						<input class='previewButton' type='button' value='Preview'></input>&nbsp;
-						%s %s
-						
-					</div>
-					<div style='margin-top:2em; display:none'>
-						%s
-						<br style='clear:both;'/>
-					</div>
-				</div>
-				", $ident, $item->title, $symbol, HTML_Item::getHTML_Item($item, FALSE, TRUE, $ident . "_"));
-		}
-
-		printf ("</div></form></div>");
-*/		
+				<?php 		
 		
 	}
 	
 	
-	public static function HTML_uploadForm () {
+	private static function showUploadForm () {
 		
-?>
+		?>
 		<div class="wrap">
 			<h1>Upload Items & Test Results</h1>
 			<form  enctype="multipart/form-data" action="admin.php?page=<?php print ($_REQUEST["page"]); ?>" method="post">
 				<table class="form-table">
 					<tbody>
 						<tr>
-							<th><label>AFile</label></th>
+							<th><label>File</label></th>
 							<td><input class="menu-name regular-text menu-item-textbox input-with-default-title" name="uploadedfile" type="file" size="30" accept="text/*"></td>
 						</tr>
 						<tr>
 							<th><label>Format</label></th>
 							<td><select style='width:12em' name="format" values="ilias5"><option>ILIAS 5</option></select></td>
 						</tr>
-						
-						<!-- 
-						<tr>
-							<th><label>Items</label></th>
-							<td>
-								<fieldset> 
-									<input  id="items_create_and_update" type="radio" 	name="newitem" value="create_and_update" checked> 
-									<label for="items_create_and_update"> Create new items and update existing items</label><br>
-									 
-									<input  id="items_create" type="radio"				name="newitem" value="create"> 
-									<label for="items_create"> Create new items only (existing items remain unchanged)</label><br>
-									
-									<input  id="items_update" type="radio"				name="newitem" value="update"> 
-									<label for="items_update"> Update existing items only (no new items are created)</label>
-								</fieldset>
-							</td>
-						</tr>
-						-->
 						<tr>
 							<th>
 								<input type="submit" name="action" class="button button-primary" value="upload">
@@ -327,9 +210,7 @@ class PAG_Import {
 				</table>
 			</form>
 		</div>	
-						
-			
-<?php 		
+		<?php 		
 		
 	}
 	
