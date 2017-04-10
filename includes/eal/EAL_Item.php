@@ -41,7 +41,7 @@ class EAL_Item {
 	
 	
 	
-	function __construct(int $item_id = -1) {
+	function __construct(int $item_id = -1, string $prefix="") {
 		
 		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
 		
@@ -61,8 +61,8 @@ class EAL_Item {
 		if ($item_id > 0) {
 			$this->loadFromDB($item_id);
 		} else {
-			if ($_POST["post_type"] == $this->type) {
-				$this->loadFromPOSTRequest();
+			if ($_POST[$prefix."post_type"] == $this->type) {
+				$this->loadFromPOSTRequest($prefix);
 			} else {
 				global $post;
 					
@@ -79,9 +79,9 @@ class EAL_Item {
 	}
 	
 	
-	public static function load (string $item_type, int $item_id) {
-		if ($item_type == 'itemsc') return new EAL_ItemSC($item_id);
-		if ($item_type == 'itemmc') return new EAL_ItemMC($item_id);
+	public static function load (string $item_type, int $item_id, string $prefix="") {
+		if ($item_type == 'itemsc') return new EAL_ItemSC($item_id, $prefix);
+		if ($item_type == 'itemmc') return new EAL_ItemMC($item_id, $prefix);
 		return null;
 	}
 	
@@ -89,27 +89,27 @@ class EAL_Item {
 	/**
 	 * Initialize item from _POST Request data
 	 */
-	protected function loadFromPOSTRequest () {
+	protected function loadFromPOSTRequest (string $prefix="") {
 	
-		$this->id = $_POST["post_ID"];
-		$this->title = $_POST["post_title"];
-		$this->description = isset($_POST['item_description']) ? $_POST['item_description'] : null;
-		$this->question = isset ($_POST['item_question']) ? $_POST['item_question'] : null;
+		$this->id = $_POST[$prefix."post_ID"];
+		$this->title = $_POST[$prefix."post_title"];
+		$this->description = isset($_POST[$prefix.'item_description']) ? $_POST[$prefix.'item_description'] : null;
+		$this->question = isset ($_POST[$prefix.'item_question']) ? $_POST[$prefix.'item_question'] : null;
 
-		$this->level["FW"] = isset ($_POST['item_level_FW']) ? $_POST['item_level_FW'] : null;
-		$this->level["KW"] = isset ($_POST['item_level_KW']) ? $_POST['item_level_KW'] : null;
-		$this->level["PW"] = isset ($_POST['item_level_PW']) ? $_POST['item_level_PW'] : null;
-		$this->learnout_id = isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : (isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : null);
+		$this->level["FW"] = isset ($_POST[$prefix.'item_level_FW']) ? $_POST[$prefix.'item_level_FW'] : null;
+		$this->level["KW"] = isset ($_POST[$prefix.'item_level_KW']) ? $_POST[$prefix.'item_level_KW'] : null;
+		$this->level["PW"] = isset ($_POST[$prefix.'item_level_PW']) ? $_POST[$prefix.'item_level_PW'] : null;
+		$this->learnout_id = isset ($_GET[$prefix.'learnout_id']) ? $_GET[$prefix.'learnout_id'] : (isset ($_POST[$prefix.'learnout_id']) ? $_POST[$prefix.'learnout_id'] : null);
 		$this->learnout = null;		// lazy loading
 		
 		$this->difficulty = null;
-		$this->note = isset ($_POST['item_note']) ? $_POST['item_note'] : null;
-		$this->flag = isset ($_POST['item_flag']) ? $_POST['item_flag'] : null;
+		$this->note = isset ($_POST[$prefix.'item_note']) ? $_POST[$prefix.'item_note'] : null;
+		$this->flag = isset ($_POST[$prefix.'item_flag']) ? $_POST[$prefix.'item_flag'] : null;
 		
 		// 	$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
-		$this->domain = isset ($_POST["domain"]) ? $_POST["domain"] : ""; 
-		if (($this->domain == "") && (isset($_POST['tax_input']))) {
-			foreach ($_POST['tax_input'] as $key => $value) {
+		$this->domain = isset ($_POST[$prefix."domain"]) ? $_POST[$prefix."domain"] : ""; 
+		if (($this->domain == "") && (isset($_POST[$prefix.'tax_input']))) {
+			foreach ($_POST[$prefix.'tax_input'] as $key => $value) {
 				$this->domain = $key;
 				break;
 			}
@@ -169,7 +169,7 @@ class EAL_Item {
 	
 	public static function save ($post_id, $post) { }
 	
-	protected function saveToDB () {
+	public function saveToDB () {
 		
 		global $wpdb;
 		

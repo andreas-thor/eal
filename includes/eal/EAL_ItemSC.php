@@ -7,7 +7,7 @@ class EAL_ItemSC extends EAL_Item {
 	public $answers;
 	
 	
-	function __construct(int $item_id = -1) {
+	function __construct(int $item_id = -1, string $prefix="") {
 		$this->type = "itemsc";
 		$this->answers = array (
 			array ('answer' => '', 'points' => 1),
@@ -15,7 +15,7 @@ class EAL_ItemSC extends EAL_Item {
 			array ('answer' => '', 'points' => 0),
 			array ('answer' => '', 'points' => 0));
 		
-		parent::__construct($item_id);
+		parent::__construct($item_id, $prefix);
 		
 		
 		
@@ -27,14 +27,14 @@ class EAL_ItemSC extends EAL_Item {
 	 * @param unknown $post_id
 	 * @param unknown $post
 	 */
-	protected function loadFromPOSTRequest () {
+	protected function loadFromPOSTRequest (string $prefix="") {
 		
-		parent::loadFromPOSTRequest();
+		parent::loadFromPOSTRequest($prefix);
 		
 		$this->answers = array();
-		if (isset($_POST['answer'])) {
-			foreach ($_POST['answer'] as $k => $v) {
-				array_push ($this->answers, array ('answer' => $v, 'points' => $_POST['points'][$k]));
+		if (isset($_POST[$prefix.'answer'])) {
+			foreach ($_POST[$prefix.'answer'] as $k => $v) {
+				array_push ($this->answers, array ('answer' => $v, 'points' => $_POST[$prefix.'points'][$k]));
 			}
 		}
 	}
@@ -94,7 +94,7 @@ class EAL_ItemSC extends EAL_Item {
 	
 	
 	
-	protected function saveToDB() {
+	public function saveToDB() {
 		
 		parent::saveToDB();
 		

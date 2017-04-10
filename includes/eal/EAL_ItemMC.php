@@ -7,7 +7,7 @@ class EAL_ItemMC extends EAL_Item {
 	public $answers = array();
 	
 	
-	function __construct(int $item_id = -1) {
+	function __construct(int $item_id = -1, string $prefix="") {
 		$this->type = "itemmc";
 		$this->answers = array (
 				array ('answer' => '', 'positive' => 1, 'negative' => 0),
@@ -15,7 +15,7 @@ class EAL_ItemMC extends EAL_Item {
 				array ('answer' => '', 'positive' => 0, 'negative' => 1),
 				array ('answer' => '', 'positive' => 0, 'negative' => 1)
 		);
-		parent::__construct($item_id);
+		parent::__construct($item_id, $prefix);
 	}
 	
 	
@@ -24,14 +24,14 @@ class EAL_ItemMC extends EAL_Item {
 	 * @param unknown $post_id
 	 * @param unknown $post
 	 */
-	protected function loadFromPOSTRequest () {
+	protected function loadFromPOSTRequest (string $prefix="") {
 	
-		parent::loadFromPOSTRequest();
+		parent::loadFromPOSTRequest($prefix);
 		
 		$this->answers = array();
-		if (isset($_POST['answer'])) {
-			foreach ($_POST['answer'] as $k => $v) {
-				array_push ($this->answers, array ('answer' => $v, 'positive' => $_POST['positive'][$k], 'negative' => $_POST['negative'][$k]));
+		if (isset($_POST[$prefix.'answer'])) {
+			foreach ($_POST[$prefix.'answer'] as $k => $v) {
+				array_push ($this->answers, array ('answer' => $v, 'positive' => $_POST[$prefix.'positive'][$k], 'negative' => $_POST[$prefix.'negative'][$k]));
 			}
 		}
 	}
@@ -99,7 +99,7 @@ class EAL_ItemMC extends EAL_Item {
 	}
 	
 	
-	protected function saveToDB() {
+	public function saveToDB() {
 	
 		parent::saveToDB();
 		

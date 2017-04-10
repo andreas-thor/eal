@@ -33,6 +33,47 @@ class PAG_Import {
 
 		if ($_POST['action']=='import') {
 		
+			foreach (explode (",", $_POST['itemids']) as $itemid) {
+				
+				$tempid = ($itemid>0) ? -$itemid : $itemid;
+				$prefix = "import_" . $itemid . "_";
+				
+				$status = '';
+				switch (abs ($_POST[$prefix."item_status"])) {
+					case  1: $status = 'publish'; break;
+					case  2: $status = 'pending'; break;
+					case  3: $status = 'draft'; break;
+				}
+				if ($status == '') continue;
+				
+				printf ("Item mit id " . $itemid . " und Status " . $status);
+				
+			
+				
+				$item = EAL_Item::load($_POST[$prefix."post_type"], $tempid, $prefix);
+				$terms = $_POST[$prefix."taxonomy"];
+				
+				if ($itemid<0) {
+					$postarr = array ();
+					$postarr['ID'] = 0;	// no EAL-ID
+					$postarr['post_title'] = $item->title;
+					$postarr['post_status'] = $status;
+					$postarr['post_type'] = $item->type;
+					$postarr['post_content'] = microtime();
+					$postarr['tax_input'] = array ($item->domain => $terms);
+					$item->id = wp_insert_post ($postarr);	// returns the item_id of the created post / item
+				} else {
+					$item->id = $itemid;
+					$post = get_post ($item->id);
+					$post->post_title = $item->title;
+					$post->status = $status;
+					$post->post_content = microtime();	// ensures revision
+					wp_set_post_terms($item->id, $terms, $item->domain, FALSE );
+					wp_update_post ($post);
+				}
+				
+				$item->saveToDB();
+			}
 		}
 		
 		if ($_POST['action']=='import2') {
@@ -65,39 +106,41 @@ class PAG_Import {
 	
 	public static function HTML_itemlist(array $items /*, string $dir, string $name*/) {
 		
-?>
-		<script type="text/javascript">
-
-		jQuery(document).ready(function($) {
-			$('.previewButton').click(function(){
-				console.log ($(this).parent().parent().siblings("div").children(":last-child"));
-				$(this).parent().parent().siblings("div").children(":last-child").css({display:"none"});
-				$(this).parent().parent().children(":last-child").toggle();
-			});
-
-
-			$('.importAll').change(function(){
-				$(this).siblings("div").find(".importCheckbox").prop("checked",this.checked);
-				noofchecked = $(this).parent().parent().parent().find(".importCheckbox:checked").length;
-				$("#importButton").text("Import " + noofchecked + " Item(s)");
-			});
-
-			
-			$('.importCheckbox').change(function(){
-				noofchecked = $(this).parent().parent().parent().find(".importCheckbox:checked").length;
-				$(this).parent().parent().parent().find(".importAll").prop("checked", noofchecked == ($(this).parent().parent().parent().find(".importCheckbox").length));
-				$("#importButton").text("Import " + noofchecked + " Item(s)");
-			});
-			
-		});
-		</script>
-		<?php 		
+		
+		
+		$html_statusSummary = "
+			<br><br><table style='border-width:1px; font-size:100%'>
+				<tr>
+					<th><button type='submit' name = 'action' value = 'import' id='importstatussum_all'>Import 42 Items</button></th>
+					<th>New</th>
+					<th>Update</th>
+				</tr>
+				<tr>
+					<td>Published</td><td align='right' id='importstatussum_-1'></td><td align='right' id='importstatussum_1'></td>
+				</tr>
+				<tr>
+		<td>Pending Review</td><td align='right' id='importstatussum_-2'></td><td align='right' id='importstatussum_2'></td>
+				</tr>
+				<tr>
+		<td>Draft</td><td align='right' id='importstatussum_-3'></td><td align='right' id='importstatussum_3'></td>
+				</tr>
+				<tr>
+		<td>Do not Import</td><td align='right' id='importstatussum_0'></td><td></td>
+				</tr>
+			</table>
+		";
+		
+		
+		
+		
 		
 		
 		$html_items = "";
 		$html_select = "";
 		$count = 0;
+		$itemids = array ();
 		foreach ($items as $item) {
+			array_push($itemids, $item->id);
 			$html_select .= sprintf("<option value='%d'>%s</option>", $count, $item->title);
 			$html_items  .= sprintf("
 						<div id='poststuff'>
@@ -125,7 +168,7 @@ class PAG_Import {
 
 		printf ("
 			<div class='wrap'>
-				<h1>Item Viewer</h1>
+				<h1>Item Import Viewer</h1>
 				<form>
 					 <select onChange='for (x=0; x<this.form.nextElementSibling.lastElementChild.children.length; x++) {  this.form.nextElementSibling.lastElementChild.children[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'>
 						<option value='-1' selected>[All %d Items]</option>
@@ -134,12 +177,74 @@ class PAG_Import {
 					<input type='checkbox' checked onChange='for (x=0; x<this.form.nextElementSibling.lastElementChild.children.length; x++) { this.form.nextElementSibling.lastElementChild.children[x].querySelector(\"#postbox-container-1\").style.display = (this.checked==true) ? \"block\" :  \"none\"; }'/> Show Metadata
 				</form>
 				<form  enctype='multipart/form-data' action='admin.php?page=%s' method='post'>
-				<input id='submit' type='submit' name = 'Import'    value = 'import'>
+					%s
+					<input type='hidden' id='itemids' name='itemids'  value='%s'>
+				
 					<div>%s</div>
 				</form>
 			</div>",
-				count($itemids), $html_select, $_REQUEST["page"], $html_items 
+				
+				count($items), $html_select, $_REQUEST["page"], $html_statusSummary, join(",", $itemids), $html_items 
 		);
+		
+		
+		
+		?>
+				<script type="text/javascript">
+		
+				function updateimportstatus () {
+					var j = jQuery.noConflict();
+					
+					j("button#importstatussum_all").text("Import " + j(".importstatus option:selected[value!='0']").length + " Items");
+					for (i=-3; i<=3; i++) {
+						j("td#importstatussum_"+i).html(j(".importstatus option:selected[value='"+i+"']").length + " (<a onclick='setimportstatus(" + i + ");'>All)");
+					}
+				} 
+				
+				function setimportstatus (status) {
+					var j = jQuery.noConflict();
+					// status > 0 requires existing item 
+					if (status > 0) {
+						j(".importstatus").val(-status);	// set all as NEW first
+					}
+					// .. and for those with existing items set as UPDATE
+					j(".importstatus option[value='"+status+"']").parent().val(status);
+					updateimportstatus();
+				}
+		
+				updateimportstatus();
+				
+				jQuery(document).ready(function($) {
+					$('.previewButton').click(function(){
+						console.log ($(this).parent().parent().siblings("div").children(":last-child"));
+						$(this).parent().parent().siblings("div").children(":last-child").css({display:"none"});
+						$(this).parent().parent().children(":last-child").toggle();
+					});
+		
+		
+					$('.importAll').change(function(){
+						$(this).siblings("div").find(".importCheckbox").prop("checked",this.checked);
+						noofchecked = $(this).parent().parent().parent().find(".importCheckbox:checked").length;
+						$("#importButton").text("Import " + noofchecked + " Item(s)");
+					});
+		
+		
+					$('.importstatus').change(function(){
+						updateimportstatus();
+					});
+		
+		
+					
+					$('.importCheckbox').change(function(){
+						noofchecked = $(this).parent().parent().parent().find(".importCheckbox:checked").length;
+						$(this).parent().parent().parent().find(".importAll").prop("checked", noofchecked == ($(this).parent().parent().parent().find(".importCheckbox").length));
+						$("#importButton").text("Import " + noofchecked + " Item(s)");
+					});
+					
+				});
+				</script>
+				<?php 
+				
 		
 /*		
 		printf ("<div class='wrap'><h1>Select Items & Test Results for Import</h1>");

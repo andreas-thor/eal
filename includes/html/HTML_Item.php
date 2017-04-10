@@ -19,7 +19,7 @@ class HTML_Item  {
 	
 	public static function getHTML_Status (EAL_Item $item, int $viewType, string $prefix="") {
 	
-		$result = sprintf ("<select style='width:100%%' name='%sitem_status' align='right'>", $prefix);
+		$result = sprintf ("<select class='importstatus' style='width:100%%' name='%sitem_status' align='right'>", $prefix);
 		
 		if ($item->id > 0) {
 			foreach (["Published", "Pending Review", "Draft"] as $i=>$status) {
@@ -62,7 +62,7 @@ class HTML_Item  {
 		$learnout = $item->getLearnOut();
 		$learnout_id = ($learnout == null) ? -1 : (($learnout->id == NULL) ? -1 : $learnout->id);
 	
-		$htmlList .= "<select onchange='for (x=0; x<this.nextSibling.childNodes.length; x++) { this.nextSibling.childNodes[x].style.display = (this.selectedIndex == x) ? \"block\" : \"none\"; }' style='width:100%' align='right' name='{$prefix}learnout_id'>";
+		$htmlList .= "<select name='{$prefix}learnout_id' onchange='for (x=0; x<this.nextSibling.childNodes.length; x++) { this.nextSibling.childNodes[x].style.display = (this.selectedIndex == x) ? \"block\" : \"none\"; }' style='width:100%' align='right'>";
 	
 		if (($learnout_id == -1) || ($viewType==HTML_Object::VIEW_EDIT) || ($viewType==HTML_Object::VIEW_IMPORT)) {
 			$htmlList .= sprintf ("<option value='0' style='display:%s' %s>[None]</option>", ($viewType==HTML_Object::VIEW_EDIT) || ($viewType==HTML_Object::VIEW_IMPORT)? "block" : "none", ($learnout_id == -1) ? "selected" : "");
@@ -145,7 +145,7 @@ class HTML_Item  {
 			$res .= sprintf ('
 				<li id="%4$s-%1$d">
 					<label class="selectit">
-					<input value="%1$d" type="checkbox" %3$s name="%4$s_taxonomy[]" id="in-%4$s-%1$d"> %2$s</label>
+					<input value="%1$d" type="checkbox" %3$s name="%4$staxonomy[]" id="in-%4$s-%1$d"> %2$s</label>
 					<ul class="children">%5$s</ul>
 				</li>',
 					$term->term_id, $term->name, in_array ($term->term_id, $selected)?"checked":"",
@@ -158,19 +158,21 @@ class HTML_Item  {
 	
 	
 	public static function getHTML_Topic (EAL_Item $item, int $viewType, string $prefix = "") {
-		
+		// <input type="hidden" name="%staxonomy[]" value="0">
 		
 		if (($viewType == HTML_Object::VIEW_IMPORT) || ($viewType == HTML_Object::VIEW_EDIT)) {
 		
 			return sprintf ('
 					<div class="categorydiv">
-						<div id="topic-all" class="tabs-panel"><input type="hidden" name="%1$s_taxonomy[]" value="0">
+						<input type="hidden" id="%sdomain" name="%sdomain"  value="%s">
+						<div id="topic-all" class="tabs-panel">
 							<ul id="topicchecklist" data-wp-lists="list:topic" class="categorychecklist form-no-clear">
-							%2$s
+							%s
 							</ul>
 						</div>
 					</div>',
-					$prefix,
+					$prefix, $prefix, $item->domain, 
+// 					$prefix,
 					self::getHTML_TopicHierarchy($prefix, get_terms( array('taxonomy' => $item->domain, 'hide_empty' => false) ), 0, wp_get_post_terms( $item->id, $item->domain, array("fields" => "ids"))));
 		
 		} else {
@@ -275,22 +277,28 @@ class HTML_Item  {
 	
 		$result = "";
  		if (($viewType == HTML_Object::VIEW_REVIEW) || ($viewType == HTML_Object::VIEW_IMPORT)) {
- 			$result = sprintf ("
+ 			$result = sprintf ('
  				<div>
  					<div>%s</div>
- 					<div style='background-color:F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>
+ 					<div style="background-color:F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;">
  						<div>%s</div>
  						<div>%s</div>
-						<input type='hidden' id='%sitem_description' name='%sitem_description'  value='%s'>
- 						<input type='hidden' id='%sitem_question' name='%sitem_question'  value='%s'>
-						<input type='hidden' id='%spost_content' name='%spost_content'  value='%s'>
+						<input type="hidden" id="%spost_id" name="%spost_id"  value="%s">
+						<input type="hidden" id="%spost_title" name="%spost_title"  value="%s">
+						<input type="hidden" id="%spost_type" name="%spost_type"  value="%s">
+ 						<input type="hidden" id="%sitem_description" name="%sitem_description"  value="%s">
+ 						<input type="hidden" id="%sitem_question" name="%sitem_question"  value="%s">
+						<input type="hidden" id="%spost_content" name="%spost_content"  value="%s">
  					</div>
- 				</div>", 
+ 				</div>', 
  				wpautop(stripslashes($item->description)),
  				wpautop(stripslashes($item->question)),
  				$answers_html,
+ 				$namePrefix, $namePrefix, $item->id,	
+ 				$namePrefix, $namePrefix, $item->title,	
+ 				$namePrefix, $namePrefix, $item->type,	
  				$namePrefix, $namePrefix, htmlentities($item->description),	
- 				$namePrefix, $namePrefix, htmlentities($item->question),
+ 				$namePrefix, $namePrefix, htmlentities($item->question),	
  				$namePrefix, $namePrefix, microtime()
  			);
  		}
