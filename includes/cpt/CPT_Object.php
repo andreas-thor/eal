@@ -95,14 +95,14 @@ abstract class CPT_Object {
 		add_action('restrict_manage_posts', array ($this, 'WPCB_restrict_manage_posts') );
 		add_filter('months_dropdown_results', '__return_empty_array');	// TODO: Implement Date Filter for All Items (currently for none, because it only works for real item types)
 		
-		add_action('admin_footer-edit.php', array ($this, 'add_bulk_actions'));
-		add_action('load-edit.php', array ($this, 'custom_bulk_action'));
+		add_action('admin_footer-edit.php', array ($this, 'WPCB_add_bulk_actions'));
+		add_action('load-edit.php', array ($this, 'WPCB_process_bulk_action'));
 		
 		add_filter( 'wp_count_posts', array ($this, 'WPCB_count_posts'), 10, 3);
 		
 		add_filter( "views_edit-{$this->type}", function( $views )
 		{
-			$remove_views = [ 'all','publish','future','sticky','draft','pending','trash','mine' ];
+			$remove_views = [ 'all','publish','future','sticky','draft','pending',/*'trash',*/'mine' ];
 			foreach( (array) $remove_views as $view ) {
 				if (isset( $views[$view] )) unset( $views[$view] );
 			}
@@ -116,102 +116,7 @@ abstract class CPT_Object {
 	
 	
 
-	function custom_bulk_action() {
 	
-	
-		if ($_REQUEST["post_type"] != $this->type) return;
-	
-		global $wpdb;
-	
-		$wp_list_table = _get_list_table('WP_Posts_List_Table');
-	
-		$a = $wp_list_table->current_action();
-
-		
-		if ($wp_list_table->current_action() == 'view_learnout') {
-		
-			$sendback = add_query_arg( 'learnoutids', $_REQUEST['post'], 'admin.php?page=view_learnout' );
-			wp_redirect($sendback);
-			exit();
-		}
-		
-
-		if ($wp_list_table->current_action() == 'view') {
-		
-			if (substr ($_REQUEST['post_type'], 0, 4) == 'item') {
-// 				$sendback = add_query_arg( 'itemids', $_REQUEST['post'], 'edit.php?page=view&post_type=itembasket' );
-				$sendback = add_query_arg( 'itemids', $_REQUEST['post'], 'admin.php?page=view_item' );
-				wp_redirect($sendback);
-				exit();
-			}
-			
-			if ($_REQUEST['post_type'] == 'learnout') {
-				$sendback = add_query_arg( 'learnoutids', $_REQUEST['post'], 'edit.php?page=view&post_type=itembasket' );
-				wp_redirect($sendback);
-				exit();
-			}
-
-			if ($_REQUEST['post_type'] == 'review') {
-				$sendback = add_query_arg( 'reviewids', $_REQUEST['post'], 'admin.php?page=view_review' );
-				wp_redirect($sendback);
-				exit();
-			}
-				
-		}
-		
-		if (($wp_list_table->current_action() == 'mark') || ($wp_list_table->current_action() == 'unmark')) {
-			if (substr ($_REQUEST['post_type'], 0, 4) == 'item') {
-				
-				/* get array of postids */
-				$postids = $_REQUEST['post'];
-				if (!is_array($postids)) $postids = [$postids];
-				if (count ($postids)>0) {
-					$sql = sprintf ("UPDATE {$wpdb->prefix}eal_item SET flag = %d WHERE id IN (%s)", ($wp_list_table->current_action() == 'mark') ? 1 : 0, join (",", $postids));
-					$wpdb->query ($sql);
-				}
-				
-			}
-		}
-		
-		if (($wp_list_table->current_action() == 'setpublished') || ($wp_list_table->current_action() == 'setpending') || ($wp_list_table->current_action() == 'setdraft')) {
-			
-			$status = "publish";
-			if ($wp_list_table->current_action() == 'setpending') $status = "pending";
-			if ($wp_list_table->current_action() == 'setdraft') $status = "draft";
-			
-			/* get array of postids */
-			$postids = $_REQUEST['post'];
-			if (!is_array($postids)) $postids = [$postids];
-			if (count ($postids)>0) {
-				$sql = sprintf ("UPDATE {$wpdb->posts} SET post_status = '%s' WHERE id IN (%s)", $status, join (",", $postids));
-				$wpdb->query ($sql);
-			}
-		}
-		
-		
-	
-		
-		/* Add Items to Basket */
-		if ($wp_list_table->current_action() == 'add_to_basket') {
-			$postids = $_REQUEST['post'];
-			if (!is_array($postids)) $postids = [$postids];
-			if ($_REQUEST['post_type']=='learnout') {
-				EAL_ItemBasket::addByLearnOut($postids);	
-			} else {
-				EAL_ItemBasket::add($postids);
-			}
-		}
-		
-		/* Remove from Basket */
-		if ($wp_list_table->current_action() == 'remove_from_basket') {
-			$remove = array ();
-			if (isset($_REQUEST["post"])) 	$remove = $_REQUEST['post'];
-			if ($_REQUEST['itemid']!=null) 	$remove = [$_REQUEST['itemid']];
-			if ($_REQUEST['itemids']!=null) $remove = $_REQUEST['itemids'];
-			EAL_ItemBasket::remove($remove);
-		}
-	
-	}		
 	
 	
 	
@@ -358,7 +263,10 @@ abstract class CPT_Object {
 	
 			case 'no_of_reviews':
 				echo ("{$post->no_of_reviews}<div class='row-actions'>");
-				if ($post->no_of_reviews>0) echo ("<span class='view'><a href='edit.php?post_type=review&item_id={$post->ID}' title='Show All Review'>List</a> | </span>");
+				if ($post->no_of_reviews>0) {
+					echo ("<span class='view'><a href='edit.php?post_type=review&item_id={$post->ID}' title='List All Reviews'>List</a> | </span>");
+					echo ("<span class='view'><a href='admin.php?page=view_review&itemid={$post->ID}' title='View All Reviews'>View</a> | </span>");
+				}
 				echo ("<span class='edit'><a href='post-new.php?post_type=review&item_id={$post->ID}' title='Add New Review'>Add</a></span>");
 				echo ("<span class='inline hide-if-no-js'></span></div>");
 				break;

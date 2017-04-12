@@ -82,6 +82,20 @@ class EAL_LearnOut {
 	}
 	
 	
+	public function getItemIds (): array {
+	
+		global $wpdb;
+		
+		$sql ="
+			SELECT DISTINCT P.id 
+			FROM {$wpdb->prefix}eal_item I 
+			JOIN {$wpdb->prefix}posts P ON (P.ID = I.ID) 
+			WHERE P.post_parent = 0 
+			AND P.post_status IN ('publish', 'pending', 'draft') 
+			AND I.learnout_id = {$this->id}";
+		
+		return $wpdb->get_col ($sql);
+	}	
 	
 	
 	public static function createTables() {

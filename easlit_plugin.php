@@ -16,8 +16,7 @@ require_once 'includes/cpt/CPT_ItemMC.php';
 require_once 'includes/cpt/CPT_LearnOut.php';
 require_once 'includes/cpt/CPT_Review.php';
 
-require_once 'includes/page/VIEW_Item.php';
-require_once 'includes/page/VIEW_LearnOut.php';
+require_once 'includes/page/BulkViewer.php';
 require_once 'includes/page/PAG_Import.php';
 
 
@@ -195,13 +194,12 @@ add_action ('admin_menu', function () {
     add_submenu_page( 'edit.php?post_type=itembasket', 'Table', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> Table', 'edit_posts', 'edit.php?post_type=itembasket');
     add_submenu_page( 'edit.php?post_type=itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_posts', 'ist-blueprint', array ('PAG_Explorer', 'createPage'));
 
-    add_submenu_page( 'edit.php?post_type=itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_item', array ('VIEW_Item', 'viewItemBasket'));
+    add_submenu_page( 'edit.php?post_type=itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_basket', array ('BulkViewer', 'page_view_basket'));
 //     add_submenu_page( 'edit.php?post_type=itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view', array ('PAG_Basket', 'createPageView'));
     
-    add_submenu_page( 'view', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_review', array ('PAG_Basket', 'createPageView'));
-    
-    add_submenu_page( 'view', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_item', array ('VIEW_Item', 'viewItem'));
-    add_submenu_page( 'view', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_learnout', array ('VIEW_LearnOut', 'viewLearnOut'));
+    add_submenu_page( 'view', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_item', array ('BulkViewer', 'page_view_item'));
+    add_submenu_page( 'view', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_review', array ('BulkViewer', 'page_view_review'));
+    add_submenu_page( 'view', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_learnout', array ('BulkViewer', 'page_view_learnout'));
     
     /*
      * Viewer Seiten pro Typ 

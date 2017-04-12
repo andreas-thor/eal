@@ -219,12 +219,14 @@ class HTML_Item  {
 	
 	public static function getHTML_Metadata (EAL_Item $item, int $viewType, $prefix) {
 	
+		$edit = ($item->id > 0) ? sprintf ('<span style="float: right; font-weight:normal" ><a href="post.php?action=edit&post=%d">Edit</a></span>', $item->id) : '';
+		
 		// Status and Id
 		$res = sprintf ('
 			<div id="mb_status" class="postbox ">
-				<h2 class="hndle"><span>Item (%s)</span></h2>
+				<h2 class="hndle"><span>Item (%s)</span>%s</h2>
 				<div class="inside">%s</div>
-			</div>', $item->id > 0 ? "ID=" . $item->id : "New", self::getHTML_Status($item, $viewType, $prefix));
+			</div>', $item->id > 0 ? "ID=" . $item->id : "New", $edit, self::getHTML_Status($item, $viewType, $prefix));
 		
 		
 		// Learning Outcome (Title + Description), if available
@@ -237,7 +239,7 @@ class HTML_Item  {
 	
 		// Level-Table
 		$res .= sprintf ('
-			<div id="mb_learnout" class="postbox ">
+			<div id="mb_level" class="postbox ">
 				<h2 class="hndle"><span>Anforderungsstufe</span></h2>
 				<div class="inside">%s</div>
 			</div>', self::getHTML_Level($item, $viewType, $prefix)); 

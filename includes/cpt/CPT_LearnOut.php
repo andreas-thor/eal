@@ -251,32 +251,71 @@ class CPT_LearnOut extends CPT_Object {
 	
 	
 	
-	function add_bulk_actions() {
+	function WPCB_add_bulk_actions() {
 	
 		global $post_type;
 		if ($post_type != $this->type) return;
 	
-?>
-			<script type="text/javascript">
-				jQuery(document).ready(function() {
-	
-					var htmlselect = ["action", "action2"];
-						    	
-					htmlselect.forEach(function (s, i, o) {
-							  		
-						jQuery("select[name='" + s + "'] > option").remove();
-				        jQuery('<option>').val('-1').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
-				        jQuery('<option>').val('view_learnout').text('<?php _e('View Learning Outcomes')?>').appendTo("select[name='" + s + "']");
-				        jQuery('<option>').val('trash').text('<?php _e('Trash Learning Outcomes')?>').appendTo("select[name='" + s + "']");
-				        jQuery('<option>').val('add_to_basket').text('<?php _e('Add Items To Basket')?>').appendTo("select[name='" + s + "']");
-				      });
-				});			    
-		    </script>
-<?php
+		?>
+		<script type="text/javascript">
+			jQuery(document).ready(function() {
+
+				var htmlselect = ["action", "action2"];
+					    	
+				htmlselect.forEach(function (s, i, o) {
+						  		
+					jQuery("select[name='" + s + "'] > option").remove();
+			        jQuery('<option>').val('-1').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('view').text('<?php _e('View Learning Outcomes')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('trash').text('<?php _e('Trash Learning Outcomes')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('view_items').text('<?php _e('View Items')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('add_to_basket').text('<?php _e('Add Items To Basket')?>').appendTo("select[name='" + s + "']");
+			      });
+			});			    
+	    </script>
+		<?php
 
 	}
 		
 		
+	function WPCB_process_bulk_action() {
+	
+	
+		if ($_REQUEST["post_type"] != $this->type) return;
+		$wp_list_table = _get_list_table('WP_Posts_List_Table');
+
+		// View Learning Outcomes
+		if ($wp_list_table->current_action() == 'view') {
+			$sendback = add_query_arg( 'learnoutids', $_REQUEST['post'], 'admin.php?page=view_learnout' );
+			wp_redirect($sendback);
+			exit();
+		}
+		
+		// View Items / Add Items to Basket
+		if (($wp_list_table->current_action() == 'view_items') || ($wp_list_table->current_action() == 'add_to_basket')) {
+			
+			// get associated items
+			$postids = $_REQUEST['post'];
+			if (!is_array($postids)) $postids = [$postids];
+			$itemids = array();
+			foreach ($postids as $learnout_id) {
+				$itemids = array_merge ($itemids, (new EAL_LearnOut ($learnout_id))->getItemIds());
+			}
+			
+			// Add Items to Basket
+			if ($wp_list_table->current_action() == 'add_to_basket') {
+				EAL_ItemBasket::add(array_unique($itemids));
+			} 
+			
+			// View Items
+			if (($wp_list_table->current_action() == 'view_items')) {
+				$sendback = add_query_arg( 'itemids', array_unique($itemids), 'admin.php?page=view_item' );
+				wp_redirect($sendback);
+				exit();
+			}
+		}
+	
+	}	
 	
 	
 		

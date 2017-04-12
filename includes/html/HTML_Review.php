@@ -14,83 +14,34 @@ class HTML_Review {
 		return HTML_Object::getHTML_Level($prefix . 'review', $review->level, $review->getItem()->level, $disabled, TRUE, '');
 	}
 	
-	public static function getHTML_Review (EAL_Review $review, int $viewType, string $prefix="") {
-	
-		// Titel
-		$review_html  = sprintf ("
-			<div onmouseover=\"this.children[1].style.display='inline';\"  onmouseout=\"this.children[1].style.display='none';\">
-				<h1 style='display:inline'>[%s]</span></h1>
-				<div style='display:none'>
-					<span><a href=\"post.php?action=edit&post=%d\">Edit</a></span>
-				</div>
-			</div>", $review->getItem()->title, $review->id);
-	
-		// Scores + Feedback
-		$review_html .= sprintf ("<div>%s</div>", self::getHTML_Score($review, FALSE));
-		$review_html .= sprintf ("<div>%s</div>", wpautop(stripslashes($review->feedback)));
-	
-		// Overall Rating + Level
-// 		$overall_String = "";
-// 		switch ($review->overall) {
-// 			case 1: $overall_String = "Item akzeptiert"; break;
-// 			case 2: $overall_String = "Item Item &uuml;berarbeiten"; break;
-// 			case 3: $overall_String = "Item abgelehnt"; break;
-// 		}
-// 		$review_meta  = sprintf ("<div><b>%s</b></div><br />", $overall_String );
 
-		$review_meta .= sprintf ("<div>%s</div><br/>", HTML_Review::getHTML_Overall($review, HTML_Object::VIEW_REVIEW));
-		$review_meta .= sprintf ("<div>%s</div><br/>", self::getHTML_Level($review, $viewType, $prefix));
+	
+	
+	public static function getHTML_Overall (EAL_Review $review, int $viewType, string $prefix="", string $callback="") {
 		
-	
-		return sprintf ("
-			<div id='poststuff'>
-				<div id='post-body' class='metabox-holder columns-2'>
-					<div class='postbox-container' id='postbox-container-2'>
-						<div class='meta-box-sortables ui-sortable'>
-							%s
-						</div>
-					</div>
-					<div class='postbox-container' id='postbox-container-1'>
-						<div style='background-color:#FFFFFF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>
-							%s
-						</div>
-					</div>
-				</div>
-			</div>"
-				, $review_html
-				, $review_meta);
-	
-	}
-	
-	
-	
-	public static function getHTML_Overall (EAL_Review $review, int $viewType, String $callback = "") {
-		
-		$result = "";
-		
+
 		if ($viewType == HTML_Object::VIEW_EDIT) {
-			$result .= sprintf ("<input type='hidden' id='item_id' name='item_id'  value='%d'>", $review->item_id);
-			$result .= sprintf ("<table style='font-size:100%%'>");
-			$result .= sprintf ("<tr><td><input type='radio' id='review_overall_0' name='review_overall' value='1' %s onclick='%s;'>Item akzeptiert</td></tr>", (($review->overall==1) ? "checked" : ""), $callback);
-			$result .= sprintf ("<tr><td><input type='radio' id='review_overall_1' name='review_overall' value='2' %s>Item &uuml;berarbeiten</td></tr>", (($review->overall==2) ? "checked" : ""));
-			$result .= sprintf ("<tr><td><input type='radio' id='review_overall_2' name='review_overall' value='3' %s>Item abgelehnt</td></tr>", (($review->overall==3) ? "checked" : ""));
-			$result .= sprintf ("</table>");
+			$result .= sprintf ('<input type="hidden" id="item_id" name="%sitem_id"  value="%d">', $prefix, $review->item_id);
 		}
 		
-		if ($viewType == HTML_Object::VIEW_REVIEW) {
-			$result .= sprintf ("<table style='font-size:100%%'>");
-			$result .= sprintf ("<tr><td><input type='radio' %s>Item akzeptiert</td></tr>", (($review->overall==1) ? "checked" : "disabled"));
-			$result .= sprintf ("<tr><td><input type='radio' %s>Item &uuml;berarbeiten</td></tr>", (($review->overall==2) ? "checked" : "disabled"));
-			$result .= sprintf ("<tr><td><input type='radio' %s>Item abgelehnt</td></tr>", (($review->overall==3) ? "checked" : "disabled"));
-			$result .= sprintf ("</table>");
-		}
+		$result = sprintf ('<select style="width:100%%" name="%sreview_overall" onchange="%s" align="right">', $prefix, $callback);
 		
+		
+		foreach (["", "Item akzeptiert", "Item &uuml;berarbeiten", "Item abgelehnt"] as $i=>$status) {
+			$result .= sprintf ('<option %s value="%d" %s>%s</option>',
+					($viewType == HTML_Object::VIEW_STUDENT) || ($viewType == HTML_Object::VIEW_REVIEW) ? 'style="display:none"' : '',	// editable?
+					$i, // status value as int
+					($i == $review->overall) ? 'selected' : '',	// select current based in item status
+					$status);	// status value as string
+		}
+				
+		$result .= "</select>";
+			
 		return $result;
-		
 	}
 	
 	
-	public static function getHTML_Score (EAL_Review $review, int $viewType) {
+	public static function getHTML_Score (EAL_Review $review, int $viewType, string $prefix="") {
 	
 	
 		$values = ["gut", "Korrektur", "ungeeignet"];
@@ -124,7 +75,7 @@ class HTML_Review {
 				$html_rows .= "<td style='padding:0.5em; border-style:solid; border-width:1px;'>";
 				foreach ($values as $k3 => $v3) {
 					$checked = ($review->score[$k1][$k2]==$k3+1);
-					$html_rows .= "<input type='radio' id='{$k1}_{$k2}_{k3}' name='review_{$k1}_{$k2}' value='" . ($k3+1) . "'";
+					$html_rows .= "<input type='radio' id='{$k1}_{$k2}_{k3}' name='{$prefix}review_{$k1}_{$k2}' value='" . ($k3+1) . "'";
 					$html_rows .= (($viewType==HTML_Object::VIEW_EDIT) || $checked) ? "" : " disabled";
 					$html_rows .= ($checked ? " checked='checked'" : "") . ">" . $v3 . "<br/>";
 				}
@@ -135,6 +86,44 @@ class HTML_Review {
 	
 		return "{$html_script}<form><table style='font-size:100%'>{$html_head}{$html_rows}</table></form>";
 			
+	}
+	
+	
+	public static function getHTML_Metadata (EAL_Review $review, int $viewType, $prefix) {
+	
+		// <h2 class="hndle"><span>Revisionsurteil</span><span style="align:right">Und?</span></h2>
+		// Overall
+		$res = sprintf ('
+			<div id="mb_overall" class="postbox ">
+				<h2 class="hndle">
+					<span>Revisionsurteil</span>
+					<span style="float: right; font-weight:normal" ><a href="post.php?action=edit&post=%d">Edit</a></span>
+				</h2>
+				<div class="inside">%s</div>
+			</div>', $review->id, self::getHTML_Overall($review, $viewType, $prefix));
+	
+	
+		// Level-Table
+		$res .= sprintf ('
+			<div id="mb_level" class="postbox ">
+				<h2 class="hndle"><span>Anforderungsstufe</span></h2>
+				<div class="inside">%s</div>
+			</div>', self::getHTML_Level($review, $viewType, $prefix));
+	
+	
+		return $res;
+	}
+	
+	
+	public static function getHTML_Review (EAL_Review $review, int $viewType, string $prefix="") {
+	
+		return sprintf ("
+			<div>
+				<div>%s</div>
+				<div>%s</div>
+			</div>", 
+			self::getHTML_Score($review, $viewType, $prefix),
+			wpautop(stripslashes($review->feedback)));
 	}
 	
 	

@@ -85,12 +85,12 @@ class CPT_Item extends CPT_Object{
 	
 
 	
-	function add_bulk_actions() {
+	function WPCB_add_bulk_actions() {
 	
 		global $post_type;
-//  		if ($post_type != $this->type) return;
+  		if ($post_type != $this->type) return;
 	
-?>
+		?>
 		<script type="text/javascript">
 			jQuery(document).ready(function() {
 
@@ -102,6 +102,7 @@ class CPT_Item extends CPT_Object{
 			        jQuery('<option>').val('-1').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('view').text('<?php _e('View Items')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('trash').text('<?php _e('Trash Items')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('view_review').text('<?php _e('View Reviews')?>').appendTo("select[name='" + s + "']");
 
 			        <?php if ($post_type == "itembasket") { ?> 
 				        jQuery('<option>').val('remove_from_basket').text('<?php _e('Remove Items From Basket')?>').appendTo("select[name='" + s + "']");
@@ -109,6 +110,7 @@ class CPT_Item extends CPT_Object{
 				        jQuery('<option>').val('add_to_basket').text('<?php _e('Add Items To Basket')?>').appendTo("select[name='" + s + "']");
 					<?php } ?>
 
+					/*					
 			        jQuery('<option disabled>').val('--').text('<?php _e('-----')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('mark').text('<?php _e('Mark Items')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('unmark').text('<?php _e('Unmark Items')?>').appendTo("select[name='" + s + "']");
@@ -117,15 +119,96 @@ class CPT_Item extends CPT_Object{
 			        jQuery('<option>').val('setpublished').text('<?php _e('Publish Items')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('setpending').text('<?php _e('Set Items To Pending Review')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('setdraft').text('<?php _e('Revert Items To Draft')?>').appendTo("select[name='" + s + "']");
-			        
+			        */
 			      });
 			});			    
 	    </script>
-<?php
+		<?php
 
 	}
 		
+	function WPCB_process_bulk_action() {
 	
+	
+		if ($_REQUEST["post_type"] != $this->type) return;
+	
+// 		global $wpdb;
+	
+		$wp_list_table = _get_list_table('WP_Posts_List_Table');
+	
+		if ($wp_list_table->current_action() == 'view') {
+			$sendback = add_query_arg( 'itemids', $_REQUEST['post'], 'admin.php?page=view_item' );
+			wp_redirect($sendback);
+			exit();
+		}
+
+		if ($wp_list_table->current_action() == 'view_review') {
+			$sendback = add_query_arg( 'itemids', $_REQUEST['post'], 'admin.php?page=view_review' );
+			wp_redirect($sendback);
+			exit();
+		}
+		
+		
+		/* Add Items to Basket */
+		if ($wp_list_table->current_action() == 'add_to_basket') {
+			$postids = $_REQUEST['post'];
+			if (!is_array($postids)) $postids = [$postids];
+			EAL_ItemBasket::add($postids);
+			
+//			// redirected to the basket after adding 
+// 			wp_redirect('edit.php?post_type=itembasket'); 
+// 			exit();
+		}
+		
+		/* Remove from Basket */
+		if ($wp_list_table->current_action() == 'remove_from_basket') {
+			$remove = array ();
+			if (isset($_REQUEST["post"])) 	$remove = $_REQUEST['post'];
+			if ($_REQUEST['itemid']!=null) 	$remove = [$_REQUEST['itemid']];
+			if ($_REQUEST['itemids']!=null) $remove = $_REQUEST['itemids'];
+			EAL_ItemBasket::remove($remove);
+			
+//			// redirected to the basket after adding 
+// 			wp_redirect('edit.php?post_type=itembasket'); 
+// 			exit();
+		}		
+				
+/*	
+		if (($wp_list_table->current_action() == 'mark') || ($wp_list_table->current_action() == 'unmark')) {
+			if (substr ($_REQUEST['post_type'], 0, 4) == 'item') {
+	
+				// get array of postids 
+				$postids = $_REQUEST['post'];
+				if (!is_array($postids)) $postids = [$postids];
+				if (count ($postids)>0) {
+					$sql = sprintf ("UPDATE {$wpdb->prefix}eal_item SET flag = %d WHERE id IN (%s)", ($wp_list_table->current_action() == 'mark') ? 1 : 0, join (",", $postids));
+					$wpdb->query ($sql);
+				}
+	
+			}
+		}
+	
+		if (($wp_list_table->current_action() == 'setpublished') || ($wp_list_table->current_action() == 'setpending') || ($wp_list_table->current_action() == 'setdraft')) {
+				
+			$status = "publish";
+			if ($wp_list_table->current_action() == 'setpending') $status = "pending";
+			if ($wp_list_table->current_action() == 'setdraft') $status = "draft";
+				
+			// get array of postids 
+			$postids = $_REQUEST['post'];
+			if (!is_array($postids)) $postids = [$postids];
+			if (count ($postids)>0) {
+				$sql = sprintf ("UPDATE {$wpdb->posts} SET post_status = '%s' WHERE id IN (%s)", $status, join (",", $postids));
+				$wpdb->query ($sql);
+			}
+		}
+*/	
+	
+	
+	
+
+	
+	}	
 	
 	
 	

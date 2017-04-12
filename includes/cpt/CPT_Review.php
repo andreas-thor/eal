@@ -50,7 +50,7 @@ class CPT_Review extends CPT_Object {
 		if ($post->post_type != $this->type) return $actions;
 		
 		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
-		$actions['view'] = "<a href='admin.php?page=view&reviewid={$post->ID}'>View</a>"; // add "View"
+		$actions['view'] = "<a href='admin.php?page=view_review&reviewid={$post->ID}'>View</a>"; // add "View"
 		
 		if (!RoleTaxonomy::canEditReviewPost($post)) {		// "Edit" & "Trash" only if editable by user
 			unset ($actions['edit']);
@@ -61,31 +61,38 @@ class CPT_Review extends CPT_Object {
 	}
 	
 	
-	function add_bulk_actions() {
-	
+	function WPCB_add_bulk_actions() {
+		
 		global $post_type;
 		if ($post_type != $this->type) return;
-	
+		
 		?>
-			<script type="text/javascript">
-				jQuery(document).ready(function() {
-	
-					var htmlselect = ["action", "action2"];
-						    	
-					htmlselect.forEach(function (s, i, o) {
-							  		
-						jQuery("select[name='" + s + "'] > option").remove();
-				        jQuery('<option>').val('bulk').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
-				        jQuery('<option>').val('view').text('<?php _e('View Reviews')?>').appendTo("select[name='" + s + "']");
-				        jQuery('<option>').val('trash').text('<?php _e('Trash Reviews')?>').appendTo("select[name='" + s + "']");
-				      });
-				});			    
-		    </script>
-	<?php
-	
+		<script type="text/javascript">
+			jQuery(document).ready(function() {
+				var htmlselect = ["action", "action2"];
+				htmlselect.forEach(function (s, i, o) {
+					jQuery("select[name='" + s + "'] > option").remove();
+			        jQuery('<option>').val('bulk').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('view').text('<?php _e('View Reviews')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('trash').text('<?php _e('Trash Reviews')?>').appendTo("select[name='" + s + "']");
+			      });
+			});			    
+	    </script>
+		<?php
 	}
 
-		
+	
+	function WPCB_process_bulk_action() {
+	
+		if ($_REQUEST["post_type"] != $this->type) return;
+		$wp_list_table = _get_list_table('WP_Posts_List_Table');
+	
+		if ($wp_list_table->current_action() == 'view') {
+			$sendback = add_query_arg( 'reviewids', $_REQUEST['post'], 'admin.php?page=view_review' );
+			wp_redirect($sendback);
+			exit();
+		}
+	}
 	
 	
 
@@ -150,18 +157,20 @@ class CPT_Review extends CPT_Object {
 		<script>
 			var $ = jQuery.noConflict();
 			
-			function setAccept () {
-				if (confirm('Sollen alle Bewertungen auf "gut" gesetzt werden?')) {
-					$(document).find("#mb_score").find("input").each ( function() {
-	 					if (this.value==1) this.checked = true;
-					});
+			function setAccept (val) {
+				if (val==1) {
+					if (confirm('Sollen alle Bewertungen auf "gut" gesetzt werden?')) {
+						$(document).find("#mb_score").find("input").each ( function() {
+		 					if (this.value==1) this.checked = true;
+						});
+					}
 				}
 			}
 		</script>
 		<?php
 		
 		global $review;
-		print (HTML_Review::getHTML_Overall($review, HTML_Object::VIEW_EDIT, "setAccept()"));
+		print (HTML_Review::getHTML_Overall($review, HTML_Object::VIEW_EDIT, "", "setAccept(this.value);"));
 	}
 	
 	

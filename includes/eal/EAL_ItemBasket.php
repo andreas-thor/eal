@@ -57,16 +57,6 @@ class EAL_ItemBasket {
 		self::set (array_merge(self::get(), $add));
 	}
 	
-	public static function addByLearnOut (array $learnout) {
-	
-		global $wpdb;
-		$join = join(", ", $learnout);
-		$sql  = "SELECT DISTINCT P.id FROM {$wpdb->prefix}eal_item I JOIN {$wpdb->prefix}sposts P ON (P.ID = I.ID) 
-			WHERE P.post_parent = 0 AND I.learnout_id IN ({$join})";
-		
-		self::add($wpdb->get_col ($sql));
-	}
-	
 	
 	/**
 	 * 
