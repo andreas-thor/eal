@@ -2,7 +2,7 @@
 
 require_once (__DIR__ . "/../imex/Ilias.php");
 
-class PAG_Import {
+class Importer {
 
 	
 	
@@ -16,18 +16,12 @@ class PAG_Import {
 			self::showPreview();
 		}
 
-// 		if ($_POST['action']=='import') {
-// 			$itemids = self::doImport();
-// 			BulkViewer::viewItems($itemids, NULL, $_REQUEST['edit']=='1', "view_item");
-				
-// 		}		
 	}
 	
 	
 	public static function doImport () {
 		
 		$result = array();
-		$res = "";
 		$count = 0;
 		foreach (explode (",", $_POST['itemids']) as $itemid) {
 		
@@ -42,7 +36,6 @@ class PAG_Import {
 				case  3: $status = 'draft'; break;
 			}
 			if ($status == '') {
-				$res .= sprintf ("<tr><td align='right'>%d.</td><td>Item ignored</td><td><b>%s</b></td></tr>", $count, $_POST[$prefix."post_title"]);
 				continue;
 			}
 		
@@ -70,10 +63,8 @@ class PAG_Import {
 		
 			$item->saveToDB();
 			array_push ($result, $item->id);
-			$res .= sprintf ("<tr><td align='right'>%d.</td><td>Item %s</td><td><b>%s</b> (Id=%s)</td></tr>", $count, ($itemid<0) ? "created" : "updated", $item->title, $item->id);
 		}
 		return $result;
-// 		printf ("<div class='wrap'><h1>Import Summary</h1><table>%s</table></div>", $res);
 	}
 
 	

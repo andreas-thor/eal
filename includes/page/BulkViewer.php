@@ -15,13 +15,13 @@ class BulkViewer {
 			if (is_string($_REQUEST['itemids'])) $itemids = explode (",", $_REQUEST["itemids"]);
 		}
 		
-		if ($_POST['action']=='import') $itemids = PAG_Import::doImport();
+		if ($_POST['action']=='import') $itemids = Importer::doImport();
 		self::viewItems($itemids, NULL, $_REQUEST['edit']=='1', $_REQUEST["page"]);
 	}
 	
 	
 	public static function page_view_basket () {
-		if ($_POST['action']=='import') $itemids = PAG_Import::doImport();
+		if ($_POST['action']=='import') $itemids = Importer::doImport();
 		self::viewItems(EAL_ItemBasket::get(), NULL, $_REQUEST['edit']=='1', $_REQUEST["page"]);
 		
 	}
@@ -42,7 +42,7 @@ class BulkViewer {
 			if (is_string($_REQUEST['reviewids'])) $reviewids = explode (",", $_REQUEST["reviewids"]);
 		}
 		
-		if ($_POST['action']=='import') $itemids = PAG_Import::doImport();
+		if ($_POST['action']=='import') $itemids = Importer::doImport();
 		self::viewItems($itemids, $reviewids, $_REQUEST['edit']=='1', $_REQUEST["page"]);
 	}
 	

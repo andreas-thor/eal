@@ -17,7 +17,7 @@ require_once 'includes/cpt/CPT_LearnOut.php';
 require_once 'includes/cpt/CPT_Review.php';
 
 require_once 'includes/page/BulkViewer.php';
-require_once 'includes/page/PAG_Import.php';
+require_once 'includes/page/Importer.php';
 
 
 require_once 'includes/class.PAG_Metadata.php';
@@ -151,7 +151,7 @@ add_action ('admin_menu', function () {
  	foreach ([new CPT_Item(), new CPT_ItemSC(), new CPT_ItemMC()] as $object) {
  		add_submenu_page( 'edit.php?post_type=item', $object->label, '<div class="dashicons-before ' . $object->dashicon . '" style="display:inline">&nbsp;</div> ' . $object->label, 'edit_posts', "edit.php?post_type={$object->type}");
  	}
- 	add_submenu_page( 'edit.php?post_type=item', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', array ('PAG_Import', 'createPage'));
+ 	add_submenu_page( 'edit.php?post_type=item', 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', array ('Importer', 'createPage'));
  	$object = new CPT_Review();
  	add_submenu_page( 'edit.php?post_type=item', $object->label, '<div class="dashicons-before ' . $object->dashicon . '" style="display:inline">&nbsp;</div> ' . $object->label, 'edit_posts', 'edit.php?post_type=' . $object->type);
  	
