@@ -15,12 +15,14 @@ class BulkViewer {
 			if (is_string($_REQUEST['itemids'])) $itemids = explode (",", $_REQUEST["itemids"]);
 		}
 		
-		self::viewItems($itemids, NULL, $_REQUEST['edit']=='1');
+		if ($_POST['action']=='import') $itemids = PAG_Import::doImport();
+		self::viewItems($itemids, NULL, $_REQUEST['edit']=='1', $_REQUEST["page"]);
 	}
 	
 	
 	public static function page_view_basket () {
-		self::viewItems(EAL_ItemBasket::get(), NULL, FALSE);
+		if ($_POST['action']=='import') $itemids = PAG_Import::doImport();
+		self::viewItems(EAL_ItemBasket::get(), NULL, $_REQUEST['edit']=='1', $_REQUEST["page"]);
 		
 	}
 	
@@ -40,7 +42,8 @@ class BulkViewer {
 			if (is_string($_REQUEST['reviewids'])) $reviewids = explode (",", $_REQUEST["reviewids"]);
 		}
 		
-		self::viewItems($itemids, $reviewids, $_REQUEST['edit']=='1');
+		if ($_POST['action']=='import') $itemids = PAG_Import::doImport();
+		self::viewItems($itemids, $reviewids, $_REQUEST['edit']=='1', $_REQUEST["page"]);
 	}
 	
 	
@@ -58,8 +61,16 @@ class BulkViewer {
 	
 	
 	
-	
-	public static function getHTML_List (string $title, string $content, array $entries_title, array $entries_content, string $action=""): string {
+	/**
+	 * 
+	 * @param string $title
+	 * @param string $content
+	 * @param array $entries_title
+	 * @param array $entries_content
+	 * @param string $editlink "Edit all items" url
+	 * @return string
+	 */
+	public static function getHTML_List (string $title, string $content, array $entries_title, array $entries_content, string $editurl=""): string {
 		
 		// generate list of item titles 
 		$options = '<option value="-1" selected>[All]</option>';
@@ -70,8 +81,8 @@ class BulkViewer {
 		$selectItem = sprintf ('
 			<div class="postbox ">
 				<h2 class="hndle">
-					<span><input type="submit" id="bulk_view_action_button" value="Download %d Items" class="button button-primary" /></span>
-					<span style="float: right; font-weight:normal"><a href="">Edit All Items</a></span>
+					<span><input type="submit" id="bulk_view_action_button" value="%s %d Items" class="button button-primary" /></span>
+					<span style="float: right; font-weight:normal">%s</span>
 				</h2>
 				<div class="inside">
 					<select style="width:100%%" align="right" onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) {  d.children[x].style.display = ((this.value<0) || (this.value==x)) ? \'block\' :  \'none\'; }">
@@ -80,7 +91,7 @@ class BulkViewer {
 					<br/>&nbsp;&nbsp;<input type="checkbox" checked onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) { d.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; }"> Show Metadata</input>
 				</div>
 			</div>
-			', count($entries_title), $options);
+			', ($editurl == '') ? "Update" : "Download", count($entries_title), ($editurl == '') ? '' : sprintf ('<a href="%s">Edit All Items</a>', $editurl) , $options);
 		
 		return sprintf ('
 				<div id="poststuff">
@@ -118,7 +129,7 @@ class BulkViewer {
 	 * @param array $reviewids
 	 */
 	
-	public static function viewItems (array $itemids, $reviewids, bool $editable) {
+	public static function viewItems (array $itemids, $reviewids, bool $editable, string $page) {
 		
 		// load all items
 		$items = array ();
@@ -183,14 +194,29 @@ class BulkViewer {
 						%s
 					</div>
 				</div>',
-				self::getHTML_Body($item->title, HTML_Item::getHTML_Item($item, $editable ? HTML_Object::VIEW_REVIEW : HTML_Object::VIEW_STUDENT), HTML_Item::getHTML_Metadata($item, $editable ? HTML_Object::VIEW_EDIT : HTML_Object::VIEW_STUDENT, $item->id)),
+				self::getHTML_Body($item->title, HTML_Item::getHTML_Item($item, $editable ? HTML_Object::VIEW_REVIEW : HTML_Object::VIEW_STUDENT, "import_{$item->id}_"), HTML_Item::getHTML_Metadata($item, $editable ? HTML_Object::VIEW_EDIT : HTML_Object::VIEW_STUDENT, "import_{$item->id}_")),
 				$html_reviews
 			));
 
 			$count++;
 		}
 		
-		print self::getHTML_List(sprintf ('Item %sViewer', is_null($reviewids) ? '' : '+ Review '), '', $items_title, $items_content);
+		// generate "Edit All Items" link
+		$url = sprintf ('admin.php?page=%s', $page);
+		if (count($itemids)>0) $url .= "&itemids=" . implode (',', $itemids);
+		if (!is_null($reviewids)) $url .= "&reviewids=" . implode (',', $reviewids);
+		
+		if (!$editable) {
+			print self::getHTML_List(sprintf ('Item %sViewer', is_null($reviewids) ? '' : '+ Review '), '', $items_title, $items_content, $url . "&edit=1");
+		} else {
+			printf ('
+				<form  enctype="multipart/form-data" action="%s&edit=0" method="post">
+					<input type="hidden" id="itemids" name="itemids" value="%s">
+					<input type="hidden" name="action" value="import">
+					%s
+				</form>',
+				$url, implode (',', $itemids), self::getHTML_List(sprintf ('Item %sViewer', is_null($reviewids) ? '' : '+ Review '), '', $items_title, $items_content, ''));
+		}
 		
 	}
 	

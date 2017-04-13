@@ -16,14 +16,17 @@ class PAG_Import {
 			self::showPreview();
 		}
 
-		if ($_POST['action']=='import') {
-			self::doImport();
-		}		
+// 		if ($_POST['action']=='import') {
+// 			$itemids = self::doImport();
+// 			BulkViewer::viewItems($itemids, NULL, $_REQUEST['edit']=='1', "view_item");
+				
+// 		}		
 	}
 	
 	
-	private static function doImport () {
+	public static function doImport () {
 		
+		$result = array();
 		$res = "";
 		$count = 0;
 		foreach (explode (",", $_POST['itemids']) as $itemid) {
@@ -59,18 +62,18 @@ class PAG_Import {
 				$item->id = $itemid;
 				$post = get_post ($item->id);
 				$post->post_title = $item->title;
-				$post->status = $status;
+				$post->post_status = $status;
 				$post->post_content = microtime();	// ensures revision
 				wp_set_post_terms($item->id, $terms, $item->domain, FALSE );
 				wp_update_post ($post);
 			}
 		
 			$item->saveToDB();
-			
+			array_push ($result, $item->id);
 			$res .= sprintf ("<tr><td align='right'>%d.</td><td>Item %s</td><td><b>%s</b> (Id=%s)</td></tr>", $count, ($itemid<0) ? "created" : "updated", $item->title, $item->id);
 		}
-		
-		printf ("<div class='wrap'><h1>Import Summary</h1><table>%s</table></div>", $res);
+		return $result;
+// 		printf ("<div class='wrap'><h1>Import Summary</h1><table>%s</table></div>", $res);
 	}
 
 	
@@ -123,12 +126,12 @@ class PAG_Import {
 		');
 		
 		printf (' 
-			<form  enctype="multipart/form-data" action="admin.php?page=%s" method="post">
+			<form  enctype="multipart/form-data" action="admin.php?page=view_item" method="post">
 				<input type="hidden" id="itemids" name="itemids" value="%s">
 				<input type="hidden" name="action" value="import">
 				%s
 			</form>',
-			$_REQUEST["page"], join(",", $itemids), BulkViewer::getHTML_List('Item Import Viewer', $impTable, $items_title, $items_content));
+			join(",", $itemids), BulkViewer::getHTML_List('Item Import Viewer', $impTable, $items_title, $items_content));
 		
 		?>
 		<script type="text/javascript">
