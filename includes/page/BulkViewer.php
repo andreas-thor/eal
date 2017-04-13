@@ -15,12 +15,12 @@ class BulkViewer {
 			if (is_string($_REQUEST['itemids'])) $itemids = explode (",", $_REQUEST["itemids"]);
 		}
 		
-		self::viewItems($itemids);
+		self::viewItems($itemids, NULL, $_REQUEST['edit']=='1');
 	}
 	
 	
 	public static function page_view_basket () {
-		self::viewItems(EAL_ItemBasket::get());
+		self::viewItems(EAL_ItemBasket::get(), NULL, FALSE);
 		
 	}
 	
@@ -40,7 +40,7 @@ class BulkViewer {
 			if (is_string($_REQUEST['reviewids'])) $reviewids = explode (",", $_REQUEST["reviewids"]);
 		}
 		
-		self::viewItems($itemids, $reviewids);
+		self::viewItems($itemids, $reviewids, $_REQUEST['edit']=='1');
 	}
 	
 	
@@ -59,26 +59,43 @@ class BulkViewer {
 	
 	
 	
-	private static function getHTML_List (string $title, string $select, string $options, string $content): string {
+	public static function getHTML_List (string $title, string $content, array $entries_title, array $entries_content, string $action=""): string {
+		
+		// generate list of item titles 
+		$options = '<option value="-1" selected>[All]</option>';
+		foreach ($entries_title as $key => $val) {
+			$options .= sprintf ('<option value="%d">%d. %s</option>', $key, $key+1, $val);
+		}
+		
+		$selectItem = sprintf ('
+			<div class="postbox ">
+				<h2 class="hndle">
+					<span><input type="submit" id="bulk_view_action_button" value="Download %d Items" class="button button-primary" /></span>
+					<span style="float: right; font-weight:normal"><a href="">Edit All Items</a></span>
+				</h2>
+				<div class="inside">
+					<select style="width:100%%" align="right" onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) {  d.children[x].style.display = ((this.value<0) || (this.value==x)) ? \'block\' :  \'none\'; }">
+						%s
+					</select>
+					<br/>&nbsp;&nbsp;<input type="checkbox" checked onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) { d.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; }"> Show Metadata</input>
+				</div>
+			</div>
+			', count($entries_title), $options);
 		
 		return sprintf ('
-			<div class="wrap">
-				<h1>%s</h1>
-				<form>
-					 <select onChange="for (x=0; x<this.form.nextElementSibling.children.length; x++) {  this.form.nextElementSibling.children[x].style.display = ((this.value<0) || (this.value==x)) ? \'block\' :  \'none\'; }">
-						<option value="-1" selected>[%2$s]</option>
-						%3$s
-					</select>
-					<input type="checkbox" checked onChange="for (x=0; x<this.form.nextElementSibling.children.length; x++) { this.form.nextElementSibling.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; }"/> Show Metadata
-				</form>
-				<div>%4$s</div>
-			</div>',
-			$title, $select, $options, $content);
+				<div id="poststuff">
+					%1$s
+					<br style="clear:both;"/>
+				</div>
+				<div id="itemcontainer">%2$s</div>
+			',
+			self::getHTML_Body($title, $content, $selectItem), implode("", $entries_content));
+		
 	}
 	
 	
 	
-	private static function getHTML_Body (string $title, string $content, string $metadata) {
+	public static function getHTML_Body (string $title, string $content, string $metadata) {
 		
 		return sprintf ('
 			<div id="post-body" class="metabox-holder columns-2">
@@ -101,7 +118,7 @@ class BulkViewer {
 	 * @param array $reviewids
 	 */
 	
-	public static function viewItems (array $itemids = array(), array $reviewids = NULL) {
+	public static function viewItems (array $itemids, $reviewids, bool $editable) {
 		
 		// load all items
 		$items = array ();
@@ -139,8 +156,8 @@ class BulkViewer {
 		}
 		
 		
-		$html_items = "";
-		$html_select = "";
+		$items_content = array();
+		$items_title = array();
 		$count = 0;
 		foreach ($items as $item) {
 
@@ -156,8 +173,8 @@ class BulkViewer {
 				}
 			}
 			
-			$html_select .= sprintf('<option value="%d">%s</option>', $count, $item->title);
-			$html_items  .= sprintf('
+			array_push($items_title, $item->title);
+			array_push($items_content, sprintf('
 				<div id="poststuff">
 					<hr/>
 					%s
@@ -166,14 +183,14 @@ class BulkViewer {
 						%s
 					</div>
 				</div>',
-				self::getHTML_Body($item->title, HTML_Item::getHTML_Item($item, HTML_Object::VIEW_STUDENT), HTML_Item::getHTML_Metadata($item, HTML_Object::VIEW_STUDENT, $item->id)),
+				self::getHTML_Body($item->title, HTML_Item::getHTML_Item($item, $editable ? HTML_Object::VIEW_REVIEW : HTML_Object::VIEW_STUDENT), HTML_Item::getHTML_Metadata($item, $editable ? HTML_Object::VIEW_EDIT : HTML_Object::VIEW_STUDENT, $item->id)),
 				$html_reviews
-			);
+			));
 
 			$count++;
 		}
 		
-		print self::getHTML_List("Item + Review Viewer", sprintf ("All %d Items", count($items)), $html_select, $html_items);
+		print self::getHTML_List(sprintf ('Item %sViewer', is_null($reviewids) ? '' : '+ Review '), '', $items_title, $items_content);
 		
 	}
 	
@@ -187,130 +204,27 @@ class BulkViewer {
 	
 	public static function viewLearnOuts (array $learnoutids = array()) {
 	
-		$html_entry = "";
-		$html_select = "";
-		$count = 0;
+		$los_content = array();
+		$los_title = array();
 		foreach ($learnoutids as $learnout_id) {
 			$learnout = new EAL_LearnOut($learnout_id);
 				
-			$html_select .= sprintf('<option value="%d">%s</option>', $count, $learnout->title);
-			$html_items  .= sprintf('
+			array_push($los_title, $learnout->title);
+			array_push($los_content, sprintf('
 				<div id="poststuff">
 					<hr/>
 					%s
 					<br style="clear:both;"/>
 				</div>',
 				self::getHTML_Body($learnout->title, HTML_Learnout::getHTML_LearnOut($learnout)	, HTML_Learnout::getHTML_Metadata($learnout))
-			);
-			
-			$count++;
+			));
 		}
 	
 	
-		print self::getHTML_List("Learning Outcome Viewer", sprintf ("All %d Learning Outcomes", count($learnoutids)), $html_select, $html_items);
+		print self::getHTML_List("Learning Outcome Viewer", '', $los_title, $los_content);
 
 	}	
 	
-	
-	
-/*	
-	
-	
-	
-	
-	
-	
-	
-	public static function viewItem2 () {
-		
-		
-		$itemids = array();
-		
-		if ($_REQUEST['itemid'] != null) $itemids = [$_REQUEST['itemid']];
-		if ($_REQUEST['itemids'] != null) {
-			if (is_array($_REQUEST['itemids'])) $itemids = $_REQUEST['itemids'];
-			if (is_string($_REQUEST['itemids'])) $itemids = explode (",", $_REQUEST["itemids"]);
-		}
-		
-		
-		
-		$html_list = "";
-		$html_select  = "<form><select onChange='for (x=0; x<this.form.nextSibling.childNodes.length; x++) {  this.form.nextSibling.childNodes[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'>";
-		$html_select .= sprintf ('<option value="-1" selected>[All %1$d Items]</option>', count($itemids));
-		$count = 0;
-		$items = array ();
-		foreach ($itemids as $item_id) {
-				
-			$post = get_post($item_id);
-			if ($post == null) continue;
-				
-			$item = EAL_Item::load($post->post_type, $item_id);
-		
-			if ($item != null) {
-				$html_select .= sprintf ("<option value='%d'>%s</option>", $count, $item->title);
-				$html_list .= sprintf ("
-					<div class='wp-clearfix'>
-						%s
-					</div>",
-						HTML_Item::getHTML_Item($item, HTML_Object::VIEW_STUDENT) );
-				$count++;
-				array_push($items, $item);
-			}
-		}
-		
-// 		<br style='clear:both;'/>
-		$html_select .= "</select>&nbsp;&nbsp;&nbsp;<input type='checkbox' checked
-			onChange='for (x=0; x<this.form.nextSibling.childNodes.length; x++) { this.form.nextSibling.childNodes[x].querySelector(\"#postbox-container-1\").style.display = (this.checked==true) ? \"block\" :  \"none\"; }'/> Show Metadata</form>";
-		
-		
-		$html_info  = sprintf("<form  style='margin-top:5em' enctype='multipart/form-data' action='admin.php?page=view&download=1&itemids=%s' method='post'><table class='form-table'><tbody'>", implode(",",$itemids));
-		$html_info .= sprintf("<tr><th style='padding-top:0px; padding-bottom:0px;'><label>%s</label></th>", "Number of Items");
-		$html_info .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
-		$html_info .= sprintf("<input style='width:5em' type='number' value='%d' readonly/>", count($items));
-		$html_info .= sprintf("</td></tr>");
-			
-		// Min / Max for all categories
-		$categories = array ("type", "dim", "level", "topic1");
-		foreach ($categories as $category) {
-				
-			$html_info .= sprintf("<tr><th style='padding-bottom:0.5em;'><label>%s</label></th></tr>", EAL_Item::$category_label[$category]);
-			foreach (PAG_Explorer::groupBy ($category, $items, NULL, true) as $catval => $catitems) {
-					
-					
-				// topic id statt topic name
-					
-				$html_info .= sprintf("<tr><td style='padding-top:0px; padding-bottom:0px;'><label>%s</label></td>", ($category == "topic1") ? $catval : EAL_Item::$category_value_label[$category][$catval]);
-				$html_info .= sprintf("<td style='padding-top:0px; padding-bottom:0px;'>");
-				$html_info .= sprintf("<input style='width:5em' type='number' value='%d' readonly/>", count($catitems));
-				$html_info .= sprintf("</td></tr>");
-			}
-				
-		}
-			
-		$html_info .= sprintf ("<tr><th><button type='submit' name='action' value='download'>Download</button></th><tr>");
-		$html_info .= sprintf ("</tbody></table></form></div>");
-		
-		
-		printf ('<div class="wrap"><h1>Item Viewer</h1>');
-		
-		if ($_REQUEST['download']=='1') {
-			$ilias = new EXP_Ilias();
-			$link = $ilias->generateExport($itemids);
-			printf ("<h2><a href='%s'>Download</a></h2>", $link);
-		}
-		
-		
-		if ((count($itemids)>1) || (count($itemids)==1)) {
-			print $html_select;
-			print "<div style='margin-top:2em'>{$html_list}{$html_info}</div>";
-		} else {
-			print "<div style='margin-top:2em'>{$html_list}</div>";
-		}
-		print "</div>";
-			
-		
-	}
-*/
 }
 
 

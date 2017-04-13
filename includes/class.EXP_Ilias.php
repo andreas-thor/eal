@@ -320,7 +320,7 @@ class EXP_Ilias {
 				<MetaData>
 					<General Structure="Hierarchical">
 						<Identifier Catalog="EAL" Entry="il_0_qpl_1"/>
-						<Title Language="de">Exported from EAL</Title>
+						<Title Language="de">Exported from EAs.LiT</Title>
 						<Language Language="de"/>
 						<Description Language="de"/>
 						<Keyword Language="en"/>

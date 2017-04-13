@@ -89,97 +89,82 @@ class PAG_Import {
 			return;
 		}
 			
-		$html_items = "";
-		$html_select = "";
-		$count = 0;
+		// Generate HTML content
 		$itemids = array ();
-		foreach ($items as $item) {
-			array_push($itemids, $item->id);
-			$html_select .= sprintf("<option value='%d'>%s</option>", $count, $item->title);
-			$html_items  .= sprintf("
-				<div id='poststuff'>
-					<hr/>
-					<div id='post-body' class='metabox-holder columns-2'>
-						<div class='postbox-container' id='postbox-container-2'>
-							<h1>%s</h1>%s
-						</div>
-						<div class='postbox-container' id='postbox-container-1'>
-							<div style='background-color:#FFFFFF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>
-							%s
-							</div>
-						</div>
-					</div>
-					<br style='clear:both;'/>
-				</div>"
-				, $item->title
-				, HTML_Item::getHTML_Item($item, HTML_Object::VIEW_IMPORT, "import_{$item->id}_")
-				, HTML_Item::getHTML_Metadata($item, HTML_Object::VIEW_IMPORT, "import_{$item->id}_")
-				);
+		$items_title = array();
+		$items_content = array();
 		
-			$count++;
+		foreach ($items as $item) {
+			array_push ($itemids, $item->id);
+			array_push ($items_title, $item->title);
+			array_push ($items_content, sprintf('
+				<div id="poststuff">
+					<hr/>
+					%s
+					<br style="clear:both;"/>
+				</div>',
+				BulkViewer::getHTML_Body($item->title, HTML_Item::getHTML_Item($item, HTML_Object::VIEW_IMPORT, "import_{$item->id}_"), HTML_Item::getHTML_Metadata($item, HTML_Object::VIEW_IMPORT, "import_{$item->id}_"))
+			));
 		}
 
-
-		printf ("
-			<div class='wrap'>
-				<h1>Item Import Viewer</h1>
-				<form>
-					 <select onChange='for (x=0; x<this.form.nextElementSibling.lastElementChild.children.length; x++) {  this.form.nextElementSibling.lastElementChild.children[x].style.display = ((this.value<0) || (this.value==x)) ? \"block\" :  \"none\"; }'>
-						<option value='-1' selected>[All %d Items]</option>
-						%s
-					</select>
-					<input type='checkbox' checked onChange='for (x=0; x<this.form.nextElementSibling.lastElementChild.children.length; x++) { this.form.nextElementSibling.lastElementChild.children[x].querySelector(\"#postbox-container-1\").style.display = (this.checked==true) ? \"block\" :  \"none\"; }'/> Show Metadata
-				</form>
-				<form  enctype='multipart/form-data' action='admin.php?page=%s' method='post'>
-					<table style='border-width:1px; font-size:100%%'>
-						<tr><th><button type='submit' name = 'action' value = 'import' id='importstatussum_all'></button></th><th>New</th><th>Update</th></tr>
-						<tr><td>Published</td><td align='right' id='importstatussum_-1'></td><td align='right' id='importstatussum_1'></td></tr>
-						<tr><td>Pending Review</td><td align='right' id='importstatussum_-2'></td><td align='right' id='importstatussum_2'></td></tr>
-						<tr><td>Draft</td><td align='right' id='importstatussum_-3'></td><td align='right' id='importstatussum_3'></td></tr>
-						<tr><td>Do not Import</td><td align='right' id='importstatussum_0'></td><td></td></tr>
+		$impTable = sprintf ('
+			<div class="postbox" style="width:1em">
+				<h2 class="hndle"><span>Import Options</span></h2>
+				<div class="inside">
+					<table style="border-width:1px; font-size:100%%">
+						<tr><th></th><th>New</th><th>Update</th></tr>
+						<tr><td>Published</td><td align="right" id="importstatussum_-1"></td><td align="right" id="importstatussum_1"></td></tr>
+						<tr><td>Pending Review</td><td align="right" id="importstatussum_-2"></td><td align="right" id="importstatussum_2"></td></tr>
+						<tr><td>Draft</td><td align="right" id="importstatussum_-3"></td><td align="right" id="importstatussum_3"></td></tr>
+						<tr><td>Do not Import</td><td align="right" id="importstatussum_0"></td><td></td></tr>
 					</table>
-					<input type='hidden' id='itemids' name='itemids'  value='%s'>
-					<div>%s</div>
-				</form>
-			</div>",
-			count($items), $html_select, $_REQUEST["page"], join(",", $itemids), $html_items 
-		);
+				</div>
+			</div>
+		');
 		
-		
+		printf (' 
+			<form  enctype="multipart/form-data" action="admin.php?page=%s" method="post">
+				<input type="hidden" id="itemids" name="itemids" value="%s">
+				<input type="hidden" name="action" value="import">
+				%s
+			</form>',
+			$_REQUEST["page"], join(",", $itemids), BulkViewer::getHTML_List('Item Import Viewer', $impTable, $items_title, $items_content));
 		
 		?>
-				<script type="text/javascript">
+		<script type="text/javascript">
+
+		function updateimportstatus () {
+			var j = jQuery.noConflict();
+
+			var n = j(".importstatus option:selected[value!='0']").length;
+			j("input#bulk_view_action_button").val("Import " + n + " Items");
+			j("input#bulk_view_action_button").prop("disabled", n==0);
+			for (i=-3; i<=3; i++) {
+				j("td#importstatussum_"+i).html(j(".importstatus option:selected[value='"+i+"']").length + " (<a onclick='setimportstatus(" + i + ");'>All)");
+			}
+		} 
 		
-				function updateimportstatus () {
-					var j = jQuery.noConflict();
-					
-					j("button#importstatussum_all").text("Import " + j(".importstatus option:selected[value!='0']").length + " Items");
-					for (i=-3; i<=3; i++) {
-						j("td#importstatussum_"+i).html(j(".importstatus option:selected[value='"+i+"']").length + " (<a onclick='setimportstatus(" + i + ");'>All)");
-					}
-				} 
-				
-				function setimportstatus (status) {
-					var j = jQuery.noConflict();
-					// status > 0 requires existing item 
-					if (status > 0) {
-						j(".importstatus").val(-status);	// set all as NEW first
-					}
-					// .. and for those with existing items set as UPDATE
-					j(".importstatus option[value='"+status+"']").parent().val(status);
-					updateimportstatus();
-				}
+		function setimportstatus (status) {
+			var j = jQuery.noConflict();
+			// status > 0 requires existing item 
+			if (status > 0) {
+				j(".importstatus").val(-status);	// set all as NEW first
+			}
+			// .. and for those with existing items set as UPDATE
+			j(".importstatus option[value='"+status+"']").parent().val(status);
+			updateimportstatus();
+		}
+
 		
-				
-				jQuery(document).ready(function($) {
-					$('.importstatus').change(function(){
-						updateimportstatus();
-					});
-					updateimportstatus();
-					
-				});
-				</script>
-				<?php 		
+		jQuery(document).ready(function($) {
+			$('.importstatus').change(function(){
+				updateimportstatus();
+			});
+			updateimportstatus();
+			
+		});
+		</script>
+		<?php 		
 		
 	}
 	
@@ -188,7 +173,7 @@ class PAG_Import {
 		
 		?>
 		<div class="wrap">
-			<h1>Upload Items & Test Results</h1>
+			<h1>Upload Items &amp; Test Results</h1>
 			<form  enctype="multipart/form-data" action="admin.php?page=<?php print ($_REQUEST["page"]); ?>" method="post">
 				<table class="form-table">
 					<tbody>
@@ -198,7 +183,7 @@ class PAG_Import {
 						</tr>
 						<tr>
 							<th><label>Format</label></th>
-							<td><select style='width:12em' name="format" values="ilias5"><option>ILIAS 5</option></select></td>
+							<td><select style='width:12em' name="format"><option value="ilias5" selected>ILIAS 5</option></select></td>
 						</tr>
 						<tr>
 							<th>
