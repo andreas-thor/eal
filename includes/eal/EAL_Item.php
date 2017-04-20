@@ -43,39 +43,40 @@ class EAL_Item {
 	
 	function __construct(int $item_id = -1, string $prefix="") {
 		
-		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
 		
+		if ($item_id > 0) {
+			$this->loadFromDB($item_id);
+			return;
+		} 
+		
+		if ($_POST[$prefix."post_type"] == $this->type) {
+			$this->loadFromPOSTRequest($prefix);
+			return;
+		} 
+
 		$this->id = $item_id;
 		$this->title = '';
 		$this->description = '';
 		$this->question = '';
-			
-		$this->level = ["FW" => null, "KW" => null, "PW" => null];
-		$this->learnout = null;
-		$this->learnout_id = null;
 
+		$this->level = ["FW" => null, "KW" => null, "PW" => null];
+		$this->learnout_id = isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : (isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : null);
+		$this->learnout = null;
+		
 		$this->difficulty = null;
 		$this->note = "";
 		$this->flag = 0;
+			
+		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];		
 		
-		if ($item_id > 0) {
-			$this->loadFromDB($item_id);
+		global $post;
+		if ($post->post_type != $this->type) return;
+
+		if (get_post_status($post->ID)=='auto-draft') {
+			$this->id = $post->ID;
 		} else {
-			if ($_POST[$prefix."post_type"] == $this->type) {
-				$this->loadFromPOSTRequest($prefix);
-			} else {
-				global $post;
-					
-				if ($post->post_type != $this->type) return;
-				if (get_post_status($post->ID)=='auto-draft') {
-					$this->id = $post->ID;
-					$this->learnout_id = isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : (isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : null);
-				} else {
-					$this->loadFromDB($post->ID);
-				}
-		
-			}
-		}		
+			$this->loadFromDB($post->ID);
+		}
 	}
 	
 	
@@ -96,9 +97,11 @@ class EAL_Item {
 		$this->description = isset($_POST[$prefix.'item_description']) ? $_POST[$prefix.'item_description'] : null;
 		$this->question = isset ($_POST[$prefix.'item_question']) ? $_POST[$prefix.'item_question'] : null;
 
+		$this->level = ["FW" => null, "KW" => null, "PW" => null];
 		$this->level["FW"] = isset ($_POST[$prefix.'item_level_FW']) ? $_POST[$prefix.'item_level_FW'] : null;
 		$this->level["KW"] = isset ($_POST[$prefix.'item_level_KW']) ? $_POST[$prefix.'item_level_KW'] : null;
 		$this->level["PW"] = isset ($_POST[$prefix.'item_level_PW']) ? $_POST[$prefix.'item_level_PW'] : null;
+		
 		$this->learnout_id = isset ($_GET[$prefix.'learnout_id']) ? $_GET[$prefix.'learnout_id'] : (isset ($_POST[$prefix.'learnout_id']) ? $_POST[$prefix.'learnout_id'] : null);
 		$this->learnout = null;		// lazy loading
 		
@@ -127,16 +130,19 @@ class EAL_Item {
 		$this->description = $sqlres['description'];
 		$this->question = $sqlres['question'];
 	
+		$this->level = ["FW" => null, "KW" => null, "PW" => null];
 		$this->level["FW"] = $sqlres['level_FW'];
 		$this->level["KW"] = $sqlres['level_KW'];
 		$this->level["PW"] = $sqlres['level_PW'];
 	
 		$this->learnout_id = $sqlres['learnout_id'];
 		$this->learnout = null; // lazy loading
+		
 		$this->difficulty = $sqlres['difficulty'];
-		$this->domain = $sqlres['domain'];
 		$this->note = $sqlres['note'];
 		$this->flag = $sqlres['flag'];
+		
+		$this->domain = $sqlres['domain'];
 	}
 	
 	

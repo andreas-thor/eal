@@ -33,7 +33,6 @@ require_once 'includes/class.CLA_RoleTaxonomy.php';
 
 
 
-
 add_action( 'admin_enqueue_scripts', function () {
 	wp_enqueue_script( 'jquery' );
 	wp_enqueue_script( 'jquery-ui-core' );
@@ -230,6 +229,9 @@ add_action ('admin_menu', function () {
  */
 
 register_activation_hook( __FILE__, function () {
+	
+	
+	
 	EAL_Item::createTables();
 	EAL_ItemSC::createTables();
 	EAL_ItemMC::createTables();
@@ -242,6 +244,11 @@ register_activation_hook( __FILE__, function () {
 
 add_action( 'init', function () {
 
+	if ($_REQUEST["page"] == "download") {
+		ImportExport::download(explode(",", $_REQUEST["itemids"]));
+		exit();
+	}
+	
 	if (!session_id()) session_start();
 	
 	(new CPT_Item())->init();

@@ -6,24 +6,22 @@ class BulkViewer {
 	 * Entry functions from menu
 	 */
 	
-	public static function page_view_item () {
+	public static function page_view_item ($itemids = array()) {
 		
-		$itemids = array();
 		if ($_REQUEST['itemid'] != null) $itemids = [$_REQUEST['itemid']];
 		if ($_REQUEST['itemids'] != null) {
 			if (is_array($_REQUEST['itemids'])) $itemids = $_REQUEST['itemids'];
 			if (is_string($_REQUEST['itemids'])) $itemids = explode (",", $_REQUEST["itemids"]);
 		}
 		
-		if ($_POST['action']=='import') $itemids = Importer::doImport();
+		if ($_POST['action']=='import') $itemids = Importer::doImport($itemids, FALSE);
+		if ($_POST['action']=='update') $itemids = Importer::doImport($itemids, TRUE);
 		self::viewItems($itemids, NULL, $_REQUEST['edit']=='1', $_REQUEST["page"]);
 	}
 	
 	
 	public static function page_view_basket () {
-		if ($_POST['action']=='import') $itemids = Importer::doImport();
-		self::viewItems(EAL_ItemBasket::get(), NULL, $_REQUEST['edit']=='1', $_REQUEST["page"]);
-		
+		self::page_view_item(EAL_ItemBasket::get());
 	}
 	
 	public static function page_view_review () {
@@ -42,7 +40,7 @@ class BulkViewer {
 			if (is_string($_REQUEST['reviewids'])) $reviewids = explode (",", $_REQUEST["reviewids"]);
 		}
 		
-		if ($_POST['action']=='import') $itemids = Importer::doImport();
+		if ($_POST['action']=='update') $itemids = Importer::doImport($itemids, TRUE);
 		self::viewItems($itemids, $reviewids, $_REQUEST['edit']=='1', $_REQUEST["page"]);
 	}
 	
@@ -201,8 +199,8 @@ class BulkViewer {
 					</div>
 				</div>',
 				self::getHTML_Body($item->title, 
-						HTML_Item::getHTML_Item    ($item, $editable ? HTML_Object::VIEW_REVIEW : HTML_Object::VIEW_STUDENT, "item_{$item->id}_"), 
-						HTML_Item::getHTML_Metadata($item, $editable ? HTML_Object::VIEW_EDIT   : HTML_Object::VIEW_STUDENT, "item_{$item->id}_")),
+						HTML_Item::getHTML_Item    ($item, $editable ? HTML_Object::VIEW_REVIEW : HTML_Object::VIEW_STUDENT, "item_{$item->id}_"),	// REVIEW 
+						HTML_Item::getHTML_Metadata($item, $editable ? HTML_Object::VIEW_EDIT   : HTML_Object::VIEW_STUDENT, "item_{$item->id}_")), // EDIT
 				$html_reviews
 			));
 		}
@@ -211,18 +209,33 @@ class BulkViewer {
 		$url = sprintf ('admin.php?page=%s', $page);
 		if (count($itemids)>0) $url .= "&itemids=" . implode (',', $itemids);
 		if (!is_null($reviewids)) $url .= "&reviewids=" . implode (',', $reviewids);
+
+		$download_url = plugin_dir_url( __DIR__ . "/../../download.php" ) . "download.php?itemids=" . implode (',', $itemids);
+		$download_url = 'admin.php?page=download';
 		
-		if (!$editable) {
-			print self::getHTML_List(sprintf ('Item %sViewer', is_null($reviewids) ? '' : '+ Review '), '', $items_title, $items_content, $url . "&edit=1");
-		} else {
+// 		if (!$editable) {
+
+// 			printf ('
+// 				<form  enctype="multipart/form-data" action="%s&edit=0" method="post">
+// 					<input type="hidden" id="itemids" name="itemids" value="%s">
+// 					<input type="hidden" name="action" value="import">
+// 					%s
+// 				</form>',
+// 					$url, implode (',', $itemids),
+// 					self::getHTML_List(sprintf ('Item %sViewer', is_null($reviewids) ? '' : '+ Review '), '', $items_title, $items_content, $url . "&edit=1"));
+// 		} else {
 			printf ('
-				<form  enctype="multipart/form-data" action="%s&edit=0" method="post">
+				<form  enctype="multipart/form-data" action="%s" method="post">
 					<input type="hidden" id="itemids" name="itemids" value="%s">
-					<input type="hidden" name="action" value="import">
+					<input type="hidden" name="action" value="%s">
 					%s
 				</form>',
-				$url, implode (',', $itemids), self::getHTML_List(sprintf ('Item %sViewer', is_null($reviewids) ? '' : '+ Review '), '', $items_title, $items_content, ''));
-		}
+				$editable ? $url . "&edit=0" : $download_url, 
+				implode (',', $itemids), 
+				$editable ? "update" : "download", 
+				self::getHTML_List(sprintf ('Item %sViewer', is_null($reviewids) ? '' : '+ Review '), '', $items_title, $items_content, $editable ? '' : $url . "&edit=1"));
+				
+// 		}
 		
 	}
 	
@@ -259,18 +272,26 @@ class BulkViewer {
 		$url = sprintf ('admin.php?page=%s', $page);
 		if (count($learnoutids)>0) $url .= "&learnoutids=" . implode (',', $learnoutids);
 		
-		if (!$editable) {
-			print self::getHTML_List("Learning Outcome Viewer", '', $los_title, $los_content, $url . "&edit=1", FALSE);
-		} else {
+// 		if (!$editable) {
 			printf ('
 				<form  enctype="multipart/form-data" action="%s&edit=0" method="post">
 					<input type="hidden" id="learnoutids" name="learnoutids" value="%s">
-					<input type="hidden" name="action" value="import">
+					<input type="hidden" name="action" value="%s">
 					%s
 				</form>',
-					$url, implode (',', $learnoutids), 
-					self::getHTML_List("Learning Outcome Viewer", '', $los_title, $los_content, '', FALSE));
-		}
+					$url, implode (',', $learnoutids),
+					$editable ? "download" : "import",
+					self::getHTML_List("Learning Outcome Viewer", '', $los_title, $los_content, $editable ? '' : $url . "&edit=1", FALSE));
+// 		} else {
+// 			printf ('
+// 				<form  enctype="multipart/form-data" action="%s&edit=0" method="post">
+// 					<input type="hidden" id="learnoutids" name="learnoutids" value="%s">
+// 					<input type="hidden" name="action" value="import">
+// 					%s
+// 				</form>',
+// 					$url, implode (',', $learnoutids), 
+// 					self::getHTML_List("Learning Outcome Viewer", '', $los_title, $los_content, '', FALSE));
+// 		}
 		
 		
 	}	

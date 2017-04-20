@@ -210,11 +210,28 @@ class HTML_Item  {
 		
 		// Note + Flag
 		$res .= sprintf ('
-				<div class="postbox ">
-					<h2 class="hndle"><span>Notiz</span></h2>
-					<div class="inside">%s</div>
-				</div>',
-				self::getHTML_NoteFlag($item, $viewType, $prefix));
+			<div class="postbox ">
+				<h2 class="hndle"><span>Notiz</span></h2>
+				<div class="inside">%s</div>
+			</div>',
+			self::getHTML_NoteFlag($item, $viewType, $prefix));
+		
+		
+		if (($viewType == HTML_Object::VIEW_EDIT) || ($viewType == HTML_Object::VIEW_IMPORT)) {
+			$res .= sprintf ('
+				<input type="hidden" name="%1$spost_ID"  value="%2$s">
+		  		<input type="hidden" name="%1$spost_type"  value="%3$s">
+		  		<input type="hidden" name="%1$spost_content"  value="%4$s">
+		  		<input type="hidden" name="%1$spost_title"  value="%5$s">
+				',
+				$prefix,
+				$item->id,
+				$item->type,
+				microtime(),
+				$item->title
+			);
+		}
+		
 		
 		return $res;
 	}
@@ -229,36 +246,35 @@ class HTML_Item  {
  			case 'EAL_ItemSC': $answers_html = HTML_ItemSC::getHTML_Answers($item, $viewType, $namePrefix); break;
  			case 'EAL_ItemMC': $answers_html = HTML_ItemMC::getHTML_Answers($item, $viewType, $namePrefix); break;
  		}
-	
+
+
+
+ 		
+//  		<input type="hidden" id="%sitem_description" name="%sitem_description"  value="%s">
+//  		<input type="hidden" id="%sitem_question" name="%sitem_question"  value="%s">
+ 			
 		$result = "";
- 		if (($viewType == HTML_Object::VIEW_REVIEW) || ($viewType == HTML_Object::VIEW_IMPORT)) {
+ 		if ($viewType == HTML_Object::VIEW_IMPORT) {
  			$result = sprintf ('
  				<div>
- 					<div>%s</div>
- 					<div style="background-color:F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;">
- 						<div>%s</div>
- 						<div>%s</div>
-						<input type="hidden" id="%spost_ID" name="%spost_ID"  value="%s">
-						<input type="hidden" id="%spost_title" name="%spost_title"  value="%s">
-						<input type="hidden" id="%spost_type" name="%spost_type"  value="%s">
- 						<input type="hidden" id="%sitem_description" name="%sitem_description"  value="%s">
- 						<input type="hidden" id="%sitem_question" name="%sitem_question"  value="%s">
-						<input type="hidden" id="%spost_content" name="%spost_content"  value="%s">
+			  		<input type="hidden" name="%1$sitem_description"  value="%2$s">
+			  		<input type="hidden" name="%1$sitem_question"  value="%3$s">
+ 					<div>%4$s</div>
+ 					<div style="background-color:#F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;">
+ 						<div>%5$s</div>
+ 						<div>%6$s</div>
  					</div>
- 				</div>', 
- 				wpautop(stripslashes($item->description)),
- 				wpautop(stripslashes($item->question)),
- 				$answers_html,
- 				$namePrefix, $namePrefix, $item->id,	
- 				$namePrefix, $namePrefix, $item->title,	
- 				$namePrefix, $namePrefix, $item->type,	
- 				$namePrefix, $namePrefix, htmlentities($item->description),	
- 				$namePrefix, $namePrefix, htmlentities($item->question),	
- 				$namePrefix, $namePrefix, microtime()
+ 				</div>',
+				$namePrefix,
+ 				htmlentities($item->description),
+ 				htmlentities($item->question), 					
+				wpautop(stripslashes($item->description)),
+				wpautop(stripslashes($item->question)),
+				$answers_html
  			);
  		}
  		
- 		if ($viewType == HTML_Object::VIEW_STUDENT) {
+ 		if (($viewType == HTML_Object::VIEW_STUDENT) || ($viewType == HTML_Object::VIEW_REVIEW)) {
 	
  			$result = sprintf ("
  				<div>
@@ -272,51 +288,6 @@ class HTML_Item  {
  				wpautop(stripslashes($item->question)),
  				$answers_html
  			);
-/* 			
- 			
- 			
-			// head line (incl. option to edit)
-			$item_html  = sprintf ("
-				<div onmouseover=\"this.children[1].style.display='inline';\"  onmouseout=\"this.children[1].style.display='none';\">
-					<h1 style='display:inline'>%s</span></h1>
-					<div style='display:none'>
-						<span><a href=\"post.php?action=edit&post=%d\">Edit</a></span>
-					</div>
-				</div>", $item->title, $item->id);
-	
-			// description
-			$item_html .= sprintf ("<div>%s</div>", wpautop(stripslashes($item->description)));
-	
-			// question and answers
-			$item_html .= sprintf ("<div style='background-color:#F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>");
-			$item_html .= sprintf ("%s", wpautop(stripslashes($item->question)));
-			$item_html .= sprintf ("%s", $answers_html);
-			$item_html .= sprintf ("</div>");
-	
-	
-			return sprintf ("
-				<div id='poststuff'>
-					<div id='post-body' class='metabox-holder columns-2'>
-						<div class='postbox-container' id='postbox-container-2'>
-							<div class='meta-box-sortables ui-sortable'>
-								%s
-							</div>
-							<div class='meta-box-sortables ui-sortable'>
-								<h2>Reviews</h2>
-							</div>
-						</div>
-						<div class='postbox-container' id='postbox-container-1'>
-							<div style='background-color:#FFFFFF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>
-								%s
-							</div>
-						</div>
-					</div>
-				</div>"
-					, $item_html
-					, self::getHTML_Metadata($item, $editableMeta, $namePrefix));
-	
-		
-		*/
  		}
  		
  		return $result;

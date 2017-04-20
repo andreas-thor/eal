@@ -18,13 +18,16 @@ class Importer {
 
 	}
 	
-	
-	public static function doImport () {
-		
+	/**
+	 * 
+	 * @param array $itemids
+	 * @param bool $updateMetadataOnly
+	 */
+	public static function doImport (array $itemids, bool $updateMetadataOnly = FALSE ) {
+
 		$result = array();
-		foreach (explode (",", $_POST['itemids']) as $itemid) {
+		foreach ($itemids as $itemid) {
 		
-			$tempid = ($itemid>0) ? -$itemid : $itemid;
 			$prefix = "item_" . $itemid . "_";
 		
 			$status = '';
@@ -33,14 +36,24 @@ class Importer {
 				case  2: $status = 'pending'; break;
 				case  3: $status = 'draft'; break;
 			}
-			if ($status == '') {
-				continue;
-			}
+
+			if ($status == '') continue;	// must have status
+			if ($updateMetadataOnly && ($itemid<0)) continue;	// must have itemid if "update"
 		
-			$item = EAL_Item::load($_POST[$prefix."post_type"], $tempid, $prefix);
+			$item = EAL_Item::load($_POST[$prefix."post_type"], -1, $prefix);	// load item from POST data (because tempid<0)
+			if ($updateMetadataOnly) {
+				$item_post = $item;
+				$item = EAL_Item::load($_POST[$prefix."post_type"], $itemid);
+				$item->level = $item_post->level;
+				$item->learnout_id = $item_post->learnout_id;
+				$item->note = $item_post->note;
+				$item->flag = $item_post->flag;
+			}
+			
+			
 			$terms = $_POST[$prefix."taxonomy"];
 		
-			if ($itemid<0) {
+			if (($itemid<0) || ($_POST[$prefix."item_status"]<0)) {
 				$postarr = array ();
 				$postarr['ID'] = 0;	// no EAL-ID
 				$postarr['post_title'] = $item->title;

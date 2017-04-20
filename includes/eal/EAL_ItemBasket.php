@@ -33,7 +33,8 @@ class EAL_ItemBasket {
 		if (count($itemids)>0) { 
 			$join = join(", ", $itemids);	
 			$sql  = "SELECT DISTINCT P.id FROM {$wpdb->prefix}eal_item I JOIN {$wpdb->prefix}posts P ON (P.ID = I.ID) 
-				WHERE P.post_parent = 0 AND P.post_status IN ('publish', 'pending', 'draft') AND I.id IN ({$join}) ";
+				WHERE P.post_parent = 0 AND P.post_status IN ('publish', 'pending', 'draft') AND I.id IN ({$join}) 
+				AND I.domain = '" . RoleTaxonomy::getCurrentRoleDomain()["name"] . "'";
 			$itemids = $wpdb->get_col ($sql);
 					
 		}

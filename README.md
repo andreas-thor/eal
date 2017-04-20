@@ -12,3 +12,8 @@
 * Set date / time format and time zone 
 * Set Start Page
 
+
+
+max_input_vars = 1000000
+post_max_size=100M
+upload_max_filesize=200M
