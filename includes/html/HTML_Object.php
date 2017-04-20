@@ -55,6 +55,59 @@ class HTML_Object {
 	}
 		
 	
+	
+	public static function getHTML_Topic (string $domain, string $id, int $viewType, string $prefix = "") {
+		// <input type="hidden" name="%staxonomy[]" value="0">
+	
+		if (($viewType == HTML_Object::VIEW_IMPORT) || ($viewType == HTML_Object::VIEW_EDIT)) {
+	
+			return sprintf ('
+					<div class="categorydiv">
+						<input type="hidden" id="%sdomain" name="%sdomain"  value="%s">
+						<div id="topic-all" class="tabs-panel">
+							<ul id="topicchecklist" data-wp-lists="list:topic" class="categorychecklist form-no-clear">
+							%s
+							</ul>
+						</div>
+					</div>',
+					$prefix, $prefix, $domain,
+					// 					$prefix,
+					self::getHTML_TopicHierarchy($prefix, get_terms( array('taxonomy' => $domain, 'hide_empty' => false) ), 0, wp_get_post_terms( $id, $domain, array("fields" => "ids"))));
+	
+		} else {
+	
+			$terms = wp_get_post_terms( $id, $domain, array("fields" => "names"));
+			$termCheckboxes = "";
+			foreach ($terms as $t) {
+				$termCheckboxes .= sprintf ("<input type='checkbox' checked onclick='return false;'>%s<br/>", $t);
+			}
+			return $termCheckboxes;
+	
+		}
+	
+	}	
+	
+	
+	private static function getHTML_TopicHierarchy ($namePrefix, $terms, $parent, $selected) {
+	
+		$res .= "";
+		foreach ($terms as $term) {
+			if ($term->parent != $parent) continue;
+	
+			$res .= sprintf ('
+				<li id="%4$s-%1$d">
+					<label class="selectit">
+					<input value="%1$d" type="checkbox" %3$s name="%4$staxonomy[]" id="in-%4$s-%1$d"> %2$s</label>
+					<ul class="children">%5$s</ul>
+				</li>',
+					$term->term_id, $term->name, in_array ($term->term_id, $selected)?"checked":"",
+					$namePrefix,
+					self::getHTML_TopicHierarchy($namePrefix, $terms, $term->term_id, $selected));
+		}
+	
+		return $res;
+	}	
+	
 }
 
 ?>

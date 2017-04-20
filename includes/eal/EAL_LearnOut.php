@@ -16,7 +16,7 @@ class EAL_LearnOut {
 	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	
 	
-	function __construct(int $learnout_id = -1) {
+	function __construct(int $learnout_id = -1, string $prefix="") {
 		
 		$this->type = 'learnout';
 		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
@@ -25,11 +25,11 @@ class EAL_LearnOut {
 		$this->description = 'Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage ...';
 		$this->level = ["FW" => null, "KW" => null, "PW" => null];
 		
-		if ($learnout_id != -1) {
+		if ($learnout_id > 0) {
 			$this->loadFromDB($learnout_id);
 		} else {
-			if ($_POST["post_type"] == $this->type) {
-				$this->loadFromPOSTRequest();
+			if ($_POST[$prefix."post_type"] == $this->type) {
+				$this->loadFromPOSTRequest($prefix);
 			} else {
 				global $post;
 					
@@ -46,18 +46,18 @@ class EAL_LearnOut {
 	/**
 	 * Initialize learning outcome from _POST Request data
 	 */
-	protected function loadFromPOSTRequest () {
+	protected function loadFromPOSTRequest (string $prefix="") {
 	
-		$this->id = $_POST["post_ID"];
-		$this->title = $_POST["post_title"];
-		$this->description = isset($_POST['learnout_description']) ? $_POST['learnout_description'] : null;
-		$this->level["FW"] = isset ($_POST['learnout_level_FW']) ? $_POST['learnout_level_FW'] : null;
-		$this->level["KW"] = isset ($_POST['learnout_level_KW']) ? $_POST['learnout_level_KW'] : null;
-		$this->level["PW"] = isset ($_POST['learnout_level_PW']) ? $_POST['learnout_level_PW'] : null;
-		
-		$this->domain = isset ($_POST["domain"]) ? $_POST["domain"] : "";
-		if (($this->domain == "") && (isset($_POST['tax_input']))) {
-			foreach ($_POST['tax_input'] as $key => $value) {
+		$this->id = $_POST[$prefix."post_ID"];
+		$this->title = $_POST[$prefix."post_title"];
+		$this->description = isset ($_POST[$prefix.'learnout_description']) ? $_POST[$prefix.'learnout_description'] : null;
+		$this->level["FW"] = isset ($_POST[$prefix.'learnout_level_FW'])    ? $_POST[$prefix.'learnout_level_FW'] : null;
+		$this->level["KW"] = isset ($_POST[$prefix.'learnout_level_KW'])    ? $_POST[$prefix.'learnout_level_KW'] : null;
+		$this->level["PW"] = isset ($_POST[$prefix.'learnout_level_PW'])    ? $_POST[$prefix.'learnout_level_PW'] : null;
+		  
+		$this->domain = isset ($_POST[$prefix."domain"]) ? $_POST[$prefix."domain"] : "";
+		if (($this->domain == "") && (isset($_POST[$prefix.'tax_input']))) {
+			foreach ($_POST[$prefix.'tax_input'] as $key => $value) {
 				$this->domain = $key;
 				break;
 			}
@@ -119,7 +119,7 @@ class EAL_LearnOut {
 	
 	
 	
-	protected function saveToDB() {
+	public function saveToDB() {
 		
 		global $wpdb;
 		$wpdb->replace(

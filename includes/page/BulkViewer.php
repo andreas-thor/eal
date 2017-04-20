@@ -56,7 +56,8 @@ class BulkViewer {
 			if (is_string($_REQUEST['learnoutids'])) $learnoutids = explode (",", $_REQUEST["learnoutids"]);
 		}
 		
-		self::viewLearnOuts($learnoutids);
+		if ($_POST['action']=='import') $learnoutids = Importer::doUpdateLearnOuts();
+		self::viewLearnOuts($learnoutids, $_REQUEST['edit']=='1', $_REQUEST["page"]);
 	}
 	
 	
@@ -70,7 +71,7 @@ class BulkViewer {
 	 * @param string $editlink "Edit all items" url
 	 * @return string
 	 */
-	public static function getHTML_List (string $title, string $content, array $entries_title, array $entries_content, string $editurl=""): string {
+	public static function getHTML_List (string $title, string $content, array $entries_title, array $entries_content, string $editurl="", bool $isItem=TRUE): string {
 		
 		// generate list of item titles 
 		$options = '<option value="-1" selected>[All]</option>';
@@ -81,17 +82,23 @@ class BulkViewer {
 		$selectItem = sprintf ('
 			<div class="postbox ">
 				<h2 class="hndle">
-					<span><input type="submit" id="bulk_view_action_button" value="%s %d Items" class="button button-primary" /></span>
-					<span style="float: right; font-weight:normal">%s</span>
+					<span><input style="visibility:%1$s" type="submit" id="bulk_view_action_button" value="%2$s %3$d %4$s" class="button button-primary" /></span>
+					<span style="float: right; font-weight:normal">%5$s</span>
 				</h2>
 				<div class="inside">
 					<select style="width:100%%" align="right" onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) {  d.children[x].style.display = ((this.value<0) || (this.value==x)) ? \'block\' :  \'none\'; }">
-						%s
+						%6$s
 					</select>
 					<br/>&nbsp;&nbsp;<input type="checkbox" checked onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) { d.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; }"> Show Metadata</input>
 				</div>
 			</div>
-			', ($editurl == '') ? "Update" : "Download", count($entries_title), ($editurl == '') ? '' : sprintf ('<a href="%s">Edit All Items</a>', $editurl) , $options);
+			', 
+			$isItem || ($editurl == '') ? "visible" : "hidden",		// (1) hide action button if learning outcome ($isItem==FALSE) are viewd (not edited, i.e., $editurl has a value)
+			($editurl == '') ? "Update" : "Download", 				// (2) label for action button
+			count($entries_title), 									// (3) number of items / learning outcomes
+			$isItem ? "Items" : "Learn. Out.", 						// (4) type caption 
+			($editurl == '') ? '' : sprintf ('<a href="%s">Edit All %s</a>', $editurl, $isItem ? "Items" : "LOs"),		// (5) Edit link + caption 
+			$options);												// (6) options list in drop down
 		
 		return sprintf ('
 				<div id="poststuff">
@@ -169,7 +176,6 @@ class BulkViewer {
 		
 		$items_content = array();
 		$items_title = array();
-		$count = 0;
 		foreach ($items as $item) {
 
 			$html_reviews = "";
@@ -194,11 +200,11 @@ class BulkViewer {
 						%s
 					</div>
 				</div>',
-				self::getHTML_Body($item->title, HTML_Item::getHTML_Item($item, $editable ? HTML_Object::VIEW_REVIEW : HTML_Object::VIEW_STUDENT, "import_{$item->id}_"), HTML_Item::getHTML_Metadata($item, $editable ? HTML_Object::VIEW_EDIT : HTML_Object::VIEW_STUDENT, "import_{$item->id}_")),
+				self::getHTML_Body($item->title, 
+						HTML_Item::getHTML_Item    ($item, $editable ? HTML_Object::VIEW_REVIEW : HTML_Object::VIEW_STUDENT, "item_{$item->id}_"), 
+						HTML_Item::getHTML_Metadata($item, $editable ? HTML_Object::VIEW_EDIT   : HTML_Object::VIEW_STUDENT, "item_{$item->id}_")),
 				$html_reviews
 			));
-
-			$count++;
 		}
 		
 		// generate "Edit All Items" link
@@ -228,7 +234,7 @@ class BulkViewer {
 	
 	
 	
-	public static function viewLearnOuts (array $learnoutids = array()) {
+	public static function viewLearnOuts (array $learnoutids = array(), bool $editable, string $page) {
 	
 		$los_content = array();
 		$los_title = array();
@@ -242,13 +248,31 @@ class BulkViewer {
 					%s
 					<br style="clear:both;"/>
 				</div>',
-				self::getHTML_Body($learnout->title, HTML_Learnout::getHTML_LearnOut($learnout)	, HTML_Learnout::getHTML_Metadata($learnout))
+				self::getHTML_Body($learnout->title, 
+					HTML_Learnout::getHTML_LearnOut($learnout, "lo_{$learnout->id}_"), 
+					HTML_Learnout::getHTML_Metadata($learnout, $editable ? HTML_Object::VIEW_EDIT   : HTML_Object::VIEW_STUDENT, "lo_{$learnout->id}_"))
 			));
 		}
 	
 	
-		print self::getHTML_List("Learning Outcome Viewer", '', $los_title, $los_content);
-
+		// generate "Edit All Items" link
+		$url = sprintf ('admin.php?page=%s', $page);
+		if (count($learnoutids)>0) $url .= "&learnoutids=" . implode (',', $learnoutids);
+		
+		if (!$editable) {
+			print self::getHTML_List("Learning Outcome Viewer", '', $los_title, $los_content, $url . "&edit=1", FALSE);
+		} else {
+			printf ('
+				<form  enctype="multipart/form-data" action="%s&edit=0" method="post">
+					<input type="hidden" id="learnoutids" name="learnoutids" value="%s">
+					<input type="hidden" name="action" value="import">
+					%s
+				</form>',
+					$url, implode (',', $learnoutids), 
+					self::getHTML_List("Learning Outcome Viewer", '', $los_title, $los_content, '', FALSE));
+		}
+		
+		
 	}	
 	
 }

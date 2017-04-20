@@ -22,12 +22,10 @@ class Importer {
 	public static function doImport () {
 		
 		$result = array();
-		$count = 0;
 		foreach (explode (",", $_POST['itemids']) as $itemid) {
 		
-			$count++;
 			$tempid = ($itemid>0) ? -$itemid : $itemid;
-			$prefix = "import_" . $itemid . "_";
+			$prefix = "item_" . $itemid . "_";
 		
 			$status = '';
 			switch (abs ($_POST[$prefix."item_status"])) {
@@ -67,6 +65,32 @@ class Importer {
 		return $result;
 	}
 
+
+	public static function doUpdateLearnOuts () {
+	
+		$result = array();
+		foreach (explode (",", $_POST['learnoutids']) as $learnoutid) {
+		
+			$prefix = "lo_" . $learnoutid . "_";
+			$learnout = new EAL_LearnOut (-1, $prefix);	// learnoutid = -1 --> LOAD from post request
+			$terms = $_POST[$prefix."taxonomy"];
+		
+	
+			$learnout->id = $learnoutid;
+			$post = get_post ($learnout->id);
+			$post->post_title = $learnout->title;
+			$post->post_status = "publish";
+			$post->post_content = microtime();	// ensures revision
+			wp_set_post_terms($learnout->id, $terms, $learnout->domain, FALSE );
+			wp_update_post ($post);
+		
+			$learnout->saveToDB();
+			array_push ($result, $learnout->id);
+		}
+		return $result;		
+		
+	}
+	
 	
 	private static function showPreview () {
 	
@@ -97,7 +121,7 @@ class Importer {
 					%s
 					<br style="clear:both;"/>
 				</div>',
-				BulkViewer::getHTML_Body($item->title, HTML_Item::getHTML_Item($item, HTML_Object::VIEW_IMPORT, "import_{$item->id}_"), HTML_Item::getHTML_Metadata($item, HTML_Object::VIEW_IMPORT, "import_{$item->id}_"))
+				BulkViewer::getHTML_Body($item->title, HTML_Item::getHTML_Item($item, HTML_Object::VIEW_IMPORT, "item_{$item->id}_"), HTML_Item::getHTML_Metadata($item, HTML_Object::VIEW_IMPORT, "item_{$item->id}_"))
 			));
 		}
 

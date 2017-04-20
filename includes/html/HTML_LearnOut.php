@@ -31,7 +31,7 @@ class HTML_Learnout {
 				break;
 		}
 		
-		return HTML_Object::getHTML_Level('learnout', $learnout->level, null, $disabled, FALSE, $callback);
+		return HTML_Object::getHTML_Level($prefix . "learnout", $learnout->level, null, $disabled, FALSE, $callback);
 		
 	}
 	
@@ -39,47 +39,58 @@ class HTML_Learnout {
 	
 	public static function getHTML_Metadata (EAL_LearnOut $learnout, int $viewType = HTML_Object::VIEW_STUDENT, string $prefix = "") {
 	
+		$edit = ($learnout->id > 0) ? sprintf ('<span style="float: right; font-weight:normal" ><a href="post.php?action=edit&post=%d">Edit</a></span>', $learnout->id) : '';
+		
 		// Id
-		$res = sprintf ('<div class="misc-pub-section misc-pub-post-status">(ID=%d)</div><br/>', $learnout->id);
+		$res = sprintf ('
+			<div id="mb_status" class="postbox ">
+				<h2 class="hndle"><span>Learning Outcome (ID=%s)</span>%s</h2>
+			</div>', 
+			$learnout->id, $edit);
+
 		
 		// Level-Table
 		$res .= sprintf ('
-			<div id="mb_learnout" class="postbox ">
-		
+			<div id="mb_level" class="postbox ">
 				<h2 class="hndle"><span>Anforderungsstufe</span></h2>
 				<div class="inside">%s</div>
-			</div>', self::getHTML_Level($learnout, $viewType, $prefix)); 
+			</div>', 
+			self::getHTML_Level($learnout, $viewType, $prefix)); 
 				
-// 				HTML_Object::getHTML_Level("lo" . $learnout->id, $learnout->level, null, "disabled", 0, ''));
-		
+
 		// Taxonomy Terms: Name of Taxonomy and list of terms (if available)
-		$terms = wp_get_post_terms( $learnout->id, $learnout->domain, array("fields" => "names"));
-		$termCheckboxes = "";
-		foreach ($terms as $t) {
-			$termCheckboxes .= sprintf ("<input type='checkbox' checked onclick='return false;'>%s<br/>", $t);
-		}
-		
 		$res .= sprintf ('
-				<div class="postbox ">
-					<h2 class="hndle"><span>%s</span></h2>
-					<div class="inside">%s</div>
-				</div>',
-				RoleTaxonomy::getDomains()[$learnout->domain],
-				$termCheckboxes);
-	
+			<div class="postbox ">
+				<h2 class="hndle"><span>%s</span></h2>
+				<div class="inside">%s</div>
+			</div>',
+			RoleTaxonomy::getDomains()[$learnout->domain],
+			HTML_Object::getHTML_Topic($learnout->domain, $learnout->id, $viewType, $prefix));
+		
+
 		return $res;
 	}
 
 	
-	public static function getHTML_LearnOut (EAL_LearnOut $learnout) {
+	public static function getHTML_LearnOut (EAL_LearnOut $learnout, $namePrefix = "") {
 	
-		return sprintf ("
- 				<div>
- 					<div style='background-color:#AFDB5F; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>
- 						<div>%s</div>
- 					</div>
- 				</div>",
-				wpautop(stripslashes($learnout->description))
+		return sprintf ('
+			<div>
+ 				<div style="margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;">
+ 					<div>%s</div>
+					<input type="hidden" id="%spost_ID" name="%spost_ID"  value="%s">
+					<input type="hidden" id="%spost_title" name="%spost_title"  value="%s">
+					<input type="hidden" id="%spost_type" name="%spost_type"  value="%s">
+					<input type="hidden" id="%slearnout_description" name="%slearnout_description"  value="%s">
+					<input type="hidden" id="%spost_content" name="%spost_content"  value="%s">
+ 				</div>
+ 			</div>',
+			wpautop(stripslashes($learnout->description)),
+			$namePrefix, $namePrefix, $learnout->id,
+			$namePrefix, $namePrefix, $learnout->title,
+			$namePrefix, $namePrefix, $learnout->type,
+			$namePrefix, $namePrefix, htmlentities($learnout->description),
+			$namePrefix, $namePrefix, microtime()					
 		);
 			
 	}

@@ -136,57 +136,10 @@ class HTML_Item  {
 	
 	
 	
-	private static function getHTML_TopicHierarchy ($namePrefix, $terms, $parent, $selected) {
-	
-		$res .= "";
-		foreach ($terms as $term) {
-			if ($term->parent != $parent) continue;
-				
-			$res .= sprintf ('
-				<li id="%4$s-%1$d">
-					<label class="selectit">
-					<input value="%1$d" type="checkbox" %3$s name="%4$staxonomy[]" id="in-%4$s-%1$d"> %2$s</label>
-					<ul class="children">%5$s</ul>
-				</li>',
-					$term->term_id, $term->name, in_array ($term->term_id, $selected)?"checked":"",
-					$namePrefix,
-					self::getHTML_TopicHierarchy($namePrefix, $terms, $term->term_id, $selected));
-		}
-	
-		return $res;
-	}
+
 	
 	
-	public static function getHTML_Topic (EAL_Item $item, int $viewType, string $prefix = "") {
-		// <input type="hidden" name="%staxonomy[]" value="0">
-		
-		if (($viewType == HTML_Object::VIEW_IMPORT) || ($viewType == HTML_Object::VIEW_EDIT)) {
-		
-			return sprintf ('
-					<div class="categorydiv">
-						<input type="hidden" id="%sdomain" name="%sdomain"  value="%s">
-						<div id="topic-all" class="tabs-panel">
-							<ul id="topicchecklist" data-wp-lists="list:topic" class="categorychecklist form-no-clear">
-							%s
-							</ul>
-						</div>
-					</div>',
-					$prefix, $prefix, $item->domain, 
-// 					$prefix,
-					self::getHTML_TopicHierarchy($prefix, get_terms( array('taxonomy' => $item->domain, 'hide_empty' => false) ), 0, wp_get_post_terms( $item->id, $item->domain, array("fields" => "ids"))));
-		
-		} else {
-		
-			$terms = wp_get_post_terms( $item->id, $item->domain, array("fields" => "names"));
-			$termCheckboxes = "";
-			foreach ($terms as $t) {
-				$termCheckboxes .= sprintf ("<input type='checkbox' checked onclick='return false;'>%s<br/>", $t);
-			}
-			return $termCheckboxes;
-		
-		}		
-		
-	}
+
 	
 
 	/**
@@ -252,7 +205,7 @@ class HTML_Item  {
 				<div class="inside">%s</div>
 			</div>',
 			RoleTaxonomy::getDomains()[$item->domain],
-			self::getHTML_Topic($item, $viewType, $prefix));
+			HTML_Object::getHTML_Topic($item->domain, $item->id, $viewType, $prefix));
 		
 		
 		// Note + Flag
@@ -285,7 +238,7 @@ class HTML_Item  {
  					<div style="background-color:F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;">
  						<div>%s</div>
  						<div>%s</div>
-						<input type="hidden" id="%spost_id" name="%spost_id"  value="%s">
+						<input type="hidden" id="%spost_ID" name="%spost_ID"  value="%s">
 						<input type="hidden" id="%spost_title" name="%spost_title"  value="%s">
 						<input type="hidden" id="%spost_type" name="%spost_type"  value="%s">
  						<input type="hidden" id="%sitem_description" name="%sitem_description"  value="%s">
