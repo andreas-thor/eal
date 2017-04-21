@@ -11,21 +11,18 @@ abstract class ImportExport {
 	
 	abstract public static function import (array $file);
 	
+	
+	
  	public static function download (array $itemids) {
  		
- 		
+ 		// TODO: different export formats
  		$zip = Ilias::export($itemids);
- 		
- 		
  		header("Content-type: application/zip");
  		header("Content-Disposition: attachment; filename=" . $zip["short"] . ".zip");
  		header("Content-length: " . filesize($zip["full"]));
  		header("Pragma: no-cache");
  		header("Expires: 0");
  		readfile($zip["full"]); 		
- 		
- 		
- 		
  	}
 	
 }
