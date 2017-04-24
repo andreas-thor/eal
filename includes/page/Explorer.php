@@ -11,7 +11,32 @@ class Explorer {
 	public static function page_explorer ($itemids = array()) {
 	
 		?>
-		<script>
+		<script type="text/javascript" >
+
+		jQuery(document).ready(function($) {
+			getCrossTable();
+		});
+
+		function getCrossTable() {
+
+			var drag_x = []; jQuery("#drag_x").children("input[id!='place_here']").attr("id", function (idx, val) { drag_x[idx] = val; });
+			var drag_y = []; jQuery("#drag_y").children("input[id!='place_here']").attr("id", function (idx, val) { drag_y[idx] = val; });
+			
+			var data = {
+					'action': 'getCrossTable',
+					'drag_x' : drag_x, 	
+					'drag_y' : drag_y 	
+				};
+
+			// since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
+			jQuery.post(ajaxurl, data, function(response) {
+				jQuery("#itemtable").html (response['table_html']);
+			});
+				
+		}
+		
+		/* Drag and drop */
+		
 		function allowDrop(ev) {
 			ev.preventDefault();
 		}
@@ -21,18 +46,19 @@ class Explorer {
 		}
 		
 		function drop(ev) {
-			var data = ev.dataTransfer.getData("text");
 			ev.preventDefault();
+			var data = ev.dataTransfer.getData("text");
+			
 
-			if (ev.target.id == "drag_place") {	// drag on place holder --> add before place holder 
+			if (ev.target.id == "place_here") {	// drag on place holder --> add before place holder 
 			    ev.target.parentNode.insertBefore (document.getElementById(data), ev.target);
-			    load_items();
+			    getCrossTable();
 			    return;
 			}
 
-			if (ev.target.id == "drag_all") {	// drag on "home dive" --> add as child
+			if (ev.target.id == "drag_all") {	// drag on "home div" --> add as child
 				ev.target.appendChild (document.getElementById(data));
-				load_items();
+				getCrossTable();
 				return;
 			}
 		}
@@ -40,35 +66,46 @@ class Explorer {
 		<?php 
 
 		
+		/* generate HTML code for draggable buttons from SESSION property */
 		$buttons = ['type' => 'Item Type', 'dim' => 'Wissensdimension', 'level' => 'Anforderungsstufe', 'topic1' => 'Topic 1'];
+		$btn_html = ['x'=>'', 'y'=>'', 'all'=>''];
 
-		$btn_html = ['x' => '', 'y' => '', 'all' => ''];
-		foreach ($buttons as $id => $label) {
-// 			$btn_html['x']   .= sprintf ('<input class="button" value="%2$s" style="margin:0.2em;" id="drag_%1$s" draggable="true" ondragstart="drag(event)" />', $id, $label);
-// 			$btn_html['y']   .= sprintf ('<input class="button" value="%2$s" style="margin:0.2em;" id="drag_%1$s" draggable="true" ondragstart="drag(event)" />', $id, $label);
-			$btn_html['all'] .= sprintf ('<input readonly  class="button" value="%2$s" style="margin:0.2em;" id="drag_%1$s" draggable="true" ondragstart="drag(event)" />', $id, $label);
+		if (is_array($_SESSION["drag_x"])) {
+			foreach ($_SESSION["drag_x"] as $id) {
+				$btn_html['x'] .= sprintf ('<input class="button" readonly value="%2$s" style="margin:0.2em;" id="%1$s" draggable="true" ondragstart="drag(event)" />', $id, $buttons[$id]);
+			}
 		}
+		if (is_array($_SESSION["drag_y"])) {
+			foreach ($_SESSION["drag_y"] as $id) {
+				$btn_html['y'] .= sprintf ('<input class="button" readonly value="%2$s" style="margin:0.2em;" id="%1$s" draggable="true" ondragstart="drag(event)" />', $id, $buttons[$id]);
+			}
+		}
+		foreach ($buttons as $id => $label) {
+			if ((is_array($_SESSION["drag_x"])) && (in_array($id, $_SESSION["drag_x"]))) continue;
+			if ((is_array($_SESSION["drag_y"])) && (in_array($id, $_SESSION["drag_y"]))) continue;
+			$btn_html['all'] .= sprintf ('<input class="button" readonly value="%2$s" style="margin:0.2em;" id="%1$s" draggable="true" ondragstart="drag(event)" />', $id, $label);
+		}
+			
 		
 		
-// 		<div id="drag_place" style="float:left; margin:0.2em; padding:0; border-style: dashed; border-color:#AAAAAA; border-width:1px; width:10em" ondrop="drop(event)" ondragover="allowDrop(event)">&nbsp;</div>
 		printf ('
 			<h1>Item Explorer</h1>
 			<div>
-				<div id="drag_all" style="margin-right:1em; min-height:2em; border-style: dashed; border-width:1px; border-color:#AAAAAA; padding:0.5em;" id="drag_home" ondrop="drop(event)" ondragover="allowDrop(event)">%3$s</div>
+				<div id="drag_all" style="margin-right:1em; min-height:2em; border-style: dashed; border-width:1px; border-color:#AAAAAA; padding:0.5em;" ondrop="drop(event)" ondragover="allowDrop(event)">%3$s</div>
 			</div>
 			<table>
 				<tr>
 					<td></td>
 					<td>
 						<div id="drag_x">%1$s
-							<input readonly class="button" value="[Place here]" style="font-style:italic; font-weight:lighter; margin:0.2em;" id="drag_place" ondrop="drop(event)" ondragover="allowDrop(event)" />
+							<input readonly class="button" value="[Place here]" style="font-style:italic; font-weight:lighter; margin:0.2em;" id="place_here" ondrop="drop(event)" ondragover="allowDrop(event)" />
 						</div>
 					</td>
 				</tr>
 				<tr>
 					<td valign="top">
 						<div id="drag_y">%2$s
-							<input readonly class="button" value="[Place here]" style="font-style:italic; font-weight:lighter; margin:0.2em;" id="drag_place" ondrop="drop(event)" ondragover="allowDrop(event)" />
+							<input readonly class="button" value="[Place here]" style="font-style:italic; font-weight:lighter; margin:0.2em;" id="place_here" ondrop="drop(event)" ondragover="allowDrop(event)" />
 						</div>
 					</td>
 					<td>
@@ -78,12 +115,20 @@ class Explorer {
 			</table>
 		', $btn_html['x'], $btn_html['y'], $btn_html['all']);		
 		
-		?>
-
-		<?php 
+	
 		
 	}
 	
+	
+	public static function getCrossTable_callback () {
+		
+		$_SESSION["drag_x"] = $_POST["drag_x"];
+		$_SESSION["drag_y"] = $_POST["drag_y"];
+		
+		wp_send_json (
+			array ('table_html' => ItemExplorer::getHTML_CrossTable(array(), is_array($_POST["drag_x"]) ? $_POST["drag_x"] : [], is_array($_POST["drag_y"]) ? $_POST["drag_y"] : []))
+		);
+	}
 	
 }
 

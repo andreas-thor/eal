@@ -42,7 +42,8 @@ add_action( 'admin_enqueue_scripts', function () {
 
 // register AJAX-PHP-function
 add_action( 'wp_ajax_load_items', array ('PAG_Explorer', 'load_items_callback') );
-	
+add_action( 'wp_ajax_getCrossTable', array ('Explorer', 'getCrossTable_callback') );
+
 	
 
 

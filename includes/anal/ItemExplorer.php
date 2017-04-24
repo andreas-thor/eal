@@ -143,49 +143,96 @@ class ItemExplorer {
 	}	
 	
 	
-	public static function getItemTable (array $itemids = array()) {
+	public static function getHTML_CrossTable (array $itemids = array(), array $dimX, array $dimY) {
 		
 		/* default: load items from basket (if not given as parameter) */
 		if (count($itemids)==0) {
 			$itemids = EAL_ItemBasket::get();
 		}
 		
-		$result = array ();
-		
+		/* load all items */
+		$items = array ();
 		foreach ($itemids as $item_id) {
-
-			/* load Item */
 			$post = get_post($item_id);
 			if ($post == null) continue;	// item (post) does not exist
-			$item = EAL_Item::load($post->post_type, $item_id);
-			
-			$row = array ();
-			$row["type"] = $item->type;
-			$row["level"] = $item->level;
-			$row["lo"] = $item->learnout_id;
-			$row["flag"] = $item->flag;
-			
-			$row["terms"] = array();
-			$allterms = get_the_terms ($item_id, $item->domain);
-			if (is_array ($allterms)) {
-				foreach ($allterms as $term) {
-					$term_list = get_ancestors($term->term_id, $item->domain);	// get the list of ancestor term_ids from lowest to highest
-					array_unshift($term_list, $term->term_id);	// add the current term_id at the beginning (lowest)
-					array_push ($row["terms"], array_slice (array_reverse ($term_list), 0, 2));		// get the (up to) two highest term ids
-				}
-			}
-			
-			$result[$item_id] = $row;
+			$items[$item_id] = EAL_Item::load($post->post_type, $item_id);
 		}
 		
-		return $result;
+		
+		$groupY = self::groupRecursive($items, $itemids, $dimY);
+		
+		$dimPos = 0;
+		
+		
+		
+		
+		
+		
+		return sprintf ('<table border="1">%s</table>', self::lineRecursive ($groupY, $dimY));
+	}
+	
+	
+	private static function lineRecursive (array $group, array $allcat) {
+	
+		if (count($allcat)==0) return sprintf ('<td>%d</td>', count($group));
+	
+		$cat = array_shift($allcat);
+		
+		$labels = [];
+		switch ($cat) {
+			case 'type': 	$labels = ["itemsc" => "Single Choice", "itemmc" => "Multiple Choice"]; break;
+			case 'level': 	$labels = array_merge ([""], EAL_Item::$level_label); break;
+			case 'dim': 	$labels = ["FW"=>"FW", "KW"=>"KW", "PW"=>"PW"]; break;
+			
+			case 'topic1':	foreach (get_terms (['taxonomy' => RoleTaxonomy::getCurrentRoleDomain()['name'], 'include' => array_keys ($group)]) as $term) {
+								$labels[$term->term_id] = $term->name; 
+							}
+							break;
+		}
+		
+		
+		
+		$res = '';
+		foreach ($group as $key => $val) {
+			
+			
+			
+			
+			$res .= sprintf ('<tr><td rowspan="%d">%s</td>%s</tr>', self::countLeafs($val, $allcat), $labels[$key], self::lineRecursive($val, $allcat));
+		}
+		return $res;
+	
+	}	
+	
+	
+	private static function countLeafs (array $group, array $allcat) {
+		if (count($allcat)==0) return 1;
+		$cat = array_shift($allcat);
+		$res = 1;
+		foreach ($group as $key => $val) {
+			$res += self::countLeafs($val, $allcat);
+		}
+		return $res;
+	}
+
+	private static function groupRecursive (array $items, array $itemids, array $allcat) {
+		
+		if (count($allcat)==0) return $itemids;
+		
+		$cat = array_shift($allcat);
+		$group = self::groupBy ($items, $itemids, $cat);
+		
+		$res = array();
+		foreach ($group as $key => $val) {
+			if (count($val)>0) {
+				$res[$key] = self::groupRecursive($items, $val, $allcat);
+			}
+		}
+		return $res;
 	}
 	
 	
 
-	
-	
-	
 	
 }
 
