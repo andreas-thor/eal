@@ -1,5 +1,7 @@
 <?php 
 
+require_once(__DIR__ . "/../anal/ItemExplorer.php");
+
 class BulkViewer {
 
 	/**
@@ -84,14 +86,14 @@ class BulkViewer {
 					<span style="float: right; font-weight:normal">%5$s</span>
 				</h2>
 				<div class="inside">
-					<select style="width:100%%" align="right" onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) {  d.children[x].style.display = ((this.value<0) || (this.value==x)) ? \'block\' :  \'none\'; }">
+					<select style="width:100%%" align="right" onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) {  d.children[x].style.display = ((this.value<0) || (this.value==x)) ? \'block\' :  \'none\'; } document.getElementById(\'itemstats\').style.display = (this.value<0) ? \'block\' :  \'none\';">
 						%6$s
 					</select>
-					<br/>&nbsp;&nbsp;<input type="checkbox" checked onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) { d.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; }"> Show Metadata</input>
+					<br/>&nbsp;&nbsp;<input type="checkbox" checked onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) { d.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; } document.getElementById(\'itemstats\').querySelector(\'#postbox-container-2\').style.display = (this.checked==true) ? \'block\' :  \'none\';"> Show Metadata</input>
 				</div>
 			</div>
 			', 
-			$isItem || ($editurl == '') ? "visible" : "hidden",		// (1) hide action button if learning outcome ($isItem==FALSE) are viewd (not edited, i.e., $editurl has a value)
+			$isItem || ($editurl == '') ? "visible" : "hidden",		// (1) hide action button if learning outcome ($isItem==FALSE) are viewed (not edited, i.e., $editurl has a value)
 			($editurl == '') ? "Update" : "Download", 				// (2) label for action button
 			count($entries_title), 									// (3) number of items / learning outcomes
 			$isItem ? "Items" : "Learn. Out.", 						// (4) type caption 
@@ -213,6 +215,14 @@ class BulkViewer {
 		$download_url = plugin_dir_url( __DIR__ . "/../../download.php" ) . "download.php?itemids=" . implode (',', $itemids);
 		$download_url = 'admin.php?page=download';
 		
+		
+		
+		$stat = sprintf ('<div id="itemstats"><div id="postbox-container-2">%s</div></div>' , ItemExplorer::getHTML_Type($items));
+		
+		
+		
+		
+		
 // 		if (!$editable) {
 
 // 			printf ('
@@ -233,7 +243,7 @@ class BulkViewer {
 				$editable ? $url . "&edit=0" : $download_url, 
 				implode (',', $itemids), 
 				$editable ? "update" : "download", 
-				self::getHTML_List(sprintf ('Item %sViewer', is_null($reviewids) ? '' : '+ Review '), '', $items_title, $items_content, $editable ? '' : $url . "&edit=1"));
+				self::getHTML_List(sprintf ('Item %sViewer', is_null($reviewids) ? '' : '+ Review '), $stat, $items_title, $items_content, $editable ? '' : $url . "&edit=1"));
 				
 // 		}
 		
