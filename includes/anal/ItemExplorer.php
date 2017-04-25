@@ -3,6 +3,11 @@
 
 class ItemExplorer {
 	
+	
+	public static $rows;
+	public static $values;
+	
+	
 	/**
 	 * 
 	 * @param array $items
@@ -159,62 +164,94 @@ class ItemExplorer {
 		}
 		
 		
-		$groupY = self::groupRecursive($items, $itemids, $dimY);
-		
-		$dimPos = 0;
-		
-		
-		
+		$groupX = self::groupRecursive($items, $itemids, $dimX);
+		self::$rows=[];
+		self::$values=[];
+		self::dimXHeader ($groupX, $dimX);
 		
 		
 		
-		return sprintf ('<table border="1">%s</table>', self::lineRecursive ($groupY, $dimY));
-	}
-	
-	
-	private static function lineRecursive (array $group, array $allcat) {
-	
-		if (count($allcat)==0) return sprintf ('<td>%d</td>', count($group));
-	
-		$cat = array_shift($allcat);
-		
-		$labels = [];
-		switch ($cat) {
-			case 'type': 	$labels = ["itemsc" => "Single Choice", "itemmc" => "Multiple Choice"]; break;
-			case 'level': 	$labels = array_merge ([""], EAL_Item::$level_label); break;
-			case 'dim': 	$labels = ["FW"=>"FW", "KW"=>"KW", "PW"=>"PW"]; break;
-			
-			case 'topic1':	foreach (get_terms (['taxonomy' => RoleTaxonomy::getCurrentRoleDomain()['name'], 'include' => array_keys ($group)]) as $term) {
-								$labels[$term->term_id] = $term->name; 
-							}
-							break;
+		$resX = '';
+		$topleft = ((count($dimX)>0) && (count($dimY)>0)) ? sprintf ('<td style="background-color:#f9f9f9;" colspan="%d" rowspan="%d"></td>', count($dimY), count($dimX)) : '';
+		for ($i=count($dimX)-1; $i>=0; $i--) {
+			$resX .= sprintf ('<tr>%s%s</tr>', ($i==count($dimX)-1) ? $topleft : '', self::$rows[$i]);
 		}
 		
 		
+ 		$groupY = self::groupRecursive($items, $itemids, $dimY);
 		
+		
+ 												
+//  		return sprintf ('<div style="margin-right:1em"><table border="0" ><td colspan="%d" rowspan="%d"></td>%s%s</table></div>', count($dimY), count($dimX)+1, $resX, self::dimYHeader ($groupY, $dimY));
+ 		return sprintf ('%s%s', $resX, self::dimYHeader ($groupY, $dimY));
+	}
+	
+	
+	private static function dimXHeader (array $group, array $allcat) {
+	
+		if (count($allcat)==0) {
+			array_push (self::$values, $group);
+			return;
+		}
+		$idx = count($allcat)-1;
+		
+		if (!isset(self::$rows[$idx])) self::$rows[$idx] = '';
+		$cat = array_shift($allcat);
+		$labels = self::getLabels($cat, array_keys ($group));
+	
+		foreach ($group as $key => $val) {
+			self::$rows[$idx] .= sprintf ('<td style="background-color:#f9f9f9;" colspan="%d">%s</td>', self::countLeafs($val, $allcat, 0), $labels[$key]);
+			self::dimXHeader($val, $allcat);
+		}
+	}
+	
+	
+	private static function dimYHeader (array $group, array $allcat) {
+	
+		if (count($allcat)==0) {
+			$res = '';
+			foreach (self::$values as $xgroup) {
+				$int = array_intersect($group, $xgroup);
+				$res .= count($int)>0 ? sprintf ('<td><a href="admin.php?page=view_item&itemids=%s">%d</a></td>', implode (',', $int), count ($int)) : '<td></td>';				
+			}
+			return $res;
+			
+		}
+	
+		$cat = array_shift($allcat);
+		
+		$labels = self::getLabels($cat, array_keys ($group));
 		$res = '';
 		foreach ($group as $key => $val) {
-			
-			
-			
-			
-			$res .= sprintf ('<tr><td rowspan="%d">%s</td>%s</tr>', self::countLeafs($val, $allcat), $labels[$key], self::lineRecursive($val, $allcat));
+			$res .= sprintf ('<tr><td style="background-color:#f9f9f9;" rowspan="%d">%s</td>%s</tr>', self::countLeafs($val, $allcat, 1), $labels[$key], self::dimYHeader($val, $allcat));
 		}
 		return $res;
 	
 	}	
 	
+
 	
-	private static function countLeafs (array $group, array $allcat) {
+	
+	private static function countLeafs (array $group, array $allcat, $init) {
 		if (count($allcat)==0) return 1;
 		$cat = array_shift($allcat);
-		$res = 1;
+		$res =  $init;
 		foreach ($group as $key => $val) {
-			$res += self::countLeafs($val, $allcat);
+			$res += self::countLeafs($val, $allcat, $init);
 		}
 		return $res;
 	}
 
+	
+	
+	/**
+	 * 
+	 * @param array $items
+	 * @param array $itemids
+	 * @param array $allcat
+	 * @return [valcat1 => [ valcat2 => [ ... valcatn => [itemids]]]]
+	 */
+	
 	private static function groupRecursive (array $items, array $itemids, array $allcat) {
 		
 		if (count($allcat)==0) return $itemids;
@@ -231,6 +268,21 @@ class ItemExplorer {
 		return $res;
 	}
 	
+	
+	private static function getLabels (string $cat, array $keys = array()) {
+		switch ($cat) {
+			case 'type': 	return ["itemsc" => "Single Choice", "itemmc" => "Multiple Choice"];
+			case 'level': 	return array_merge ([""], EAL_Item::$level_label); // add empty value for index=0 because labels are enumerated 1..6
+			case 'dim': 	return ["FW"=>"FW", "KW"=>"KW", "PW"=>"PW"];
+			case 'topic1':
+				$labels = [];
+				foreach (get_terms (['taxonomy' => RoleTaxonomy::getCurrentRoleDomain()['name'], 'include' => $keys]) as $term) {
+					$labels[$term->term_id] = $term->name;
+				}
+				return $labels;
+		}
+		return [];
+	}
 	
 
 	

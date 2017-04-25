@@ -109,7 +109,9 @@ class Explorer {
 						</div>
 					</td>
 					<td>
-						<table id="itemtable" border="1" class="wp-list-table widefat fixed striped posts"></table>
+						<div style="margin-right:1em">
+							<table id="itemtable" border="1" class="widefat fixed "></table>
+						</div>
 					</td>
 				</tr>
 			</table>
