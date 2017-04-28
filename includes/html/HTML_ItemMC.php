@@ -34,7 +34,7 @@ class HTML_ItemMC  {
 						<td style="width:3em"><input type="text" value="%d" size="1" readonly/></td>
 						<td style="width:3em"><input type="text" value="%d" size="1" readonly/></td>
 					</tr>',
-					$a['answer'], 
+					htmlentities($a['answer']), 
 					$a['positive']>$a['negative'] ? 'bold' : 'normal',
 					$a['positive'],
 					$a['negative']
@@ -53,7 +53,7 @@ class HTML_ItemMC  {
 						<td style="width:3em"><input type="text" name="%1$snegative[]" value="%5$d" size="1" readonly/></td>
 					</tr>',
 					$prefix, 
-					$a['answer'], 
+					htmlentities($a['answer']), 
 					$a['positive']>$a['negative'] ? 'bold' : 'normal',
 					$a['positive'],
 					$a['negative']
@@ -100,7 +100,7 @@ class HTML_ItemMC  {
 						
 			// answers as table line with 4 columns (answer, points checked, points non-checked, action buttons) ...
 			foreach ($item->answers as $a) {
-				$html_Answers .= sprintf($answerLine, $prefix, $a['answer'], $a['positive'], $a['negative']);
+				$html_Answers .= sprintf($answerLine, $prefix, htmlentities($a['answer']), $a['positive'], $a['negative']);
 			}
 				
 			// ... packaged in a table

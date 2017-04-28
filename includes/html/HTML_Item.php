@@ -76,8 +76,8 @@ class HTML_Item  {
 					$lo->id, // value = LO Id
 					($viewType==HTML_Object::VIEW_EDIT) || ($viewType==HTML_Object::VIEW_IMPORT) ? "block" : "none",	// show options only during EDIT or IMPORT
 					$learnout_id==$lo->id ? " selected" : "",	// select current LO
-					$lo->title);	// LO title
-					$htmlDesc .= sprintf ("<div style='display:%s'>%s</div>", ($learnout_id==$lo->id) ? "block" : "none", $lo->description);
+					htmlentities($lo->title));	// LO title
+					$htmlDesc .= sprintf ("<div style='display:%s'>%s</div>", ($learnout_id==$lo->id) ? "block" : "none", htmlentities($lo->description));
 		}
 		$htmlList .= "</select>";
 			
@@ -154,7 +154,7 @@ class HTML_Item  {
 			<div class="form-field">
 				<table>
 					<tr>
-						<td style="width:1em"><input  type="checkbox" name="%sitem_flag" value="1" %s %s></td>
+						<td style="width:1em"><input type="checkbox" name="%sitem_flag" value="1" %s %s></td>
 						<td style="width:100%%-1em"><input  name="%sitem_note" value="%s" style="width:100%%" size="255" aria-required="true" %s></td>
 					</tr>
 				</table>
@@ -163,7 +163,7 @@ class HTML_Item  {
 			$item->flag == 1 ? "checked" : "", 
 			($viewType == HTML_Object::VIEW_EDIT)  || ($viewType == HTML_Object::VIEW_IMPORT) ? "" : "onclick='return false;'", 
 			$prefix,
-			$item->note, 
+			htmlentities ($item->note), 
 			($viewType == HTML_Object::VIEW_EDIT) || ($viewType == HTML_Object::VIEW_IMPORT) ? "" : "readonly");
 	}
 	
@@ -228,7 +228,7 @@ class HTML_Item  {
 				$item->id,
 				$item->type,
 				microtime(),
-				$item->title
+				htmlentities ($item->title)
 			);
 		}
 		
@@ -268,8 +268,8 @@ class HTML_Item  {
 				$namePrefix,
  				htmlentities($item->description),
  				htmlentities($item->question), 					
-				wpautop(stripslashes($item->description)),
-				wpautop(stripslashes($item->question)),
+				wpautop($item->description),
+				wpautop($item->question),
 				$answers_html
  			);
  		}
@@ -284,8 +284,8 @@ class HTML_Item  {
  						<div>%s</div>
  					</div>
  				</div>",
- 				wpautop(stripslashes($item->description)),
- 				wpautop(stripslashes($item->question)),
+ 				wpautop($item->description),
+ 				wpautop($item->question),
  				$answers_html
  			);
  		}

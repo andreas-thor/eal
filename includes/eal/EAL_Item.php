@@ -93,9 +93,9 @@ class EAL_Item {
 	protected function loadFromPOSTRequest (string $prefix="") {
 	
 		$this->id = $_POST[$prefix."post_ID"];
-		$this->title = $_POST[$prefix."post_title"];
-		$this->description = isset($_POST[$prefix.'item_description']) ? $_POST[$prefix.'item_description'] : null;
-		$this->question = isset ($_POST[$prefix.'item_question']) ? $_POST[$prefix.'item_question'] : null;
+		$this->title = stripslashes($_POST[$prefix."post_title"]);
+		$this->description = isset($_POST[$prefix.'item_description']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_description'])) : null;
+		$this->question = isset ($_POST[$prefix.'item_question']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_question'])) : null;
 
 		$this->level = ["FW" => null, "KW" => null, "PW" => null];
 		$this->level["FW"] = isset ($_POST[$prefix.'item_level_FW']) ? $_POST[$prefix.'item_level_FW'] : null;
@@ -106,7 +106,7 @@ class EAL_Item {
 		$this->learnout = null;		// lazy loading
 		
 		$this->difficulty = null;
-		$this->note = isset ($_POST[$prefix.'item_note']) ? $_POST[$prefix.'item_note'] : null;
+		$this->note = isset ($_POST[$prefix.'item_note']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_note'])) : null;
 		$this->flag = isset ($_POST[$prefix.'item_flag']) ? $_POST[$prefix.'item_flag'] : null;
 		
 		// 	$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
@@ -148,7 +148,7 @@ class EAL_Item {
 	
 
 	
-	
+/*	
 	public function setPOST () {
 		
 		$_POST['post_type'] = $this->type;
@@ -164,7 +164,7 @@ class EAL_Item {
 		$_POST['item_flag'] = $this->flag;
 		$_POST['post_content'] = microtime();
 	}
-	
+*/	
 	
 	
 

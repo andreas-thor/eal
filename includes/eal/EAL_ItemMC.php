@@ -31,12 +31,12 @@ class EAL_ItemMC extends EAL_Item {
 		$this->answers = array();
 		if (isset($_POST[$prefix.'answer'])) {
 			foreach ($_POST[$prefix.'answer'] as $k => $v) {
-				array_push ($this->answers, array ('answer' => $v, 'positive' => $_POST[$prefix.'positive'][$k], 'negative' => $_POST[$prefix.'negative'][$k]));
+				array_push ($this->answers, array ('answer' => html_entity_decode (stripslashes($v)), 'positive' => $_POST[$prefix.'positive'][$k], 'negative' => $_POST[$prefix.'negative'][$k]));
 			}
 		}
 	}
 	
-	
+/*	
 	public function setPOST () {
 		
 		parent::setPOST();
@@ -51,6 +51,7 @@ class EAL_ItemMC extends EAL_Item {
 			array_push ($_POST['negative'], $v['negative']);
 		}
 	}
+*/
 	
 	/**
 	 * Create new Item or load existing item from database

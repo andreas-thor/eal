@@ -85,9 +85,9 @@ class HTML_Learnout {
 					<input type="hidden" id="%spost_content" name="%spost_content"  value="%s">
  				</div>
  			</div>',
-			wpautop(stripslashes($learnout->description)),
+			wpautop($learnout->description),
 			$namePrefix, $namePrefix, $learnout->id,
-			$namePrefix, $namePrefix, $learnout->title,
+			$namePrefix, $namePrefix, htmlentities ($learnout->title),
 			$namePrefix, $namePrefix, $learnout->type,
 			$namePrefix, $namePrefix, htmlentities($learnout->description),
 			$namePrefix, $namePrefix, microtime()					

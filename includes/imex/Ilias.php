@@ -125,8 +125,8 @@ class Ilias extends ImportExport {
 			$xml_PR = $dom->createElement("presentation");
 			$xml_PR->setAttribute("label", $item->title);
 			$xml_FL = $dom->createElement("flow");
-	
-			$xml_FL->appendChild (EXP_Ilias::createMaterialElement($dom, "text/html", $item->description . "<!-- EAL --><hr/>" . $item->question));
+
+			$xml_FL->appendChild (self::createMaterialElement($dom, "text/html", $item->description . "<!-- EAL --><hr/>" . $item->question));
 				
 			$xml_RL = $dom->createElement("response_lid");
 			$xml_RL->setAttribute("ident", $item_data["ident"]);
@@ -138,7 +138,7 @@ class Ilias extends ImportExport {
 			foreach ($item->answers as $number => $answer) {
 				$xml_LAB = $dom->createElement("response_label");
 				$xml_LAB->setAttribute("ident", $number);
-				$xml_LAB->appendChild (EXP_Ilias::createMaterialElement($dom, "text/plain", $answer["answer"]));
+				$xml_LAB->appendChild (self::createMaterialElement($dom, "text/html", $answer["answer"]));
 				$xml_RC->appendChild ($xml_LAB);
 			}
 				
@@ -202,9 +202,11 @@ class Ilias extends ImportExport {
 	
 	
 	public function createMaterialElement ($dom, $type, $value) {
-		$xml_MA = $dom->createElement("material");
-		$xml_MT = $dom->createElement("mattext", $value);
+		$xml_MT = $dom->createElement("mattext");
+		$xml_MT->appendChild ($dom->createTextNode ($value));
 		$xml_MT->setAttribute("texttype", $type);
+
+		$xml_MA = $dom->createElement("material");
 		$xml_MA->appendChild ($xml_MT);
 		return $xml_MA;
 	}

@@ -34,11 +34,12 @@ class EAL_ItemSC extends EAL_Item {
 		$this->answers = array();
 		if (isset($_POST[$prefix.'answer'])) {
 			foreach ($_POST[$prefix.'answer'] as $k => $v) {
-				array_push ($this->answers, array ('answer' => $v, 'points' => $_POST[$prefix.'points'][$k]));
+				array_push ($this->answers, array ('answer' => html_entity_decode (stripslashes($v)), 'points' => $_POST[$prefix.'points'][$k]));
 			}
 		}
 	}
-	
+
+	/*
 	public function setPOST () {
 	
 		parent::setPOST();
@@ -50,7 +51,7 @@ class EAL_ItemSC extends EAL_Item {
 			array_push ($_POST['points'], $v['points']);
 		}
 	}
-	
+	*/
 	
 	
 	/**

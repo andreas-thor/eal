@@ -49,8 +49,8 @@ class EAL_LearnOut {
 	protected function loadFromPOSTRequest (string $prefix="") {
 	
 		$this->id = $_POST[$prefix."post_ID"];
-		$this->title = $_POST[$prefix."post_title"];
-		$this->description = isset ($_POST[$prefix.'learnout_description']) ? $_POST[$prefix.'learnout_description'] : null;
+		$this->title = stripslashes($_POST[$prefix."post_title"]);
+		$this->description = isset ($_POST[$prefix.'learnout_description']) ? html_entity_decode (stripslashes($_POST[$prefix.'learnout_description'])) : null;
 		$this->level["FW"] = isset ($_POST[$prefix.'learnout_level_FW'])    ? $_POST[$prefix.'learnout_level_FW'] : null;
 		$this->level["KW"] = isset ($_POST[$prefix.'learnout_level_KW'])    ? $_POST[$prefix.'learnout_level_KW'] : null;
 		$this->level["PW"] = isset ($_POST[$prefix.'learnout_level_PW'])    ? $_POST[$prefix.'learnout_level_PW'] : null;

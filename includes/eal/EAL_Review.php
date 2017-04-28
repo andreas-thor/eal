@@ -79,7 +79,7 @@ class EAL_Review {
 		$this->level["FW"] = isset ($_POST['review_level_FW']) ? $_POST['review_level_FW'] : null;
 		$this->level["KW"] = isset ($_POST['review_level_KW']) ? $_POST['review_level_KW'] : null;
 		$this->level["PW"] = isset ($_POST['review_level_PW']) ? $_POST['review_level_PW'] : null;
-		$this->feedback = isset ($_POST['review_feedback']) ? $_POST['review_feedback'] : null;
+		$this->feedback = isset ($_POST['review_feedback']) ? html_entity_decode (stripslashes($_POST['review_feedback'])) : null;
 		$this->overall  = isset ($_POST['review_overall'])  ? $_POST['review_overall']  : null;
 	}
 	

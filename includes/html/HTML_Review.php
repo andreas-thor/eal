@@ -123,7 +123,7 @@ class HTML_Review {
 				<div>%s</div>
 			</div>", 
 			self::getHTML_Score($review, $viewType, $prefix),
-			wpautop(stripslashes($review->feedback)));
+			wpautop(htmlentities($review->feedback)));
 	}
 	
 	
