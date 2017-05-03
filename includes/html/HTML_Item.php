@@ -71,13 +71,14 @@ class HTML_Item  {
 			
 		$allLO = (($viewType == HTML_Object::VIEW_STUDENT) || ($viewType == HTML_Object::VIEW_REVIEW)) ? [$learnout] : EAL_LearnOut::getListOfLearningOutcomes();
 		foreach ($allLO as $pos => $lo) {
+			if ($lo->id == -1) continue; 
 			$htmlList .= sprintf (
-					"<option value='%d' style='display:%s' %s>%s</option>",
-					$lo->id, // value = LO Id
-					($viewType==HTML_Object::VIEW_EDIT) || ($viewType==HTML_Object::VIEW_IMPORT) ? "block" : "none",	// show options only during EDIT or IMPORT
-					$learnout_id==$lo->id ? " selected" : "",	// select current LO
-					htmlentities($lo->title, ENT_COMPAT | ENT_HTML401, 'UTF-8'));	// LO title
-					$htmlDesc .= sprintf ("<div style='display:%s'>%s</div>", ($learnout_id==$lo->id) ? "block" : "none", htmlentities($lo->description, ENT_COMPAT | ENT_HTML401, 'UTF-8'));
+				"<option value='%d' style='display:%s' %s>%s</option>",
+				$lo->id, // value = LO Id
+				($viewType==HTML_Object::VIEW_EDIT) || ($viewType==HTML_Object::VIEW_IMPORT) ? "block" : "none",	// show options only during EDIT or IMPORT
+				$learnout_id==$lo->id ? " selected" : "",	// select current LO
+				htmlentities($lo->title, ENT_COMPAT | ENT_HTML401, 'UTF-8'));	// LO title
+				$htmlDesc .= sprintf ("<div style='display:%s'>%s</div>", ($learnout_id==$lo->id) ? "block" : "none", htmlentities($lo->description, ENT_COMPAT | ENT_HTML401, 'UTF-8'));
 		}
 		$htmlList .= "</select>";
 			

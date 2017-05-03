@@ -67,7 +67,7 @@ class Explorer {
 
 		
 		/* generate HTML code for draggable buttons from SESSION property */
-		$buttons = ['type' => 'Item Type', 'dim' => 'Wissensdimension', 'level' => 'Anforderungsstufe', 'topic1' => 'Topic 1'];
+		$buttons = ['type' => 'Item Type', 'dim' => 'Wissensdimension', 'level' => 'Anforderungsstufe', 'topic1' => 'Topic 1', 'topic2' => 'Topic 2', 'topic3' => 'Topic 3', 'lo' => 'Learning Outcome'];
 		$btn_html = ['x'=>'', 'y'=>'', 'all'=>''];
 
 		if (is_array($_SESSION["drag_x"])) {
@@ -86,6 +86,10 @@ class Explorer {
 			$btn_html['all'] .= sprintf ('<input class="button" readonly value="%2$s" style="margin:0.2em;" id="%1$s" draggable="true" ondragstart="drag(event)" />', $id, $label);
 		}
 			
+		$_SESSION["explore_items"] = array();
+		if (isset($_REQUEST["itemids"])) {
+			$_SESSION["explore_items"] = explode (",", $_REQUEST["itemids"]);
+		}
 		
 		
 		printf ('
@@ -128,7 +132,7 @@ class Explorer {
 		$_SESSION["drag_y"] = $_POST["drag_y"];
 		
 		wp_send_json (
-			array ('table_html' => ItemExplorer::getHTML_CrossTable(array(), is_array($_POST["drag_x"]) ? $_POST["drag_x"] : [], is_array($_POST["drag_y"]) ? $_POST["drag_y"] : []))
+			array ('table_html' => ItemExplorer::getHTML_CrossTable($_SESSION["explore_items"], is_array($_POST["drag_x"]) ? $_POST["drag_x"] : [], is_array($_POST["drag_y"]) ? $_POST["drag_y"] : []))
 		);
 	}
 	
