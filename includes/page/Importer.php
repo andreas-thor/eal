@@ -72,6 +72,11 @@ class Importer {
 				wp_update_post ($post);
 			}
 		
+			?>
+						<script type="text/javascript" >
+			console.log ("Save", " <?php print ($item->title); ?>");
+			</script>
+			<?php
 			$item->saveToDB();
 			array_push ($result, $item->id);
 		}

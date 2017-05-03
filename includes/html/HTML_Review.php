@@ -56,9 +56,8 @@ class HTML_Review {
 		if ($viewType==HTML_Object::VIEW_EDIT) {
 			$html_script = "
 				<script>
-					var $ = jQuery.noConflict();
-			
 					function setRowGood (e) {
+						var $ = jQuery.noConflict();
 						$(e).parent().parent().find('input').each ( function() {
 		 					if (this.value==1) this.checked = true;
 						});
@@ -123,7 +122,7 @@ class HTML_Review {
 				<div>%s</div>
 			</div>", 
 			self::getHTML_Score($review, $viewType, $prefix),
-			wpautop(htmlentities($review->feedback)));
+			wpautop(htmlentities($review->feedback, ENT_COMPAT | ENT_HTML401, 'UTF-8')));
 	}
 	
 	

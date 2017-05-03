@@ -87,9 +87,9 @@ class HTML_Learnout {
  			</div>',
 			wpautop($learnout->description),
 			$namePrefix, $namePrefix, $learnout->id,
-			$namePrefix, $namePrefix, htmlentities ($learnout->title),
+			$namePrefix, $namePrefix, htmlentities ($learnout->title, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
 			$namePrefix, $namePrefix, $learnout->type,
-			$namePrefix, $namePrefix, htmlentities($learnout->description),
+			$namePrefix, $namePrefix, htmlentities($learnout->description, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
 			$namePrefix, $namePrefix, microtime()					
 		);
 			

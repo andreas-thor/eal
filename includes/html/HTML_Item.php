@@ -76,8 +76,8 @@ class HTML_Item  {
 					$lo->id, // value = LO Id
 					($viewType==HTML_Object::VIEW_EDIT) || ($viewType==HTML_Object::VIEW_IMPORT) ? "block" : "none",	// show options only during EDIT or IMPORT
 					$learnout_id==$lo->id ? " selected" : "",	// select current LO
-					htmlentities($lo->title));	// LO title
-					$htmlDesc .= sprintf ("<div style='display:%s'>%s</div>", ($learnout_id==$lo->id) ? "block" : "none", htmlentities($lo->description));
+					htmlentities($lo->title, ENT_COMPAT | ENT_HTML401, 'UTF-8'));	// LO title
+					$htmlDesc .= sprintf ("<div style='display:%s'>%s</div>", ($learnout_id==$lo->id) ? "block" : "none", htmlentities($lo->description, ENT_COMPAT | ENT_HTML401, 'UTF-8'));
 		}
 		$htmlList .= "</select>";
 			
@@ -163,7 +163,7 @@ class HTML_Item  {
 			$item->flag == 1 ? "checked" : "", 
 			($viewType == HTML_Object::VIEW_EDIT)  || ($viewType == HTML_Object::VIEW_IMPORT) ? "" : "onclick='return false;'", 
 			$prefix,
-			htmlentities ($item->note), 
+			htmlentities ($item->note, ENT_COMPAT | ENT_HTML401, 'UTF-8'), 
 			($viewType == HTML_Object::VIEW_EDIT) || ($viewType == HTML_Object::VIEW_IMPORT) ? "" : "readonly");
 	}
 	
@@ -228,7 +228,7 @@ class HTML_Item  {
 				$item->id,
 				$item->type,
 				microtime(),
-				htmlentities ($item->title)
+				htmlentities ($item->title, ENT_COMPAT | ENT_HTML401, 'UTF-8')
 			);
 		}
 		
@@ -266,13 +266,23 @@ class HTML_Item  {
  					</div>
  				</div>',
 				$namePrefix,
- 				htmlentities($item->description),
- 				htmlentities($item->question), 					
+ 				htmlentities($item->description, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
+ 				htmlentities($item->question, ENT_COMPAT | ENT_HTML401, 'UTF-8'), 					
 				wpautop($item->description),
 				wpautop($item->question),
 				$answers_html
  			);
+ 		
+ 		
+ 				
+ 		
+ 		
  		}
+ 		
+ 		
+ 		
+ 		
+ 		
  		
  		if (($viewType == HTML_Object::VIEW_STUDENT) || ($viewType == HTML_Object::VIEW_REVIEW)) {
 	

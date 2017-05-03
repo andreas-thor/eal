@@ -24,7 +24,7 @@ class Taxonomy {
 	
 // 	public static $domains = array (
 // 			"potpourri" 	=> "Potpourri",
-// 			"praxis" 	=> "Praxisaufgabe"
+// 			"info" 	=> "Informatik"
 // 	);
 	
 	

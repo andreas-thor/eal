@@ -56,7 +56,7 @@ class CPT_LearnOut extends CPT_Object {
 		
 		?>  <style> #minor-publishing { display: none; } </style> <?php
 		
-		add_meta_box('mb_description', 'Beschreibung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'learnout_description', 'value' => $learnout->description) );
+		add_meta_box('mb_description', 'Beschreibung', array ($this, 'WPCB_mb_description'), $this->type, 'normal', 'default', array ('name' => 'learnout_description', 'value' => $learnout->description) );
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $learnout->level, 'prefix' => 'learnout'));
 		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$learnout->domain], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $learnout->domain ));
 		
@@ -71,14 +71,15 @@ class CPT_LearnOut extends CPT_Object {
 		// search all checked terms incl. their ancestors
 		j("#topic-all").find ("input[type='checkbox']").filter(":checked").parentsUntil(j( "#topic-all" )).filter ("li").children("label").each (function (i, e) {
 			// add term button
-			j("#eal_topicterms").append ("<a style='margin:3px' class='button' onclick=\"addTermToEditor('" + e.childNodes[1].textContent + "');\">" + e.childNodes[1].textContent + "</a>");
+			j("#eal_topicterms").append (
+					"<a style='margin:3px' class='button' onclick=\"tinyMCE.editors['learnout_description'].execCommand( 'mceInsertContent', false, '" + e.childNodes[1].textContent + "');\">" + e.childNodes[1].textContent + "</a>");
 		})
 	}
 		
 	function codeAddress() {
 	
 		var j = jQuery.noConflict();
-		showTermButtons(j)	
+		showTermButtons(j);	
 	
 		// add "on change" handler to all terms (input-checkbox); both in tab "All" as well "Must used"
 		j("#topic-all").add(j("#topic-pop")).change(function() { showTermButtons (j); });
@@ -102,7 +103,7 @@ class CPT_LearnOut extends CPT_Object {
 	}
 	
 	
-	public function WPCB_mb_editor ($post, $vars) {
+	public function WPCB_mb_description ($post, $vars) {
 	
 		global $learnout;
 		parent::WPCB_mb_editor ($post, $vars);
@@ -110,22 +111,6 @@ class CPT_LearnOut extends CPT_Object {
 		
 		printf("<div id='eal_topicterms' style='margin:10px'></div>");
 		
-		
-		// Verb button click --> insert verb into current position of editor
-?>
-		<script>
-			
-			
-			function addTermToEditor (t) {
-				var j = jQuery.noConflict();
-				j(document).find("#mb_description").find("textarea").each ( function() {
- 					tinyMCE.activeEditor.execCommand( 'mceInsertContent', false, t );
-				});
-			}
-		</script>
-
-
-<?php		
 		
 		$verbs = array ( 
 			1 => array ("auflisten", "auswählen", "beschriften", "identifizieren", "nennen"),
@@ -141,7 +126,7 @@ class CPT_LearnOut extends CPT_Object {
 			// show only verbs that matches the current LO level
 			printf ("<div style='display:%s'>", (($learnout->level["FW"]==$level) || ($learnout->level["PW"]==$level) || ($learnout->level["KW"]==$level)) ? 'block' : 'none');
 			foreach ($terms as $t) {
-				printf ("<a style='margin:3px' class='button' onclick=\"addTermToEditor('%s');\">%s</a>", htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1'), htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1'));
+				printf ("<a style='margin:3px' class='button' onclick=\"tinyMCE.editors['%s'].execCommand( 'mceInsertContent', false, '%s');\">%s</a>", $vars['args']['name'], htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1'), htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1'));
 			}
 			printf ("</div>");
 		}

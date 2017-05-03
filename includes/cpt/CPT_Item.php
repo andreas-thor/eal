@@ -240,8 +240,8 @@ class CPT_Item extends CPT_Object{
 		</style> <?php
 		
 		add_meta_box('mb_learnout', 'Learning Outcome', array ($this, 'WPCB_mb_learnout'), $this->type, 'normal', 'default', array ('learnout' => $item->getLearnOut()));
-		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_description', 'value' => $item->description) );
-		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'item_question', 'value' => $item->question));
+		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($this, 'WPCB_mb_description'), $this->type, 'normal', 'default', array ('name' => 'item_description', 'value' => $item->description) );
+		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_question'), $this->type, 'normal', 'default', array ('name' => 'item_question', 'value' => $item->question));
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $item->level, 'default' => (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level) ));
 		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($this, 'WPCB_mb_answers'), $this->type, 'normal', 'default');
 		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$item->domain], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $item->domain ));
@@ -253,6 +253,20 @@ class CPT_Item extends CPT_Object{
 	public function WPCB_mb_learnout ($post, $vars) {
 		global $item;
 		print (HTML_Item::getHTML_LearningOutcome($item, HTML_Object::VIEW_EDIT));
+	}
+
+	public function WPCB_mb_description ($post, $vars) {
+		parent::WPCB_mb_editor ($post, $vars);
+	}
+	
+	public function WPCB_mb_question ($post, $vars, $buttons = array()) {
+		parent::WPCB_mb_editor ($post, $vars);
+		
+		printf("<div style='margin:10px'>");
+		foreach ($buttons as $short => $long) {
+			printf ("<a style='margin:3px' class='button' onclick=\"tinyMCE.editors['%s'].execCommand( 'mceInsertContent', false, '%s');\">%s</a>", $vars['args']['name'], htmlentities($long, ENT_SUBSTITUTE, 'ISO-8859-1'), htmlentities($short, ENT_SUBSTITUTE, 'ISO-8859-1'));
+		}
+		printf ("</div>");
 	}
 	
 	public function WPCB_mb_level ($post, $vars) {

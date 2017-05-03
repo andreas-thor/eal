@@ -61,10 +61,17 @@ class CPT_ItemSC extends CPT_Item {
 		
 	
 	
+	public function WPCB_mb_question ($post, $vars, $buttons = array()) {
 	
+		parent::WPCB_mb_question ($post, $vars, array ( 	
+				"Wähle 1 aus 4" => "Wählen Sie eine aus den vier Antwortoptionen aus.", 
+				"Wähle 1 aus 5" => "Wählen Sie eine aus den fünf Antwortoptionen aus.", 
+				"Wähle 1 aus 6" => "Wählen Sie eine aus den sechs Antwortoptionen aus.", 
+				"Wähle korrekte" => "Wählen Sie die korrekte aus den folgenden Antwortoptionen aus." 
+		));
 
 	
-	
+	}	
 
 }
 

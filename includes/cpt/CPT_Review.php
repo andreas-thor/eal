@@ -155,9 +155,8 @@ class CPT_Review extends CPT_Object {
 	
 		?>
 		<script>
-			var $ = jQuery.noConflict();
-			
 			function setAccept (val) {
+				var $ = jQuery.noConflict();
 				if (val==1) {
 					if (confirm('Sollen alle Bewertungen auf "gut" gesetzt werden?')) {
 						$(document).find("#mb_score").find("input").each ( function() {

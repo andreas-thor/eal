@@ -34,7 +34,7 @@ class HTML_ItemSC  {
 						<td style="width:100%%-3em"><input type="text" value="%s" style="width:100%%; font-weight:%s" size="255" readonly/></td>
 						<td style="width:3em"><input type="text" value="%d" size="1"  readonly /></td>
 					</tr>',
-					htmlentities($a['answer']), 
+					htmlentities($a['answer'], ENT_COMPAT | ENT_HTML401, 'UTF-8'), 
 					$a['points']>0 ? 'bold' : 'normal',
 					$a['points']
 				);
@@ -51,7 +51,7 @@ class HTML_ItemSC  {
 						<td style="width:3em"><input type="text" name="%1$spoints[]" value="%4$d" size="1"  readonly /></td>
 					</tr>', 
 					$prefix, 
-					htmlentities($a['answer']), 
+					htmlentities($a['answer'], ENT_COMPAT | ENT_HTML401, 'UTF-8'), 
 					$a['points']>0 ? 'bold' : 'normal',
 					$a['points'] 
 				);
@@ -97,7 +97,7 @@ class HTML_ItemSC  {
 
 			// answers as table line with 3 columns (answer, points, action buttons) ...
 			foreach ($item->answers as $a) {
-				$html_Answers .= sprintf($answerLine, $prefix, htmlentities($a['answer']), $a['points']);
+				$html_Answers .= sprintf($answerLine, $prefix, htmlentities($a['answer'], ENT_COMPAT | ENT_HTML401, 'UTF-8'), $a['points']);
 			}
 			
 			// ... packaged in a table
