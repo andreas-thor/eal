@@ -4,6 +4,8 @@ require_once ('ImportExport.php');
 
 class Ilias extends ImportExport {
 	
+	static $media = array ();
+	static $xml_MTImages;
 	
 	public static function export (array $itemids) {
 	
@@ -19,6 +21,14 @@ class Ilias extends ImportExport {
 		$zip->open($zipname, ZipArchive::CREATE);
 		$zip->addFromString("{$name}/{$name}.xml", self::createQPL($itemids)->saveXML());
 		$zip->addFromString("{$name}/" . str_replace('_qpl_', '_qti_', $name) . ".xml", self::createQTI($itemids)->saveXML());
+		
+		// copy media files (e.g., images) -- array is filled during createQPL/QTI /*
+		foreach (self::$media as $key => $file) {
+			$fileshort = array_pop(explode ("/", $file));
+			$zip->addFromString("{$name}/objects/{$key}/{$fileshort}", file_get_contents($file));
+		}
+		
+		
 		$zip->close();
 		return ["full"=>$zipname, "short"=>$name];
 	}
@@ -202,12 +212,48 @@ class Ilias extends ImportExport {
 	
 	
 	public function createMaterialElement ($dom, $type, $value) {
+		
+		// <matimage label="il_0_mob_3908" uri="objects/il_0_mob_3908/schoolsigngenericpicgettyimages640740604.jpg"/>
+		
+		self::$xml_MTImages = array ();
+		
+		$value = preg_replace_callback(				// replace image references
+				'|(<img[^>]+)src=["\']([^"]*)["\']|',
+				function ($match) use ($dom) {
+		
+					/* if img is stored inline (src="data:image/png;base64,iVBOR....") --> do nothing */
+					if (strtolower (substr($match[2], 0, 5)) == 'data:') {
+						return $match[1] . "src='" . $match[2] . "'";
+					}
+
+					$key = "il_0_mob_" . count(self::$media);
+					self::$media [$key] = $match[2];
+					$fileshort = array_pop(explode ("/", $match[2]));
+					
+					$mimg = $dom->createElement("matimage");
+					$mimg->setAttribute("label", $key);
+					$mimg->setAttribute("uri", "objects/{$key}/{$fileshort}");
+					array_push(self::$xml_MTImages, $mimg);
+						
+					return $match[1] . "src=\"" . $key . "\"";
+				},
+				$value
+				);		
+		
+		
+		
+		
 		$xml_MT = $dom->createElement("mattext");
 		$xml_MT->appendChild ($dom->createTextNode ($value));
 		$xml_MT->setAttribute("texttype", $type);
 
 		$xml_MA = $dom->createElement("material");
 		$xml_MA->appendChild ($xml_MT);
+		
+		foreach (self::$xml_MTImages as $mimg) {
+			$xml_MA->appendChild($mimg);
+		}
+		
 		return $xml_MA;
 	}
 	
@@ -326,6 +372,8 @@ class Ilias extends ImportExport {
 			$item->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
 			$item->title = $itemXML->getAttribute("title");
 			$descques = $xpath->evaluate ("./presentation/flow/material/mattext/text()", $itemXML)[0]->wholeText;
+			
+			// TODO: Eigentlich aus MatLabel die IMG-Referenzen ziehen!!
 			$descques = preg_replace_callback(				// replace image references
 					'|(<img[^>]+)src=["\']([^"]*)["\']|',
 					function ($match) use ($dir, $name) {
