@@ -1,14 +1,17 @@
 <html>
 <head>
+<title>E-Assessment-Literacy EAs.LiT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta charset="utf-8"/>
+<meta charset="utf-8" />
 <link rel="stylesheet" href="css/normalize.css">
 <link rel="stylesheet" href="css/skeleton.css">
 
 <style>
 div {
 	margin-top: 1em;
+	margin-bottom: 1em;
 }
+
 a.button {
 	height: 28px;
 	line-height: 28px;
@@ -21,79 +24,213 @@ a.button {
 	<div class="container">
 		<div class="row">
 
-			<h3>E-Assessment Literacy</h3>
-a
-			
+			<h3>Das E-Assessment-Literacy-Tool EAs.LiT</h3>
 
 			<h4>Inhalt</h4>
+			<div>
+				<a class="button" href="#process">Prozess der Itemerstellung</a> 
+				<a class="button" href="#lo">Learning Outcome</a>
+				<a class="button" href="#taxonomy">Taxonomie</a> 
+				 
+				<a class="button" href="#item">Item</a>
+				<a class="button" href="#review">Review</a>
+			</div>
 
-			<a class="button" href="#process">Prozess der Itemerstellung</a>
-			<a class="button" href="#taxonomy">Taxonomien</a>
-			<a class="button" href="#lo">Learning Outcomes</a>
-
-				<li>[Learning Outcome](LO)</li>
-				<li>[Item](Item)</li>
-				<li>[Review](Review)</li>
 
 			<h4>Dokumente</h4>
+			<div>
+				<a class="button button-primary" href="EAssLiT.pdf">Präsentation@WeL
+					2016</a>
+			</div>
 
-
-			<a class="button button-primary" href="EAssLiT.pdf">Präsentation
-				auf dem Workshop on e-Learning 2016</a>
-			
-			
 			<h4 id="process">Prozess der Itemerstellung</h4>
 
+			<div>Nachfolgende Abbildung illustriert den schematischen Workflow
+				zur Item-Erstellung mit EAs.LiT. Dieser strukturiert den Prozess der
+				Prüfungsentwicklung durch konkrete Arbeitsschritte. Der gesamte
+				Prozess wird während der Bearbeitung versioniert, sodass jederzeit
+				Änderungen nachvollzogen und rückgängig gemacht werden können.
+				Erstellte Items lassen sich als Item-Pool für verschiedene
+				Lern-Management-Systeme (LMS) exportieren und dort für Prüfungen
+				verwenden; bereits in einem LMS vorhandene Items können importiert
+				und in EAs.LiT weiterverarbeitet werden.</div>
 			<div>
-			<img width="100%" src="EAs.LiT_Workflow.png" />
+				<img width="100%" src="EAs.LiT_Workflow.png" />
 			</div>
 
 
+			<h4 id="lo">Learning Outcome</h4>
+			<div>Die Erstellung von <a href="#item">Items</a> erfordert zunächst die
+				Definition von Learning Outcomes (LO), d.h. was Lernende wissen,
+				verstehen und in der Lage sind zu tun, nachdem sie einen Lernprozess
+				abgeschlossen haben. Die nachfolgende Abbildung zeigt den
+				Screenshot eines LO aus dem Bereich relationaler Datenbanksysteme
+				zur Funktionalität von Löschregeln bei der Definition von
+				Fremdschlüsseln. 
+				</div>
 
-		<div id="taxonomy">
-
-			<h4>Taxonomien</h4>
-
-			<div>Eine Taxanomie ist eine Hierarchie von Fachbegriffen
-				(hierarchische angeordnete Schlagworte) zu einem Thema. Jedes Item
-				sowie die zugeordneten Learning Outcomes und Review gehören zu genau
-				einer Taxonomy. Nachfolgende Abbildung zeigt einen Ausschnitt aus
-				einer Datenbank-Taxonomy.</div>
 			<div>
-				<img src="Example_Taxonomy.png" />
+				<img width="100%" src="Example_LO.png">
+			</div>
+
+			<div>LO sind konkrete und messbare Kompetenzen, welche sich auf
+				einen konkreten Inhalt beziehen, thematisch kategorisiert werden und
+				jeweils einer Anforderungsstufe bzgl. der Lernzieltaxonomie nach
+				Anderson und Krathwohl zugeordnet sind. EAs.LiT unterstützt die
+				Formulierung von LO durch Textbausteine, z.B. für Einleitungssätze
+				("Die Studierenden sind nach Abschluss der Lehrveranstaltung in der
+				Lage, ...") sowie dem Bereitstellen von zur Anforderungsstufe
+				passender Superverben (z.B. berechnen, prüfen oder übertragen für
+				die Anforderungsstufe Anwenden), die durch einen Klick auf den
+				entsprechenden Button in die Beschreibung an der aktuellen
+				Cursor-Position eingefügt werden. Zusätzlich zur Anforderungsstufe
+				erlaubt EAs.LiT die Charakterisierung der Wissensdimension (Fakten-,
+				Konzept- oder Prozesswissen), welche vom LO adressiert wird. Das in
+				der obigen Abbildung dargestellte LO wurde auf der Anforderungsstufe
+				Anwenden im Bereich Prozesswissen eingeordnet.</div>
+
+			<div>
+				Ein LO hat einen Titel sowie eine Beschreibung und ist einer
+				Anforderungsstufe zugeordnet. Einem LO können ein oder mehrere Terme
+				aus der <a href="#taxonomy">Taxonomie</a> zugeordnet sein. LOs haben
+				keinen Status. Jeder Nutzer kann alle Learning Outcomes sehen,
+				ändern und löschen.
 			</div>
 
 			<div>
-				Neben der Zuordnung von Items und Learning Outcome zu Termen einer
-				Taxonomy bildet eine Taxonomy die Grundlage einer (virtuellen)
-				Arbeitsgruppe mit mehreren Nutzern. Nutzer können dabei mehreren
-				Arbeitsguppen (d.h. mehr als einer Taxonomy) zugeordnet sein (und
-				dort auch unterschiedliche Rollen einnehmen). Während der Arbeit
-				wird immer eine <strong>aktuelle Taxonomy</strong> verwendet, d.h.
-				Nutzer arbeiten grundsätzlich nur mit Items / Reviews / Learning
-				Outcomes der aktuellen Taxonomy. Die aktuelle Taxonomy kann der
-				Nutzer jederzeit umstellen (aus der Liste der ihm zugeordneten
-				Taxonomys). Innerhalb einer Taxonomy gibt es zwei Rollen, die ein
-				Nutzer einnehmen kann:
+				Die <strong>tabellarische Darstellung</strong> aller LOs ist
+				erreichbar unter Menu &gt; Metadata &gt; Learn. Outcomes.
 			</div>
+
+			<h4 id="item">Item</h4>
+			
+			<div>Zur Erstellung eines Items wählt der Nutzer vorzusgweise ein LO sowie einen
+				Item-Typ aus. (Die Erstellung eines Items ohne LO ist möglich.) 
+				Der derzeitige EAs.LiT-Prototyp unterstützt die Item-Typen "Single
+				Choice" und "Multiple Choice""; weitere Item-Typen werden perspektivisch
+				ergänzt. Die nachfolgende Abbildung zeigt den Screenshot eines Single-Choice-Items,
+				welches dem oben dargestellten LO zugeordnet wurde.
+				</div>
+				
+				<div>
+				<img src="Example_Item.png" width="100%"/>
+				</div>
+				
+				<div>
+				
+				Ein Item hat einen Titel, eine Fall-/Problemvignette sowie eine Aufgabenstellung.
+				Die Trennung des Fragebereichs in Fall-/Problemvignette und
+				Aufgabenstellung erleichtert die Wiederverwendbarkeit in großen
+				Item-Pools. So kann die in Bild gezeigte Vignette auch für andere
+				Aufgabenstellungen genutzt werden, um z.B. die Eigenschaften
+				gültiger Attributwerte des Attributs
+				<i>b</i> zu charakterisieren. 
+				Je nach Type des Items (Single Choice, Multiple Choice) gibt es mehrere Antwortoptionen mit zugehörigen Punktzahlen.
+				Ein Item kann (und sollte) einem Learning Outcome zugeordnet sein.
+				Zusätzlich wird jedes Item einer
+				Anforderungsstufe (Erinnern, Verstehen, Anwenden, Analysieren,
+				Evaluieren oder Erschaffen) auf einer der drei Wissensdimensionen
+				(Fakten-, Konzept- und Prozesswissen) zugeordnet. 
+				 Abschließend wird jede Frage mit Hilfe der
+				<a href="#taxonomy">Taxonomie</a> thematisch klassifiziert.
+				Als Default-Wert
+				werden beim Erstellen eines Items die Zuordnungen des zugehörigen LO
+				verwendet; die Item-Zuordnungen können aber von den Learning-Outcome-Zuordnungen abweichen. 
+				</div>
+
 			<div>
+				Die <strong>tabellarische Darstellung</strong> aller Items ist
+				erreichbar unter "Menu &gt; Items &gt; All Items". Über "Menu &gt;
+				Items &gt; Single Choice" bzw. "Menu &gt; Items &gt; Multiple
+				Choice" kann die Liste aller Items pro Typ aufgerufen werden.
+			</div>
+
+			<div>
+				<strong>Item-Status: </strong>Jedes Item hat einen von drei möglichen Stati (der sich im Verlauf des Prozesses der Item-Erstellung ändert):
 				<ul>
-					<li>Author: "normaler" Nutzer, der Items erstellen, eigene
-						Items bearbeiten/löschen und andere Items begutachten kann</li>
-					<li>Editor: "privilegierter" Nutzer, der alle Items bearbeiten
-						und "publizieren" kann</li>
+					<li><i>Draft</i>: Während des Entwurfs eines Items; noch nicht für
+						den Begutachtungsprozess vorgesehen
+					<li><i>Pending</i>: Item ist in der Begutachtungsphase
+					<li><i>Published</i>: Item ist durch Editor publiziert worden
 				</ul>
+				Auf Basis des Item-Status sowie der Nutzerrolle (Autor oder
+				Editor) gelten folgende Rechte:
 			</div>
 
+			<div>
+				<table class="u-full-width">
+					<thead>
+						<tr>
+							<th>Nutzer ...</th>
+							<th>kann ansehen</th>
+							<th>kann editieren</th>
+							<th>kann Status ändern zu</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>Autor/Ersteller des Items</td>
+							<td>ja</td>
+							<td>ja (solange Status nicht <i>Published</i>)
+							</td>
+							<td><i>Draft</i> oder <i>Pending</i></td>
+						</tr>
+						<tr>
+							<td>Rolle "Autor"</td>
+							<td>ja (solange Status nicht <i>Draft</i>)
+							</td>
+							<td>nein</td>
+							<td>--</td>
+						</tr>
+						<tr>
+							<td>Rolle "Editor"</td>
+							<td>ja</td>
+							<td>ja</td>
+							<td><i>Draft</i>, <i>Pending</i> oder <i>Published</i></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+
+
+			<div id="taxonomy">
+
+				<h4>Taxonomien</h4>
+
+				<div>Eine Taxanomie ist eine Hierarchie von Fachbegriffen
+					(hierarchische angeordnete Schlagworte) zu einem Thema. Jedes Item
+					sowie die zugeordneten Learning Outcomes und Review gehören zu
+					genau einer Taxonomy. Nachfolgende Abbildung zeigt einen Ausschnitt
+					aus einer Datenbank-Taxonomy.</div>
+				<div>
+					<img src="Example_Taxonomy.png" />
+				</div>
+
+				<div>
+					Neben der Zuordnung von Items und Learning Outcome zu Termen einer
+					Taxonomy bildet eine Taxonomy die Grundlage einer (virtuellen)
+					Arbeitsgruppe mit mehreren Nutzern. Nutzer können dabei mehreren
+					Arbeitsguppen (d.h. mehr als einer Taxonomy) zugeordnet sein (und
+					dort auch unterschiedliche Rollen einnehmen). Während der Arbeit
+					wird immer eine <strong>aktuelle Taxonomy</strong> verwendet, d.h.
+					Nutzer arbeiten grundsätzlich nur mit Items / Reviews / Learning
+					Outcomes der aktuellen Taxonomy. Die aktuelle Taxonomy kann der
+					Nutzer jederzeit umstellen (aus der Liste der ihm zugeordneten
+					Taxonomys). Innerhalb einer Taxonomy gibt es zwei Rollen, die ein
+					Nutzer einnehmen kann:
+				</div>
+				<div>
+					<ul>
+						<li>Author: "normaler" Nutzer, der Items erstellen, eigene
+							Items bearbeiten/löschen und andere Items begutachten kann</li>
+						<li>Editor: "privilegierter" Nutzer, der alle Items
+							bearbeiten und "publizieren" kann</li>
+					</ul>
+				</div>
+
+			</div>
 		</div>
-	</div>
-
-
-
-
-
-
-
 </body>
 
 </html>
