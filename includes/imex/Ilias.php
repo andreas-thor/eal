@@ -144,7 +144,13 @@ class Ilias extends ImportExport {
 	
 			$xml_RC = $dom->createElement("render_choice");
 			$xml_RC->setAttribute("shuffle", "Yes");
-	
+
+			if ($item->type == "itemmc") {
+				$xml_RC->setAttribute("minnumber", $item->minnumber);
+				$xml_RC->setAttribute("maxnumber", $item->maxnumber);
+			}			
+			
+			
 			foreach ($item->answers as $number => $answer) {
 				$xml_LAB = $dom->createElement("response_label");
 				$xml_LAB->setAttribute("ident", $number);
@@ -436,6 +442,14 @@ class Ilias extends ImportExport {
 				if ($item->type == "itemmc") array_push ($item->answers, array ("answer" => $v["text"], "positive" => $v["positive"], "negative" => $v["negative"]));
 			}
 	
+			if ($item->type == "itemmc") {
+				$min = $xpath->evaluate ("./presentation/flow/response_lid/render_choice/@minnumber", $itemXML);
+				$item->minnumber = ($min->length==0) ? 0 : $min[0]->nodeValue;
+				$max = $xpath->evaluate ("./presentation/flow/response_lid/render_choice/@maxnumber", $itemXML);
+				$item->maxnumber = ($max->length==0) ? count($item->answers) : $max[0]->nodeValue;
+			}
+			
+			
 				
 			// update Item id (for newly created items)
 			$items[$itemXML->getAttribute("ident")] = $item;

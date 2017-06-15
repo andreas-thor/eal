@@ -22,7 +22,14 @@ class HTML_ItemMC  {
 			foreach ($item->answers as $a) {
 				$html_Answers .= sprintf ('<div style="margin-top:1em"><input type="checkbox">%s</div>', $a['answer']);
 			}
-			$result = sprintf ('<div style="margin-top:1em">%s</div>', $html_Answers);
+			$result = sprintf ('
+					<div style="margin-top:1em">
+					Minimum: <input type="text" value="%2$d" size="1" readonly/> &nbsp;&nbsp;&nbsp;
+					Maximum: <input type="text" value="%3$d" size="1" readonly/>
+					%1$s</div>', 
+					$html_Answers,
+					$item->minnumber,
+					$item->maxnumber);
 		}
 		
 		// answers as table line with 3 columns (answers, checked points, unchecked points); points>0 in bold
@@ -40,7 +47,15 @@ class HTML_ItemMC  {
 					$a['negative']
 				);
 			}
-			$result = sprintf ('<table style="font-size: 100%%">%s</table>', $html_Answers);
+
+			$result = sprintf ('
+					Minimum: <input type="text" value="%2$d" size="1" readonly/> &nbsp;&nbsp;&nbsp;
+					Maximum: <input type="text" value="%3$d" size="1" readonly/>
+					<table style="font-size: 100%%">%1$s</table>',
+					$html_Answers,
+					$item->minnumber,
+					$item->maxnumber
+					);		
 		}
 		
 		// similar to VIEW_REVIEW, but data is sent in POST_REQUEST (because input fields have name attribute)
@@ -59,7 +74,15 @@ class HTML_ItemMC  {
 					$a['negative']
 				);
 			}
-			$result = sprintf ('<table style="font-size: 100%%">%s</table>', $html_Answers);
+			$result = sprintf ('
+					Minimum: <input type="text" name="%1$sitem_minnumber" value="%3$d" size="1" /> &nbsp;&nbsp;&nbsp;
+					Maximum: <input type="text" name="%1$sitem_maxnumber" value="%4$d" size="1" />
+					<table style="font-size: 100%%">%2$s</table>', 
+					$prefix,
+					$html_Answers,
+					$item->minnumber,
+					$item->maxnumber
+					);
 		}
 		
 		
@@ -105,6 +128,8 @@ class HTML_ItemMC  {
 				
 			// ... packaged in a table
 			$result = sprintf ('
+				Minimum: <input type="text" name="%1$sitem_minnumber" value="%3$d" size="1" /> &nbsp;&nbsp;&nbsp;
+				Maximum: <input type="text" name="%1$sitem_maxnumber" value="%4$d" size="1" />
 				<table style="font-size:100%%">
 					<tr align="left">
 						<th>Antwort-Text</th>
@@ -112,9 +137,12 @@ class HTML_ItemMC  {
 						<th>Nicht ausgew&auml;hlt</th>
 						<th>Aktionen</th>
 					</tr>
-					%s
+					%2$s
 				</table>',
-				$html_Answers);
+				$prefix,
+				$html_Answers,
+				$item->minnumber,
+				$item->maxnumber);
 		}
 		
 		return $result;

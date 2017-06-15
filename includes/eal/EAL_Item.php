@@ -21,6 +21,9 @@ class EAL_Item {
 	public $note;
 	public $flag;
 	
+	public $minnumber = null;
+	public $maxnumber = null;
+	
 	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	public static $level_type = ["FW", "KW", "PW"];
 	
@@ -109,6 +112,9 @@ class EAL_Item {
 		$this->note = isset ($_POST[$prefix.'item_note']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_note'])) : null;
 		$this->flag = isset ($_POST[$prefix.'item_flag']) ? $_POST[$prefix.'item_flag'] : null;
 		
+		$this->minnumber = null;
+		$this->maxnumber = null;
+		
 		// 	$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
 		$this->domain = isset ($_POST[$prefix."domain"]) ? $_POST[$prefix."domain"] : ""; 
 		if (($this->domain == "") && (isset($_POST[$prefix.'tax_input']))) {
@@ -137,6 +143,9 @@ class EAL_Item {
 	
 		$this->learnout_id = $sqlres['learnout_id'];
 		$this->learnout = null; // lazy loading
+		
+		$this->minnumber = ($this->type == "itemmc") && (isset($sqlres['minnumber'])) ? $sqlres['minnumber'] : null;
+		$this->maxnumber = ($this->type == "itemmc") && (isset($sqlres['maxnumber'])) ? $sqlres['maxnumber'] : null;
 		
 		$this->difficulty = $sqlres['difficulty'];
 		$this->note = $sqlres['note'];
@@ -195,9 +204,11 @@ class EAL_Item {
 					'type' => $this->type,
 					'domain' => $this->domain,
 					'note' => $this->note,
-					'flag' => $this->flag
+					'flag' => $this->flag,
+					'minnumber' => $this->minnumber,
+					'maxnumber' => $this->maxnumber
 			),
-			array('%d','%s','%s','%s','%d','%d','%d','%d','%f','%d','%s','%s','%s','%d')
+			array('%d','%s','%s','%s','%d','%d','%d','%d','%f','%d','%s','%s','%s','%d','%d','%d')
 			);
 	}
 	
@@ -275,6 +286,10 @@ class EAL_Item {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		global $wpdb;
 
+		/**
+		 * minnumber/maxnumber: range of correct answers (relevant for MC only)
+		 */
+		
 		dbDelta (
 			"CREATE TABLE {$wpdb->prefix}eal_item (
 			id bigint(20) unsigned NOT NULL,
@@ -291,6 +306,8 @@ class EAL_Item {
 			domain varchar(50) NOT NULL,
 			note text,
 			flag tinyint,
+			minnumber smallint,
+			maxnumber smallint,
 			PRIMARY KEY  (id),
 			KEY index_type (type),
 			KEY index_domain (domain)

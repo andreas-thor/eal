@@ -132,7 +132,7 @@ class Importer {
 		
 		foreach ($items as $item) {
 			array_push ($itemids, $item->id);
-			array_push ($items_title, $item->title);
+			array_push ($items_title, $item->id . ". " . $item->title);
 			array_push ($items_content, sprintf('
 				<div id="poststuff">
 					<hr/>

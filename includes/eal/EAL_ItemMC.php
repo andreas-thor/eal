@@ -5,7 +5,7 @@ require_once ("EAL_Item.php");
 class EAL_ItemMC extends EAL_Item {
 	
 	public $answers = array();
-	
+
 	
 	function __construct(int $item_id = -1, string $prefix="") {
 		$this->type = "itemmc";
@@ -15,6 +15,8 @@ class EAL_ItemMC extends EAL_Item {
 				array ('answer' => '', 'positive' => 0, 'negative' => 1),
 				array ('answer' => '', 'positive' => 0, 'negative' => 1)
 		);
+		$this->minnumber=0;
+		$this->maxnumber=count($this->answers);
 		parent::__construct($item_id, $prefix);
 	}
 	
@@ -34,6 +36,10 @@ class EAL_ItemMC extends EAL_Item {
 				array_push ($this->answers, array ('answer' => html_entity_decode (stripslashes($v)), 'positive' => $_POST[$prefix.'positive'][$k], 'negative' => $_POST[$prefix.'negative'][$k]));
 			}
 		}
+		
+		$this->minnumber = isset ($_POST[$prefix.'item_minnumber']) ? $_POST[$prefix.'item_minnumber'] : 0;
+		$this->maxnumber = isset ($_POST[$prefix.'item_maxnumber']) ? $_POST[$prefix.'item_maxnumber'] : count($this->answers);
+		
 	}
 	
 /*	

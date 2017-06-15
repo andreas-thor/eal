@@ -76,7 +76,7 @@ class BulkViewer {
 		// generate list of item titles 
 		$options = '<option value="-1" selected>[All]</option>';
 		foreach ($entries_title as $key => $val) {
-			$options .= sprintf ('<option value="%d">%d. %s</option>', $key, $key+1, $val);
+			$options .= sprintf ('<option value="%d">%s</option>', $key, $val);
 		}
 		
 		$selectItem = sprintf ('
@@ -190,7 +190,7 @@ class BulkViewer {
 				}
 			}
 			
-			array_push($items_title, $item->title);
+			array_push($items_title, $item->id . ". " . $item->title);
 			array_push($items_content, sprintf('
 				<div id="poststuff">
 					<hr/>
@@ -264,7 +264,7 @@ class BulkViewer {
 		foreach ($learnoutids as $learnout_id) {
 			$learnout = new EAL_LearnOut($learnout_id);
 				
-			array_push($los_title, $learnout->title);
+			array_push($los_title, $learnout_id . ". " . $learnout->title);
 			array_push($los_content, sprintf('
 				<div id="poststuff">
 					<hr/>

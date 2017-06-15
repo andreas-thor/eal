@@ -287,14 +287,17 @@ class HTML_Item  {
  		
  		if (($viewType == HTML_Object::VIEW_STUDENT) || ($viewType == HTML_Object::VIEW_REVIEW)) {
 	
- 			$result = sprintf ("
+ 			$result = sprintf ('
  				<div>
- 					<div>%s</div>
- 					<div style='background-color:#F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;'>
- 						<div>%s</div>
- 						<div>%s</div>
+ 					<input type="hidden" name="%1$sitem_id"  value="%2$s">
+ 					<div>%3$s</div>
+ 					<div style="background-color:#F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;">
+ 						<div>%4$s</div>
+ 						<div>%5$s</div>
  					</div>
- 				</div>",
+ 				</div>',
+ 				$namePrefix,
+ 				$item->id,
  				wpautop($item->description),
  				wpautop($item->question),
  				$answers_html
