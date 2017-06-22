@@ -1,6 +1,7 @@
 <?php 
 
 require_once(__DIR__ . "/../anal/ItemExplorer.php");
+require_once(__DIR__ . "/../html/HTML_Item.php");
 
 class BulkViewer {
 

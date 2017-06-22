@@ -320,7 +320,7 @@ class ItemExplorer {
 	}
 	
 	
-	private static function getLabels (string $cat, array $keys = array()) {
+	public static function getLabels (string $cat, array $keys = array()) {
 		
 		if (substr( $cat, 0, 5 ) === "topic") {
 			$labels = [];

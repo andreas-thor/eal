@@ -67,23 +67,21 @@ class Explorer {
 
 		
 		/* generate HTML code for draggable buttons from SESSION property */
-		$buttons = ['type' => 'Item Type', 'dim' => 'Wissensdimension', 'level' => 'Anforderungsstufe', 'topic1' => 'Topic 1', 'topic2' => 'Topic 2', 'topic3' => 'Topic 3', 'lo' => 'Learning Outcome'];
 		$btn_html = ['x'=>'', 'y'=>'', 'all'=>''];
-
 		if (is_array($_SESSION["drag_x"])) {
 			foreach ($_SESSION["drag_x"] as $id) {
-				$btn_html['x'] .= sprintf ('<input class="button" readonly value="%2$s" style="margin:0.2em;" id="%1$s" draggable="true" ondragstart="drag(event)" />', $id, $buttons[$id]);
+				$btn_html['x'] .= sprintf ('<input class="button" readonly value="%2$s" style="margin:0.2em;" id="%1$s" draggable="true" ondragstart="drag(event)" />', $id, EAL_Item::$category_label[$id]);
 			}
 		}
 		if (is_array($_SESSION["drag_y"])) {
 			foreach ($_SESSION["drag_y"] as $id) {
-				$btn_html['y'] .= sprintf ('<input class="button" readonly value="%2$s" style="margin:0.2em;" id="%1$s" draggable="true" ondragstart="drag(event)" />', $id, $buttons[$id]);
+				$btn_html['y'] .= sprintf ('<input class="button" readonly value="%2$s" style="margin:0.2em;" id="%1$s" draggable="true" ondragstart="drag(event)" />', $id, EAL_Item::$category_label[$id]);
 			}
 		}
-		foreach ($buttons as $id => $label) {
+		foreach (['type', 'dim', 'level', 'topic1', 'topic2', 'topic3', 'lo'] as $id) {
 			if ((is_array($_SESSION["drag_x"])) && (in_array($id, $_SESSION["drag_x"]))) continue;
 			if ((is_array($_SESSION["drag_y"])) && (in_array($id, $_SESSION["drag_y"]))) continue;
-			$btn_html['all'] .= sprintf ('<input class="button" readonly value="%2$s" style="margin:0.2em;" id="%1$s" draggable="true" ondragstart="drag(event)" />', $id, $label);
+			$btn_html['all'] .= sprintf ('<input class="button" readonly value="%2$s" style="margin:0.2em;" id="%1$s" draggable="true" ondragstart="drag(event)" />', $id, EAL_Item::$category_label[$id]);
 		}
 			
 		$_SESSION["explore_items"] = array();

@@ -75,7 +75,7 @@ class EAL_ItemBasket {
 				
 			$item = EAL_Item::load($post->post_type, $item_id);
 			if ($item == null) continue;
-			array_push($items, $item);
+			$items[$item_id] = $item;
 		}
 		return $items;
 	}

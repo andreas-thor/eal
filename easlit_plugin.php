@@ -19,12 +19,13 @@ require_once 'includes/cpt/CPT_Review.php';
 require_once 'includes/page/BulkViewer.php';
 require_once 'includes/page/Importer.php';
 require_once 'includes/page/Explorer.php';
+require_once 'includes/page/TestGenerator.php';
 
 
-require_once 'includes/class.PAG_Metadata.php';
-require_once 'includes/class.PAG_Basket.php';
-require_once 'includes/class.PAG_Explorer.php';
-require_once 'includes/class.PAG_Generator.php';
+// require_once 'includes/class.PAG_Metadata.php';
+// require_once 'includes/class.PAG_Basket.php';
+// require_once 'includes/class.PAG_Explorer.php';
+// require_once 'includes/class.PAG_Generator.php';
 // require_once 'includes/class.PAG_Item.Import.php';
 require_once 'includes/class.PAG_TaxonomyImport.php';
 
@@ -193,12 +194,13 @@ add_action ('admin_menu', function () {
     $c = count (EAL_ItemBasket::get()); 
     add_menu_page('eal_page_basket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'edit_posts', 'edit.php?post_type=itembasket', '', 'dashicons-cart', 34);
     add_submenu_page( 'edit.php?post_type=itembasket', 'Table', '<div class="dashicons-before dashicons-format-aside" style="display:inline">&nbsp;</div> Table', 'edit_posts', 'edit.php?post_type=itembasket');
-    add_submenu_page( 'edit.php?post_type=itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_posts', 'ist-blueprint', array ('PAG_Explorer', 'createPage'));
+//    add_submenu_page( 'edit.php?post_type=itembasket', 'Explorer', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_posts', 'ist-blueprint', array ('PAG_Explorer', 'createPage'));
     add_submenu_page( 'edit.php?post_type=itembasket', 'Explorer2', '<div class="dashicons-before dashicons-chart-pie" style="display:inline">&nbsp;</div> Explorer', 'edit_posts', 'item_explorer', array ('Explorer', 'page_explorer'));
     
     add_submenu_page( 'edit.php?post_type=itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_basket', array ('BulkViewer', 'page_view_basket'));
 //     add_submenu_page( 'edit.php?post_type=itembasket', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view', array ('PAG_Basket', 'createPageView'));
     
+    /* the following are not visible in the menu but must be registered */
     add_submenu_page( 'view', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_item', array ('BulkViewer', 'page_view_item'));
     add_submenu_page( 'view', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_review', array ('BulkViewer', 'page_view_review'));
     add_submenu_page( 'view', 'Viewer', '<div class="dashicons-before dashicons-exerpt-view" style="display:inline">&nbsp;</div> Viewer', 'edit_posts', 'view_learnout', array ('BulkViewer', 'page_view_learnout'));
@@ -209,6 +211,7 @@ add_action ('admin_menu', function () {
      */
     
     add_submenu_page( 'edit.php?post_type=itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'generator', array ('PAG_Generator', 'createPage'));
+    add_submenu_page( 'edit.php?post_type=itembasket', 'Generator2', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'test_generator', array ('TestGenerator', 'page_generator'));
     
     
     

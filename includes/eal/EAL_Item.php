@@ -37,9 +37,12 @@ class EAL_Item {
 	
 	public static $category_label = [
 			"type" => "Item Typ",
-			"level" => "Anforderungsstrufe",
+			"level" => "Anforderungsstufe",
 			"dim" => "Wissensdimension",
-			"topic1" => "Topic Stufe 1"
+			"topic1" => "Topic Stufe 1",
+			"topic2" => "Topic Stufe 2",
+			"topic3" => "Topic Stufe 3",
+			"lo" => "Learning Outcome"
 	];
 	
 	
