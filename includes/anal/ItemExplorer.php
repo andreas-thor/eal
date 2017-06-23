@@ -19,6 +19,16 @@ class ItemExplorer {
 		
 		$result = array(); 	// key => array (itemids)
 		
+		if ($cat == 'number') {
+			$result = ['all' => array()];
+			foreach ($itemids as $item_id) {
+				$item = $items[$item_id];
+				array_push ($result['all'], $item_id);
+			}
+			return $result;
+		}
+		
+		
 		if ($cat == 'type') {
 			$result = ['itemsc' => array(), 'itemmc' => array()];
 			foreach ($itemids as $item_id) {

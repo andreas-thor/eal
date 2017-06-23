@@ -19,7 +19,7 @@ require_once 'includes/cpt/CPT_Review.php';
 require_once 'includes/page/BulkViewer.php';
 require_once 'includes/page/Importer.php';
 require_once 'includes/page/Explorer.php';
-require_once 'includes/page/TestGenerator.php';
+require_once 'includes/page/Blueprint.php';
 
 
 // require_once 'includes/class.PAG_Metadata.php';
@@ -211,7 +211,7 @@ add_action ('admin_menu', function () {
      */
     
     add_submenu_page( 'edit.php?post_type=itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'generator', array ('PAG_Generator', 'createPage'));
-    add_submenu_page( 'edit.php?post_type=itembasket', 'Generator2', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'test_generator', array ('TestGenerator', 'page_generator'));
+    add_submenu_page( 'edit.php?post_type=itembasket', 'Generator2', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'test_generator', array ('Blueprint', 'page_blueprint'));
     
     
     

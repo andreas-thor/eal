@@ -12,6 +12,7 @@
 * Set date / time format and time zone 
 * Set Start Page
 
+php extensions: ds, gmp
 
 
 max_input_vars = 1000000
