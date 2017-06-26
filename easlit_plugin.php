@@ -210,7 +210,7 @@ add_action ('admin_menu', function () {
      * Callable ist dann getList Funktion in Klasse, z.B. HTML_Item::getList
      */
     
-    add_submenu_page( 'edit.php?post_type=itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'generator', array ('PAG_Generator', 'createPage'));
+    // add_submenu_page( 'edit.php?post_type=itembasket', 'Generator', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'generator', array ('PAG_Generator', 'createPage'));
     add_submenu_page( 'edit.php?post_type=itembasket', 'Generator2', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'test_generator', array ('Blueprint', 'page_blueprint'));
     
     

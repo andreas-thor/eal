@@ -95,6 +95,11 @@ class EAL_ItemMC extends EAL_Item {
 		foreach ($sqlres as $a) {
 			array_push ($this->answers, array ('answer' => $a['answer'], 'positive' => $a['positive'], 'negative' => $a['negative']));
 		}
+		
+		if (!isset($this->minnumber)) $this->minnumber = 0;
+		if (!isset($this->maxnumber)) $this->maxnumber = count($this->answers);
+		
+		
 	}
 	
 	

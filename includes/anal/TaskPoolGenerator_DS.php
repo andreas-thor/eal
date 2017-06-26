@@ -2,7 +2,7 @@
 
 require_once ("ItemExplorer.php");
 
-class TaskPoolGenerator {
+class TaskPoolGenerator_DS {
 	
 	
 	private $itemVectors;
@@ -38,10 +38,10 @@ class TaskPoolGenerator {
 		// item vector contains 0 or 1 depending on if the items is in this group
 		// range vector: min / max contain the min / max range condition; all the number of all items with a 1 in this position
 		
-		$this->itemVectors = array();
-		foreach ($this->itemids as $id) $this->itemVectors[] = array();
+		$this->itemVectors = new \Ds\Vector();
+		foreach ($this->itemids as $id) $this->itemVectors->push (new \Ds\Vector());
 		
-		$this->rangeVectors = ["min" => array(), "max" => array(), "all" => array()];
+		$this->rangeVectors = ["min" => new \Ds\Vector(), "max" => new \Ds\Vector(), "all" => new \Ds\Vector()];
 		
 		$this->countCriteria = 0;
 		foreach ($dimensions as $category => $minmax) {
@@ -49,14 +49,14 @@ class TaskPoolGenerator {
 			foreach (ItemExplorer::groupBy($items, $this->itemids, $category) as $key => $groupItemIds) {
 				$this->countCriteria++;
 				foreach ($groupItemIds as $id) {
-					array_push ($this->itemVectors[$mapItemId2ItemIndex[$id]], 1);
+					$this->itemVectors[$mapItemId2ItemIndex[$id]]->push (1);
 				}
 				foreach ($this->itemids as $id) {
-					if (count($this->itemVectors[$mapItemId2ItemIndex[$id]]) < $this->countCriteria) $this->itemVectors[$mapItemId2ItemIndex[$id]][] = 0;
+					if ($this->itemVectors[$mapItemId2ItemIndex[$id]]->count() < $this->countCriteria) $this->itemVectors[$mapItemId2ItemIndex[$id]]->push (0);
 				}
-				$this->rangeVectors["min"][] = $minmax["min"][$key];
-				$this->rangeVectors["max"][] = $minmax["max"][$key];
-				$this->rangeVectors["all"][] = count($groupItemIds);
+				$this->rangeVectors["min"]->push ($minmax["min"][$key]);
+				$this->rangeVectors["max"]->push ($minmax["max"][$key]);
+				$this->rangeVectors["all"]->push (count($groupItemIds));
 			}
 		}
 		
@@ -65,15 +65,15 @@ class TaskPoolGenerator {
 		
 		
 		// INIT		
-		$poolSummary = array();	// int vector; dimension = number of criteria; similar to rangeVector
-		$poolItems = array();		// binary vector; dimension = number of all items; $poolitems[$i]==1 iff item with index i is in pool
-		$poolItemOrderForAdding = array();		// determine the order of items to be added
+		$poolSummary = new \Ds\Vector();	// int vector; dimension = number of criteria; similar to rangeVector
+		$poolItems = new \Ds\Vector();		// binary vector; dimension = number of all items; $poolitems[$i]==1 iff item with index i is in pool
+		$poolItemOrderForAdding = new \Ds\Vector();		// determine the order of items to be added
 		
 		for ($criteriaIndex=0; $criteriaIndex<$this->countCriteria; $criteriaIndex++) { 
-			$poolSummary[] = 0; 
+			$poolSummary->push(0); 
 		}
 		for ($itemIndex=0; $itemIndex<count($this->itemids); $itemIndex++) { 
-			$poolItems[] = 0;
+			$poolItems->push(0);
 		}
 		
 		$itemValue = [];
@@ -87,7 +87,7 @@ class TaskPoolGenerator {
 		arsort($itemValue);
 		
 		foreach ($itemValue as $itemIndex => $value) {
-			$poolItemOrderForAdding[] = $itemIndex;
+			$poolItemOrderForAdding->push ($itemIndex);
 		}
 		
 
@@ -95,12 +95,12 @@ class TaskPoolGenerator {
 		$time_break = $time_start + 10;
 		
 		
-		$stack = array();
-		array_push ($stack, array(), array(), array(), array());
-		$stack[$this::POOL_SUMMARY][] = $poolSummary;
-		$stack[$this::POOL_ITEMS][] = $poolItems;
-		$stack[$this::POOL_ORDER][] = $poolItemOrderForAdding;
-		$stack[$this::POOL_LAST][] = -1;
+		$stack = new \Ds\Vector();
+		$stack->push (new \Ds\Vector(), new \Ds\Vector(), new \Ds\Vector(), new \Ds\Vector());
+		$stack->get($this::POOL_SUMMARY)->push ($poolSummary);
+		$stack->get($this::POOL_ITEMS)->push ($poolItems);
+		$stack->get($this::POOL_ORDER)->push ($poolItemOrderForAdding);
+		$stack->get($this::POOL_LAST)->push (-1);
 		
 		$stackSize = 1;
 		$countPools = 0;
@@ -110,10 +110,10 @@ class TaskPoolGenerator {
 			if (time()>$time_break) break;
 			
 			// get current config
-			$poolSummary = $stack[$this::POOL_SUMMARY][$stackSize-1];
-			$poolItems = $stack[$this::POOL_ITEMS][$stackSize-1];
-			$poolItemOrderForAdding = $stack[$this::POOL_ORDER][$stackSize-1];
-			$newPos = $stack[$this::POOL_LAST][$stackSize-1] + 1;
+			$poolSummary = $stack->get($this::POOL_SUMMARY)->get ($stackSize-1)->copy();
+			$poolItems = $stack->get($this::POOL_ITEMS)->get ($stackSize-1)->copy();
+			$poolItemOrderForAdding = $stack->get($this::POOL_ORDER)->get($stackSize-1)->copy();
+			$newPos = $stack->get($this::POOL_LAST)->get($stackSize-1) + 1;
 			
 			// check current pool (if newly generated)
 			$check = $this->checkItemPool ($poolSummary, $poolItemOrderForAdding, $newPos);
@@ -129,9 +129,9 @@ class TaskPoolGenerator {
 					
 					$resultPool = [];
 					for ($itemIndex=0; $itemIndex<count($this->itemids); $itemIndex++) {
-						if ($poolItems[$itemIndex]==1) $resultPool[] = $this->itemids[$itemIndex];
+						if ($poolItems[$itemIndex]==1) array_push($resultPool, $this->itemids[$itemIndex]);
 					}
-					$result[] = $resultPool;
+					array_push ($result, $resultPool);
 					
 					if ($countPools==10) break;
 				}
@@ -143,7 +143,7 @@ class TaskPoolGenerator {
 			if (($check > 0) && ($newPos < count($poolItemOrderForAdding))) {
 				
 				// update current config: INCREASE LAST
-				$stack[$this::POOL_LAST][$stackSize-1] = $newPos;
+				$stack->get($this::POOL_LAST)->set($stackSize-1, $newPos);
 				
 				// add item to pool item; re-compute pool summary
 				$itemIndex = $poolItemOrderForAdding[$newPos];
@@ -154,27 +154,27 @@ class TaskPoolGenerator {
 				}
 			
 				// recompute order of items to be added
-				$poolItemOrderForAdding = array_slice ($poolItemOrderForAdding, $newPos+1);
+				$poolItemOrderForAdding = $poolItemOrderForAdding->slice($newPos+1)->copy();
 				
 				
 				// add to stack
 				$removed = 0;
-				$stack[$this::POOL_SUMMARY][] = $poolSummary;
-				$stack[$this::POOL_ITEMS][] = $poolItems;
-				$stack[$this::POOL_ORDER][] = $poolItemOrderForAdding;
-				$stack[$this::POOL_LAST][] = -1;
+				$stack->get($this::POOL_SUMMARY)->push ($poolSummary);
+				$stack->get($this::POOL_ITEMS)->push ($poolItems);
+				$stack->get($this::POOL_ORDER)->push ($poolItemOrderForAdding);
+				$stack->get($this::POOL_LAST)->push (-1);
 				
 				
 			} else {
 				
 				$removed = 1;
-				array_pop($stack[$this::POOL_SUMMARY]);
-				array_pop($stack[$this::POOL_ITEMS]);
-				array_pop($stack[$this::POOL_ORDER]);
-				array_pop($stack[$this::POOL_LAST]);
+				$stack->get($this::POOL_SUMMARY)->pop();
+				$stack->get($this::POOL_ITEMS)->pop();
+				$stack->get($this::POOL_ORDER)->pop();
+				$stack->get($this::POOL_LAST)->pop();
 			}
 			
-			$stackSize = count($stack[$this::POOL_LAST]);
+			$stackSize = count($stack->get($this::POOL_LAST));
 		}
 
 		

@@ -2,6 +2,7 @@
 
 require_once(__DIR__ . "/../anal/ItemExplorer.php");
 require_once(__DIR__ . "/../anal/TaskPoolGenerator.php");
+require_once(__DIR__ . "/../anal/TaskPoolGenerator_DS.php");
 require_once(__DIR__ . "/../eal/EAL_Item.php");
 require_once(__DIR__ . "/../eal/EAL_ItemBasket.php");
 
@@ -37,6 +38,7 @@ class Blueprint {
 		
 		if (isset ($_REQUEST['tpg_set_number'])) {
 			
+			$_SESSION['tpg_generated_pools'] = [];
 			$dimensions = [];
 			foreach (['number', 'type', 'dim', 'level', 'topic1', 'topic2', 'topic3', 'lo'] as $category) {
 				if (isset ($_REQUEST['tpg_set_' . $category])) {
@@ -57,7 +59,7 @@ class Blueprint {
 			}
 			
 			$tpg = new TaskPoolGenerator();
-			$tpg->generatePools($dimensions);
+			$_SESSION['tpg_generated_pools'] = $tpg->generatePools($dimensions);
 		}
 		
 		
@@ -152,6 +154,45 @@ class Blueprint {
 		print ("<h1>Task Pool Generator</h1><br/>");
 		print ($html);
 		
+		
+		if (isset ($_SESSION['tpg_generated_pools'])) {
+			
+			// print_r ($_SESSION['generated_pools']);
+		
+			print ("<br/><h2>Generated Task Pools</h2>");
+			printf ("<table cellpadding='10px' class='widefat fixed' style='table-layout:fixed; width:%dem; background-color:rgba(0, 0, 0, 0);'>", 6+2*count($items));
+			print ("<col width='6em;' />");
+				
+			foreach ($items as $item) {
+				print ("<col width='2em;' />");
+			}
+				
+			foreach ($_SESSION['tpg_generated_pools'] as $pool) {
+				print ("<tr valign='middle'>");
+				$s = "View";
+				$href = "admin.php?page=view_item&itemids=" . join (",", $pool);
+				printf ("<td style='overflow: hidden; padding:0px; padding-bottom:0.5em; padding-top:0.5em; padding-left:1em' ><a href='%s' class='button'>View</a></td>", $href);
+		
+				// http://localhost/wordpress/wp-admin/admin.php?page=view&itemids=458,307,307,106
+				foreach ($items as $item) {
+						
+					$symbol = "";
+					$link = "";
+					if (in_array($item->id, $pool)) {
+						$link = sprintf ("onClick='document.location.href=\"admin.php?page=view_item&itemid=%s\";'", $item->id);
+						if ($item->type == "itemsc") $symbol = "<span class='dashicons dashicons-marker'></span>";
+						if ($item->type == "itemmc") $symbol = "<span class='dashicons dashicons-forms'></span>";
+					}
+						
+						
+					printf ("<td %s valign='bottom' style='overflow: hidden; padding:0px; padding-top:0.83em;' >%s</td>", $link, $symbol /*(in_array($item->id, $pool) ? "X" : "")*/);
+				}
+				print ("</tr>");
+			}
+			print ("</table>");
+				
+				
+		}		
 		
 		
 	}
