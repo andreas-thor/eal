@@ -4,11 +4,13 @@ require_once ("ItemExplorer.php");
 
 class TaskPoolGenerator {
 	
-	
+	private $result;
+	private $stack;
 	private $itemVectors;
 	private $rangeVectors;
 	private $countCriteria;
 	private $itemids;
+	private $maxtime;
 	
 	const POOL_SUMMARY = 0;
 	const POOL_ITEMS = 1;
@@ -16,8 +18,8 @@ class TaskPoolGenerator {
 	const POOL_LAST = 3;
 	
 	
-	function __construct () {
-		
+	function __construct ($maxtime) {
+		$this->maxtime = $maxtime;
 	}
 	
 	/**
@@ -26,7 +28,7 @@ class TaskPoolGenerator {
 	 */
 	public function generatePools (array $dimensions) {
 		
-		$result = [];
+		$this->result = [];
 		
 		$items = EAL_ItemBasket::getItems();
 		$this->itemids = array_values (array_map(function ($item) { return $item->id; }, $items));
@@ -65,42 +67,13 @@ class TaskPoolGenerator {
 		
 		
 		// INIT		
-		$poolSummary = array();	// int vector; dimension = number of criteria; similar to rangeVector
-		$poolItems = array();		// binary vector; dimension = number of all items; $poolitems[$i]==1 iff item with index i is in pool
-		$poolItemOrderForAdding = array();		// determine the order of items to be added
-		
-		for ($criteriaIndex=0; $criteriaIndex<$this->countCriteria; $criteriaIndex++) { 
-			$poolSummary[] = 0; 
-		}
-		for ($itemIndex=0; $itemIndex<count($this->itemids); $itemIndex++) { 
-			$poolItems[] = 0;
-		}
-		
-		$itemValue = [];
-		for ($itemIndex=0; $itemIndex<count($this->itemids); $itemIndex++) {
-			$value = 0;
-			for ($criteriaIndex=0; $criteriaIndex<$this->countCriteria; $criteriaIndex++) {
-				$value += $this->itemVectors[$itemIndex][$criteriaIndex] * $this->rangeVectors["min"][$criteriaIndex] / $this->rangeVectors["all"][$criteriaIndex];
-			}
-			$itemValue[$itemIndex] = $value;
-		}
-		arsort($itemValue);
-		
-		foreach ($itemValue as $itemIndex => $value) {
-			$poolItemOrderForAdding[] = $itemIndex;
-		}
-		
+		$this->initStack();
 
+		
+		
+		
 		$time_start = time();
-		$time_break = $time_start + 10;
-		
-		
-		$stack = array();
-		array_push ($stack, array(), array(), array(), array());
-		$stack[$this::POOL_SUMMARY][] = $poolSummary;
-		$stack[$this::POOL_ITEMS][] = $poolItems;
-		$stack[$this::POOL_ORDER][] = $poolItemOrderForAdding;
-		$stack[$this::POOL_LAST][] = -1;
+		$time_break = $time_start + $this->maxtime;
 		
 		$stackSize = 1;
 		$countPools = 0;
@@ -110,13 +83,40 @@ class TaskPoolGenerator {
 			if (time()>$time_break) break;
 			
 			// get current config
-			$poolSummary = $stack[$this::POOL_SUMMARY][$stackSize-1];
-			$poolItems = $stack[$this::POOL_ITEMS][$stackSize-1];
-			$poolItemOrderForAdding = $stack[$this::POOL_ORDER][$stackSize-1];
-			$newPos = $stack[$this::POOL_LAST][$stackSize-1] + 1;
+			$poolSummary = $this->stack[$this::POOL_SUMMARY][$stackSize-1];
+			$poolItems = $this->stack[$this::POOL_ITEMS][$stackSize-1];
+			$poolItemOrderForAdding = $this->stack[$this::POOL_ORDER][$stackSize-1];
+			$newPos = $this->stack[$this::POOL_LAST][$stackSize-1] + 1;
 			
 			// check current pool (if newly generated)
-			$check = $this->checkItemPool ($poolSummary, $poolItemOrderForAdding, $newPos);
+			// $check = $this->checkItemPool ($poolSummary, $poolItemOrderForAdding, $newPos);
+			
+			$check = 0;
+			for ($i=0; $i<$this->countCriteria; $i++) {
+				if ($poolSummary[$i] >  $this->rangeVectors["max"][$i]) {
+					$check = -1;
+					break; // too large
+				}
+					
+				if ($poolSummary[$i] >= $this->rangeVectors["min"][$i]) {
+					continue;
+				}
+					
+				$maxAdd = 0;
+				for ($pos=$newPos; $pos<count($poolItemOrderForAdding); $pos++) {
+					$maxAdd += $this->itemVectors[$poolItemOrderForAdding[$pos]][$i];
+				}
+					
+				if ($poolSummary[$i] + $maxAdd < $this->rangeVectors["min"][$i]) {
+					$check = -2;
+					break;// too small; can not be reached anymore
+				}
+					
+				$check++;
+			}
+			
+			
+			
 			if ($removed == 0) {
 				if ($check == 0) {
 					$countPools++;
@@ -131,9 +131,17 @@ class TaskPoolGenerator {
 					for ($itemIndex=0; $itemIndex<count($this->itemids); $itemIndex++) {
 						if ($poolItems[$itemIndex]==1) $resultPool[] = $this->itemids[$itemIndex];
 					}
-					$result[] = $resultPool;
+					$this->result[] = $resultPool;
 					
 					if ($countPools==10) break;
+					
+					// start as new --> init will beachten items, die schon drin sind
+					$this->initStack();
+					$stackSize = 1;
+					$removed = 0;
+					continue;
+					
+					
 				}
 			}
 			
@@ -143,7 +151,7 @@ class TaskPoolGenerator {
 			if (($check > 0) && ($newPos < count($poolItemOrderForAdding))) {
 				
 				// update current config: INCREASE LAST
-				$stack[$this::POOL_LAST][$stackSize-1] = $newPos;
+				$this->stack[$this::POOL_LAST][$stackSize-1] = $newPos;
 				
 				// add item to pool item; re-compute pool summary
 				$itemIndex = $poolItemOrderForAdding[$newPos];
@@ -159,22 +167,22 @@ class TaskPoolGenerator {
 				
 				// add to stack
 				$removed = 0;
-				$stack[$this::POOL_SUMMARY][] = $poolSummary;
-				$stack[$this::POOL_ITEMS][] = $poolItems;
-				$stack[$this::POOL_ORDER][] = $poolItemOrderForAdding;
-				$stack[$this::POOL_LAST][] = -1;
+				$this->stack[$this::POOL_SUMMARY][] = $poolSummary;
+				$this->stack[$this::POOL_ITEMS][] = $poolItems;
+				$this->stack[$this::POOL_ORDER][] = $poolItemOrderForAdding;
+				$this->stack[$this::POOL_LAST][] = -1;
 				
 				
 			} else {
 				
 				$removed = 1;
-				array_pop($stack[$this::POOL_SUMMARY]);
-				array_pop($stack[$this::POOL_ITEMS]);
-				array_pop($stack[$this::POOL_ORDER]);
-				array_pop($stack[$this::POOL_LAST]);
+				array_pop($this->stack[$this::POOL_SUMMARY]);
+				array_pop($this->stack[$this::POOL_ITEMS]);
+				array_pop($this->stack[$this::POOL_ORDER]);
+				array_pop($this->stack[$this::POOL_LAST]);
 			}
 			
-			$stackSize = count($stack[$this::POOL_LAST]);
+			$stackSize = count($this->stack[$this::POOL_LAST]);
 		}
 
 		
@@ -260,41 +268,59 @@ class TaskPoolGenerator {
 		
 // 		print ("<br><br>" . $time);
 		
-		return $result;
+		return $this->result;
 		
 		
 	}
 
 	
-	private function checkItemPool ($poolSummary, $poolItemOrderForAdding, $newPos) {
+	private function initStack () {
 		
-		$result = 0;
+		$poolSummary = array();	// int vector; dimension = number of criteria; similar to rangeVector
+		$poolItems = array();		// binary vector; dimension = number of all items; $poolitems[$i]==1 iff item with index i is in pool
+		$poolItemOrderForAdding = array();		// determine the order of items to be added
 		
-		for ($i=0; $i<$this->countCriteria; $i++) {
-			
-			if ($poolSummary[$i] >  $this->rangeVectors["max"][$i]) {
-				return -1;	// too large
-			}
-			
-			if ($poolSummary[$i] >= $this->rangeVectors["min"][$i]) {
-				continue;	
-			}
-			
-			$maxAdd = 0;
-			for ($pos=$newPos; $pos<count($poolItemOrderForAdding); $pos++) {
-				$maxAdd += $this->itemVectors[$poolItemOrderForAdding[$pos]][$i];
-			}
-			
-			if ($poolSummary[$i] + $maxAdd < $this->rangeVectors["min"][$i]) {
-				return -2;	// too small; can not be reached anymore
-			}
-			
-			$result++;
+		for ($criteriaIndex=0; $criteriaIndex<$this->countCriteria; $criteriaIndex++) {
+			$poolSummary[] = 0;
 		}
-		return $result;
+		for ($itemIndex=0; $itemIndex<count($this->itemids); $itemIndex++) {
+			$poolItems[] = 0;
+		}
+		
+		$itemValue = [];
+		for ($itemIndex=0; $itemIndex<count($this->itemids); $itemIndex++) {
+			$value = 0;
+			
+			// bevorzuge Items, die direkt zum Ziel führen
+			for ($criteriaIndex=0; $criteriaIndex<$this->countCriteria; $criteriaIndex++) {
+				$value += $this->itemVectors[$itemIndex][$criteriaIndex] * $this->rangeVectors["min"][$criteriaIndex] / $this->rangeVectors["all"][$criteriaIndex];
+			}
+			
+			// bestrafe items, die schon (häufig) in Pools sind
+			for ($poolNo=0; $poolNo<count($this->result); $poolNo++) {
+				if (in_array($this->itemids[$itemIndex], $this->result[$poolNo])) {
+					$value -= $this->countCriteria;
+				}
+			}
+			
+			$itemValue[$itemIndex] = $value;
+		}
+		arsort($itemValue);
+		
+		foreach ($itemValue as $itemIndex => $value) {
+			$poolItemOrderForAdding[] = $itemIndex;
+		}
+		
+ 		$this->stack = array();
+		array_push ($this->stack, array(), array(), array(), array());
+		$this->stack[$this::POOL_SUMMARY][] = $poolSummary;
+		$this->stack[$this::POOL_ITEMS][] = $poolItems;
+		$this->stack[$this::POOL_ORDER][] = $poolItemOrderForAdding;
+		$this->stack[$this::POOL_LAST][] = -1;
 	}
 	
 	
+
 
 	
 	

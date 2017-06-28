@@ -58,7 +58,7 @@ class Blueprint {
 				
 			}
 			
-			$tpg = new TaskPoolGenerator();
+			$tpg = new TaskPoolGenerator($_REQUEST['tpg_time']);
 			$_SESSION['tpg_generated_pools'] = $tpg->generatePools($dimensions);
 		}
 		
@@ -123,13 +123,13 @@ class Blueprint {
 			$html_box = "";
 			$groups = ItemExplorer::groupBy($items, $itemids, $category);		// [key => [itemids]]
 			$labels = ItemExplorer::getLabels($category, array_keys($groups));	// [key => label]
-			foreach ($groups as $key => $val) {
+			foreach ($labels as $key => $val) {
 				$html_box .= sprintf("
 					<tr>
 						%s
 						<td style='padding-top:0px; padding-bottom:0px;'><label>&nbsp;&nbsp;%s</label></td>
 					</tr>", 
-					self::minMaxField($category . "_" . $key, count($val)), $labels[$key]
+					self::minMaxField($category . "_" . $key, count($groups[$key])), $val
 				);
 				
 			}
@@ -144,7 +144,17 @@ class Blueprint {
 				</div>', $sk, $_SESSION[$sk]=="on" ? "checked" : "", EAL_Item::$category_label[$category], $_SESSION[$sk]=="on" ? "block" : "none", $html_box);
 		}
 		
-		$html .= sprintf ("<tr><th><button type='submit' name='action' value='generate'>Generate</button></th><tr>");
+		$sk = 'tpg_time';
+		$_SESSION[$sk] = isset($_REQUEST[$sk]) ? min ($_REQUEST[$sk], 30000) : (isset($_SESSION[$sk]) ? min ($_SESSION[$sk], 30000) : 10);
+		
+		$html .= sprintf ("
+			<tr><th>
+				<button type='submit' name='action' value='generate'>Generate</button>
+				&nbsp;&nbsp;&nbsp;&nbsp;in maximal
+				<input style='width:4em' type='number' name='tpg_time' min='0' max='3000' value='%d'/>
+				seconds
+			</th></tr>",
+				$_SESSION['tpg_time']);
 		$html .= sprintf ("</tbody></table></form></div>");
 		
 		
@@ -208,9 +218,9 @@ class Blueprint {
 	
 		/* generate HTML for min and max input */
 		$html  = sprintf("<td style='vertical-align:top; padding-top:0px; padding-bottom:0px;'>");
-		$html .= sprintf("<input style='width:3em' type='number' name='%s' min='0' max='%d' value='%d'/>", $sk[0], $max, $_SESSION[$sk[0]]);
-		$html .= sprintf("&nbsp;&nbsp;-&nbsp;&nbsp;<input style='width:3em' type='number' name='%s' min='0' max='%d' value='%d'/>", $sk[1], $max, $_SESSION[$sk[1]]);
-		$html .= sprintf("&nbsp;&nbsp;of &nbsp;&nbsp;<input style='width:3em' type='number' disabled readonly value='%d'/>", $max);
+		$html .= sprintf("<input style='width:4em' type='number' name='%s' min='0' max='%d' value='%d'/>", $sk[0], $max, $_SESSION[$sk[0]]);
+		$html .= sprintf("&nbsp;&nbsp;-&nbsp;&nbsp;<input style='width:4em' type='number' name='%s' min='0' max='%d' value='%d'/>", $sk[1], $max, $_SESSION[$sk[1]]);
+		$html .= sprintf("&nbsp;&nbsp;of &nbsp;&nbsp;<input style='width:4em' type='number' disabled readonly value='%d'/>", $max);
 		$html .= sprintf("</td>");
 		return $html;
 	}

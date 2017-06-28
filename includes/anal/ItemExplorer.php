@@ -337,6 +337,7 @@ class ItemExplorer {
 			foreach (get_terms (['taxonomy' => RoleTaxonomy::getCurrentRoleDomain()['name'], 'hide_empty' => false, 'include' => $keys]) as $term) {
 				$labels[$term->term_id] = $term->name;
 			}
+			natcasesort ($labels);
 			return $labels;
 		}
 
@@ -347,12 +348,13 @@ class ItemExplorer {
 					$labels[$lo->id] = $lo->title;
 				}
 			}
+			natcasesort ($labels);
 			return $labels;
 		}
 		
 		switch ($cat) {
 			case 'type': 	return ["itemsc" => "Single Choice", "itemmc" => "Multiple Choice"];
-			case 'level': 	return array_merge ([""], EAL_Item::$level_label); // add empty value for index=0 because labels are enumerated 1..6
+			case 'level': 	return EAL_Item::$category_value_label["level"]; // array_merge ([""], EAL_Item::$level_label); // add empty value for index=0 because labels are enumerated 1..6
 			case 'dim': 	return ["FW"=>"FW", "KW"=>"KW", "PW"=>"PW"];
 		}
 		return [];
