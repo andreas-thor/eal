@@ -391,7 +391,7 @@ class CPT_Item extends CPT_Object{
 			}
 			
 			if (isset ($_REQUEST["item_type"])  && ($_REQUEST['item_type'] != "0")) 		$where .= " AND I.type = '{$_REQUEST['item_type']}'";
-			if (isset ($_REQUEST["post_status"]) && ($_REQUEST['post_status'] != "0")) 		$where .= " AND {$wpdb->posts}.post_status = '" . $_REQUEST['post_status'] . "'";
+			if (isset ($_REQUEST["post_status"]) && ($_REQUEST['post_status'] != "all")) 		$where .= " AND {$wpdb->posts}.post_status = '" . $_REQUEST['post_status'] . "'";
 			
 			if (isset ($_REQUEST["learnout_id"])) 										$where .= " AND L.id = {$_REQUEST['learnout_id']}";
 			if (isset ($_REQUEST['item_author'])) 										$where .= " AND {$wpdb->posts}.post_author 			= " . $_REQUEST['item_author'];
