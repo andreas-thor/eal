@@ -136,7 +136,7 @@ class Ilias extends ImportExport {
 			$xml_PR->setAttribute("label", $item->title);
 			$xml_FL = $dom->createElement("flow");
 
-			$xml_FL->appendChild (self::createMaterialElement($dom, "text/html", $item->description . "<!-- EAL --><hr/>" . $item->question));
+			$xml_FL->appendChild (self::createMaterialElement($dom, "text/html", wpautop($item->description) . "<!-- EAL --><hr/>" . wpautop($item->question)));
 				
 			$xml_RL = $dom->createElement("response_lid");
 			$xml_RL->setAttribute("ident", $item_data["ident"]);
