@@ -391,7 +391,7 @@ class CPT_Item extends CPT_Object{
 			}
 			
 			if (isset ($_REQUEST["item_type"])  && ($_REQUEST['item_type'] != "0")) 		$where .= " AND I.type = '{$_REQUEST['item_type']}'";
-			if (isset ($_REQUEST["post_status"]) && ($_REQUEST['post_status'] != "all")) 		$where .= " AND {$wpdb->posts}.post_status = '" . $_REQUEST['post_status'] . "'";
+			if (isset ($_REQUEST["post_status"]) && ($_REQUEST['post_status'] != "all") && ($_REQUEST['post_status'] != "0") ) 		$where .= " AND {$wpdb->posts}.post_status = '" . $_REQUEST['post_status'] . "'";
 			
 			if (isset ($_REQUEST["learnout_id"])) 										$where .= " AND L.id = {$_REQUEST['learnout_id']}";
 			if (isset ($_REQUEST['item_author'])) 										$where .= " AND {$wpdb->posts}.post_author 			= " . $_REQUEST['item_author'];
@@ -441,8 +441,19 @@ class CPT_Item extends CPT_Object{
 		if (empty ($search)) return $search;
 // 		if (!isset ($wpquery->query['s'])) return $search;
 		
-		$search = sprintf (' AND ( L.Title LIKE "%%%1$s%%" OR I.note LIKE "%%%1$s%%" OR I.Title LIKE "%%%1$s%%" OR U.user_login LIKE "%%%1$s%%" )', $wpquery->query['s']);
-		return $search;
+		$search = sprintf('    I.title        LIKE "%%%1$s%%"', $wpquery->query['s']);
+		$search .= sprintf(' OR I.note         LIKE "%%%1$s%%"', $wpquery->query['s']);
+		$search .= sprintf(' OR L.title        LIKE "%%%1$s%%"', $wpquery->query['s']);
+		$search .= sprintf(' OR U.user_login   LIKE "%%%1$s%%"', $wpquery->query['s']);
+		
+		if (is_numeric ($wpquery->query['s'])) {  // for numbers also check id
+		    $search .= sprintf(' OR I.id  = %1$d', intval($wpquery->query['s']));     // if s is not a number --> intval==0 --> no problem, since there is no id==1     
+		}
+		
+		
+		
+// 		$search = sprintf (' AND ( L.Title LIKE "%%%1$s%%" OR I.note LIKE "%%%1$s%%" OR I.Title LIKE "%%%1$s%%" OR U.user_login LIKE "%%%1$s%%" )', $wpquery->query['s']);
+		return sprintf (' AND ( %s )', $search);
 	}
 	
  
@@ -458,12 +469,12 @@ class CPT_Item extends CPT_Object{
 				1 => sprintf( __('Item %1$d updated. <a href="admin.php?page=view_item&itemid=%1$d">View Item</a>'), $post_ID ),
 				2 => __('Custom field updated.'),
 				3 => __('Custom field deleted.'),
-				4 => __("{$this->label} updated."),
+		        4 => sprintf( __('Item %1$d updated. <a href="admin.php?page=view_item&itemid=%1$d">View Item</a>'), $post_ID ),
 				5 => isset($_GET['revision']) ? sprintf( __("{$this->label} restored to revision from %s"), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
-				6 => sprintf( __("{$this->label} published. <a href='%s'>View {$this->label}</a>"), esc_url( get_permalink($post_ID) ) ),
-				7 => __("{$this->label} saved."),
-				8 => sprintf( __("{$this->label} submitted. <a target='_blank' href='%s'>Preview {$this->label}</a>"), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
-				9 => sprintf( __("{$this->label} scheduled for: <strong>%1$s</strong>. <a target='_blank' href='%2$s'>View {$this->label}</a>"), date_i18n( __( 'M j, Y @ G:i' ), strtotime( $post->post_date ) ), esc_url( get_permalink($post_ID) ) ),
+				6 => sprintf( __('Item %1$d published. <a href="admin.php?page=view_item&itemid=%1$d">View Item</a>'), $post_ID ),
+				7 => sprintf( __('Item %1$d saved. <a href="admin.php?page=view_item&itemid=%1$d">View Item</a>'), $post_ID ),
+				8 => sprintf( __('Item %1$d submitted. <a href="admin.php?page=view_item&itemid=%1$d">View Item</a>'), $post_ID ),
+				9 => sprintf( __('Item %2$d scheduled for: <strong>%1$s</strong>. <a href="admin.php?page=view_item&itemid=%2$d">View Item</a>'), date_i18n( __( 'M j, Y @ G:i' ), strtotime( $post->post_date ) ), $post_ID ),
 				10 => sprintf( __('Item %1$d updated. <a href="admin.php?page=view_item&itemid=%1$d">View Item</a>'), $post_ID )
 		);
 		return $messages;
