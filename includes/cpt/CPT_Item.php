@@ -455,7 +455,7 @@ class CPT_Item extends CPT_Object{
 		global $post, $post_ID;
 		$messages[$this->type] = array(
 				0 => '',
-				1 => sprintf( __("{$this->label} updated. <a href='%s'>View {$this->label}</a>"), esc_url( get_permalink($post_ID) ) ),
+				1 => sprintf( __('Item %1$d updated. <a href="admin.php?page=view_item&itemid=%1$d">View Item</a>'), $post_ID ),
 				2 => __('Custom field updated.'),
 				3 => __('Custom field deleted.'),
 				4 => __("{$this->label} updated."),
@@ -464,7 +464,7 @@ class CPT_Item extends CPT_Object{
 				7 => __("{$this->label} saved."),
 				8 => sprintf( __("{$this->label} submitted. <a target='_blank' href='%s'>Preview {$this->label}</a>"), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
 				9 => sprintf( __("{$this->label} scheduled for: <strong>%1$s</strong>. <a target='_blank' href='%2$s'>View {$this->label}</a>"), date_i18n( __( 'M j, Y @ G:i' ), strtotime( $post->post_date ) ), esc_url( get_permalink($post_ID) ) ),
-				10 => sprintf( __("{$this->label} draft updated. <a target='_blank' href='%s'>Preview {$this->label}</a>"), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
+				10 => sprintf( __('Item %1$d updated. <a href="admin.php?page=view_item&itemid=%1$d">View Item</a>'), $post_ID )
 		);
 		return $messages;
 	}	

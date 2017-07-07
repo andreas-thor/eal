@@ -109,13 +109,12 @@ abstract class CPT_Object {
 			return $views;
 		} );
 		
+		
 		// quick edit is currently not supported
 		// add_action( 'quick_edit_custom_box', array ($this , 'WPCB_quick_edit_custom_box'), 10, 2 );
 	}		
 	
 	
-	
-
 	
 	
 	
@@ -443,7 +442,7 @@ abstract class CPT_Object {
 					'depth'           =>  0,
 					'value_field'	  =>  'term_id',
 					'show_count'      =>  true, // Show # listings in parens
-					'hide_empty'      =>  false, // Don't show businesses w/o listings
+					'hide_empty'      =>  false // Don't show businesses w/o listings
 			));
 				
 			
