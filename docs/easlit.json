@@ -1,0 +1,10 @@
+{
+    "name" : "EAs.LiT",
+    "slug" : "easlit",
+    "download_url" : "https://github.com/andreas-thor/eal/raw/plugin_deployment/docs/easlit.zip",
+    "version" : "1.0",
+    "author" : "Andreas Thor",
+    "sections" : {
+        "description" : "Kollaborative, qualit&auml;tsgesicherte Erstellung von Items für E-Assessments."
+    }
+}

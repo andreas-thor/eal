@@ -32,6 +32,20 @@ require_once 'includes/class.PAG_TaxonomyImport.php';
 require_once 'includes/class.CLA_RoleTaxonomy.php';
 
 
+//https://github.com/andreas-thor/eal/raw/plugin_deployment/docs/easlit.zip
+
+/* 
+  	make sure, that users do not see the default home page but are redirected to the dashboard immediately
+	if the user is not yet logged in --> automatic redirect to login page  
+*/ 
+
+add_action( 'template_redirect', function () {
+	if(is_home())
+	{
+		wp_redirect( home_url( '/wp-admin/' ) );
+		die;
+	}
+});
 
 
 
