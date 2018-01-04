@@ -31,14 +31,6 @@ require_once 'includes/class.PAG_TaxonomyImport.php';
 
 require_once 'includes/class.CLA_RoleTaxonomy.php';
 
-require 'plugin-update-checker/plugin-update-checker.php';
-
-$MyUpdateChecker = PucFactory::buildUpdateChecker(
-	'http://example.com/path/to/metadata.json',
-	__FILE__,
-	'your-chosen-slug'
-	);
-
 
 
 
