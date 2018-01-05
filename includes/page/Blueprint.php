@@ -17,7 +17,7 @@ class Blueprint {
 	
 		
 		// run task pool generator; store taskpools in session variable ('tpg_generated_pools')
-		if (isset ($_REQUEST['tpg_do_compute'])) {
+		if (isset ($_REQUEST['tpg_set_number'])) {
 			
 			$_SESSION['tpg_generated_pools'] = [];
 			$dimensions = [];
@@ -78,7 +78,7 @@ class Blueprint {
 		$html.= sprintf ('
 				<div id="mb_learnout" class="postbox ">
 					<h2 class="hndle" style="padding-left:1em; padding-top:0"><input type="checkbox" disabled readonly checked/>&nbsp;Number of Items</h2>
-				    <input type="hidden" name="tpg_do_compute" value="on">
+				    <input type="hidden" name="tpg_set_number" value="on">
 					<div class="inside"><table>%s</table></div>
 				</div>', $html_box);
 		
