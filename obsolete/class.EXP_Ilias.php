@@ -1,8 +1,8 @@
 <?php 
 
 
-require_once ("eal/EAL_ItemSC.php");
-require_once ("eal/EAL_ItemMC.php");
+require_once ("../includes/eal/EAL_ItemSC.php");
+require_once ("../includes/eal/EAL_ItemMC.php");
 
 
 class EXP_Ilias {

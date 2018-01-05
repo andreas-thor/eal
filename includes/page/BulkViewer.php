@@ -2,6 +2,7 @@
 
 require_once(__DIR__ . "/../anal/ItemExplorer.php");
 require_once(__DIR__ . "/../html/HTML_Item.php");
+require_once(__DIR__ . "/../html/HTML_ItemBasket.php");
 
 class BulkViewer {
 
@@ -218,7 +219,7 @@ class BulkViewer {
 		
 		
 		
-		$stat = sprintf ('<div id="itemstats"><div id="postbox-container-2">%s</div></div>' , ItemExplorer::getHTML_Type($items));
+		$stat = sprintf ('<div id="itemstats"><div id="postbox-container-2">%s</div></div>' , HTML_ItemBasket::getHTML_Statistics($items));
 		
 		
 		

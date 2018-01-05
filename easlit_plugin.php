@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Plugin Name: EAs.LiT (E-Assessment Literacy Tool)
  * Plugin URI: https://github.com/andreas-thor/eal
@@ -7,6 +8,8 @@
  * Author: Andreas Thor
  * EMail: dr.andreas.thor@googlemail.com
  */
+
+
 require_once 'includes/cpt/CPT_Item.php';
 require_once 'includes/cpt/CPT_ItemBasket.php';
 require_once 'includes/cpt/CPT_ItemSC.php';
@@ -22,6 +25,8 @@ require_once 'includes/page/Blueprint.php';
 require_once 'includes/class.PAG_TaxonomyImport.php';
 require_once 'includes/class.CLA_RoleTaxonomy.php';
 
+
+
 /* add JQuery */
 add_action("admin_enqueue_scripts", function () {
 	wp_enqueue_script("jquery");
@@ -30,94 +35,14 @@ add_action("admin_enqueue_scripts", function () {
 });
 
 /* register AJAX-PHP-function */
-add_action('wp_ajax_load_items', array(
-	'PAG_Explorer',
-	'load_items_callback'
-));
 add_action('wp_ajax_getCrossTable', array(
 	'Explorer',
 	'getCrossTable_callback'
 ));
 
-/*
- * Dashboard shows
- * a) Item Overview: number of items (per type and overall) incl. pending review
- * b) Metadata Overview: number of taxonomy terms and learning outcomes
- */
 
-add_action('wp_dashboard_setup', function () {
-	
-	global $wp_meta_boxes;
-	unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_quick_press']);
-	unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_primary']);
-	unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_secondary']);
-	unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_right_now']);
-	unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_activity']);
-	unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_plugins']);
-	
-	wp_add_dashboard_widget('dashboard_items', 'Item Overview', function () {
-		
-		/* number of items, SCs, and MCs */
-		printf('<table border="0">');
-		foreach ([
-			new CPT_Item(),
-			new CPT_ItemSC(),
-			new CPT_ItemMC()
-		] as $object) {
-			$counts = $object->WPCB_count_posts(NULL, $object->type, NULL);
-			printf('
-				<tr>
-					<td style="width:11em"><div class="dashicons-before %1$s" style="display:inline">&nbsp;</div> %2$s</td>
-					<td align="right" style="width:4em"><a href="edit.php?post_type=%3$s">%4$d</a></td>
-					<td align="right" style="width:10em">&nbsp;(<a href="edit.php?post_type=%3$s&post_status=pending">%5$d</a> pending review)</td>
-				</tr>', $object->dashicon, $object->label, $object->type, $counts->publish + $counts->pending + $counts->draft, $counts->pending);
-		}
-		printf('</table><hr>');
-		
-		/* number of reviews */
-		printf('<table border="0">');
-		$object = new CPT_Review();
-		$counts = $object->WPCB_count_posts(NULL, $object->type, NULL);
-		printf('
-			<tr>
-				<td style="width:11em"><div class="dashicons-before %1$s" style="display:inline">&nbsp;</div>%2$ss</td>
-				<td align="right" style="width:4em"><a href="edit.php?post_type=%3$s">%4$d</a></td>
-			</tr>', $object->dashicon, $object->label, $object->type, $counts->publish + $counts->pending + $counts->draft);
-		printf('</table>');
-	});
-	
-	wp_add_dashboard_widget('dashboard_metadata', 'Metadata Overview', function () {
-		
-		/* number of terms of current domain */
-		printf('<table border="0">');
-		$domain = RoleTaxonomy::getCurrentRoleDomain();
-		if ($domain["name"] != "") {
-			$term_count = wp_count_terms($domain["name"], array(
-				'hide_empty' => false
-			));
-			printf('
-				<tr>
-					<td style="width:11em"><div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> %1$s</td>
-					<td align="right" style="width:4em"><a href="edit-tags.php?taxonomy=%2$s">%3$d</a></td>
-				</tr>', $domain["label"], $domain["name"], $term_count);
-		}
-		
-		/* number of learning outcomes */
-		$object = new CPT_LearnOut();
-		$counts = $object->WPCB_count_posts(NULL, $object->type, NULL);
-		printf('
-			<tr>
-				<td style="width:11em"><div class="dashicons-before %1$s" style="display:inline">&nbsp;</div>%2$ss</td>
-				<td align="right" style="width:4em"><a href="edit.php?post_type=%3$s">%4$d</a></td>
-			</tr>', $object->dashicon, $object->label, $object->type, $counts->publish + $counts->pending + $counts->draft);
-		printf('</table>');
-	});
-});
 
-/**
- * Plugin Activation --> Create Database Tables for all data types
- */
-
+/* Plugin Activation --> Create Database Tables for all data types */
 register_activation_hook(__FILE__, function () {
 	EAL_Item::createTables();
 	EAL_ItemSC::createTables();
@@ -126,6 +51,8 @@ register_activation_hook(__FILE__, function () {
 	EAL_LearnOut::createTables();
 });
 
+
+/* init custom post types */
 add_action('init', function () {
 	
 	if ($_REQUEST["page"] == "download") {
@@ -146,9 +73,11 @@ add_action('init', function () {
 	RoleTaxonomy::init();
 });
 
-setAdminMenu();
-setMainMenu();
 
+/* adjust user interface */ 
+setMainMenu();
+setAdminMenu();
+setDashboard();
 
 
 function setMainMenu() {
@@ -226,7 +155,6 @@ function setMainMenu() {
 }
 
 
-
 function setAdminMenu() {
 	
 	/*
@@ -296,5 +224,85 @@ function setAdminMenu() {
 		RoleTaxonomy::setCurrentRole($user_id, $old_user_data);
 	});
 }
+
+
+function setDashboard() {
+	
+	/*
+	 * Dashboard shows
+	 * a) Item Overview: number of items (per type and overall) incl. pending review
+	 * b) Metadata Overview: number of taxonomy terms and learning outcomes
+	 */
+	
+	add_action('wp_dashboard_setup', function () {
+		
+		global $wp_meta_boxes;
+		unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_quick_press']);
+		unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_primary']);
+		unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_secondary']);
+		unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_right_now']);
+		unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_activity']);
+		unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_plugins']);
+		
+		wp_add_dashboard_widget('dashboard_items', 'Item Overview', function () {
+			
+			/* number of items, SCs, and MCs */
+			printf('<table border="0">');
+			foreach ([
+				new CPT_Item(),
+				new CPT_ItemSC(),
+				new CPT_ItemMC()
+			] as $object) {
+				$counts = $object->WPCB_count_posts(NULL, $object->type, NULL);
+				printf('
+				<tr>
+					<td style="width:11em"><div class="dashicons-before %1$s" style="display:inline">&nbsp;</div> %2$s</td>
+					<td align="right" style="width:4em"><a href="edit.php?post_type=%3$s">%4$d</a></td>
+					<td align="right" style="width:10em">&nbsp;(<a href="edit.php?post_type=%3$s&post_status=pending">%5$d</a> pending review)</td>
+				</tr>', $object->dashicon, $object->label, $object->type, $counts->publish + $counts->pending + $counts->draft, $counts->pending);
+			}
+			printf('</table><hr>');
+			
+			/* number of reviews */
+			printf('<table border="0">');
+			$object = new CPT_Review();
+			$counts = $object->WPCB_count_posts(NULL, $object->type, NULL);
+			printf('
+			<tr>
+				<td style="width:11em"><div class="dashicons-before %1$s" style="display:inline">&nbsp;</div>%2$ss</td>
+				<td align="right" style="width:4em"><a href="edit.php?post_type=%3$s">%4$d</a></td>
+			</tr>', $object->dashicon, $object->label, $object->type, $counts->publish + $counts->pending + $counts->draft);
+			printf('</table>');
+		});
+			
+			wp_add_dashboard_widget('dashboard_metadata', 'Metadata Overview', function () {
+				
+				/* number of terms of current domain */
+				printf('<table border="0">');
+				$domain = RoleTaxonomy::getCurrentRoleDomain();
+				if ($domain["name"] != "") {
+					$term_count = wp_count_terms($domain["name"], array(
+						'hide_empty' => false
+					));
+					printf('
+				<tr>
+					<td style="width:11em"><div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> %1$s</td>
+					<td align="right" style="width:4em"><a href="edit-tags.php?taxonomy=%2$s">%3$d</a></td>
+				</tr>', $domain["label"], $domain["name"], $term_count);
+				}
+				
+				/* number of learning outcomes */
+				$object = new CPT_LearnOut();
+				$counts = $object->WPCB_count_posts(NULL, $object->type, NULL);
+				printf('
+			<tr>
+				<td style="width:11em"><div class="dashicons-before %1$s" style="display:inline">&nbsp;</div>%2$ss</td>
+				<td align="right" style="width:4em"><a href="edit.php?post_type=%3$s">%4$d</a></td>
+			</tr>', $object->dashicon, $object->label, $object->type, $counts->publish + $counts->pending + $counts->draft);
+				printf('</table>');
+			});
+	});
+}
+
 
 ?>

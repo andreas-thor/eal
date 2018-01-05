@@ -1,18 +1,18 @@
 <?php 
 
-require_once ("eal/EAL_Item.php");
-require_once ("eal/EAL_ItemSC.php");
-require_once ("eal/EAL_ItemMC.php");
-require_once ("eal/EAL_LearnOut.php");
-require_once ("eal/EAL_Review.php");
+require_once ("../includes/eal/EAL_Item.php");
+require_once ("../includes/eal/EAL_ItemSC.php");
+require_once ("../includes/eal/EAL_ItemMC.php");
+require_once ("../includes/eal/EAL_LearnOut.php");
+require_once ("../includes/eal/EAL_Review.php");
 require_once ("class.EXP_Ilias.php");
 
-require_once ("html/HTML_Object.php");
-require_once ("html/HTML_Item.php");
-require_once ("html/HTML_ItemSC.php");
-require_once ("html/HTML_ItemMC.php");
-require_once ("html/HTML_LearnOut.php");
-require_once ("html/HTML_Review.php");
+require_once ("../includes/html/HTML_Object.php");
+require_once ("../includes/html/HTML_Item.php");
+require_once ("../includes/html/HTML_ItemSC.php");
+require_once ("../includes/html/HTML_ItemMC.php");
+require_once ("../includes/html/HTML_LearnOut.php");
+require_once ("../includes/html/HTML_Review.php");
 
 class PAG_Basket {
 

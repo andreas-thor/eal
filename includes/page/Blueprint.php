@@ -6,8 +6,6 @@ require_once(__DIR__ . "/../anal/TaskPoolGenerator_DS.php");
 require_once(__DIR__ . "/../eal/EAL_Item.php");
 require_once(__DIR__ . "/../eal/EAL_ItemBasket.php");
 
-// require_once(__DIR__ . "class.PAG_Basket.php");
-// require_once(__DIR__ . "class.PAG_Explorer.php");
 
 class Blueprint {
 
@@ -18,25 +16,8 @@ class Blueprint {
 	public static function page_blueprint () {
 	
 		
-		
-// 		$vector = new \Ds\Vector();
-
-// $vector->push(1, 3, 4, 5);
-// $vector->push(9);
-// print_r($vector);
-
-
-		
-// $vector2 = new \Ds\Vector();
-// $vector2->push(11, 13, 14, 15);
-// $vector2->push(19);
-// print_r($vector2);
-
-// print_r ($vector2 < $vector ? "ja" : "nein");
-
-		
-		
-		if (isset ($_REQUEST['tpg_set_number'])) {
+		// run task pool generator; store taskpools in session variable ('tpg_generated_pools')
+		if (isset ($_REQUEST['tpg_do_compute'])) {
 			
 			$_SESSION['tpg_generated_pools'] = [];
 			$dimensions = [];
@@ -55,7 +36,6 @@ class Blueprint {
 					
 					$dimensions[$category] = $dim;
 				}
-				
 			}
 			
 			$tpg = new TaskPoolGenerator($_REQUEST['tpg_time']);
@@ -65,61 +45,46 @@ class Blueprint {
 		
 		
 		$items = EAL_ItemBasket::getItems();
+		
+		// show form
+		print ("<div class='wrap'>");
+		print ("<h1>Task Pool Generator</h1><br/>");
+		print (self::getHTML_BlueprintForm ($items));
+		
+		// show (previosuly) generated task pools (if available)
+		if (isset ($_SESSION['tpg_generated_pools'])) {
+			print ("<br/><h2>Generated Task Pools</h2>");
+			print self::getHTML_TaskPools($items, $_SESSION['tpg_generated_pools']);	
+				
+		}		
+	}
+	
+
+	
+	private static function getHTML_BlueprintForm (array $items): string {
+		
 		$itemids = array_values (array_map(function ($item) { return $item->id; }, $items));
 		
-		
 		$html  = sprintf("<form  enctype='multipart/form-data' action='admin.php?page=test_generator' method='post'>");
-		
-		/*
-		$html .= sprintf("<tr><th style='padding-top:0px; padding-bottom:0px;'><label>%s</label></th>", "Number of Items");
-		$html .= self::minMaxField("number", count($items));
-		$html .= sprintf("</tr>");
-		
-		$html .= sprintf("<tr><td style='vertical-align:top; padding-top:0px; padding-bottom:0px;'><label>%s</label></td>", "Overlap");
-		$html .= self::minMaxField("overlap", count($items));
-		$html .= sprintf("</tr>");
-		$html .= sprintf("<tr><td style='vertical-align:top; padding-top:0px; padding-bottom:0px;'><button type='button' onclick='
-		
-				if (this.innerText == \"Select ...\") {
-					this.innerText = \"Close\";
-					this.parentNode.nextSibling.firstChild.style.display=\"block\";
-				} else {
-					this.innerText = \"Select ...\";
-					this.parentNode.nextSibling.firstChild.style.display=\"none\";
-				}
-		
-				'>Select ...</button></td>");
-		$html .= ("<td><div style='display:none'>");
-		foreach ($items as $i) $html .= sprintf ("<input type='checkbox' name='overlap_items[]' value='%d'><label style='vertical-align:top'>%s</label><br/>", $i->id, $i->title);
-		$html .= sprintf("</div></td></tr>");
-		*/
-		
-		// Min / Max for all categories
-// 		$categories = array ("type", "dim", "level", "topic1");
-// 		$buttons = ['type' => 'Item Type', 'dim' => 'Wissensdimension', 'level' => 'Anforderungsstufe', 'topic1' => 'Topic 1', 'topic2' => 'Topic 2', 'topic3' => 'Topic 3', 'lo' => 'Learning Outcome'];
-
-		
-		$category = "number";
-		$sk_number = 'tpg_set_' . $category;
 		
 		$html_box .= sprintf("
 					<tr>
 						%s
 						<td style='padding-top:0px; padding-bottom:0px;'><label>&nbsp;&nbsp;%s</label></td>
 					</tr>",
-				self::minMaxField($category . "_all", count($items)), "Items"
-				);
+			self::getHTML_MinMaxField("number_all", count($items)), "Items"
+			);
 		
 		$html.= sprintf ('
 				<div id="mb_learnout" class="postbox ">
 					<h2 class="hndle" style="padding-left:1em; padding-top:0"><input type="checkbox" disabled readonly checked/>&nbsp;Number of Items</h2>
-				    <input type="hidden" name="%s" value="on">
+				    <input type="hidden" name="tpg_do_compute" value="on">
 					<div class="inside"><table>%s</table></div>
-				</div>', $sk_number, $html_box);
+				</div>', $html_box);
 		
 		
 		foreach (['type', 'dim', 'level', 'topic1', 'topic2', 'topic3', 'lo'] as $category) {
-				
+			
 			$html_box = "";
 			$groups = ItemExplorer::groupBy($items, $itemids, $category);		// [key => [itemids]]
 			$labels = ItemExplorer::getLabels($category, array_keys($groups));	// [key => label]
@@ -128,9 +93,9 @@ class Blueprint {
 					<tr>
 						%s
 						<td style='padding-top:0px; padding-bottom:0px;'><label>&nbsp;&nbsp;%s</label></td>
-					</tr>", 
-					self::minMaxField($category . "_" . $key, count($groups[$key])), $val
-				);
+					</tr>",
+					self::getHTML_MinMaxField($category . "_" . $key, count($groups[$key])), $val
+					);
 				
 			}
 			
@@ -154,62 +119,46 @@ class Blueprint {
 				<input style='width:4em' type='number' name='tpg_time' min='0' max='3000' value='%d'/>
 				seconds
 			</th></tr>",
-				$_SESSION['tpg_time']);
+			$_SESSION['tpg_time']);
 		$html .= sprintf ("</tbody></table></form></div>");
 		
-		
-		
-		 
-		print ("<div class='wrap'>");
-		print ("<h1>Task Pool Generator</h1><br/>");
-		print ($html);
-		
-		
-		if (isset ($_SESSION['tpg_generated_pools'])) {
-			
-			// print_r ($_SESSION['generated_pools']);
-		
-			print ("<br/><h2>Generated Task Pools</h2>");
-			printf ("<table cellpadding='10px' class='widefat fixed' style='table-layout:fixed; width:%dem; background-color:rgba(0, 0, 0, 0);'>", 6+2*count($items));
-			print ("<col width='6em;' />");
-				
-			foreach ($items as $item) {
-				print ("<col width='2em;' />");
-			}
-				
-			foreach ($_SESSION['tpg_generated_pools'] as $pool) {
-				print ("<tr valign='middle'>");
-				$s = "View";
-				$href = "admin.php?page=view_item&itemids=" . join (",", $pool);
-				printf ("<td style='overflow: hidden; padding:0px; padding-bottom:0.5em; padding-top:0.5em; padding-left:1em' ><a href='%s' class='button'>View</a></td>", $href);
-		
-				// http://localhost/wordpress/wp-admin/admin.php?page=view&itemids=458,307,307,106
-				foreach ($items as $item) {
-						
-					$symbol = "";
-					$link = "";
-					if (in_array($item->id, $pool)) {
-						$link = sprintf ("onClick='document.location.href=\"admin.php?page=view_item&itemid=%s\";'", $item->id);
-						if ($item->type == "itemsc") $symbol = "<span class='dashicons dashicons-marker'></span>";
-						if ($item->type == "itemmc") $symbol = "<span class='dashicons dashicons-forms'></span>";
-					}
-						
-						
-					printf ("<td %s valign='bottom' style='overflow: hidden; padding:0px; padding-top:0.83em;' >%s</td>", $link, $symbol /*(in_array($item->id, $pool) ? "X" : "")*/);
-				}
-				print ("</tr>");
-			}
-			print ("</table>");
-				
-				
-		}		
-		
+		return $html;
 		
 	}
 	
-
 	
-	private static function minMaxField ($name, $max) {
+	private static function getHTML_TaskPools (array $items, array $pools): string {
+		
+		$result  = sprintf ("<table cellpadding='10px' class='widefat fixed' style='table-layout:fixed; width:%dem; background-color:rgba(0, 0, 0, 0);'>", 6+2*count($items));
+		$result .= "<col width='6em;' />";
+		$result .= str_repeat("<col width='2em;' />", count($items));
+		
+		foreach ($pools as $pool) {
+			$result .= sprintf ("<tr valign='middle'>");
+			$href = "admin.php?page=view_item&itemids=" . join (",", $pool);
+			$result .= sprintf ("<td style='overflow: hidden; padding:0px; padding-bottom:0.5em; padding-top:0.5em; padding-left:1em' ><a href='%s' class='button'>View</a></td>", $href);
+			
+			foreach ($items as $item) {
+				
+				$symbol = "";
+				$link = "";
+				if (in_array($item->id, $pool)) {
+					$link = sprintf ("onClick='document.location.href=\"admin.php?page=view_item&itemid=%s\";'", $item->id);
+					if ($item->type == "itemsc") $symbol = "<span class='dashicons dashicons-marker'></span>";
+					if ($item->type == "itemmc") $symbol = "<span class='dashicons dashicons-forms'></span>";
+				}
+				
+				$result .= sprintf ("<td %s valign='bottom' style='overflow: hidden; padding:0px; padding-top:0.83em;' >%s</td>", $link, $symbol);
+			}
+			$result .= sprintf ("</tr>");
+		}
+		$result .= sprintf ("</table>");
+		return $result;
+		
+	}
+	
+	
+	private static function getHTML_MinMaxField ($name, $max): string {
 	
 		/* set/get values to/from Session Variable */
 		$sk = ['tpg_min_' . $name, 'tpg_max_' . $name];

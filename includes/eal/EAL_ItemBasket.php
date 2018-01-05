@@ -5,14 +5,6 @@ require_once(__DIR__ . "/../class.CLA_RoleTaxonomy.php");
 class EAL_ItemBasket {
 	
 	
-	
-	
-	public function __construct() {
-		
-		
-	}
-	
-	
 	/**
 	 * @return array of item ids
 	 */

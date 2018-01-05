@@ -1,6 +1,6 @@
 <?php 
 
-require_once ("eal/EAL_Item.php");
+require_once ("../includes/eal/EAL_Item.php");
 
 class PAG_Metadata {
 

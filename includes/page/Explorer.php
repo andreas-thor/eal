@@ -130,7 +130,7 @@ class Explorer {
 		$_SESSION["drag_y"] = $_POST["drag_y"];
 		
 		wp_send_json (
-			array ('table_html' => ItemExplorer::getHTML_CrossTable($_SESSION["explore_items"], is_array($_POST["drag_x"]) ? $_POST["drag_x"] : [], is_array($_POST["drag_y"]) ? $_POST["drag_y"] : []))
+			array ('table_html' => HTML_ItemBasket::getHTML_CrossTable($_SESSION["explore_items"], is_array($_POST["drag_x"]) ? $_POST["drag_x"] : [], is_array($_POST["drag_y"]) ? $_POST["drag_y"] : []))
 		);
 	}
 	
