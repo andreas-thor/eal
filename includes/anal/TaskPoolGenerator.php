@@ -165,13 +165,57 @@ class TaskPoolGenerator {
 		
 		
 		$itemPools = [];
+		
+
+		
+		
+		$current = array (0, 1, 2);
+		$max = 8;
+		while (count($current)>0) {
+			print_r ($current);
+			print ("<br/>");
+			$current = $this->getNextSet($current, $max);
+		} 
+		
+		
+		
+		return $this->getNumberOfPools();
+		
+
+	}
+
+	
+	
+	private function getNextSet (array $current, int $max) : array {
+		
+		for ($i = count($current)-1; $i>=0; $i=$i-1) {
+			
+			if ($current[$i] < $max - count($current) + $i) {
+				$current[$i] = $current[$i]+1;
+				
+				for ($k = $i+1; $k<count($current); $k=$k+1) {
+					$current[$k] = $current[$i] + ($k-$i);
+				}
+				return $current;
+			}
+		}
+		
+		return [];		
+	}
+	
+	
+	/**
+	 * Computes the number of item tools based on the generated grouped pools
+	 * @return number|GMP
+	 */	
+	public function getNumberOfPools (): GMP {
+		
 		$noOfPools = 0;
-		
 		foreach ($this->result as $groupPool) {
-		
+			
 			$size = 1;
 			foreach ($groupPool as $grIdx => $number) {
-				// $count = $number out of all in group  
+				// $count = "number" out of "all in group" = all! / (all-number)! * number!
 				$count = gmp_fact($this->itemGroupVectors[$grIdx][0]) / (gmp_fact($number) * gmp_fact($this->itemGroupVectors[$grIdx][0]-$number));
 				$size = gmp_mul($size, $count);
 			}
@@ -180,10 +224,7 @@ class TaskPoolGenerator {
 			
 		}
 		return $noOfPools;
-		
-
 	}
-	
 
 	
 	private function faculty (int $n) {
