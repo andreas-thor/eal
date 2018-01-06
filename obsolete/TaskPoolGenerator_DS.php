@@ -1,6 +1,6 @@
 <?php
 
-require_once ("ItemExplorer.php");
+require_once ("../includes/anal/ItemExplorer.php");
 
 class TaskPoolGenerator_DS {
 	
