@@ -305,16 +305,6 @@ class CPT_LearnOut extends CPT_Object {
 	
 		
 	
-// 	public function WPCB_post_row_actions($actions, $post) {
-	
-// 		if ($post->post_type != $this->type) return $actions;
-	
-// 		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
-// 		$actions['view'] = "<a href='admin.php?page=view&itemid={$post->ID}'>View</a>"; // add "View"
-// 		return $actions;
-// 	}
-	
-	
 }
 
 ?>

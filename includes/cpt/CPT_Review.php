@@ -20,7 +20,6 @@ class CPT_Review extends CPT_Object {
 			'review_title' => 'Title',
 			'item_id' => 'Item ID', 
 			'last_modified' => 'Date', 
-// 			'item_type' => 'Type', 
 			'review_author' => 'Author Review', 
 			'item_author' => 'Author Item', 
 			'score' => 'Score', 

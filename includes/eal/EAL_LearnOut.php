@@ -51,11 +51,11 @@ class EAL_LearnOut {
 		$this->id = $_POST[$prefix."post_ID"];
 		$this->title = stripslashes($_POST[$prefix."post_title"]);
 		$this->description = isset ($_POST[$prefix.'learnout_description']) ? html_entity_decode (stripslashes($_POST[$prefix.'learnout_description'])) : null;
-		$this->level["FW"] = isset ($_POST[$prefix.'learnout_level_FW'])    ? $_POST[$prefix.'learnout_level_FW'] : null;
-		$this->level["KW"] = isset ($_POST[$prefix.'learnout_level_KW'])    ? $_POST[$prefix.'learnout_level_KW'] : null;
-		$this->level["PW"] = isset ($_POST[$prefix.'learnout_level_PW'])    ? $_POST[$prefix.'learnout_level_PW'] : null;
+		$this->level["FW"] = $_POST[$prefix.'learnout_level_FW'] ?? null;
+		$this->level["KW"] = $_POST[$prefix.'learnout_level_KW'] ?? null;
+		$this->level["PW"] = $_POST[$prefix.'learnout_level_PW'] ?? null;
 		  
-		$this->domain = isset ($_POST[$prefix."domain"]) ? $_POST[$prefix."domain"] : "";
+		$this->domain = $_POST[$prefix."domain"] ?? "";
 		if (($this->domain == "") && (isset($_POST[$prefix.'tax_input']))) {
 			foreach ($_POST[$prefix.'tax_input'] as $key => $value) {
 				$this->domain = $key;
@@ -157,22 +157,6 @@ class EAL_LearnOut {
 				AND L.domain = '" . RoleTaxonomy::getCurrentRoleDomain()["name"] . "'
 				ORDER BY L.title
 				");
-		
-// 		$result = array ();
-// 		foreach ($sqlres as $pos => $sqlrow) {
-// 			$result[$sqlrow->id] = $sqlrow->title;
-// 		}
-		
-// 		return $result;
-		
-// 		$html .= "<select align='right' name='{$namePrefix}learnout_id'>";
-// 		$html .= "<option value='0'" . (($learnout_id == 0) ? " selected" : "") . ">None</option>";
-// 		foreach ($sqlres as $pos => $sqlrow) {
-// 			$html .= "<option value='{$sqlrow->id}'" . (($learnout_id==$sqlrow->id) ? " selected" : "") . ">{$sqlrow->title}</option>";
-// 		}
-// 		$html .= "</select>";
-		
-// 		return $html;
 	}
 	
 	

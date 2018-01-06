@@ -109,17 +109,6 @@ class CPT_Item extends CPT_Object{
 					<?php } else { ?>
 				        jQuery('<option>').val('add_to_basket').text('<?php _e('Add Items To Basket')?>').appendTo("select[name='" + s + "']");
 					<?php } ?>
-
-					/*					
-			        jQuery('<option disabled>').val('--').text('<?php _e('-----')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('mark').text('<?php _e('Mark Items')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('unmark').text('<?php _e('Unmark Items')?>').appendTo("select[name='" + s + "']");
-
-			        jQuery('<option disabled>').val('--').text('<?php _e('-----')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('setpublished').text('<?php _e('Publish Items')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('setpending').text('<?php _e('Set Items To Pending Review')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('setdraft').text('<?php _e('Revert Items To Draft')?>').appendTo("select[name='" + s + "']");
-			        */
 			      });
 			});			    
 	    </script>
@@ -131,8 +120,6 @@ class CPT_Item extends CPT_Object{
 	
 	
 		if ($_REQUEST["post_type"] != $this->type) return;
-	
-// 		global $wpdb;
 	
 		$wp_list_table = _get_list_table('WP_Posts_List_Table');
 	
@@ -154,10 +141,6 @@ class CPT_Item extends CPT_Object{
 			$postids = $_REQUEST['post'];
 			if (!is_array($postids)) $postids = [$postids];
 			EAL_ItemBasket::add($postids);
-			
-//			// redirected to the basket after adding 
-// 			wp_redirect('edit.php?post_type=itembasket'); 
-// 			exit();
 		}
 		
 		/* Remove from Basket */
@@ -167,46 +150,7 @@ class CPT_Item extends CPT_Object{
 			if ($_REQUEST['itemid']!=null) 	$remove = [$_REQUEST['itemid']];
 			if ($_REQUEST['itemids']!=null) $remove = $_REQUEST['itemids'];
 			EAL_ItemBasket::remove($remove);
-			
-//			// redirected to the basket after adding 
-// 			wp_redirect('edit.php?post_type=itembasket'); 
-// 			exit();
 		}		
-				
-/*	
-		if (($wp_list_table->current_action() == 'mark') || ($wp_list_table->current_action() == 'unmark')) {
-			if (substr ($_REQUEST['post_type'], 0, 4) == 'item') {
-	
-				// get array of postids 
-				$postids = $_REQUEST['post'];
-				if (!is_array($postids)) $postids = [$postids];
-				if (count ($postids)>0) {
-					$sql = sprintf ("UPDATE {$wpdb->prefix}eal_item SET flag = %d WHERE id IN (%s)", ($wp_list_table->current_action() == 'mark') ? 1 : 0, join (",", $postids));
-					$wpdb->query ($sql);
-				}
-	
-			}
-		}
-	
-		if (($wp_list_table->current_action() == 'setpublished') || ($wp_list_table->current_action() == 'setpending') || ($wp_list_table->current_action() == 'setdraft')) {
-				
-			$status = "publish";
-			if ($wp_list_table->current_action() == 'setpending') $status = "pending";
-			if ($wp_list_table->current_action() == 'setdraft') $status = "draft";
-				
-			// get array of postids 
-			$postids = $_REQUEST['post'];
-			if (!is_array($postids)) $postids = [$postids];
-			if (count ($postids)>0) {
-				$sql = sprintf ("UPDATE {$wpdb->posts} SET post_status = '%s' WHERE id IN (%s)", $status, join (",", $postids));
-				$wpdb->query ($sql);
-			}
-		}
-*/	
-	
-	
-	
-
 	
 	}	
 	
@@ -439,9 +383,8 @@ class CPT_Item extends CPT_Object{
 		global $post_type;
 		if ($post_type != $this->type) return $search;
 		if (empty ($search)) return $search;
-// 		if (!isset ($wpquery->query['s'])) return $search;
 		
-		$search = sprintf('    I.title        LIKE "%%%1$s%%"', $wpquery->query['s']);
+		$search  = sprintf('    I.title        LIKE "%%%1$s%%"', $wpquery->query['s']);
 		$search .= sprintf(' OR I.note         LIKE "%%%1$s%%"', $wpquery->query['s']);
 		$search .= sprintf(' OR L.title        LIKE "%%%1$s%%"', $wpquery->query['s']);
 		$search .= sprintf(' OR U.user_login   LIKE "%%%1$s%%"', $wpquery->query['s']);
@@ -450,9 +393,6 @@ class CPT_Item extends CPT_Object{
 		    $search .= sprintf(' OR I.id  = %1$d', intval($wpquery->query['s']));     // if s is not a number --> intval==0 --> no problem, since there is no id==1     
 		}
 		
-		
-		
-// 		$search = sprintf (' AND ( L.Title LIKE "%%%1$s%%" OR I.note LIKE "%%%1$s%%" OR I.Title LIKE "%%%1$s%%" OR U.user_login LIKE "%%%1$s%%" )', $wpquery->query['s']);
 		return sprintf (' AND ( %s )', $search);
 	}
 	

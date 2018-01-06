@@ -416,14 +416,14 @@ abstract class CPT_Object {
 		if( $typenow == $this->type ){
 
 			if (($this->type == "item") || ($this->type == "itembasket")) { 
-				$selected = isset($_REQUEST["item_type"]) ? $_REQUEST["item_type"] : "0";
+				$selected = $_REQUEST["item_type"] ?? "0";
 				printf ('<select class="postform" name="item_type">');
 				printf ('<option value="0" %1$s>All Item Types</option>', 		($selected=="0") ? "selected" : "");
 				printf ('<option value="itemsc" %1$s>Single Choice</option>', 	($selected=="itemsc") ? "selected" : "");
 				printf ('<option value="itemmc" %1$s>Multiple Choice</option>', ($selected=="itemmc") ? "selected" : "");
 				printf ('</select>');
 				
-				$selected = isset($_REQUEST["post_status"]) ? $_REQUEST["post_status"] : "0";
+				$selected = $_REQUEST["post_status"] ?? "0";
 				printf ('<select class="postform" name="post_status">');
 				printf ('<option value="0" %1$s>All Item Statuses</option>', 		($selected=="0") ? "selected" : "");
 				printf ('<option value="draft" %1$s>Draft</option>', 		($selected=="draft") ? "selected" : "");
@@ -437,7 +437,7 @@ abstract class CPT_Object {
 					'taxonomy'        =>  RoleTaxonomy::getCurrentRoleDomain()["name"],
 					'name'            =>  'taxonomy',
 					'orderby'         =>  'name',
-					'selected'        =>  isset($wp_query->query['taxonomy']) ? $wp_query->query['taxonomy'] :'',
+					'selected'        =>  $wp_query->query['taxonomy'] ?? '',
 					'hierarchical'    =>  true,
 					'depth'           =>  0,
 					'value_field'	  =>  'term_id',

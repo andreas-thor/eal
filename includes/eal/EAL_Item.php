@@ -66,7 +66,7 @@ class EAL_Item {
 		$this->question = '';
 
 		$this->level = ["FW" => null, "KW" => null, "PW" => null];
-		$this->learnout_id = isset ($_POST['learnout_id']) ? $_POST['learnout_id'] : (isset ($_GET['learnout_id']) ? $_GET['learnout_id'] : null);
+		$this->learnout_id = POST['learnout_id'] ?? $_GET['learnout_id'] ?? null;
 		$this->learnout = null;
 		
 		$this->difficulty = null;
@@ -104,22 +104,22 @@ class EAL_Item {
 		$this->question = isset ($_POST[$prefix.'item_question']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_question'])) : null;
 
 		$this->level = ["FW" => null, "KW" => null, "PW" => null];
-		$this->level["FW"] = isset ($_POST[$prefix.'item_level_FW']) ? $_POST[$prefix.'item_level_FW'] : null;
-		$this->level["KW"] = isset ($_POST[$prefix.'item_level_KW']) ? $_POST[$prefix.'item_level_KW'] : null;
-		$this->level["PW"] = isset ($_POST[$prefix.'item_level_PW']) ? $_POST[$prefix.'item_level_PW'] : null;
+		$this->level["FW"] = $_POST[$prefix.'item_level_FW'] ?? null;
+		$this->level["KW"] = $_POST[$prefix.'item_level_KW'] ?? null;
+		$this->level["PW"] = $_POST[$prefix.'item_level_PW'] ?? null;
 		
-		$this->learnout_id = isset ($_GET[$prefix.'learnout_id']) ? $_GET[$prefix.'learnout_id'] : (isset ($_POST[$prefix.'learnout_id']) ? $_POST[$prefix.'learnout_id'] : null);
+		$this->learnout_id = $_GET[$prefix.'learnout_id'] ?? $_POST[$prefix.'learnout_id'] ?? null;
 		$this->learnout = null;		// lazy loading
 		
 		$this->difficulty = null;
 		$this->note = isset ($_POST[$prefix.'item_note']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_note'])) : null;
-		$this->flag = isset ($_POST[$prefix.'item_flag']) ? $_POST[$prefix.'item_flag'] : null;
+		$this->flag = $_POST[$prefix.'item_flag'] ?? null;
 		
 		$this->minnumber = null;
 		$this->maxnumber = null;
 		
 		// 	$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
-		$this->domain = isset ($_POST[$prefix."domain"]) ? $_POST[$prefix."domain"] : ""; 
+		$this->domain = $_POST[$prefix."domain"] ?? ""; 
 		if (($this->domain == "") && (isset($_POST[$prefix.'tax_input']))) {
 			foreach ($_POST[$prefix.'tax_input'] as $key => $value) {
 				$this->domain = $key;

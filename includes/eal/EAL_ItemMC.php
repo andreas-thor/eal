@@ -37,8 +37,8 @@ class EAL_ItemMC extends EAL_Item {
 			}
 		}
 		
-		$this->minnumber = isset ($_POST[$prefix.'item_minnumber']) ? $_POST[$prefix.'item_minnumber'] : 0;
-		$this->maxnumber = isset ($_POST[$prefix.'item_maxnumber']) ? $_POST[$prefix.'item_maxnumber'] : count($this->answers);
+		$this->minnumber = $_POST[$prefix.'item_minnumber'] ?? 0;
+		$this->maxnumber = $_POST[$prefix.'item_maxnumber'] ?? count($this->answers);
 		
 	}
 	

@@ -2,7 +2,6 @@
 
 require_once(__DIR__ . "/../anal/ItemExplorer.php");
 require_once(__DIR__ . "/../anal/TaskPoolGenerator.php");
-require_once(__DIR__ . "/../anal/TaskPoolGenerator_DS.php");
 require_once(__DIR__ . "/../eal/EAL_Item.php");
 require_once(__DIR__ . "/../eal/EAL_ItemBasket.php");
 
@@ -27,7 +26,7 @@ class Blueprint {
 			foreach (['number', 'type', 'dim', 'level', 'topic1', 'topic2', 'topic3', 'lo'] as $category) {
 				
 				$sk = 'tpg_set_' . $category;
-				$_SESSION[$sk] = isset ($_REQUEST[$sk]) ? $_REQUEST[$sk] : "off";
+				$_SESSION[$sk] = $_REQUEST[$sk] ?? "off";
 				if (isset ($_REQUEST[$sk])) {
 
 					$dim = ["min" => [], "max" => []];
@@ -164,9 +163,12 @@ class Blueprint {
 	
 		/* set/get values to/from Session Variable */
 		$sk = ['tpg_min_' . $name, 'tpg_max_' . $name];
-		$_SESSION[$sk[0]] = isset($_REQUEST[$sk[0]]) ? $_REQUEST[$sk[0]] : (isset($_SESSION[$sk[0]]) ? min ($_SESSION[$sk[0]], $max) : 0);
-		$_SESSION[$sk[1]] = isset($_REQUEST[$sk[1]]) ? $_REQUEST[$sk[1]] : (isset($_SESSION[$sk[1]]) ? min ($_SESSION[$sk[1]], $max) : $max);
-	
+		$_SESSION[$sk[0]] = $_REQUEST[$sk[0]] ?? $_SESSION[$sk[0]] ?? 0;
+		$_SESSION[$sk[0]] = max (min ($_SESSION[$sk[0]], $max), 0);
+		$_SESSION[$sk[1]] = $_REQUEST[$sk[1]] ?? $_SESSION[$sk[1]] ?? $max;
+		$_SESSION[$sk[1]] = max (min ($_SESSION[$sk[1]], $max), 0);
+		
+		
 		/* generate HTML for min and max input */
 		$html  = sprintf("<td style='vertical-align:top; padding-top:0px; padding-bottom:0px;'>");
 		$html .= sprintf("<input style='width:4em' type='number' name='%s' min='0' max='%d' value='%d'/>", $sk[0], $max, $_SESSION[$sk[0]]);
