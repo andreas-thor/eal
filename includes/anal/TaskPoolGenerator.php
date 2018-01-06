@@ -165,26 +165,36 @@ class TaskPoolGenerator {
 		
 		
 		$itemPools = [];
-		
+		$noOfPools = 0;
 		
 		foreach ($this->result as $groupPool) {
-			
+		
+			$size = 1;
 			foreach ($groupPool as $grIdx => $number) {
-				
-				
-				
+				// $count = $number out of all in group  
+				$count = gmp_fact($this->itemGroupVectors[$grIdx][0]) / (gmp_fact($number) * gmp_fact($this->itemGroupVectors[$grIdx][0]-$number));
+				$size = gmp_mul($size, $count);
 			}
 			
+			$noOfPools = gmp_add($noOfPools, $size);
 			
 		}
+		return $noOfPools;
 		
 
 	}
 	
 
+	
+	private function faculty (int $n) {
+		$res = 1;
+		for ($i=1; $i<=$n; $i+=1) {
+			$res = gmp_mul($res, $i);
+		}
+		return (int) $res;
+	}
 
 	
-	
-}
+	}
 
 ?>

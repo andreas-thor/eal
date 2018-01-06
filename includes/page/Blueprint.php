@@ -19,10 +19,16 @@ class Blueprint {
 		// run task pool generator; store taskpools in session variable ('tpg_generated_pools')
 		if (isset ($_REQUEST['tpg_set_number'])) {
 			
-			$_SESSION['tpg_generated_pools'] = [];
+			// we store all _REQUEST data in the _SESSION variable
+			$sk = 'tpg_time';
+			$_SESSION[$sk] = isset($_REQUEST[$sk]) ? max (min ($_REQUEST[$sk], 30000), 1) : 10;
+			
 			$dimensions = [];
 			foreach (['number', 'type', 'dim', 'level', 'topic1', 'topic2', 'topic3', 'lo'] as $category) {
-				if (isset ($_REQUEST['tpg_set_' . $category])) {
+				
+				$sk = 'tpg_set_' . $category;
+				$_SESSION[$sk] = isset ($_REQUEST[$sk]) ? $_REQUEST[$sk] : "off";
+				if (isset ($_REQUEST[$sk])) {
 
 					$dim = ["min" => [], "max" => []];
 					foreach (["min","max"] as $minmax) {
@@ -54,7 +60,8 @@ class Blueprint {
 		// show (previosuly) generated task pools (if available)
 		if (isset ($_SESSION['tpg_generated_pools'])) {
 			print ("<br/><h2>Generated Task Pools</h2>");
-			print self::getHTML_TaskPools($items, $_SESSION['tpg_generated_pools']);	
+			print ("<h1>We have " . $_SESSION['tpg_generated_pools'] . " pools.</h1>");
+// 			print self::getHTML_TaskPools($items, $_SESSION['tpg_generated_pools']);	
 				
 		}		
 	}
@@ -100,17 +107,12 @@ class Blueprint {
 			}
 			
 			$sk = 'tpg_set_' . $category;
-			$_SESSION[$sk] = isset ($_REQUEST[$sk_number]) ? ( isset($_REQUEST[$sk]) ? $_REQUEST[$sk] : "off") : (isset($_SESSION[$sk]) ? $_SESSION[$sk] : "off");
-			
 			$html.= sprintf ('
 				<div id="mb_learnout" class="postbox ">
 					<h2 class="hndle" style="padding-left:1em; padding-top:0"><input type="checkbox" name="%s" %s onchange="this.parentNode.nextElementSibling.style.display = this.checked ? \'block\' : \'none\';"/>&nbsp;%s</h2>
 					<div class="inside" style="display:%s"><table>%s</table></div>
 				</div>', $sk, $_SESSION[$sk]=="on" ? "checked" : "", EAL_Item::$category_label[$category], $_SESSION[$sk]=="on" ? "block" : "none", $html_box);
 		}
-		
-		$sk = 'tpg_time';
-		$_SESSION[$sk] = isset($_REQUEST[$sk]) ? min ($_REQUEST[$sk], 30000) : (isset($_SESSION[$sk]) ? min ($_SESSION[$sk], 30000) : 10);
 		
 		$html .= sprintf ("
 			<tr><th>
