@@ -43,7 +43,7 @@ class Blueprint {
 				}
 			}
 			
-			$tpg = new TaskPoolGenerator($_REQUEST['tpg_time']);
+			$tpg = new TaskPoolGenerator();
 			$_SESSION['tpg_generated_pools'] = $tpg->generatePools($dimensions);
 		}
 		
@@ -60,11 +60,64 @@ class Blueprint {
 		if (isset ($_SESSION['tpg_generated_pools'])) {
 			print ("<br/><h2>Generated Task Pools</h2>");
 			print ("<h1>We have " . $_SESSION['tpg_generated_pools'] . " pools.</h1>");
+			
+			print ('<div id="itempoolstable"></div>');
+			print ('<div id="itempoolshead"></div>');
+			
 // 			print self::getHTML_TaskPools($items, $_SESSION['tpg_generated_pools']);	
 				
+			
+			
+			?>
+			<script type="text/javascript" >
+	
+			jQuery(document).ready(function($) {
+				getItemPools(0, 100);
+			});
+	
+			function getItemPools(start, count) {
+	
+				var data = {
+						'action': 'getItemPools',
+						'itempools_start' : start, 	
+						'itempools_count' : count 	
+					};
+	
+				// since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
+				jQuery.post(ajaxurl, data, function(response) {
+
+// 					console.log ('as');
+// 					console.log (response);
+					
+					jQuery("#itempoolstable").html (response['table_html']);
+					jQuery("#itempoolshead").html (
+
+					"<button onclick='getItemPools ("+(response["itempools_start"]+response["itempools_count"])+"," + response["itempools_count"] + ")'>Next</button>"
+
+							);
+					
+				});
+					
+			}
+
+			</script>
+		<?php	
 		}		
 	}
 	
+	
+	public static function getItemPools_callback () {
+		
+		$_SESSION["itempools_start"] = $_POST["itempools_start"];
+		$_SESSION["itempools_count"] = $_POST["itempools_count"];
+		
+		wp_send_json (
+			array (
+				'table_html' => self::getHTML_TaskPools($_SESSION["itempools_start"], $_SESSION["itempools_count"]),
+				'itempools_start' => $_SESSION["itempools_start"],
+				'itempools_count' => $_SESSION["itempools_count"])
+			);
+	}
 
 	
 	private static function getHTML_BlueprintForm (array $items): string {
@@ -128,7 +181,11 @@ class Blueprint {
 	}
 	
 	
-	private static function getHTML_TaskPools (array $items, array $pools): string {
+	private static function getHTML_TaskPools ($start, int $count): string {
+		
+		$items = EAL_ItemBasket::getItems();
+		
+		$pools = (new TaskPoolGenerator())->getItemPools(gmp_init($start), gmp_init ($count));
 		
 		$result  = sprintf ("<table cellpadding='10px' class='widefat fixed' style='table-layout:fixed; width:%dem; background-color:rgba(0, 0, 0, 0);'>", 6+2*count($items));
 		$result .= "<col width='6em;' />";
@@ -154,6 +211,8 @@ class Blueprint {
 			$result .= sprintf ("</tr>");
 		}
 		$result .= sprintf ("</table>");
+		
+		
 		return $result;
 		
 	}

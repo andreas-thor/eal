@@ -39,7 +39,10 @@ add_action('wp_ajax_getCrossTable', array(
 	'Explorer',
 	'getCrossTable_callback'
 ));
-
+add_action('wp_ajax_getItemPools', array(
+	'Blueprint',
+	'getItemPools_callback'
+));
 
 
 /* Plugin Activation --> Create Database Tables for all data types */

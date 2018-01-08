@@ -5,20 +5,21 @@ require_once ("ItemExplorer.php");
 class TaskPoolGenerator {
 	
 	private $groupPools;
-	
-	private $itemVectors;
 	private $itemGroupVectors;
 	private $itemGroups;
 	
+	private $itemVectors;
 	private $rangeVectors;
 
-	private $maxtime;
 	
 
 	
 	
-	function __construct ($maxtime) {
-		$this->maxtime = $maxtime;
+	function __construct () {
+		
+		$this->groupPools = $_SESSION["tpg_groupPools"];
+		$this->itemGroupVectors = $_SESSION["itemGroupVectors"];
+		$this->itemGroups = $_SESSION["itemGroups"];
 	}
 	
 	private function init (array $dimensions) {
@@ -165,7 +166,9 @@ class TaskPoolGenerator {
 		
 		
 		
-		
+		$_SESSION["tpg_groupPools"] = $this->groupPools;
+		$_SESSION["itemGroupVectors"] = $this->itemGroupVectors;
+		$_SESSION["itemGroups"] = $this->itemGroups;
 
 		
 		
@@ -179,10 +182,10 @@ class TaskPoolGenerator {
 		
 		
 		
-		$itemPools = $this->getItemPools(gmp_init(0), 10);
+// 		$itemPools = $this->getItemPools(gmp_init(0), 10);
 		
 		
-		print_r ($itemPools);
+// 		print_r ($itemPools);
 		
 		return $this->getNumberOfItemPools();
 		
@@ -197,7 +200,7 @@ class TaskPoolGenerator {
 	 */
 	
 	
-	 public function getItemPools (GMP $start, int $count) {
+	 public function getItemPools (GMP $start, GMP $count) {
 		
 	 	// find first groupPool that contributes (at least) one item pool to the result
 	 	$current = gmp_init(0);
@@ -226,10 +229,10 @@ class TaskPoolGenerator {
 		 	$groupNumberOfAvailPools = gmp_sub ($size, $groupStart);	
 		 	
 		 	if (gmp_cmp($groupNumberOfAvailPools, $count)>=0) {		// group pool has enough item pools
-		 		$result[] = $this->getItemPoolsInGroup ($groupPoolIndex, $groupStart, $count);
+		 		$result = array_merge ($result, $this->getItemPoolsInGroup ($groupPoolIndex, $groupStart, $count));
 		 		return $result;
 		 	} else {
-		 		$result[] = $this->getItemPoolsInGroup ($groupPoolIndex, $groupStart, $groupNumberOfAvailPools);
+		 		$result = array_merge ($result, $this->getItemPoolsInGroup ($groupPoolIndex, $groupStart, $groupNumberOfAvailPools));
 
 		 		// go to next pool
 		 		$groupPoolIndex += 1;
@@ -244,7 +247,7 @@ class TaskPoolGenerator {
 
 	
 	
-	private function getItemPoolsInGroup (int $groupPoolIndex, GMP $start, int $count) {
+	private function getItemPoolsInGroup (int $groupPoolIndex, GMP $start, GMP $count) {
 	
 		$result = [];
 		$currentItemPool = [];
