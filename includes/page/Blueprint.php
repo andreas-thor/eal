@@ -44,7 +44,7 @@ class Blueprint {
 			}
 			
 			$tpg = new TaskPoolGenerator();
-			$_SESSION['tpg_generated_pools'] = $tpg->generatePools($dimensions);
+			$tpg->generatePools($dimensions);
 		}
 		
 		
@@ -57,16 +57,9 @@ class Blueprint {
 		print (self::getHTML_BlueprintForm ($items));
 		
 		// show (previosuly) generated task pools (if available)
-		if (isset ($_SESSION['tpg_generated_pools'])) {
-			print ("<br/><h2>Generated Task Pools</h2>");
-			print ("<h1>We have " . $_SESSION['tpg_generated_pools'] . " pools.</h1>");
-			
+		if (isset ($_SESSION['tpg_numberOfItemPools'])) {
+			printf ("<br/><h2>%s generated Task Pools</h2>", gmp_strval($_SESSION["tpg_numberOfItemPools"]));
 			print ('<div id="itempoolstable"></div>');
-			print ('<div id="itempoolshead"></div>');
-			
-// 			print self::getHTML_TaskPools($items, $_SESSION['tpg_generated_pools']);	
-				
-			
 			
 			?>
 			<script type="text/javascript" >
@@ -75,27 +68,17 @@ class Blueprint {
 				getItemPools(0, 100);
 			});
 	
-			function getItemPools(start, count) {
+			function getItemPools(page, count) {
 	
 				var data = {
 						'action': 'getItemPools',
-						'itempools_start' : start, 	
+						'itempools_page' : page, 	
 						'itempools_count' : count 	
 					};
 	
 				// since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
 				jQuery.post(ajaxurl, data, function(response) {
-
-// 					console.log ('as');
-// 					console.log (response);
-					
 					jQuery("#itempoolstable").html (response['table_html']);
-					jQuery("#itempoolshead").html (
-
-					"<button onclick='getItemPools ("+(response["itempools_start"]+response["itempools_count"])+"," + response["itempools_count"] + ")'>Next</button>"
-
-							);
-					
 				});
 					
 			}
@@ -108,13 +91,13 @@ class Blueprint {
 	
 	public static function getItemPools_callback () {
 		
-		$_SESSION["itempools_start"] = $_POST["itempools_start"];
+		$_SESSION["itempools_page"] = $_POST["itempools_page"];
 		$_SESSION["itempools_count"] = $_POST["itempools_count"];
 		
 		wp_send_json (
 			array (
-				'table_html' => self::getHTML_TaskPools($_SESSION["itempools_start"], $_SESSION["itempools_count"]),
-				'itempools_start' => $_SESSION["itempools_start"],
+				'table_html' => self::getHTML_TaskPools($_SESSION["itempools_page"], $_SESSION["itempools_count"]),
+				'itempools_page' => $_SESSION["itempools_page"],
 				'itempools_count' => $_SESSION["itempools_count"])
 			);
 	}
@@ -181,20 +164,54 @@ class Blueprint {
 	}
 	
 	
-	private static function getHTML_TaskPools ($start, int $count): string {
+	
+	private static function getHTML_TaskPools ($page, int $count): string {
 		
 		$items = EAL_ItemBasket::getItems();
 		
-		$pools = (new TaskPoolGenerator())->getItemPools(gmp_init($start), gmp_init ($count));
+		$g_count = gmp_init ($count);
+		$g_start = gmp_mul (gmp_init($page), $g_count);
+		$pools = (new TaskPoolGenerator())->getItemPools($g_start, $g_count);
 		
-		$result  = sprintf ("<table cellpadding='10px' class='widefat fixed' style='table-layout:fixed; width:%dem; background-color:rgba(0, 0, 0, 0);'>", 6+2*count($items));
-		$result .= "<col width='6em;' />";
+		
+		// all pages: 0 ... $page_count-1; page range = to be displayed around current page
+		$page_count = gmp_div (gmp_sub (gmp_add ($g_count, $_SESSION["tpg_numberOfItemPools"]), gmp_init(1)), $g_count);
+		$page_range = [ 
+			gmp_cmp($page, gmp_init(3)) > 0 ? gmp_sub($page, gmp_init(2)) : gmp_init(0), 
+			gmp_cmp(gmp_add(gmp_init(5), $page), $page_count) > 0 ? gmp_sub ($page_count, gmp_init(1)) : gmp_add(gmp_init(2), $page)];
+			
+			
+		$result = sprintf ("<div style='padding-bottom:1em'> ");
+		if (gmp_cmp ($page_range[0], gmp_init(0)) > 0) {
+			$result .= sprintf ("&nbsp;&nbsp;<a class='button' %s onclick='getItemPools(%d, %d)'>&nbsp; %d &nbsp; </a>", ($page==0)?"disabled":"", 0, $count, 1);
+			$result .= sprintf ("&nbsp;&nbsp;...");
+		}
+		
+		$p = $page_range[0];
+		while (gmp_cmp($page_range[1], $p) >= 0) {
+			$result .= sprintf ("&nbsp;&nbsp;<a class='button' %s onclick='getItemPools(%s, %d)'>&nbsp; %s &nbsp; </a>", (gmp_cmp($p, gmp_init($page))==0)?"disabled":"", gmp_strval($p), $count, gmp_strval(gmp_add ($p, gmp_init(1))));
+			$p = gmp_add ($p, gmp_init(1));
+		}
+		
+		if (gmp_cmp ($page_range[1], gmp_sub ($page_count, gmp_init(1))) < 0) {
+			$result .= sprintf ("&nbsp;&nbsp;...");
+			$result .= sprintf ("&nbsp;&nbsp;<a class='button' %s onclick='getItemPools(%s, %d)'>&nbsp; %s &nbsp; </a>", (gmp_cmp(gmp_sub ($page_count, gmp_init(1)), gmp_init($page))==0)?"disabled":"", gmp_strval(gmp_sub ($page_count, gmp_init(1))), $count, gmp_strval($page_count));
+		}
+		
+		
+		$result .= sprintf ("</div>");
+		
+		$result .= sprintf ("<table cellpadding='10px' class='widefat fixed' style='table-layout:fixed; width:%dem; background-color:rgba(0, 0, 0, 0);'>", 6+2*count($items));
+		$result .= "<col width='10em;' />";
 		$result .= str_repeat("<col width='2em;' />", count($items));
 		
+		$pool_label = $g_start;
+		
 		foreach ($pools as $pool) {
+			$pool_label = gmp_add ($pool_label, gmp_init(1));
 			$result .= sprintf ("<tr valign='middle'>");
 			$href = "admin.php?page=view_item&itemids=" . join (",", $pool);
-			$result .= sprintf ("<td style='overflow: hidden; padding:0px; padding-bottom:0.5em; padding-top:0.5em; padding-left:1em' ><a href='%s' class='button'>View</a></td>", $href);
+			$result .= sprintf ("<td style='overflow: hidden; padding:0px; padding-bottom:0.5em; padding-top:0.5em; padding-left:1em' ><a href='%s' class='button'>&nbsp;View #%s &nbsp;&nbsp;</a></td>", $href, gmp_strval($pool_label));
 			
 			foreach ($items as $item) {
 				

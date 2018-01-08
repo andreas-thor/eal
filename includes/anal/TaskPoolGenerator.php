@@ -8,21 +8,16 @@ class TaskPoolGenerator {
 	private $itemGroupVectors;
 	private $itemGroups;
 	
-	private $itemVectors;
-	private $rangeVectors;
-
 	
 
-	
-	
 	function __construct () {
 		
 		$this->groupPools = $_SESSION["tpg_groupPools"];
-		$this->itemGroupVectors = $_SESSION["itemGroupVectors"];
-		$this->itemGroups = $_SESSION["itemGroups"];
+		$this->itemGroupVectors = $_SESSION["tpg_itemGroupVectors"];
+		$this->itemGroups = $_SESSION["tpg_itemGroups"];
 	}
 	
-	private function init (array $dimensions) {
+	private function init (array $dimensions): array {
 		
 		
 		
@@ -30,11 +25,11 @@ class TaskPoolGenerator {
 		$itemids = array_values (array_map(function ($item) { return $item->id; }, $items));
 		
 		$mapItemId2ItemIndex = [];	// item id -> itemn index (0 ... count(items)-1)
-		$this->itemVectors = array();
+		$itemVectors = array();
 		
 		foreach ($itemids as $index => $id) {
 			$mapItemId2ItemIndex[$id] = $index;
-			$this->itemVectors[] = array();
+			$itemVectors[] = array();
 		}
 		
 		// every condition is represented as position in vector
@@ -43,7 +38,7 @@ class TaskPoolGenerator {
 		
 		
 		
-		$this->rangeVectors = ["min" => array(), "max" => array(), "all" => array()];
+		$rangeVectors = ["min" => array(), "max" => array(), "all" => array()];
 		
 		$countCriteria = 0;
 		foreach ($dimensions as $category => $minmax) {
@@ -51,23 +46,23 @@ class TaskPoolGenerator {
 			foreach (ItemExplorer::groupBy($items, $itemids, $category) as $key => $groupItemIds) {
 				$countCriteria++;
 				foreach ($groupItemIds as $id) {
-					$this->itemVectors[$mapItemId2ItemIndex[$id]][] = 1;
+					$itemVectors[$mapItemId2ItemIndex[$id]][] = 1;
 				}
 				foreach ($itemids as $id) {
-					if (count($this->itemVectors[$mapItemId2ItemIndex[$id]]) < $countCriteria) {
-						$this->itemVectors[$mapItemId2ItemIndex[$id]][] = 0;
+					if (count($itemVectors[$mapItemId2ItemIndex[$id]]) < $countCriteria) {
+						$itemVectors[$mapItemId2ItemIndex[$id]][] = 0;
 					}
 				}
-				$this->rangeVectors["min"][] = $minmax["min"][$key];
-				$this->rangeVectors["max"][] = $minmax["max"][$key];
-				$this->rangeVectors["all"][] = count($groupItemIds);
+				$rangeVectors["min"][] = $minmax["min"][$key];
+				$rangeVectors["max"][] = $minmax["max"][$key];
+				$rangeVectors["all"][] = count($groupItemIds);
 			}
 		}
 		
 		// we group together items with the same vector
 		$this->itemGroupVectors = array();
 		$this->itemGroups = array();
-		foreach ($this->itemVectors as $index => $itvec) {
+		foreach ($itemVectors as $index => $itvec) {
 			
 			$isnew = TRUE;
 			// can we find a matching group vector $grvec for the current item vector $itvec?
@@ -90,16 +85,18 @@ class TaskPoolGenerator {
 			}
 		}
 		
+		return $rangeVectors;
+		
 	}
 	
 	
 	
-	private function generateGroupPools () {
+	private function generateGroupPools (array $rangeVectors) {
 		
 		$this->groupPools = [];
 		
 		$currentPool = array_fill (0, count($this->itemGroupVectors), 0);
-		$currentValues = array_fill (0, count($this->rangeVectors["min"]), 0);
+		$currentValues = array_fill (0, count($rangeVectors["min"]), 0);
 		
 		$currentVectorId = count($this->itemGroupVectors)-1;
 		
@@ -110,10 +107,10 @@ class TaskPoolGenerator {
 			$poolIsOk = TRUE; 
 			$poolIsTooLarge = FALSE;
 			foreach ($currentValues as $dim => $value) {
-				if ($value < $this->rangeVectors["min"][$dim])  {
+				if ($value < $rangeVectors["min"][$dim])  {
 					$poolIsOk = FALSE;
 				}
-				if ($value > $this->rangeVectors["max"][$dim]) {
+				if ($value > $rangeVectors["max"][$dim]) {
 					$poolIsOk = FALSE;
 					$poolIsTooLarge = TRUE;
 				}
@@ -161,35 +158,14 @@ class TaskPoolGenerator {
 	public function generatePools (array $dimensions) {
 		
 		
-		$this::init($dimensions);
-		$this::generateGroupPools();
-		
-		
+		$this::generateGroupPools($this::init($dimensions));
 		
 		$_SESSION["tpg_groupPools"] = $this->groupPools;
-		$_SESSION["itemGroupVectors"] = $this->itemGroupVectors;
-		$_SESSION["itemGroups"] = $this->itemGroups;
-
+		$_SESSION["tpg_itemGroupVectors"] = $this->itemGroupVectors;
+		$_SESSION["tpg_itemGroups"] = $this->itemGroups;
+		$_SESSION["tpg_numberOfItemPools"] = $this->getNumberOfItemPools();
 		
-		
-// 		$current = array (0, 1, 2);
-// 		$max = 8;
-// 		while (count($current)>0) {
-// 			print_r ($current);
-// 			print ("<br/>");
-// 			$current = $this->getNextSet($current, $max);
-// 		} 
-		
-		
-		
-// 		$itemPools = $this->getItemPools(gmp_init(0), 10);
-		
-		
-// 		print_r ($itemPools);
-		
-		return $this->getNumberOfItemPools();
-		
-
+		return $_SESSION["tpg_numberOfItemPools"];
 	}
 	
 	
@@ -236,8 +212,10 @@ class TaskPoolGenerator {
 
 		 		// go to next pool
 		 		$groupPoolIndex += 1;
+		 		if ($groupPoolIndex >= count($this->groupPools)) return $result; 	// no more group pool available 
+		 		
 		 		$count = gmp_sub ($count, $groupNumberOfAvailPools);	// number remaining item pools to generate
-		 		$groupStart = 0;	// we start all pools except the first from the beginning
+		 		$groupStart = gmp_init(0);	// we start all pools except the first from the beginning
 		 		$size = $this->getNumberOfItemPoolsInGroup($groupPoolIndex);	// size of the new group pool
 		 		
 		 		
@@ -318,7 +296,7 @@ class TaskPoolGenerator {
 	 */	
 	private function getNumberOfItemPools (): GMP {
 		
-		$result = 0;
+		$result = gmp_init(0);
 		for ($groupPoolIndex=0; $groupPoolIndex<count($this->groupPools); $groupPoolIndex++) {
 			$result = gmp_add($result, $this->getNumberOfItemPoolsInGroup ($groupPoolIndex));
 		}
