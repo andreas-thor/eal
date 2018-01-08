@@ -4,7 +4,7 @@ require_once ("ItemExplorer.php");
 
 class TaskPoolGenerator {
 	
-	private $result;
+	private $groupPools;
 	
 	private $itemVectors;
 	private $itemGroupVectors;
@@ -95,7 +95,7 @@ class TaskPoolGenerator {
 	
 	private function generateGroupPools () {
 		
-		$this->result = [];
+		$this->groupPools = [];
 		
 		$currentPool = array_fill (0, count($this->itemGroupVectors), 0);
 		$currentValues = array_fill (0, count($this->rangeVectors["min"]), 0);
@@ -120,7 +120,7 @@ class TaskPoolGenerator {
 			
 			// if ok --> add to result
 			if ($poolIsOk) {
-				$this->result[] = $currentPool;
+				$this->groupPools[] = $currentPool;
 			}
 			
 			// if pool is too large OR we are at the end and cannot increase anymore --> step back
@@ -164,26 +164,131 @@ class TaskPoolGenerator {
 		$this::generateGroupPools();
 		
 		
-		$itemPools = [];
+		
 		
 
 		
 		
-		$current = array (0, 1, 2);
-		$max = 8;
-		while (count($current)>0) {
-			print_r ($current);
-			print ("<br/>");
-			$current = $this->getNextSet($current, $max);
-		} 
+// 		$current = array (0, 1, 2);
+// 		$max = 8;
+// 		while (count($current)>0) {
+// 			print_r ($current);
+// 			print ("<br/>");
+// 			$current = $this->getNextSet($current, $max);
+// 		} 
 		
 		
 		
-		return $this->getNumberOfPools();
+		$itemPools = $this->getItemPools(gmp_init(0), 10);
+		
+		
+		print_r ($itemPools);
+		
+		return $this->getNumberOfItemPools();
 		
 
 	}
+	
+	
+	/**
+	 * 
+	 * @param GMP $start 0<=$start<N where N is the overall number of item pools (getNumberOfItemPools)
+	 * @param int $countc number of item pools to be returned (e.g., 10)
+	 */
+	
+	
+	 public function getItemPools (GMP $start, int $count) {
+		
+	 	// find first groupPool that contributes (at least) one item pool to the result
+	 	$current = gmp_init(0);
+	 	$groupPoolIndex=0;
+	 	do {
+		 	$size = $this->getNumberOfItemPoolsInGroup($groupPoolIndex);
+		 	if ($current + $size <= $start) {
+		 		$current = gmp_add($current, $size);
+		 		$groupPoolIndex += 1;
+		 	} else {
+		 		break;
+		 	}
+	 	} while (true);
+	 	
+	 	
+	 	// $groupPoolIndex is now the index of the first pool that need to be considered
+	 	// $current is the number of skipped item pools so far
+	 	// $size is the number of item pools for $groupPoolIndex
+	 	
+	 	$result = [];
+	 	
+	 	$groupStart = gmp_sub($start, $current);	// start in groupPool
+	 	
+	 	
+	 	do {
+		 	$groupNumberOfAvailPools = gmp_sub ($size, $groupStart);	
+		 	
+		 	if (gmp_cmp($groupNumberOfAvailPools, $count)>=0) {		// group pool has enough item pools
+		 		$result[] = $this->getItemPoolsInGroup ($groupPoolIndex, $groupStart, $count);
+		 		return $result;
+		 	} else {
+		 		$result[] = $this->getItemPoolsInGroup ($groupPoolIndex, $groupStart, $groupNumberOfAvailPools);
 
+		 		// go to next pool
+		 		$groupPoolIndex += 1;
+		 		$count = gmp_sub ($count, $groupNumberOfAvailPools);	// number remaining item pools to generate
+		 		$groupStart = 0;	// we start all pools except the first from the beginning
+		 		$size = $this->getNumberOfItemPoolsInGroup($groupPoolIndex);	// size of the new group pool
+		 		
+		 		
+		 	}
+	 	} while (true); 
+	}
+
+	
+	
+	private function getItemPoolsInGroup (int $groupPoolIndex, GMP $start, int $count) {
+	
+		$result = [];
+		$currentItemPool = [];
+		foreach ($this->groupPools[$groupPoolIndex] as $itemGroupIdx => $numberOfItems) {
+			$currentItemPool[] = ($numberOfItems==0) ? [] : range (0, $numberOfItems-1);
+		}
+
+		// skip the first start entries
+		for ($i=0; $i<$start; $i+=1) {
+			$currentItemPool = $this->getNextItemPool($groupPoolIndex, $currentItemPool);
+		}
+		
+		// collect the following count entries
+		for ($i=0; $i<$count; $i+=1) {
+			
+			$resultPool = [];
+			foreach ($this->groupPools[$groupPoolIndex] as $itemGroupIdx => $numberOfItems) {
+				foreach ($currentItemPool[$itemGroupIdx] as $x) {
+					$resultPool[] = $this->itemGroups[$itemGroupIdx][$x];
+				}
+			}
+			$result[] = $resultPool;
+			
+			$currentItemPool = $this->getNextItemPool($groupPoolIndex, $currentItemPool);
+		}
+		
+		return $result;
+	}
+	
+	
+	private function getNextItemPool (int $groupPoolIndex, array $currentItemPool) {
+		
+		for ($itemGroupIdx = count($currentItemPool)-1; $itemGroupIdx>=0; $itemGroupIdx=$itemGroupIdx-1) {
+			
+			$numberOfItems = $this->groupPools[$groupPoolIndex][$itemGroupIdx];
+			if ($numberOfItems==0) continue;
+			$currentItemPool[$itemGroupIdx] = $this->getNextSet ($currentItemPool[$itemGroupIdx], $this->itemGroupVectors[$itemGroupIdx][0]);
+			if (count($currentItemPool[$itemGroupIdx])>0) return $currentItemPool;
+			
+			$currentItemPool[$i] = range (0, $numberOfItems-1);
+		}
+		
+		return [];
+	}
 	
 	
 	private function getNextSet (array $current, int $max) : array {
@@ -205,37 +310,35 @@ class TaskPoolGenerator {
 	
 	
 	/**
-	 * Computes the number of item tools based on the generated grouped pools
+	 * Computes the overall number of item tools based on the generated grouped pools
 	 * @return number|GMP
 	 */	
-	public function getNumberOfPools (): GMP {
+	private function getNumberOfItemPools (): GMP {
 		
-		$noOfPools = 0;
-		foreach ($this->result as $groupPool) {
-			
-			$size = 1;
-			foreach ($groupPool as $grIdx => $number) {
-				// $count = "number" out of "all in group" = all! / (all-number)! * number!
-				$count = gmp_fact($this->itemGroupVectors[$grIdx][0]) / (gmp_fact($number) * gmp_fact($this->itemGroupVectors[$grIdx][0]-$number));
-				$size = gmp_mul($size, $count);
-			}
-			
-			$noOfPools = gmp_add($noOfPools, $size);
-			
+		$result = 0;
+		for ($groupPoolIndex=0; $groupPoolIndex<count($this->groupPools); $groupPoolIndex++) {
+			$result = gmp_add($result, $this->getNumberOfItemPoolsInGroup ($groupPoolIndex));
 		}
-		return $noOfPools;
+		return $result;
 	}
 
 	
-	private function faculty (int $n) {
-		$res = 1;
-		for ($i=1; $i<=$n; $i+=1) {
-			$res = gmp_mul($res, $i);
+	/**
+	 * Computes the number of item tools for a specific grouped pools
+	 * @return number|GMP
+	 */	
+	
+	private function getNumberOfItemPoolsInGroup (int $groupPoolIndex): GMP {
+		
+		$result = 1;
+		foreach ($this->groupPools[$groupPoolIndex] as $grIdx => $numberOfItems) {
+			// $count = "number" out of "all in group" = all! / (all-number)! * number!
+			$count = gmp_fact($this->itemGroupVectors[$grIdx][0]) / (gmp_fact($numberOfItems) * gmp_fact($this->itemGroupVectors[$grIdx][0]-$numberOfItems));
+			$result = gmp_mul($result, $count);
 		}
-		return (int) $res;
+		return $result;		
 	}
 
 	
-	}
-
+}
 ?>
