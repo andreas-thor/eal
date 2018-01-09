@@ -98,7 +98,7 @@ class TaskPoolGenerator {
 		$currentPool = array_fill (0, count($this->itemGroupVectors), 0);
 		$currentValues = array_fill (0, count($rangeVectors["min"]), 0);
 		
-		$currentVectorId = count($this->itemGroupVectors)-1;
+		$currentGroupIndex = count($this->itemGroupVectors)-1;
 		
 		
 		while (true) {
@@ -106,13 +106,16 @@ class TaskPoolGenerator {
 			// check current pool
 			$poolIsOk = TRUE; 
 			$poolIsTooLarge = FALSE;
+			$poolRESET = FALSE;
 			foreach ($currentValues as $dim => $value) {
 				if ($value < $rangeVectors["min"][$dim])  {
 					$poolIsOk = FALSE;
+					if ($poolIsTooLarge) break;
 				}
 				if ($value > $rangeVectors["max"][$dim]) {
 					$poolIsOk = FALSE;
 					$poolIsTooLarge = TRUE;
+					break;
 				}
 			}
 			
@@ -121,30 +124,36 @@ class TaskPoolGenerator {
 				$this->groupPools[] = $currentPool;
 			}
 			
-			// if pool is too large OR we are at the end and cannot increase anymore --> step back
-			if (  ($poolIsTooLarge) || (($currentVectorId == count($currentPool)-1) && ($currentPool[$currentVectorId] == $this->itemGroupVectors[$currentVectorId][0]))  ) {
+			// if pool is too large OR we are at the end and cannot increase anymore in this group --> step back
+			if (  ($poolIsTooLarge) || ($currentPool[$currentGroupIndex] == $this->itemGroupVectors[$currentGroupIndex][0])  ) {
+				
+				$poolRESET = TRUE;
+				
 				do { 
-					foreach ($this->itemGroupVectors[$currentVectorId] as $dim => $val) {
-						$currentValues[$dim] -= ($dim==0) ? $currentPool[$currentVectorId] : $currentPool[$currentVectorId]*$val;
-					}
-					$currentPool[$currentVectorId] = 0;
-					$currentVectorId -= 1;
-					if ($currentVectorId < 0) break;
 					
-				} while ($currentPool[$currentVectorId] == $this->itemGroupVectors[$currentVectorId][0]); 
-			} else {
-				if ($currentVectorId < count($currentPool)-1) {
-					$currentVectorId += 1;
-				}
+					// remove all items from current group
+					foreach ($this->itemGroupVectors[$currentGroupIndex] as $dim => $val) {
+						$currentValues[$dim] -= ($dim==0) ? $currentPool[$currentGroupIndex] : $currentPool[$currentGroupIndex]*$val;
+					}
+					$currentPool[$currentGroupIndex] = 0;
+
+					// step one group back
+					$currentGroupIndex -= 1;
+					if ($currentGroupIndex < 0) return;		// no more group --> EXIT
+					
+				} while ($currentPool[$currentGroupIndex] == $this->itemGroupVectors[$currentGroupIndex][0]);
+				
 			}
 			
-			if ($currentVectorId < 0) break;	// nothing to step back --> break while-true-loop
-			
-			// add current vector
-			$currentPool[$currentVectorId] += 1;
-			foreach ($this->itemGroupVectors[$currentVectorId] as $dim => $val) {
-				$currentValues[$dim] += ($dim==0) ? 1 : $val;
+			// add one item of current group
+			$currentPool[$currentGroupIndex] += 1;
+			foreach ($this->itemGroupVectors[$currentGroupIndex] as $dim => $val) {
+				$currentValues[$dim] += ($dim==0) ? 1 : $val;	// $val is either 0 or 1; $dim=0 counts the number of items
 			}
+				
+			if ($poolRESET) {
+				$currentGroupIndex = count($currentPool)-1;
+			} 
 		}
 		
 		
@@ -234,12 +243,15 @@ class TaskPoolGenerator {
 		}
 
 		// skip the first start entries
-		for ($i=0; $i<$start; $i+=1) {
+		$i = gmp_init(0);
+		while (gmp_cmp($i, $start)<0) {
 			$currentItemPool = $this->getNextItemPool($groupPoolIndex, $currentItemPool);
+			$i = gmp_add($i, gmp_init(1));
 		}
 		
 		// collect the following count entries
-		for ($i=0; $i<$count; $i+=1) {
+		$i = gmp_init(0);
+		while (gmp_cmp($i, $count)<0) {
 			
 			$resultPool = [];
 			foreach ($this->groupPools[$groupPoolIndex] as $itemGroupIdx => $numberOfItems) {
@@ -250,6 +262,8 @@ class TaskPoolGenerator {
 			$result[] = $resultPool;
 			
 			$currentItemPool = $this->getNextItemPool($groupPoolIndex, $currentItemPool);
+		
+			$i = gmp_add($i, gmp_init(1));
 		}
 		
 		return $result;
@@ -265,7 +279,7 @@ class TaskPoolGenerator {
 			$currentItemPool[$itemGroupIdx] = $this->getNextSet ($currentItemPool[$itemGroupIdx], $this->itemGroupVectors[$itemGroupIdx][0]);
 			if (count($currentItemPool[$itemGroupIdx])>0) return $currentItemPool;
 			
-			$currentItemPool[$i] = range (0, $numberOfItems-1);
+			$currentItemPool[$itemGroupIdx] = range (0, $numberOfItems-1);
 		}
 		
 		return [];
