@@ -30,17 +30,17 @@ class CPT_ItemSC extends CPT_Item {
 	
 	public function WPCB_wp_get_revision_ui_diff ($diff, $compare_from, $compare_to) {
 	
-		if (get_post ($compare_from->post_parent)->post_type != "itemsc") return $diff;
+		if (get_post ($compare_from->post_parent)->post_type != $this->type) return $diff;
 		
-		$eal_From = new EAL_ItemSC(($compare_from->ID == null) ? -1 : $compare_from->ID);
+		$eal_From = new EAL_ItemSC($compare_from->ID);
 		$eal_To = new EAL_ItemSC($compare_to->ID);
 	
-		$diff[0] = $eal_From->compareTitle ($eal_To);
-		$diff[1] = $eal_From->compareDescription ($eal_To);
-		$diff[2] = $eal_From->compareQuestion ($eal_To);
-		$diff[3] = $eal_From->compareLevel ($eal_To);
-		$diff[4] = $eal_From->compareAnswers ($eal_To);
-	
+		$diff[0] = HTML_Item::compareTitle($eal_From, $eal_To);
+		$diff[1] = HTML_Item::compareDescription($eal_From, $eal_To);
+		$diff[2] = HTML_Item::compareQuestion($eal_From, $eal_To);
+		$diff[3] = HTML_Item::compareLevel($eal_From, $eal_To);
+		$diff[4] = HTML_ItemSC::compareAnswers($eal_From, $eal_To);
+		
 		return $diff;
 	}	
 	

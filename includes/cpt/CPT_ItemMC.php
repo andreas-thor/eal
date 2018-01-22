@@ -41,11 +41,11 @@ class CPT_ItemMC extends CPT_Item {
 		$eal_From = new EAL_ItemMC($compare_from->ID);
 		$eal_To = new EAL_ItemMC($compare_to->ID);
 	
-		$diff[0] = $eal_From->compareTitle ($eal_To);
-		$diff[1] = $eal_From->compareDescription ($eal_To);
-		$diff[2] = $eal_From->compareQuestion ($eal_To);
-		$diff[3] = $eal_From->compareLevel ($eal_To);
-		$diff[4] = $eal_From->compareAnswers ($eal_To);
+		$diff[0] = HTML_Item::compareTitle($eal_From, $eal_To); 
+		$diff[1] = HTML_Item::compareDescription($eal_From, $eal_To); 
+		$diff[2] = HTML_Item::compareQuestion($eal_From, $eal_To); 
+		$diff[3] = HTML_Item::compareLevel($eal_From, $eal_To);
+		$diff[4] = HTML_ItemMC::compareAnswers($eal_From, $eal_To);
 	
 		return $diff;
 	}	
@@ -82,13 +82,6 @@ class CPT_ItemMC extends CPT_Item {
 	}
 	
 	
-
-	
-			
-
-
-	
-
 	
 }
 

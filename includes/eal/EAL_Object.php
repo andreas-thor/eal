@@ -48,7 +48,7 @@ class EAL_Object {
 		return $this->domain;
 	}
 	
-	public function setDomain ($domain) {
+	public function setDomain ($domain)  {
 		$this->domain = $domain ?? "";
 	}
 	

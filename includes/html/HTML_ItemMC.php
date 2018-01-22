@@ -148,5 +148,39 @@ class HTML_ItemMC  {
 		return $result;
 	}
 	
+	
+	public static function compareAnswers (EAL_ItemMC $old, EAL_ItemMC $new): array {
+		
+		$diff  = sprintf ("<table class='diff'>");
+		$diff .= sprintf ("<colgroup><col class='content diffsplit left'><col class='content diffsplit middle'><col class='content diffsplit right'></colgroup>");
+		$diff .= sprintf ("<tbody><tr>");
+		$diff .= sprintf ("<td><div>%s</div></td><td></td>", self::compareAnswers1($new->answers, $old->answers, "deleted"));
+		$diff .= sprintf ("<td><div>%s</div></td>", self::compareAnswers1($old->answers, $new->answers, "added"));
+		$diff .= sprintf ("</tr></tbody></table>");
+		return array ("id" => 'answers', 'name' => 'Antwortoptionen', 'diff' => $diff);
+		
+	}
+	
+	private static function compareAnswers1 (array $old, array $new, string $class): string {
+		
+		$res = "<table >";
+		
+		foreach ($old as $i => $a) {
+			$res .= "<tr align='left' >";
+			$bgcolor = ($new[$i]['positive'] != $a['positive']) ? "class='diff-{$class}line'" : "";
+			$res .= "<td style='border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px' align='left' {$bgcolor}>{$a['positive']}</td>";
+			$bgcolor = ($new[$i]['negative'] != $a['negative']) ? "class='diff-{$class}line'" : "";
+			$res .= "<td style='border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px' align='left' {$bgcolor}>{$a['negative']}</td>";
+			$bgcolor = ($new[$i]['answer'] != $a['answer']) ? "class='diff-{$class}line'" : "";
+			$res .= "<td style='width:98%; padding:0; padding-left:10px' align='left' {$bgcolor}>{$a['answer']}</td></tr>";
+			
+		}
+		
+		$res .= "</table></div>";
+		
+		return $res;
+	}
+	
+	
 }
 ?>

@@ -21,11 +21,6 @@ class EAL_ItemSC extends EAL_Item {
 	}
 	
 	
-	/**
-	 * Create new item from _POST
-	 * @param unknown $post_id
-	 * @param unknown $post
-	 */
 	protected function loadFromPOSTRequest (string $prefix="") {
 		
 		parent::loadFromPOSTRequest($prefix);
@@ -38,46 +33,6 @@ class EAL_ItemSC extends EAL_Item {
 		}
 	}
 
-	/*
-	public function setPOST () {
-	
-		parent::setPOST();
-	
-		$_POST['answer'] = array();
-		$_POST['points'] = array();
-		foreach ($this->answers as $v) {
-			array_push ($_POST['answer'], $v['answer']);
-			array_push ($_POST['points'], $v['points']);
-		}
-	}
-	*/
-	
-	
-	/**
-	 * Create new Item or load existing item from database 
-	 * @param string $eal_posttype
-	 */
-	
-// 	public function load () {
-
-// 		global $post;
-// 		if ($post->post_type != $this->type) return;
-		
-	
-// 		if (get_post_status($post->ID)=='auto-draft') {
-				
-// 			parent::load($eal_posttype);
-// 			$this->answers = array (
-// 					array ('answer' => '', 'points' => 1),
-// 					array ('answer' => '', 'points' => 0),
-// 					array ('answer' => '', 'points' => 0),
-// 					array ('answer' => '', 'points' => 0)
-// 			);
-				
-// 		} else {
-// 			$this->loadById($post->ID);
-// 		}
-// 	}
 	
 	protected function loadFromDB (int $item_id) {
 		
@@ -140,7 +95,7 @@ class EAL_ItemSC extends EAL_Item {
 	}
 	
 	
-	protected function getPoints() {
+	protected function getPoints(): int {
 	
 		$result = 0;
 		foreach ($this->answers as $a) {
@@ -172,37 +127,7 @@ class EAL_ItemSC extends EAL_Item {
 	
 	}
 	
-	public function compareAnswers (EAL_ItemSC $comp) {
-	
-		$diff  = "<table class='diff'>";
-		$diff .= "<colgroup><col class='content diffsplit left'><col class='content diffsplit middle'><col class='content diffsplit right'></colgroup>";
-		$diff .= "<tbody><tr>";
-		$diff .= "<td><div>{$this->compareAnswers1($this->answers, $comp->answers, "deleted")}</div></td><td></td>";
-		$diff .= "<td><div>{$this->compareAnswers1($comp->answers, $this->answers, "added")}</div></td>";
-		$diff .= "</tr></tbody></table>";
-	
-	
-		return array ("id" => 'answers', 'name' => 'Antwortoptionen', 'diff' => $diff);
-	
-	}
-	
-	private function compareAnswers1 ($old, $new, $class) {
-	
-		$res = "<table >";
-		
-		foreach ($old as $i => $a) {
-			$bgcolor = ($new[$i]['points'] != $a['points']) ? "class='diff-{$class}line'" : "";
-			$res .= "<tr align='left' ><td  style='border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px' align='left' {$bgcolor}>";
-			$res .= "{$a['points']}</td>";
-			$bgcolor = ($new[$i]['answer'] != $a['answer']) ? "class='diff-{$class}line'" : "";
-			$res .= "<td style='width:99%; padding:0; padding-left:10px' align='left' {$bgcolor}>{$a['answer']}</td></tr>";
-					
-		}
-		
-		$res .= "</table></div>";
-		
-		return $res;	
-	}
+
 	
 }
 

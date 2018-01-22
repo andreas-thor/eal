@@ -41,48 +41,6 @@ class EAL_ItemMC extends EAL_Item {
 		
 	}
 	
-/*	
-	public function setPOST () {
-		
-		parent::setPOST();
-		
-		
-		$_POST['answer'] = array();
-		$_POST['positive'] = array();
-		$_POST['negative'] = array();
-		foreach ($this->answers as $v) {
-			array_push ($_POST['answer'], $v['answer']);
-			array_push ($_POST['positive'], $v['positive']);
-			array_push ($_POST['negative'], $v['negative']);
-		}
-	}
-*/
-	
-	/**
-	 * Create new Item or load existing item from database
-	 * @param string $eal_posttype
-	 */
-	
-// 	public function load () {
-		
-// 		global $post;
-// 		if ($post->post_type != $this->type) return;
-		
-// 		if (get_post_status($post->ID)=='auto-draft') {
-		
-// 			parent::load();
-// 			$this->answers = array (
-// 					array ('answer' => '', 'positive' => 1, 'negative' => 0),
-// 					array ('answer' => '', 'positive' => 1, 'negative' => 0),
-// 					array ('answer' => '', 'positive' => 0, 'negative' => 1),
-// 					array ('answer' => '', 'positive' => 0, 'negative' => 1)
-// 			);
-			
-// 		} else {
-// 			$this->loadById($post->ID);
-// 		}
-// 	}
-	
 	
 	protected function loadFromDB (int $item_id) {
 	
@@ -97,8 +55,6 @@ class EAL_ItemMC extends EAL_Item {
 		
 		if (!isset($this->minnumber)) $this->minnumber = 0;
 		if (!isset($this->maxnumber)) $this->maxnumber = count($this->answers);
-		
-		
 	}
 	
 	
@@ -150,7 +106,7 @@ class EAL_ItemMC extends EAL_Item {
 	
 	
 	
-	protected function getPoints() { 
+	protected function getPoints(): int { 
 		
 		$result = 0;
 		foreach ($this->answers as $a) {
@@ -192,40 +148,6 @@ class EAL_ItemMC extends EAL_Item {
 	
 	}
 	
-	
-	public function compareAnswers (EAL_ItemMC $comp) {
-	
-		$diff  = "<table class='diff'>";
-		$diff .= "<colgroup><col class='content diffsplit left'><col class='content diffsplit middle'><col class='content diffsplit right'></colgroup>";
-		$diff .= "<tbody><tr>";
-		$diff .= "<td><div>{$this->compareAnswers1($this->answers, $comp->answers, "deleted")}</div></td><td></td>";
-		$diff .= "<td><div>{$this->compareAnswers1($comp->answers, $this->answers, "added")}</div></td>";
-		$diff .= "</tr></tbody></table>";
-	
-	
-		return array ("id" => 'answers', 'name' => 'Antwortoptionen', 'diff' => $diff);
-	
-	}
-	
-	private function compareAnswers1 ($old, $new, $class) {
-	
-		$res = "<table >";
-	
-		foreach ($old as $i => $a) {
-			$res .= "<tr align='left' >";
-			$bgcolor = ($new[$i]['positive'] != $a['positive']) ? "class='diff-{$class}line'" : "";
-			$res .= "<td style='border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px' align='left' {$bgcolor}>{$a['positive']}</td>";
-			$bgcolor = ($new[$i]['negative'] != $a['negative']) ? "class='diff-{$class}line'" : "";
-			$res .= "<td style='border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px' align='left' {$bgcolor}>{$a['negative']}</td>";
-			$bgcolor = ($new[$i]['answer'] != $a['answer']) ? "class='diff-{$class}line'" : "";
-			$res .= "<td style='width:98%; padding:0; padding-left:10px' align='left' {$bgcolor}>{$a['answer']}</td></tr>";
-				
-		}
-	
-		$res .= "</table></div>";
-	
-		return $res;
-	}
 	
 	
 }

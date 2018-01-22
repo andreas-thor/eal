@@ -308,6 +308,86 @@ class HTML_Item  {
 	}
 	
 	
+	/**
+	 * Methods for comparing two item versions
+	 * @param EAL_Item $new
+	 */
+	
+	public static function compareTitle (EAL_Item $old, EAL_Item $new): array {
+		return array ("id" => 'title', 'name' => 'Titel', 'diff' => self::compareText ($old->title ?? "", $new->title ?? ""));
+	}
+	
+	
+	public static function compareDescription (EAL_Item $old, EAL_Item $new): array {
+		return array ("id" => 'description', 'name' => 'Fall- oder Problemvignette', 'diff' => self::compareText ($old->description ?? "", $new->description ?? ""));
+	}
+	
+	
+	public static function compareQuestion (EAL_Item $old, EAL_Item $new): array {
+		return array ("id" => 'question', 'name' => 'Aufgabenstellung', 'diff' => self::compareText ($old->question ?? "", $new->question ?? ""));
+	}
+	
+	
+	public static function compareLevel (EAL_Item $old, EAL_Item $new): array {
+		$diff  = sprintf ("<table class='diff'>");
+		$diff .= sprintf ("<colgroup><col class='content diffsplit left'><col class='content diffsplit middle'><col class='content diffsplit right'></colgroup>");
+		$diff .= sprintf ("<tbody><tr>");
+		$diff .= sprintf ("<td align='left'><div>%s</div></td><td></td>", self::compareLevel1($old->level, $new->level, "deleted"));
+		$diff .= sprintf ("<td><div>%s</div></td>", self::compareLevel1($new->level, $old->level, "added"));
+		$diff .= sprintf ("</tr></tbody></table>");
+		return array ("id" => 'level', 'name' => 'Anforderungsstufe', 'diff' => $diff);
+	}
+	
+	
+	private static function compareLevel1 (array $old, array $new, string $class): string {
+		$res = "<table style='width:1%'><tr><td></td>";
+		foreach ($old as $c => $v) {
+			$res .= sprintf ('<td>%s</td>', $c);
+		}
+		$res .= sprintf ('</tr>');
+		
+		foreach (EAL_Item::$level_label as $n => $r) {	// n=0..5, $r=Erinnern...Erschaffen
+			$bgcolor = (($new["FW"]!=$n+1) &&  ($old["FW"]==$n+1)) || (($new["KW"]!=$n+1) && ($old["KW"]==$n+1)) || (($new["PW"]!=$n+1) && ($old["PW"]==$n+1)) ? "class='diff-{$class}line'" : "";
+			// || (($new["FW"]==$n+1) &&  ($old["FW"]!=$n+1)) || (($new["KW"]==$n+1) && ($old["KW"]!=$n+1)) || (($new["PW"]==$n+1) && ($old["PW"]!=$n+1))
+			
+			$res .= sprintf ('<tr><td style="padding:0px 5px 0px 5px;" align="left" %s>%d.&nbsp;%s</td>', $bgcolor, $n+1, $r);
+			foreach ($old as $c=>$v) {	// c=FW,KW,PW; v=1..6
+				$bgcolor = (($v==$n+1)&& ($new[$c]!=$n+1)) ? "class='diff-{$class}line'" : "";
+				$res .= sprintf ("<td align='left' style='padding:0px 5px 0px 5px;' %s>", $bgcolor);
+				$res .= sprintf ("<input type='radio' %s></td>", (($v==$n+1)?'checked':'disabled'));
+				
+			}
+			$res .= '</tr>';
+		}
+		$res .= sprintf ('</table>');
+		return $res;
+	}
+	
+	
+	private static function compareText (string $old, string $new): string {
+		
+		$old = normalize_whitespace (strip_tags ($old));
+		$new = normalize_whitespace (strip_tags ($new));
+		$args = array(
+			'title'           => '',
+			'title_left'      => '',
+			'title_right'     => '',
+			'show_split_view' => true
+		);
+		
+		$diff = wp_text_diff($old, $new, $args);
+		
+		if (!$diff) {
+			$diff  = "<table class='diff'><colgroup><col class='content diffsplit left'><col class='content diffsplit middle'><col class='content diffsplit right'></colgroup><tbody><tr>";
+			$diff .= "<td>{$old}</td><td></td><td>{$new}</td>";
+			$diff .= "</tr></tbody></table>";
+		}
+		
+		return $diff;
+		
+	}
+	
+	
 }
 
 ?>

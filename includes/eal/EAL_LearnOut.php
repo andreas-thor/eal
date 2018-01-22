@@ -13,7 +13,7 @@ class EAL_LearnOut extends EAL_Object  {
 	
 	
 	
-	function __construct(int $learnout_id, string $prefix="") {
+	function __construct(int $learnout_id=-1, string $prefix="") {
 
 		parent::__construct();
 		$this->setId (-1);
@@ -123,7 +123,7 @@ class EAL_LearnOut extends EAL_Object  {
 		global $wpdb;
 		$wpdb->replace(
 			"{$wpdb->prefix}eal_{$this->getType()}",
-		array(
+			array(
 				'id' => $this->getId(),
 				'title' => $this->title,
 				'description' => $this->description,
