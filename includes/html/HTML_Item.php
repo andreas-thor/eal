@@ -17,7 +17,7 @@ class HTML_Item  {
 	 * @param string $prefix
 	 */
 	
-	public static function getHTML_Status (EAL_Item $item, int $viewType, string $prefix="") {
+	public static function getHTML_Status (EAL_Item $item, int $viewType, string $prefix=""): string {
 	
 		$result = sprintf ("<select class='importstatus' style='width:100%%' name='%sitem_status' align='right'>", $prefix);
 		
@@ -57,7 +57,7 @@ class HTML_Item  {
 	 * @param string $prefix
 	 */
 	
-	public static function getHTML_LearningOutcome (EAL_Item $item, int $viewType, string $prefix = "") {
+	public static function getHTML_LearningOutcome (EAL_Item $item, int $viewType, string $prefix = ""): string {
 	
 		$learnout = $item->getLearnOut();
 		$learnout_id = ($learnout == null) ? -1 : $learnout->getId();
@@ -93,7 +93,7 @@ class HTML_Item  {
 	 * @param string $prefix
 	 */
 	
-	public static function getHTML_Level (EAL_Item $item, int $viewType, string $prefix = "") {
+	public static function getHTML_Level (EAL_Item $item, int $viewType, string $prefix = ""): string {
 		
 		?>
 		<script>
@@ -149,7 +149,7 @@ class HTML_Item  {
 	 * @param int $viewType
 	 * @param string $prefix
 	 */
-	public static function getHTML_NoteFlag (EAL_Item $item, int $viewType, string $prefix="") {
+	public static function getHTML_NoteFlag (EAL_Item $item, int $viewType, string $prefix=""): string {
 		
 		return sprintf ('
 			<div class="form-field">
@@ -171,7 +171,7 @@ class HTML_Item  {
 
 	
 	
-	public static function getHTML_Metadata (EAL_Item $item, int $viewType, $prefix) {
+	public static function getHTML_Metadata (EAL_Item $item, int $viewType, $prefix): string {
 	
 		$edit = ($item->getId() > 0) ? sprintf ('<span style="float: right; font-weight:normal" ><a href="post.php?action=edit&post=%d">Edit</a></span>', $item->getId()) : '';
 		
@@ -240,7 +240,7 @@ class HTML_Item  {
 	
 	
 	
-	public static function getHTML_Item (EAL_Item $item, int $viewType, $namePrefix = "") {
+	public static function getHTML_Item (EAL_Item $item, int $viewType, $namePrefix = ""): string {
 			
  		$answers_html = "";
  		switch (get_class($item)) {

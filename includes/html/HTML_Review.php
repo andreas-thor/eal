@@ -6,7 +6,7 @@ require_once (__DIR__ . "/../eal/EAL_Review.php");
 class HTML_Review {
 	
 	
-	public static function getHTML_Level (EAL_Review $review, int $viewType, string $prefix="") {
+	public static function getHTML_Level (EAL_Review $review, int $viewType, string $prefix=""): string {
 		
 		$disabled = TRUE;
 		if ($viewType == HTML_Object::VIEW_EDIT) $disabled = FALSE;
@@ -17,7 +17,7 @@ class HTML_Review {
 
 	
 	
-	public static function getHTML_Overall (EAL_Review $review, int $viewType, string $prefix="", string $callback="") {
+	public static function getHTML_Overall (EAL_Review $review, int $viewType, string $prefix="", string $callback=""): string {
 		
 
 		if ($viewType == HTML_Object::VIEW_EDIT) {
@@ -41,7 +41,7 @@ class HTML_Review {
 	}
 	
 	
-	public static function getHTML_Score (EAL_Review $review, int $viewType, string $prefix="") {
+	public static function getHTML_Score (EAL_Review $review, int $viewType, string $prefix=""): string {
 	
 	
 		$values = ["gut", "Korrektur", "ungeeignet"];
@@ -88,7 +88,7 @@ class HTML_Review {
 	}
 	
 	
-	public static function getHTML_Metadata (EAL_Review $review, int $viewType, $prefix) {
+	public static function getHTML_Metadata (EAL_Review $review, int $viewType, $prefix): string {
 	
 		// <h2 class="hndle"><span>Revisionsurteil</span><span style="align:right">Und?</span></h2>
 		// Overall
@@ -114,7 +114,7 @@ class HTML_Review {
 	}
 	
 	
-	public static function getHTML_Review (EAL_Review $review, int $viewType, string $prefix="") {
+	public static function getHTML_Review (EAL_Review $review, int $viewType, string $prefix=""): string {
 	
 		return sprintf ("
 			<div>

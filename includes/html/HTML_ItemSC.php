@@ -13,7 +13,7 @@ class HTML_ItemSC  {
 	 * @param int $viewType STUDENT (read only, answers only), REVIEWER (read only, points), EDITOR (editable) 
 	 */
 	
-	public static function getHTML_Answers (EAL_ItemSC $item, int $viewType, string $prefix="") {
+	public static function getHTML_Answers (EAL_ItemSC $item, int $viewType, string $prefix=""): string {
 	
 		$html_Answers = "";
 		$result = "";

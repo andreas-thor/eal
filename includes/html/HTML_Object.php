@@ -12,7 +12,7 @@ class HTML_Object {
 	
 	
 	
-	public static function getHTML_Level ($prefix, $level, $default, bool $disabled, bool $background, string $callback) {
+	public static function getHTML_Level ($prefix, $level, $default, bool $disabled, bool $background, string $callback): string {
 	
 		?>
 		<script>
@@ -56,7 +56,7 @@ class HTML_Object {
 		
 	
 	
-	public static function getHTML_Topic (string $domain, int $id, int $viewType, string $prefix = "") {
+	public static function getHTML_Topic (string $domain, int $id, int $viewType, string $prefix = ""): string {
 		// <input type="hidden" name="%staxonomy[]" value="0">
 	
 		if (($viewType == HTML_Object::VIEW_IMPORT) || ($viewType == HTML_Object::VIEW_EDIT)) {
@@ -88,7 +88,7 @@ class HTML_Object {
 	}	
 	
 	
-	private static function getHTML_TopicHierarchy ($namePrefix, $terms, $parent, $selected) {
+	private static function getHTML_TopicHierarchy ($namePrefix, $terms, $parent, $selected): string {
 	
 		$res .= "";
 		foreach ($terms as $term) {

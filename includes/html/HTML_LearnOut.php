@@ -6,7 +6,7 @@ require_once (__DIR__ . "/../eal/EAL_LearnOut.php");
 class HTML_Learnout {
 	
 	
-	public static function getHTML_Level (EAL_LearnOut $learnout, int $viewType, string $prefix = "") {
+	public static function getHTML_Level (EAL_LearnOut $learnout, int $viewType, string $prefix = ""): string {
 		
 		?>
 		<script>
@@ -37,7 +37,7 @@ class HTML_Learnout {
 	
 	
 	
-	public static function getHTML_Metadata (EAL_LearnOut $learnout, int $viewType = HTML_Object::VIEW_STUDENT, string $prefix = "") {
+	public static function getHTML_Metadata (EAL_LearnOut $learnout, int $viewType = HTML_Object::VIEW_STUDENT, string $prefix = ""): string {
 	
 		$edit = ($learnout->getId() > 0) ? sprintf ('<span style="float: right; font-weight:normal" ><a href="post.php?action=edit&post=%d">Edit</a></span>', $learnout->getId()) : '';
 		
@@ -72,7 +72,7 @@ class HTML_Learnout {
 	}
 
 	
-	public static function getHTML_LearnOut (EAL_LearnOut $learnout, $namePrefix = "") {
+	public static function getHTML_LearnOut (EAL_LearnOut $learnout, $namePrefix = ""): string {
 	
 		return sprintf ('
 			<div>
