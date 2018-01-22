@@ -21,7 +21,7 @@ class PAG_Taxonomy_Import {
 					if ($identSize < $level) $level = max (0, $identSize);
 		
 					$x = wp_insert_term( utf8_encode(trim($line)), RoleTaxonomy::getCurrentRoleDomain()["name"], array('parent' => $lastParent[$level-1]) );
-					$lastParent[$level] = ($x instanceof WP_Error) ? $x->error_data['term_exists'] : $x['term_id'];
+					$lastParent[$level] = /*($x instanceof WP_Error) ? $x->error_data['term_exists'] : */ $x['term_id'];
 		
 		
 				}

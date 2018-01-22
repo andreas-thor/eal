@@ -103,7 +103,7 @@ class CPT_Review extends CPT_Object {
 		$review = new EAL_Review();
 		
 		$domain = RoleTaxonomy::getCurrentRoleDomain();
-		if (($domain["name"] != "") && ($review->getItem()->domain != $domain["name"])) {
+		if (($domain["name"] != "") && ($review->getItem()->getDomain() != $domain["name"])) {
 			wp_die ("Reviewed item does not belong to your current domain!");
 		}
 		

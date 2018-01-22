@@ -86,14 +86,14 @@ class Ilias extends ImportExport {
 			}
 			if ($item->getId() != $item_id) continue;
 					
-			if ($item->type == 'itemsc') {
+			if ($item->getType() == 'itemsc') {
 				$item_data = array (
 						"questiontype" => "SINGLE CHOICE QUESTION",
 						"ident" => "MCSR",
 						"rcardinality" => "Single"
 				);
 			}
-			if ($item->type == 'itemmc') {
+			if ($item->getType() == 'itemmc') {
 				$item_data = array (
 						"questiontype" => "MULTIPLE CHOICE QUESTION",
 						"ident" => "MCMR",
@@ -145,7 +145,7 @@ class Ilias extends ImportExport {
 			$xml_RC = $dom->createElement("render_choice");
 			$xml_RC->setAttribute("shuffle", "Yes");
 
-			if ($item->type == "itemmc") {
+			if ($item->getType() == "itemmc") {
 				$xml_RC->setAttribute("minnumber", $item->minnumber);
 				$xml_RC->setAttribute("maxnumber", $item->maxnumber);
 			}			
@@ -192,8 +192,8 @@ class Ilias extends ImportExport {
 					// 					if ($item->type == "itemsc") array_push ($item->answers, array ("answer" => $v["text"], "points" => $v["positive"]));
 					// 					if ($item->type == "itemmc") array_push ($item->answers, array ("answer" => $v["text"], "positive" => $v["positive"], "negative" => $v["negative"]));
 	
-					if ($item->type == "itemsc") $xml_SV = $dom->createElement("setvar", ($checked==1) ? $answer['points'] : 0);
-					if ($item->type == "itemmc") $xml_SV = $dom->createElement("setvar", ($checked==1) ? $answer['positive'] : $answer['negative']);
+					if ($item->getType() == "itemsc") $xml_SV = $dom->createElement("setvar", ($checked==1) ? $answer['points'] : 0);
+					if ($item->getType() == "itemmc") $xml_SV = $dom->createElement("setvar", ($checked==1) ? $answer['positive'] : $answer['negative']);
 	
 					$xml_SV->setAttribute ("action", "Add");
 					$xml_RC->appendChild ($xml_SV);
@@ -370,12 +370,12 @@ class Ilias extends ImportExport {
 			}
 	
 			// initialize item
-			$item = EAL_Item::load($item_type, is_numeric($item_id) ? $item_id : -1);
+			$item = EAL_Item::load($item_type, intval($item_id));
 			$countItems++;
-			if (($item->getId() == -1) || ($item->getId() == NULL)) $item->setId (-$countItems);
+			if ($item->getId() < 0) $item->setId (-$countItems);
 				
 			// get title and description + question
-			$item->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
+			$item->setDomain(RoleTaxonomy::getCurrentRoleDomain()["name"]);	// necessary, if we import item from different domain and want to store it in current domain
 			$item->title = $itemXML->getAttribute("title");
 			$descques = $xpath->evaluate ("./presentation/flow/material/mattext/text()", $itemXML)[0]->wholeText;
 			
@@ -438,22 +438,17 @@ class Ilias extends ImportExport {
 			// set answer data for items
 			$item->answers = array();
 			foreach ($answers as $k => $v) {
-				if ($item->type == "itemsc") array_push ($item->answers, array ("answer" => $v["text"], "points" => $v["positive"]));
-				if ($item->type == "itemmc") array_push ($item->answers, array ("answer" => $v["text"], "positive" => $v["positive"], "negative" => $v["negative"]));
+				if ($item->getType() == "itemsc") array_push ($item->answers, array ("answer" => $v["text"], "points" => $v["positive"]));
+				if ($item->getType() == "itemmc") array_push ($item->answers, array ("answer" => $v["text"], "positive" => $v["positive"], "negative" => $v["negative"]));
 			}
 	
-			if ($item->type == "itemmc") {
+			if ($item->getType() == "itemmc") {
 				$min = $xpath->evaluate ("./presentation/flow/response_lid/render_choice/@minnumber", $itemXML);
 				$item->minnumber = ($min->length==0) ? 0 : $min[0]->nodeValue;
 				$max = $xpath->evaluate ("./presentation/flow/response_lid/render_choice/@maxnumber", $itemXML);
 				$item->maxnumber = ($max->length==0) ? count($item->answers) : $max[0]->nodeValue;
 			}
 			
-			if ($item->getId() == NULL) {
-				$qw = 1;
-			}
-			
-				
 			// update Item id (for newly created items)
 			$items[$itemXML->getAttribute("ident")] = $item;
 		}

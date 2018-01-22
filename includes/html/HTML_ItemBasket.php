@@ -14,7 +14,7 @@ class HTML_ItemBasket  {
 	public static function getHTML_Statistics (array $items) {
 		
 		
-		$itemids = array_values (array_map(function ($item) { return $item->getId(); }, $items));
+		$itemids = ItemExplorer::getItemIds($items);
 		
 		$labels = ["itemsc" => "Single Choice", "itemmc" => "Multiple Choice"];
 		$res_Type = sprintf ('<tr><td colspan="2"><b>%s</b></td></tr>', 'Item Typ');
@@ -39,7 +39,7 @@ class HTML_ItemBasket  {
 		
 		
 		$labels = array();
-		foreach (get_terms (['taxonomy' => $items[$itemids[0]]->domain, 'hide_empty' => false]) as $term) {
+		foreach (get_terms (['taxonomy' => $items[$itemids[0]]->getDomain(), 'hide_empty' => false]) as $term) {
 			$labels[$term->term_id] = $term->name;
 		}
 		
@@ -62,7 +62,7 @@ class HTML_ItemBasket  {
 		
 		$groupByTopic1 = ItemExplorer::groupBy($items, $itemids, 'topic1');
 		$labels = array();
-		foreach (get_terms (['taxonomy' => $items[$itemids[0]]->domain, 'hide_empty' => false , 'include' => array_keys ($groupByTopic1)]) as $term) {
+		foreach (get_terms (['taxonomy' => $items[$itemids[0]]->getDomain(), 'hide_empty' => false , 'include' => array_keys ($groupByTopic1)]) as $term) {
 			$labels[$term->term_id] = $term->name;
 		}
 		$res_Topic1 = sprintf ('<tr><td colspan="2"><b>%s</b></td></tr>', 'Topic 1');

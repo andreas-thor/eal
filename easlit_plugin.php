@@ -124,8 +124,8 @@ function setMainMenu() {
 		add_submenu_page($menuslug, 'Generator2', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'test_generator', ['Blueprint',  'page_blueprint']);
 		
 		/* the following are not visible in the menu but must be registered */
-		foreach (['page_view_item', 'page_view_review', 'page_view_learnout'] as $callfunc) {
-			add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', 'view_item',     ['BulkViewer', $callfunc]);
+		foreach (['view_item', 'view_review', 'view_learnout'] as $view) {
+			add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', $view,     ['BulkViewer', 'page_' . $view]);
 		}
 	});
 	

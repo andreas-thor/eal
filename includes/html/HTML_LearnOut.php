@@ -39,14 +39,14 @@ class HTML_Learnout {
 	
 	public static function getHTML_Metadata (EAL_LearnOut $learnout, int $viewType = HTML_Object::VIEW_STUDENT, string $prefix = "") {
 	
-		$edit = ($learnout->id > 0) ? sprintf ('<span style="float: right; font-weight:normal" ><a href="post.php?action=edit&post=%d">Edit</a></span>', $learnout->id) : '';
+		$edit = ($learnout->getId() > 0) ? sprintf ('<span style="float: right; font-weight:normal" ><a href="post.php?action=edit&post=%d">Edit</a></span>', $learnout->getId()) : '';
 		
 		// Id
 		$res = sprintf ('
 			<div id="mb_status" class="postbox ">
 				<h2 class="hndle"><span>Learning Outcome (ID=%s)</span>%s</h2>
 			</div>', 
-			$learnout->id, $edit);
+			$learnout->getId(), $edit);
 
 		
 		// Level-Table
@@ -64,8 +64,8 @@ class HTML_Learnout {
 				<h2 class="hndle"><span>%s</span></h2>
 				<div class="inside">%s</div>
 			</div>',
-			RoleTaxonomy::getDomains()[$learnout->domain],
-			HTML_Object::getHTML_Topic($learnout->domain, $learnout->id, $viewType, $prefix));
+			RoleTaxonomy::getDomains()[$learnout->getDomain()],
+			HTML_Object::getHTML_Topic($learnout->getDomain(), $learnout->getId(), $viewType, $prefix));
 		
 
 		return $res;
@@ -86,9 +86,9 @@ class HTML_Learnout {
  				</div>
  			</div>',
 			wpautop($learnout->description),
-			$namePrefix, $namePrefix, $learnout->id,
+			$namePrefix, $namePrefix, $learnout->getId(),
 			$namePrefix, $namePrefix, htmlentities ($learnout->title, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
-			$namePrefix, $namePrefix, $learnout->type,
+			$namePrefix, $namePrefix, $learnout->getType(),
 			$namePrefix, $namePrefix, htmlentities($learnout->description, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
 			$namePrefix, $namePrefix, microtime()					
 		);

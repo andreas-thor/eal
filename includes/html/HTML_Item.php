@@ -60,7 +60,7 @@ class HTML_Item  {
 	public static function getHTML_LearningOutcome (EAL_Item $item, int $viewType, string $prefix = "") {
 	
 		$learnout = $item->getLearnOut();
-		$learnout_id = ($learnout == null) ? -1 : (($learnout->id == NULL) ? -1 : $learnout->id);
+		$learnout_id = ($learnout == null) ? -1 : $learnout->getId();
 	
 		$htmlList .= "<select name='{$prefix}learnout_id' onchange='for (x=0; x<this.nextSibling.childNodes.length; x++) { this.nextSibling.childNodes[x].style.display = (this.selectedIndex == x) ? \"block\" : \"none\"; }' style='width:100%' align='right'>";
 	
@@ -205,8 +205,8 @@ class HTML_Item  {
 				<h2 class="hndle"><span>%s</span></h2>
 				<div class="inside">%s</div>
 			</div>',
-			RoleTaxonomy::getDomains()[$item->domain],
-			HTML_Object::getHTML_Topic($item->domain, $item->getId(), $viewType, $prefix));
+			RoleTaxonomy::getDomains()[$item->getDomain()],
+			HTML_Object::getHTML_Topic($item->getDomain(), $item->getId(), $viewType, $prefix));
 		
 		
 		// Note + Flag
@@ -227,7 +227,7 @@ class HTML_Item  {
 				',
 				$prefix,
 				$item->getId(),
-				$item->type,
+				$item->getType(),
 				microtime(),
 				htmlentities ($item->title, ENT_COMPAT | ENT_HTML401, 'UTF-8')
 			);

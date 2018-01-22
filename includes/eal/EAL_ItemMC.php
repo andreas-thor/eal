@@ -8,7 +8,6 @@ class EAL_ItemMC extends EAL_Item {
 
 	
 	function __construct(int $item_id = -1, string $prefix="") {
-		$this->type = "itemmc";
 		$this->answers = array (
 				array ('answer' => '', 'positive' => 1, 'negative' => 0),
 				array ('answer' => '', 'positive' => 1, 'negative' => 0),
@@ -91,7 +90,7 @@ class EAL_ItemMC extends EAL_Item {
 		
 		global $wpdb;
 		$this->answers = array();
-		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
+		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_{$this->getType()} WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
 		foreach ($sqlres as $a) {
 			array_push ($this->answers, array ('answer' => $a['answer'], 'positive' => $a['positive'], 'negative' => $a['negative']));
 		}
@@ -106,7 +105,7 @@ class EAL_ItemMC extends EAL_Item {
 	public static function save ($post_id, $post) {
 	
 		$item = new EAL_ItemMC();
-		if ($_POST["post_type"] != $item->type) return;
+		if ($_POST["post_type"] != $item->getType()) return;
 		$item->saveToDB();
 	}
 	
@@ -130,14 +129,14 @@ class EAL_ItemMC extends EAL_Item {
 			
 				
 			// replace answers
-			$query = "REPLACE INTO {$wpdb->prefix}eal_{$this->type} (item_id, id, answer, positive, negative) VALUES ";
+			$query = "REPLACE INTO {$wpdb->prefix}eal_{$this->getType()} (item_id, id, answer, positive, negative) VALUES ";
 			$query .= implode(', ', $insert);
 			$wpdb->query( $wpdb->prepare("$query ", $values));
 			
 		}
 
 		// delete remaining answers
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$this->type} WHERE item_id=%d AND id>%d", array ($this->getId(), count($this->answers))));
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$this->getType()} WHERE item_id=%d AND id>%d", array ($this->getId(), count($this->answers))));
 		
 	}
 	

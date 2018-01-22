@@ -1,11 +1,9 @@
 <?php
 
+require_once 'EAL_Object.php';
 
-class EAL_Review {
+class EAL_Review extends EAL_Object {
 
-	public $type;
-	
-	public $id;
 	public $item_id;
 	public $item;
 	public $score;
@@ -21,8 +19,8 @@ class EAL_Review {
 	
 	function __construct(int $review_id = -1) {
 	
-		$this->type = 'review';
-		$this->id = -1;
+		parent::__construct();
+		$this->setId (-1);
 		$this->item_id = -1;
 		$this->item = null;
 			
@@ -41,14 +39,14 @@ class EAL_Review {
 		if ($review_id != -1) {
 			$this->loadFromDB($review_id);
 		} else {
-			if ($_POST["post_type"] == $this->type) {
+			if ($_POST["post_type"] == $this->getType()) {
 				$this->loadFromPOSTRequest();
 			} else {
 				global $post;
 					
-				if ($post->post_type != $this->type) return;
+				if ($post->post_type != $this->getType()) return;
 				if (get_post_status($post->ID)=='auto-draft') {
-					$this->id = $post->ID;
+					$this->setId ($post->ID);
 					$this->item_id = isset ($_POST['item_id']) ? $_POST['item_id'] : $_GET['item_id'];
 				} else {
 					$this->loadFromDB($post->ID);
@@ -64,7 +62,7 @@ class EAL_Review {
 	 */
 	protected function loadFromPOSTRequest () {
 	
-		$this->id = $_POST["post_ID"];
+		$this->setId ($_POST["post_ID"]);
 		$this->item_id = isset ($_GET['item_id']) ? $_GET['item_id'] : (isset ($_POST['item_id']) ? $_POST['item_id'] : null);
 		$this->item = null;	
 		
@@ -93,7 +91,7 @@ class EAL_Review {
 		global $wpdb;
 		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_review WHERE id = {$review_id}", ARRAY_A);
 		
-		$this->id = $sqlres['id'];
+		$this->setId ($sqlres['id']);
 		$this->item_id = $sqlres['item_id'];
 		$this->item = null; // lazy loading
 			
@@ -130,7 +128,7 @@ class EAL_Review {
 			"{$wpdb->prefix}eal_review",
 			array_merge (
 				array(
-					'id' => $this->id,
+					'id' => $this->getId(),
 					'item_id' => $this->item_id,
 					'level_FW' => $this->level["FW"],
 					'level_KW' => $this->level["KW"],
@@ -152,7 +150,7 @@ class EAL_Review {
 	public static function save ($post_id, $post) {
 	
 		$review = new EAL_Review();
-		if ($_POST["post_type"] != $review->type) return;
+		if ($_POST["post_type"] != $review->getType()) return;
 		$review->saveToDB();
 	}
 	

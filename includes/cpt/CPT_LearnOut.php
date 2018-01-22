@@ -2,6 +2,8 @@
 
 require_once("CPT_Object.php");
 require_once(__DIR__ . "/../eal/EAL_LearnOut.php");
+require_once(__DIR__ . "/../html/HTML_Learnout.php");
+
 
 class CPT_LearnOut extends CPT_Object {
 	
@@ -49,7 +51,7 @@ class CPT_LearnOut extends CPT_Object {
 		$learnout = new EAL_LearnOut();
 	
 		$domain = RoleTaxonomy::getCurrentRoleDomain();
-		if (($domain["name"] != "") && ($learnout->domain != $domain["name"])) {
+		if (($domain["name"] != "") && ($learnout->getDomain() != $domain["name"])) {
 			wp_die ("Learning outcome  does not belong to your current domain!");
 		}
 		global $post;
@@ -58,7 +60,7 @@ class CPT_LearnOut extends CPT_Object {
 		
 		add_meta_box('mb_description', 'Beschreibung', array ($this, 'WPCB_mb_description'), $this->type, 'normal', 'default', array ('name' => 'learnout_description', 'value' => $learnout->description) );
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $learnout->level, 'prefix' => 'learnout'));
-		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$learnout->domain], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $learnout->domain ));
+		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$learnout->getDomain()], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $learnout->getDomain() ));
 		
 		
 		

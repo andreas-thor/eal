@@ -168,7 +168,7 @@ class BulkViewer {
 						unset($items[$item->getId()]);	// remove items without any review
 					} else {
 						foreach ($itemreviews as $review) {
-							$reviews[$review->id] = $review;	// add reviews (and keep item)
+							$reviews[$review->getId()] = $review;	// add reviews (and keep item)
 						}
 					}
 				}
@@ -274,8 +274,8 @@ class BulkViewer {
 					<br style="clear:both;"/>
 				</div>',
 				self::getHTML_Body($learnout->title, 
-					HTML_Learnout::getHTML_LearnOut($learnout, "lo_{$learnout->id}_"), 
-					HTML_Learnout::getHTML_Metadata($learnout, $editable ? HTML_Object::VIEW_EDIT   : HTML_Object::VIEW_STUDENT, "lo_{$learnout->id}_"))
+					HTML_Learnout::getHTML_LearnOut($learnout, "lo_{$learnout->getId()}_"), 
+					HTML_Learnout::getHTML_Metadata($learnout, $editable ? HTML_Object::VIEW_EDIT   : HTML_Object::VIEW_STUDENT, "lo_{$learnout->getId()}_"))
 			));
 		}
 	

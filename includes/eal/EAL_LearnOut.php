@@ -1,26 +1,21 @@
 <?php
 
+require_once 'EAL_Object.php';
 
 
-class EAL_LearnOut {
+class EAL_LearnOut extends EAL_Object  {
 
-	public $type;	// will be set in subclasses (EAL_ItemMC, EAL_ItemSC, ...)
-	public $domain;	// each LO belongs to a domain (when newly created: domain = current user's role domain)
-	
-	public $id;
 	public $title;
 	public $description;
-	
 	public $level;
 	
 	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	
 	
 	function __construct(int $learnout_id = -1, string $prefix="") {
-		
-		$this->type = 'learnout';
-		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
-		$this->id = -1;
+
+		parent::__construct();
+		$this->setId (-1);
 		$this->title = '';
 		$this->description = 'Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage ...';
 		$this->level = ["FW" => null, "KW" => null, "PW" => null];
@@ -28,14 +23,14 @@ class EAL_LearnOut {
 		if ($learnout_id > 0) {
 			$this->loadFromDB($learnout_id);
 		} else {
-			if ($_POST[$prefix."post_type"] == $this->type) {
+			if ($_POST[$prefix."post_type"] == $this->getType()) {
 				$this->loadFromPOSTRequest($prefix);
 			} else {
 				global $post;
 					
-				if ($post->post_type != $this->type) return;
+				if ($post->post_type != $this->getType()) return;
 				if (get_post_status($post->ID)=='auto-draft') {
-					$this->id = $post->ID;
+					$this->setId ($post->ID);
 				} else {
 					$this->loadFromDB($post->ID);
 				}
@@ -43,22 +38,39 @@ class EAL_LearnOut {
 		}	
 	}
 	
+	public function getId (): int {
+		return $this->id;
+	}
+	
+	
+	/*
+	 * Id must be an integer
+	 */
+	
+	public function setId ($id) {
+		$this->id = intval($id);
+		if ($this->id==0) {
+			$this->id = -1;
+		}
+	}
+	
+	
 	/**
 	 * Initialize learning outcome from _POST Request data
 	 */
 	protected function loadFromPOSTRequest (string $prefix="") {
 	
-		$this->id = $_POST[$prefix."post_ID"];
+		$this->setId ($_POST[$prefix."post_ID"]);
 		$this->title = stripslashes($_POST[$prefix."post_title"]);
 		$this->description = isset ($_POST[$prefix.'learnout_description']) ? html_entity_decode (stripslashes($_POST[$prefix.'learnout_description'])) : null;
 		$this->level["FW"] = $_POST[$prefix.'learnout_level_FW'] ?? null;
 		$this->level["KW"] = $_POST[$prefix.'learnout_level_KW'] ?? null;
 		$this->level["PW"] = $_POST[$prefix.'learnout_level_PW'] ?? null;
 		  
-		$this->domain = $_POST[$prefix."domain"] ?? "";
-		if (($this->domain == "") && (isset($_POST[$prefix.'tax_input']))) {
+		$this->setDomain($_POST[$prefix."domain"]);
+		if (($this->getDomain() == "") && (isset($_POST[$prefix.'tax_input']))) {
 			foreach ($_POST[$prefix.'tax_input'] as $key => $value) {
-				$this->domain = $key;
+				$this->setDomain($key);
 				break;
 			}
 		}
@@ -71,14 +83,14 @@ class EAL_LearnOut {
 	protected function loadFromDB ($item_id) {
 		
 		global $wpdb;
-		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->type} WHERE id = {$item_id}", ARRAY_A);
-		$this->id = $sqlres['id'];
+		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->getType()} WHERE id = {$item_id}", ARRAY_A);
+		$this->setId ($sqlres['id']);
 		$this->title = $sqlres['title'];
 		$this->description = $sqlres['description'];
 		$this->level["FW"] = $sqlres['level_FW'];
 		$this->level["KW"] = $sqlres['level_KW'];
 		$this->level["PW"] = $sqlres['level_PW'];
-		$this->domain = $sqlres['domain'];
+		$this->setDomain($sqlres['domain']);
 	}
 	
 	
@@ -92,7 +104,7 @@ class EAL_LearnOut {
 			JOIN {$wpdb->prefix}posts P ON (P.ID = I.ID) 
 			WHERE P.post_parent = 0 
 			AND P.post_status IN ('publish', 'pending', 'draft') 
-			AND I.learnout_id = {$this->id}";
+			AND I.learnout_id = {$this->getId()}";
 		
 		return $wpdb->get_col ($sql);
 	}	
@@ -123,15 +135,15 @@ class EAL_LearnOut {
 		
 		global $wpdb;
 		$wpdb->replace(
-		"{$wpdb->prefix}eal_{$this->type}",
+			"{$wpdb->prefix}eal_{$this->getType()}",
 		array(
-				'id' => $this->id,
+				'id' => $this->getId(),
 				'title' => $this->title,
 				'description' => $this->description,
 				'level_FW' => $this->level["FW"],
 				'level_KW' => $this->level["KW"],
 				'level_PW' => $this->level["PW"],
-				'domain' => $this->domain
+				'domain' => $this->getDomain()
 		),
 		array('%d','%s','%s','%d','%d','%d','%s')
 		);
@@ -140,7 +152,7 @@ class EAL_LearnOut {
 	public static function save ($post_id, $post) {
 	
 		$item = new EAL_LearnOut();
-		if ($_POST["post_type"] != $item->type) return;
+		if ($_POST["post_type"] != $item->getType()) return;
 		$item->saveToDB();
 	}
 	

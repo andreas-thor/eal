@@ -20,9 +20,8 @@ class TaskPoolGenerator {
 	private function init (array $dimensions): array {
 		
 		
-		
 		$items = EAL_ItemBasket::getItems();
-		$itemids = array_values (array_map(function ($item) { return $item->getId(); }, $items));
+		$itemids = ItemExplorer::getItemIds($items);
 		
 		$mapItemId2ItemIndex = [];	// item id -> itemn index (0 ... count(items)-1)
 		$itemVectors = array();

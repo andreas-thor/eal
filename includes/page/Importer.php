@@ -58,9 +58,9 @@ class Importer {
 				$postarr['ID'] = 0;	// no EAL-ID
 				$postarr['post_title'] = $item->title;
 				$postarr['post_status'] = $status;
-				$postarr['post_type'] = $item->type;
+				$postarr['post_type'] = $item->getType();
 				$postarr['post_content'] = microtime();
-				$postarr['tax_input'] = array ($item->domain => $terms);
+				$postarr['tax_input'] = array ($item->getDomain() => $terms);
 				$item->setId (wp_insert_post ($postarr));	// returns the item_id of the created post / item
 			} else {
 				$item->setId ($itemid);
@@ -68,7 +68,7 @@ class Importer {
 				$post->post_title = $item->title;
 				$post->post_status = $status;
 				$post->post_content = microtime();	// ensures revision
-				wp_set_post_terms($item->getId(), $terms, $item->domain, FALSE );
+				wp_set_post_terms($item->getId(), $terms, $item->getDomain(), FALSE );
 				wp_update_post ($post);
 			}
 		
@@ -94,16 +94,16 @@ class Importer {
 			$terms = $_POST[$prefix."taxonomy"];
 		
 	
-			$learnout->id = $learnoutid;
-			$post = get_post ($learnout->id);
+			$learnout->setId($learnoutid);
+			$post = get_post ($learnout->getId());
 			$post->post_title = $learnout->title;
 			$post->post_status = "publish";
 			$post->post_content = microtime();	// ensures revision
-			wp_set_post_terms($learnout->id, $terms, $learnout->domain, FALSE );
+			wp_set_post_terms($learnout->getId(), $terms, $learnout->getDomain(), FALSE );
 			wp_update_post ($post);
 		
 			$learnout->saveToDB();
-			array_push ($result, $learnout->id);
+			array_push ($result, $learnout->getId());
 		}
 		return $result;		
 		

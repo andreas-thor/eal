@@ -1,14 +1,10 @@
 <?php
 
 require_once (__DIR__ . "/../class.CLA_RoleTaxonomy.php");
+require_once 'EAL_Object.php';
 
+class EAL_Item extends EAL_Object {
 
-class EAL_Item {
-
-	public $type;	// will be set in subclasses (EAL_ItemMC, EAL_ItemSC, ...)
-	public $domain;	// each item belongs to a domain (when newly created: domain = current user's role domain)
-	
-	private $id;
 	public $title;
 	public $description;
 	public $question;
@@ -49,13 +45,14 @@ class EAL_Item {
 	
 	function __construct(int $item_id = -1, string $prefix="") {
 		
+		parent::__construct();
 		
 		if ($item_id > 0) {
 			$this->loadFromDB($item_id);
 			return;
 		} 
 		
-		if ($_POST[$prefix."post_type"] == $this->type) {
+		if ($_POST[$prefix."post_type"] == $this->getType()) {
 			$this->loadFromPOSTRequest($prefix);
 			return;
 		} 
@@ -73,10 +70,9 @@ class EAL_Item {
 		$this->note = "";
 		$this->flag = 0;
 			
-		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];		
 		
 		global $post;
-		if ($post->post_type != $this->type) return;
+		if ($post->post_type != $this->getType()) return;
 
 		if (get_post_status($post->ID)=='auto-draft') {
 			$this->setId($post->ID);
@@ -86,20 +82,7 @@ class EAL_Item {
 	}
 	
 	
-	public function getId (): int {
-		return $this->id;
-	}
-	
-	/* 
-	 * Id must be an integer
-	 */
-	
-	public function setId ($id) {
-		$this->id = intval($id);
-		if ($this->id==0) {
-			$this->id = -1;
-		}
-	}
+
 	
 	
 	
@@ -136,10 +119,10 @@ class EAL_Item {
 		$this->maxnumber = null;
 		
 		// 	$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
-		$this->domain = $_POST[$prefix."domain"] ?? ""; 
-		if (($this->domain == "") && (isset($_POST[$prefix.'tax_input']))) {
+		$this->setDomain($_POST[$prefix."domain"]); 
+		if (($this->getDomain() == "") && (isset($_POST[$prefix.'tax_input']))) {
 			foreach ($_POST[$prefix.'tax_input'] as $key => $value) {
-				$this->domain = $key;
+				$this->setDomain($key);
 				break;
 			}
 		}
@@ -149,7 +132,7 @@ class EAL_Item {
 	protected function loadFromDB (int $item_id) {
 	
 		global $wpdb;
-		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_item WHERE id = {$item_id} AND type ='{$this->type}'", ARRAY_A);
+		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_item WHERE id = {$item_id} AND type ='{$this->getType()}'", ARRAY_A);
 	
 		$this->setId ($sqlres['id']);
 		$this->title = $sqlres['title'];
@@ -164,14 +147,14 @@ class EAL_Item {
 		$this->learnout_id = $sqlres['learnout_id'];
 		$this->learnout = null; // lazy loading
 		
-		$this->minnumber = ($this->type == "itemmc") && (isset($sqlres['minnumber'])) ? $sqlres['minnumber'] : null;
-		$this->maxnumber = ($this->type == "itemmc") && (isset($sqlres['maxnumber'])) ? $sqlres['maxnumber'] : null;
+		$this->minnumber = ($this->getType() == "itemmc") && (isset($sqlres['minnumber'])) ? $sqlres['minnumber'] : null;
+		$this->maxnumber = ($this->getType() == "itemmc") && (isset($sqlres['maxnumber'])) ? $sqlres['maxnumber'] : null;
 		
 		$this->difficulty = $sqlres['difficulty'];
 		$this->note = $sqlres['note'];
 		$this->flag = $sqlres['flag'];
 		
-		$this->domain = $sqlres['domain'];
+		$this->setDomain($sqlres['domain']);
 	}
 	
 	
@@ -221,8 +204,8 @@ class EAL_Item {
 					'points'   => $this->getPoints(),
 					'difficulty' => $this->difficulty,
 					'learnout_id' => $this->learnout_id,
-					'type' => $this->type,
-					'domain' => $this->domain,
+					'type' => $this->getType(),
+					'domain' => $this->getDomain(),
 					'note' => $this->note,
 					'flag' => $this->flag,
 					'minnumber' => $this->minnumber,

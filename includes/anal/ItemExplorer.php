@@ -32,7 +32,7 @@ class ItemExplorer {
 			$result = ['itemsc' => array(), 'itemmc' => array()];
 			foreach ($itemids as $item_id) {
 				$item = $items[$item_id];
-				array_push ($result[$item->type], $item_id);
+				array_push ($result[$item->getType()], $item_id);
 			}
 			return $result;
 		}
@@ -88,11 +88,11 @@ class ItemExplorer {
 			$result = array();
 			foreach ($itemids as $item_id) {
 				$item = $items[$item_id];
-				$terms = get_the_terms ($item_id, $item->domain);
+				$terms = get_the_terms ($item_id, $item->getDomain());
 				if (is_array($terms)) {
 					foreach ($terms as $term) {
 						
-						$term_list = get_ancestors($term->term_id, $item->domain);	// get the list of ancestor term_ids from lowest to highest
+						$term_list = get_ancestors($term->term_id, $item->getDomain());	// get the list of ancestor term_ids from lowest to highest
 						array_unshift($term_list, $term->term_id);	// add the current term_id at the beginning (lowest)
 						
 						if (count($term_list)>=$level) {
@@ -185,6 +185,21 @@ class ItemExplorer {
 			case 'dim': 	return ["FW"=>"FW", "KW"=>"KW", "PW"=>"PW"];
 		}
 		return [];
+	}
+	
+	
+	
+	public static function getItemIds (array $items) {
+		
+		$result = array();
+		foreach ($items as $item) {
+			if ($item instanceof EAL_Item) {
+				$result[] = $item->getId();
+			}
+		}
+		
+		return $result;
+		
 	}
 	
 

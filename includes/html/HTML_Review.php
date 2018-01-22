@@ -99,7 +99,7 @@ class HTML_Review {
 					<span style="float: right; font-weight:normal" ><a href="post.php?action=edit&post=%d">Edit</a></span>
 				</h2>
 				<div class="inside">%s</div>
-			</div>', $review->id, self::getHTML_Overall($review, $viewType, $prefix));
+			</div>', $review->getId(), self::getHTML_Overall($review, $viewType, $prefix));
 	
 	
 		// Level-Table
