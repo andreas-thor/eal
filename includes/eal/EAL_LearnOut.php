@@ -12,13 +12,15 @@ class EAL_LearnOut extends EAL_Object  {
 	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	
 	
-	function __construct(int $learnout_id = -1, string $prefix="") {
+	
+	function __construct(int $learnout_id, string $prefix="") {
 
 		parent::__construct();
 		$this->setId (-1);
 		$this->title = '';
 		$this->description = 'Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage ...';
 		$this->level = ["FW" => null, "KW" => null, "PW" => null];
+		
 		
 		if ($learnout_id > 0) {
 			$this->loadFromDB($learnout_id);
@@ -38,21 +40,6 @@ class EAL_LearnOut extends EAL_Object  {
 		}	
 	}
 	
-	public function getId (): int {
-		return $this->id;
-	}
-	
-	
-	/*
-	 * Id must be an integer
-	 */
-	
-	public function setId ($id) {
-		$this->id = intval($id);
-		if ($this->id==0) {
-			$this->id = -1;
-		}
-	}
 	
 	
 	/**
@@ -151,7 +138,7 @@ class EAL_LearnOut extends EAL_Object  {
 	
 	public static function save ($post_id, $post) {
 	
-		$item = new EAL_LearnOut();
+		$item = new EAL_LearnOut(-1);
 		if ($_POST["post_type"] != $item->getType()) return;
 		$item->saveToDB();
 	}

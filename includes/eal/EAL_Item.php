@@ -86,10 +86,9 @@ class EAL_Item extends EAL_Object {
 	
 	
 	
-	public static function load (string $item_type, int $item_id, string $prefix="") {
+	public static function load (string $item_type, int $item_id, string $prefix=""): EAL_Item {
 		if ($item_type == 'itemsc') return new EAL_ItemSC($item_id, $prefix);
 		if ($item_type == 'itemmc') return new EAL_ItemMC($item_id, $prefix);
-		return null;
 	}
 	
 	
@@ -158,31 +157,6 @@ class EAL_Item extends EAL_Object {
 	}
 	
 	
-
-	
-/*	
-	public function setPOST () {
-		
-		$_POST['post_type'] = $this->type;
-		$_POST['item_description'] = $this->description;
-		$_POST['item_question'] = $this->question;
-		$_POST['item_level_FW'] = $this->level["FW"];
-		$_POST['item_level_KW'] = $this->level["KW"];
-		$_POST['item_level_PW'] = $this->level["PW"];
-		$_POST['learnout_id'] = $this->learnout_id;
-		$_POST['difficulty'] = $this->difficulty;
-		$_POST['domain'] = $this->domain;
-		$_POST['item_note'] = $this->note;
-		$_POST['item_flag'] = $this->flag;
-		$_POST['post_content'] = microtime();
-	}
-*/	
-	
-	
-
-	
-	
-
 	
 	
 	public static function save ($post_id, $post) { }

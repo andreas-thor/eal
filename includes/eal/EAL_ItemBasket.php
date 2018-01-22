@@ -73,7 +73,7 @@ class EAL_ItemBasket {
 			if ($post->post_status == 'trash') continue;
 				
 			$item = EAL_Item::load($post->post_type, $item_id);
-			if ($item == null) continue;
+			if ($item->getId() < 0) continue;
 			$items[$item_id] = $item;
 		}
 		return $items;

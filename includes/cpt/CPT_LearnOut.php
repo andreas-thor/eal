@@ -48,7 +48,7 @@ class CPT_LearnOut extends CPT_Object {
 	public function WPCB_register_meta_box_cb () {
 	
 		global $learnout;
-		$learnout = new EAL_LearnOut();
+		$learnout = new EAL_LearnOut(-1);	// -1 == load from post
 	
 		$domain = RoleTaxonomy::getCurrentRoleDomain();
 		if (($domain["name"] != "") && ($learnout->getDomain() != $domain["name"])) {
