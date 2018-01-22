@@ -21,7 +21,7 @@ class HTML_Item  {
 	
 		$result = sprintf ("<select class='importstatus' style='width:100%%' name='%sitem_status' align='right'>", $prefix);
 		
-		if ($item->id > 0) {
+		if ($item->getId() > 0) {
 			foreach (["Published", "Pending Review", "Draft"] as $i=>$status) {
 				$result .= sprintf (
 					"<option %s value='%d' %s>%s %s</option>", 
@@ -38,7 +38,7 @@ class HTML_Item  {
 				$result .= sprintf (
 					"<option value='%d' %s>New as %s</option>",
 					-($i+1), // status value as int (negative value indicated "new")
-					($item->id < 0) && ($i==2) ? "selected" : "",	// select current: if new item => Draft (i==2)
+					($item->getId() < 0) && ($i==2) ? "selected" : "",	// select current: if new item => Draft (i==2)
 					$status);	// status value as string
 			}
 			$result .= "<option value='0'>Do not import</option>";	// "Do not import" option --> status_value = 0				
@@ -173,14 +173,14 @@ class HTML_Item  {
 	
 	public static function getHTML_Metadata (EAL_Item $item, int $viewType, $prefix) {
 	
-		$edit = ($item->id > 0) ? sprintf ('<span style="float: right; font-weight:normal" ><a href="post.php?action=edit&post=%d">Edit</a></span>', $item->id) : '';
+		$edit = ($item->getId() > 0) ? sprintf ('<span style="float: right; font-weight:normal" ><a href="post.php?action=edit&post=%d">Edit</a></span>', $item->getId()) : '';
 		
 		// Status and Id
 		$res = sprintf ('
 			<div id="mb_status" class="postbox ">
 				<h2 class="hndle"><span>Item (%s)</span>%s</h2>
 				<div class="inside">%s</div>
-			</div>', $item->id > 0 ? "ID=" . $item->id : "New", $edit, self::getHTML_Status($item, $viewType, $prefix));
+			</div>', $item->getId() > 0 ? "ID=" . $item->getId() : "New", $edit, self::getHTML_Status($item, $viewType, $prefix));
 		
 		
 		// Learning Outcome (Title + Description), if available
@@ -206,7 +206,7 @@ class HTML_Item  {
 				<div class="inside">%s</div>
 			</div>',
 			RoleTaxonomy::getDomains()[$item->domain],
-			HTML_Object::getHTML_Topic($item->domain, $item->id, $viewType, $prefix));
+			HTML_Object::getHTML_Topic($item->domain, $item->getId(), $viewType, $prefix));
 		
 		
 		// Note + Flag
@@ -226,7 +226,7 @@ class HTML_Item  {
 		  		<input type="hidden" name="%1$spost_title"  value="%5$s">
 				',
 				$prefix,
-				$item->id,
+				$item->getId(),
 				$item->type,
 				microtime(),
 				htmlentities ($item->title, ENT_COMPAT | ENT_HTML401, 'UTF-8')
@@ -297,7 +297,7 @@ class HTML_Item  {
  					</div>
  				</div>',
  				$namePrefix,
- 				$item->id,
+ 				$item->getId(),
  				wpautop($item->description),
  				wpautop($item->question),
  				$answers_html

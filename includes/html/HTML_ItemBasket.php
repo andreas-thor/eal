@@ -14,7 +14,7 @@ class HTML_ItemBasket  {
 	public static function getHTML_Statistics (array $items) {
 		
 		
-		$itemids = array_values (array_map(function ($item) { return $item->id; }, $items));
+		$itemids = array_values (array_map(function ($item) { return $item->getId(); }, $items));
 		
 		$labels = ["itemsc" => "Single Choice", "itemmc" => "Multiple Choice"];
 		$res_Type = sprintf ('<tr><td colspan="2"><b>%s</b></td></tr>', 'Item Typ');

@@ -105,7 +105,7 @@ class Blueprint {
 	
 	private static function getHTML_BlueprintForm (array $items): string {
 		
-		$itemids = array_values (array_map(function ($item) { return $item->id; }, $items));
+		$itemids = array_values (array_map(function ($item) { return $item->getId(); }, $items));
 		
 		$html  = sprintf("<form  enctype='multipart/form-data' action='admin.php?page=test_generator' method='post'>");
 		
@@ -217,8 +217,8 @@ class Blueprint {
 				
 				$symbol = "";
 				$link = "";
-				if (in_array($item->id, $pool)) {
-					$link = sprintf ("onClick='document.location.href=\"admin.php?page=view_item&itemid=%s\";'", $item->id);
+				if (in_array($item->getId(), $pool)) {
+					$link = sprintf ("onClick='document.location.href=\"admin.php?page=view_item&itemid=%s\";'", $item->getId());
 					if ($item->type == "itemsc") $symbol = "<span class='dashicons dashicons-marker'></span>";
 					if ($item->type == "itemmc") $symbol = "<span class='dashicons dashicons-forms'></span>";
 				}

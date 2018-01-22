@@ -56,7 +56,7 @@ class HTML_Object {
 		
 	
 	
-	public static function getHTML_Topic (string $domain, string $id, int $viewType, string $prefix = "") {
+	public static function getHTML_Topic (string $domain, int $id, int $viewType, string $prefix = "") {
 		// <input type="hidden" name="%staxonomy[]" value="0">
 	
 		if (($viewType == HTML_Object::VIEW_IMPORT) || ($viewType == HTML_Object::VIEW_EDIT)) {

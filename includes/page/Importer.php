@@ -61,14 +61,14 @@ class Importer {
 				$postarr['post_type'] = $item->type;
 				$postarr['post_content'] = microtime();
 				$postarr['tax_input'] = array ($item->domain => $terms);
-				$item->id = wp_insert_post ($postarr);	// returns the item_id of the created post / item
+				$item->setId (wp_insert_post ($postarr));	// returns the item_id of the created post / item
 			} else {
-				$item->id = $itemid;
-				$post = get_post ($item->id);
+				$item->setId ($itemid);
+				$post = get_post ($item->getId());
 				$post->post_title = $item->title;
 				$post->post_status = $status;
 				$post->post_content = microtime();	// ensures revision
-				wp_set_post_terms($item->id, $terms, $item->domain, FALSE );
+				wp_set_post_terms($item->getId(), $terms, $item->domain, FALSE );
 				wp_update_post ($post);
 			}
 		
@@ -78,7 +78,7 @@ class Importer {
 			</script>
 			<?php
 			$item->saveToDB();
-			array_push ($result, $item->id);
+			array_push ($result, $item->getId());
 		}
 		return $result;
 	}
@@ -131,15 +131,20 @@ class Importer {
 		$items_content = array();
 		
 		foreach ($items as $item) {
-			array_push ($itemids, $item->id);
-			array_push ($items_title, $item->id . ". " . $item->title);
+			
+			if ($item->getId() == NULL) {
+				$qw = 4;
+			}
+			
+			array_push ($itemids, $item->getId());
+			array_push ($items_title, $item->getId() . ". " . $item->title);
 			array_push ($items_content, sprintf('
 				<div id="poststuff">
 					<hr/>
 					%s
 					<br style="clear:both;"/>
 				</div>',
-				BulkViewer::getHTML_Body($item->title, HTML_Item::getHTML_Item($item, HTML_Object::VIEW_IMPORT, "item_{$item->id}_"), HTML_Item::getHTML_Metadata($item, HTML_Object::VIEW_IMPORT, "item_{$item->id}_"))
+				BulkViewer::getHTML_Body($item->title, HTML_Item::getHTML_Item($item, HTML_Object::VIEW_IMPORT, "item_{$item->getId()}_"), HTML_Item::getHTML_Metadata($item, HTML_Object::VIEW_IMPORT, "item_{$item->getId()}_"))
 			));
 		}
 

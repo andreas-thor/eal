@@ -30,8 +30,15 @@ class EAL_ItemBasket {
 			$itemids = $wpdb->get_col ($sql);
 					
 		}
-		update_user_meta (get_current_user_id(), 'itembasket_' . RoleTaxonomy::getCurrentRoleDomain()["name"], $itemids);
-		return $itemids;
+		
+		// convert into array of integers
+		$result = array();
+		foreach ($itemids as $id) {
+			$result[] = intval($id);
+		}
+		
+		update_user_meta (get_current_user_id(), 'itembasket_' . RoleTaxonomy::getCurrentRoleDomain()["name"], $result);
+		return $result;
 	}
 
 	/**

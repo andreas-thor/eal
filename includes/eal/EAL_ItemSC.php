@@ -108,7 +108,7 @@ class EAL_ItemSC extends EAL_Item {
 			$values = array();
 			$insert = array();
 			foreach ($this->answers as $k => $a) {
-				array_push($values, $this->id, $k+1, $a['answer'], $a['points']);
+				array_push($values, $this->getId(), $k+1, $a['answer'], $a['points']);
 				array_push($insert, "(%d, %d, %s, %d)");
 			}
 		
@@ -119,7 +119,7 @@ class EAL_ItemSC extends EAL_Item {
 		}
 		
 		// delete remaining answers
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$this->type} WHERE item_id=%d AND id>%d", array ($this->id, count($this->answers))));
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$this->type} WHERE item_id=%d AND id>%d", array ($this->getId(), count($this->answers))));
 		
 	}
 	

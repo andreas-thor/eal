@@ -165,7 +165,7 @@ class BulkViewer {
 				foreach ($items as $item) {
 					$itemreviews = $item->getReviews();
 					if (count($itemreviews) == 0) {
-						unset($items[$item->id]);	// remove items without any review
+						unset($items[$item->getId()]);	// remove items without any review
 					} else {
 						foreach ($itemreviews as $review) {
 							$reviews[$review->id] = $review;	// add reviews (and keep item)
@@ -192,7 +192,7 @@ class BulkViewer {
 				}
 			}
 			
-			array_push($items_title, $item->id . ". " . $item->title);
+			array_push($items_title, $item->getId() . ". " . $item->title);
 			array_push($items_content, sprintf('
 				<div id="poststuff">
 					<hr/>
@@ -203,8 +203,8 @@ class BulkViewer {
 					</div>
 				</div>',
 				self::getHTML_Body($item->title, 
-						HTML_Item::getHTML_Item    ($item, $editable ? HTML_Object::VIEW_REVIEW : HTML_Object::VIEW_STUDENT, "item_{$item->id}_"),	// REVIEW 
-						HTML_Item::getHTML_Metadata($item, $editable ? HTML_Object::VIEW_EDIT   : HTML_Object::VIEW_STUDENT, "item_{$item->id}_")), // EDIT
+					HTML_Item::getHTML_Item    ($item, $editable ? HTML_Object::VIEW_REVIEW : HTML_Object::VIEW_STUDENT, "item_{$item->getId()}_"),	// REVIEW 
+					HTML_Item::getHTML_Metadata($item, $editable ? HTML_Object::VIEW_EDIT   : HTML_Object::VIEW_STUDENT, "item_{$item->getId()}_")), // EDIT
 				$html_reviews
 			));
 		}

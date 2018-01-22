@@ -8,7 +8,7 @@ class EAL_Item {
 	public $type;	// will be set in subclasses (EAL_ItemMC, EAL_ItemSC, ...)
 	public $domain;	// each item belongs to a domain (when newly created: domain = current user's role domain)
 	
-	public $id;
+	private $id;
 	public $title;
 	public $description;
 	public $question;
@@ -60,7 +60,7 @@ class EAL_Item {
 			return;
 		} 
 
-		$this->id = $item_id;
+		$this->setId ($item_id);
 		$this->title = '';
 		$this->description = '';
 		$this->question = '';
@@ -79,11 +79,28 @@ class EAL_Item {
 		if ($post->post_type != $this->type) return;
 
 		if (get_post_status($post->ID)=='auto-draft') {
-			$this->id = $post->ID;
+			$this->setId($post->ID);
 		} else {
 			$this->loadFromDB($post->ID);
 		}
 	}
+	
+	
+	public function getId (): int {
+		return $this->id;
+	}
+	
+	/* 
+	 * Id must be an integer
+	 */
+	
+	public function setId ($id) {
+		$this->id = intval($id);
+		if ($this->id==0) {
+			$this->id = -1;
+		}
+	}
+	
 	
 	
 	public static function load (string $item_type, int $item_id, string $prefix="") {
@@ -98,7 +115,7 @@ class EAL_Item {
 	 */
 	protected function loadFromPOSTRequest (string $prefix="") {
 	
-		$this->id = $_POST[$prefix."post_ID"];
+		$this->setId ($_POST[$prefix."post_ID"]);
 		$this->title = stripslashes($_POST[$prefix."post_title"]);
 		$this->description = isset($_POST[$prefix.'item_description']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_description'])) : null;
 		$this->question = isset ($_POST[$prefix.'item_question']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_question'])) : null;
@@ -134,7 +151,7 @@ class EAL_Item {
 		global $wpdb;
 		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_item WHERE id = {$item_id} AND type ='{$this->type}'", ARRAY_A);
 	
-		$this->id = $sqlres['id'];
+		$this->setId ($sqlres['id']);
 		$this->title = $sqlres['title'];
 		$this->description = $sqlres['description'];
 		$this->question = $sqlres['question'];
@@ -194,7 +211,7 @@ class EAL_Item {
 		$wpdb->replace(
 			"{$wpdb->prefix}eal_item",
 			array(
-					'id' => $this->id,
+					'id' => $this->getId(),
 					'title' => $this->title,
 					'description' => $this->description,
 					'question' => $this->question,
@@ -261,7 +278,7 @@ class EAL_Item {
 			SELECT R.id
 			FROM {$wpdb->prefix}eal_review R
 			JOIN {$wpdb->prefix}posts RP ON (R.id = RP.id)
-			WHERE RP.post_parent=0 AND R.item_id = {$this->id} AND RP.post_status IN ('publish', 'pending', 'draft')");
+			WHERE RP.post_parent=0 AND R.item_id = {$this->getId()} AND RP.post_status IN ('publish', 'pending', 'draft')");
 		
 	}
 	
@@ -271,7 +288,7 @@ class EAL_Item {
 	
 	public function getStatusString () {
 		
-		switch (get_post_status($this->id)) {
+		switch (get_post_status($this->getId())) {
 			case 'publish': return 'Published';
 			case 'pending': return 'Pending Review';
 			case 'draft': return 'Draft';

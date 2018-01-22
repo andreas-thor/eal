@@ -81,10 +81,10 @@ class Ilias extends ImportExport {
 		foreach ($itemids as $item_id) {
 	
 			$item = new EAL_ItemSC($item_id);
-			if ($item->id != $item_id) {
+			if ($item->getId() != $item_id) {
 				$item = new EAL_ItemMC($item_id);
 			}
-			if ($item->id != $item_id) continue;
+			if ($item->getId() != $item_id) continue;
 					
 			if ($item->type == 'itemsc') {
 				$item_data = array (
@@ -114,7 +114,7 @@ class Ilias extends ImportExport {
 			$meta = array (
 					"ILIAS_VERSION" => "5.0.8 2015-11-24",
 					"QUESTIONTYPE" => $item_data["questiontype"],
-					"AUTHOR" => get_the_author_meta ('login', get_post_field( 'post_author', $item->id )),
+					"AUTHOR" => get_the_author_meta ('login', get_post_field( 'post_author', $item->getId() )),
 					"additional_cont_edit_mode" => "default",
 					"externalId" => "il_0_qst_{$item_id}",
 					"ealid" => $item_id,
@@ -372,7 +372,7 @@ class Ilias extends ImportExport {
 			// initialize item
 			$item = EAL_Item::load($item_type, is_numeric($item_id) ? $item_id : -1);
 			$countItems++;
-			if ($item->id == -1) $item->id = -$countItems;
+			if (($item->getId() == -1) || ($item->getId() == NULL)) $item->setId (-$countItems);
 				
 			// get title and description + question
 			$item->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
@@ -449,6 +449,9 @@ class Ilias extends ImportExport {
 				$item->maxnumber = ($max->length==0) ? count($item->answers) : $max[0]->nodeValue;
 			}
 			
+			if ($item->getId() == NULL) {
+				$qw = 1;
+			}
 			
 				
 			// update Item id (for newly created items)
