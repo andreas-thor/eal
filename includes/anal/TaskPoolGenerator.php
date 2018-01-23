@@ -89,28 +89,87 @@ class TaskPoolGenerator {
 	
 	private function generateGroupPools (array $rangeVectors) {
 		
+
+		$sumItemGroupVectors = array_fill (0, count($rangeVectors["min"]), 0);
+		
+		$minPool = array_fill (0, count($this->itemGroupVectors), 0);
+		$maxPool = array_fill (0, count($this->itemGroupVectors), 0);
+		
+		for ($index = 0; $index < count($this->itemGroupVectors); $index += 1) {
+			$maxPool[$index] = $this->itemGroupVectors[$index][0];
+			foreach ($this->itemGroupVectors[$index] as $dim => $val) {
+				$sumItemGroupVectors[$dim] += ($dim==0) ? $val : $this->itemGroupVectors[$index][0]*$val;
+			}
+		}
+		
+		
+		
+		for ($index = 0; $index < count($this->itemGroupVectors); $index += 1) {
+			foreach ($this->itemGroupVectors[$index] as $dim => $val) {
+				
+				$number = ($dim==0) ? $val : $this->itemGroupVectors[$index][0]*$val;
+				
+				if ($sumItemGroupVectors[$dim]-$number < $rangeVectors["min"][$dim]) {
+					$min = $rangeVectors["min"][$dim] - $sumItemGroupVectors[$dim] + $number;
+					$minPool[$index] = max ($minPool[$index], $min);
+				}
+			}
+		}
+		
+		
+		
+		
 		$this->groupPools = [];
 
 		
 		// pool = [g_0, g_1, ..., g_(n-1)] where g_k is the number of items in the pool of item group k 
 		// n = number of item groups 
-		$currentPool = array_fill (0, count($this->itemGroupVectors), 0);
+		$currentPool = $minPool; // array_fill (0, count($this->itemGroupVectors), 0);
 		
 		// values = [v_0, v_1, ..., v_(m-1)] where v_k is the number of items that fulfill condition (with index) k	 
 		// m = number of criteria
 		// condition v_0 = number of items overall
 		$currentValues = array_fill (0, count($rangeVectors["min"]), 0);
+		for ($index = 0; $index < count($this->itemGroupVectors); $index += 1) {
+			foreach ($this->itemGroupVectors[$index] as $dim => $val) {
+				$currentValues[$dim] += ($dim==0) ? $currentPool[$index] : $currentPool[$index]*$val;
+			}
+		}
+		
+		
+		for ($index = 0; $index < count($this->itemGroupVectors); $index += 1) {
+			foreach ($this->itemGroupVectors[$index] as $dim => $val) {
+				
+				$number_max = ($dim==0) ? $maxPool[$index] : $maxPool[$index]*$val;
+				$number_min = ($dim==0) ? $minPool[$index] : $minPool[$index]*$val;
+				
+				if ($currentValues[$dim] - $number_min + $number_max > $rangeVectors["max"][$dim]) {
+					$maxPool[$index] = $rangeVectors["max"][$dim] - $currentValues[$dim] + $number_min;
+				}
+			}
+		}
+		
+		
+		
+		
+		
+		
+		
 		
 		$currentGroupIndex = count($currentPool)-1;
 		
 		
 // 		$currentGroupIndex = count($currentPool)-1;
-		$poolRESET = TRUE;
+		$poolRESET = FALSE;
 		
 		
+		$time_start = time();
+		$time_break = $time_start + 10;
 		
 		
 		while (true) {
+			
+			if (time()>$time_break) break;
 			
 			// if reset: add at least so many items as int $rangeVectors["min"][0] = minimum number of all items
 			if ($poolRESET) {
@@ -124,15 +183,16 @@ class TaskPoolGenerator {
 				
 				for ($index = count($this->itemGroupVectors)-1; $index>=0; $index-=1) {
 					
-					$vmax = $this->itemGroupVectors[$index][0]; // max number of items in this group
+					$vmax = $maxPool[$index] /*$this->itemGroupVectors[$index][0]*/; // max number of items in this group
 					if ($index > $currentGroupIndex) {
 						
-						if ($noOfItemsToAdd>0) {
+						if ($noOfItemsToAdd>$minPool[$index]) {
 							$vnew = min ($vmax, $noOfItemsToAdd);
 							$noOfItemsToAdd -= $vnew;
 							$newCurrentGroupIndex = $index;
 						} else {
-							$vnew = 0;	// reset to 0
+							$vnew = $minPool[$index];	// reset to min value of this item group
+							$noOfItemsToAdd -= $vnew;
 						}
 					} else {
 						if ($noOfItemsToAdd>0) {
@@ -180,7 +240,7 @@ class TaskPoolGenerator {
 			}
 			
 			// if pool is too large OR we are at the end and cannot increase anymore in this group --> step back
-			if (  ($poolIsTooLarge) || ($currentPool[$currentGroupIndex] == $this->itemGroupVectors[$currentGroupIndex][0])  ) {
+			if (  ($poolIsTooLarge) || ($currentPool[$currentGroupIndex] == $maxPool[$currentGroupIndex] /* $this->itemGroupVectors[$currentGroupIndex][0]*/  )) {
 				
 				$poolRESET = TRUE;
 				
@@ -198,7 +258,7 @@ class TaskPoolGenerator {
 					$currentGroupIndex -= 1;
 					if ($currentGroupIndex < 0) return;		// no more group --> EXIT
 					
-				} while ($currentPool[$currentGroupIndex] == $this->itemGroupVectors[$currentGroupIndex][0]);
+				} while ($currentPool[$currentGroupIndex] == $maxPool[$currentGroupIndex] /*$this->itemGroupVectors[$currentGroupIndex][0]*/ );
 				
 			}
 			
