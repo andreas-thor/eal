@@ -87,6 +87,136 @@ class TaskPoolGenerator {
 	
 	
 	
+	
+	
+	private function generateGroupPools2 (array $rangeVectors) {
+		
+		$this->groupPools = [];
+		
+		
+		
+		$sumItemGroupVectors = array_fill (0, count($rangeVectors["min"]), 0);
+		for ($index = 0; $index < count($this->itemGroupVectors); $index += 1) {
+			foreach ($this->itemGroupVectors[$index] as $dim => $val) {
+				$sumItemGroupVectors[$dim] += ($dim==0) ? $val : $this->itemGroupVectors[$index][0]*$val;
+			}
+		}
+		
+		$minPool = array_fill (0, count($this->itemGroupVectors), 0);
+		for ($index = 0; $index < count($this->itemGroupVectors); $index += 1) {
+			foreach ($this->itemGroupVectors[$index] as $dim => $val) {
+				$number = ($dim==0) ? $val : $this->itemGroupVectors[$index][0]*$val;
+				if ($sumItemGroupVectors[$dim]-$number < $rangeVectors["min"][$dim]) {
+					$min = $rangeVectors["min"][$dim] - $sumItemGroupVectors[$dim] + $number;
+					$minPool[$index] = max ($minPool[$index], $min);
+				}
+			}
+		}
+		
+		
+		$this->groupPools = [];
+		$currentPool = $minPool;
+		$currentValues = array_fill (0, count($rangeVectors["min"]), 0);
+		
+		
+		// values = [v_0, v_1, ..., v_(m-1)] where v_k is the number of items that fulfill condition (with index) k
+		// m = number of criteria
+		// condition v_0 = number of items overall
+		$currentValues = array_fill (0, count($rangeVectors["min"]), 0);
+		for ($index = 0; $index < count($this->itemGroupVectors); $index += 1) {
+			foreach ($this->itemGroupVectors[$index] as $dim => $val) {
+				$currentValues[$dim] += ($dim==0) ? $currentPool[$index] : $currentPool[$index]*$val;
+			}
+		}
+		
+		
+		
+		$backlog = [];	// list of group indexes where we added an item
+		$time_start = time();
+		$time_break = $time_start + 300;
+		
+		while (true) {
+			
+			if (time()>$time_break) break;
+			
+			// check current pool
+			$poolIsOk = TRUE;
+			$poolIsTooLarge = FALSE;
+			foreach ($currentValues as $dim => $value) {
+				if ($value < $rangeVectors["min"][$dim])  {
+					$poolIsOk = FALSE;
+				}
+				if ($value > $rangeVectors["max"][$dim]) {
+					$poolIsOk = FALSE;
+					$poolIsTooLarge = TRUE;
+					break;
+				}
+			}
+			
+			// if ok --> add to result
+			if ($poolIsOk) {
+				$this->groupPools[] = $currentPool;
+			}
+			
+			if (!$poolIsTooLarge) {
+
+				$addIndex = (count($backlog)==0) ? 0 : $backlog[count($backlog)-1];
+				
+				while ($currentPool[$addIndex] == $this->itemGroupVectors[$addIndex][0]) {
+					$addIndex++;
+					if ($addIndex == count($currentPool)) {
+						$poolIsTooLarge = TRUE;
+						break;
+					}
+				}
+			}
+			
+			
+			while ($poolIsTooLarge) {
+				
+				if (count($backlog)==0) break;
+	
+				$poolIsTooLarge = FALSE;
+				$lastIndex = array_pop($backlog);
+				
+				// remove 1 item of $lastIndex
+				$currentPool[$lastIndex] -= 1;
+				foreach ($this->itemGroupVectors[$lastIndex] as $dim => $val) {
+					$currentValues[$dim] -= ($dim==0) ? 1 : $val;	// $val is either 0 or 1; $dim=0 counts the number of items
+				}
+				
+				// get the next index to add
+				$addIndex = $lastIndex+1;
+				if ($addIndex == count($currentPool)) {
+					$poolIsTooLarge = TRUE;		// cannot find an index --> must go back one step
+					continue;
+				}
+				
+				while ($currentPool[$addIndex] == $this->itemGroupVectors[$addIndex][0]) {
+					$addIndex++;
+					if ($addIndex == count($currentPool)) {
+						$poolIsTooLarge = TRUE;		// cannot find an index --> must go back one step
+						break;
+					}
+				}
+				
+			}
+			
+			if ($poolIsTooLarge) { 
+				break;
+			}
+			
+			$backlog[] = $addIndex;
+			$currentPool[$addIndex] += 1;
+			foreach ($this->itemGroupVectors[$addIndex] as $dim => $val) {
+				$currentValues[$dim] += ($dim==0) ? 1 : $val;	// $val is either 0 or 1; $dim=0 counts the number of items
+			}
+
+		}
+			
+	}
+	
+	
 	private function generateGroupPools (array $rangeVectors) {
 		
 
@@ -164,12 +294,12 @@ class TaskPoolGenerator {
 		
 		
 		$time_start = time();
-		$time_break = $time_start + 10;
+		$time_break = $time_start + 60;
 		
 		
 		while (true) {
 			
-			if (time()>$time_break) break;
+// 			if (time()>$time_break) break;
 			
 			// if reset: add at least so many items as int $rangeVectors["min"][0] = minimum number of all items
 			if ($poolRESET) {
@@ -282,7 +412,7 @@ class TaskPoolGenerator {
 	public function generatePools (array $dimensions) {
 		
 		
-		$this::generateGroupPools($this::init($dimensions));
+		$this::generateGroupPools2 ($this::init($dimensions));
 		
 		$_SESSION["tpg_groupPools"] = $this->groupPools;
 		$_SESSION["tpg_itemGroupVectors"] = $this->itemGroupVectors;
