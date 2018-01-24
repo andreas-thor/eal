@@ -44,7 +44,7 @@ class Blueprint {
 			}
 			
 			$tpg = new TaskPoolGenerator();
-			$tpg->generatePools($dimensions);
+			$tpg->generatePools($dimensions, $_SESSION['tpg_time']);
 		}
 		
 		
@@ -65,14 +65,14 @@ class Blueprint {
 			<script type="text/javascript" >
 	
 			jQuery(document).ready(function($) {
-				getItemPools(0, 100);
+				getItemPools(<?php print ($_SESSION["itempools_time"]??5) ?>, <?php print ($_SESSION["itempools_count"]??10) ?>);
 			});
 	
-			function getItemPools(page, count) {
+			function getItemPools(time, count) {
 	
 				var data = {
 						'action': 'getItemPools',
-						'itempools_page' : page, 	
+						'itempools_time' : time, 	
 						'itempools_count' : count 	
 					};
 	
@@ -91,13 +91,13 @@ class Blueprint {
 	
 	public static function getItemPools_callback () {
 		
-		$_SESSION["itempools_page"] = $_POST["itempools_page"];
+		$_SESSION["itempools_time"] = $_POST["itempools_time"];
 		$_SESSION["itempools_count"] = $_POST["itempools_count"];
 		
 		wp_send_json (
 			array (
-				'table_html' => self::getHTML_TaskPools($_SESSION["itempools_page"], $_SESSION["itempools_count"]),
-				'itempools_page' => $_SESSION["itempools_page"],
+				'table_html' => self::getHTML_TaskPools($_SESSION["itempools_time"], $_SESSION["itempools_count"]),
+				'itempools_time' => $_SESSION["itempools_time"],
 				'itempools_count' => $_SESSION["itempools_count"])
 			);
 	}
@@ -165,53 +165,30 @@ class Blueprint {
 	
 	
 	
-	private static function getHTML_TaskPools ($page, int $count): string {
+	private static function getHTML_TaskPools (int $time, int $count): string {
 		
 		$items = EAL_ItemBasket::getItems();
+		$pools = (new TaskPoolGenerator())->getItemPoolsAtRandom($time, $count);
 		
-		$g_count = gmp_init ($count);
-		$g_start = gmp_mul (gmp_init($page), $g_count);
-		$pools = (new TaskPoolGenerator())->getItemPools($g_start, $g_count);
-		
-		
-		// all pages: 0 ... $page_count-1; page range = to be displayed around current page
-		$page_count = gmp_div (gmp_sub (gmp_add ($g_count, $_SESSION["tpg_numberOfItemPools"]), gmp_init(1)), $g_count);
-		$page_range = [ 
-			gmp_cmp($page, gmp_init(3)) > 0 ? gmp_sub($page, gmp_init(2)) : gmp_init(0), 
-			gmp_cmp(gmp_add(gmp_init(5), $page), $page_count) > 0 ? gmp_sub ($page_count, gmp_init(1)) : gmp_add(gmp_init(2), $page)];
-			
-			
-		$result = sprintf ("<div style='padding-bottom:1em'> ");
-		if (gmp_cmp ($page_range[0], gmp_init(0)) > 0) {
-			$result .= sprintf ("&nbsp;&nbsp;<a class='button' %s onclick='getItemPools(%d, %d)'>&nbsp; %d &nbsp; </a>", ($page==0)?"disabled":"", 0, $count, 1);
-			$result .= sprintf ("&nbsp;&nbsp;...");
-		}
-		
-		$p = $page_range[0];
-		while (gmp_cmp($page_range[1], $p) >= 0) {
-			$result .= sprintf ("&nbsp;&nbsp;<a class='button' %s onclick='getItemPools(%s, %d)'>&nbsp; %s &nbsp; </a>", (gmp_cmp($p, gmp_init($page))==0)?"disabled":"", gmp_strval($p), $count, gmp_strval(gmp_add ($p, gmp_init(1))));
-			$p = gmp_add ($p, gmp_init(1));
-		}
-		
-		if (gmp_cmp ($page_range[1], gmp_sub ($page_count, gmp_init(1))) < 0) {
-			$result .= sprintf ("&nbsp;&nbsp;...");
-			$result .= sprintf ("&nbsp;&nbsp;<a class='button' %s onclick='getItemPools(%s, %d)'>&nbsp; %s &nbsp; </a>", (gmp_cmp(gmp_sub ($page_count, gmp_init(1)), gmp_init($page))==0)?"disabled":"", gmp_strval(gmp_sub ($page_count, gmp_init(1))), $count, gmp_strval($page_count));
-		}
-		
-		
+		// 
+		$result  = sprintf ("<div style='padding-bottom:1em'> ");
+		$result .= sprintf ("<a class='button' onclick='this.style.display=\"none\"; getItemPools(document.getElementById(\"itempools_time\").value, document.getElementById(\"itempools_count\").value)'>Load</a>");
+		$result .= sprintf ("&nbsp;&nbsp;<input style='width:4em' type='number' id='itempools_count' min='1' max='50' value='%d'/>", $count);
+		$result .= sprintf ("&nbsp;&nbsp;item pools at random in maximal");
+		$result .= sprintf ("&nbsp;&nbsp;<input style='width:4em' type='number' id='itempools_time' min='1' max='3000' value='%d'/>&nbsp;&nbsp;seconds", $time);
 		$result .= sprintf ("</div>");
 		
 		$result .= sprintf ("<table cellpadding='10px' class='widefat fixed' style='table-layout:fixed; width:%dem; background-color:rgba(0, 0, 0, 0);'>", 6+2*count($items));
 		$result .= "<col width='10em;' />";
 		$result .= str_repeat("<col width='2em;' />", count($items));
 		
-		$pool_label = $g_start;
+		$pool_label = 0;
 		
 		foreach ($pools as $pool) {
-			$pool_label = gmp_add ($pool_label, gmp_init(1));
+			$pool_label += 1;
 			$result .= sprintf ("<tr valign='middle'>");
 			$href = "admin.php?page=view_item&itemids=" . join (",", $pool);
-			$result .= sprintf ("<td style='overflow: hidden; padding:0px; padding-bottom:0.5em; padding-top:0.5em; padding-left:1em' ><a href='%s' class='button'>&nbsp;View #%s &nbsp;&nbsp;</a></td>", $href, gmp_strval($pool_label));
+			$result .= sprintf ("<td style='overflow: hidden; padding:0px; padding-bottom:0.5em; padding-top:0.5em; padding-left:1em' ><a href='%s' class='button'>&nbsp;View #%02d &nbsp;&nbsp;</a></td>", $href, $pool_label);
 			
 			foreach ($items as $item) {
 				
