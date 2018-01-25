@@ -3,8 +3,8 @@
 /*
  * Plugin Name: EAs.LiT (E-Assessment Literacy Tool)
  * Plugin URI: https://github.com/andreas-thor/eal
- * Description: Kollaborative, qualitätsgesicherte Erstellung von Items für E-Assessments.
- * Version: 2.0
+ * Description: Kollaborative, qualit&auml;tsgesicherte Erstellung von Items f&uuml;r E-Assessments.
+ * Version: 2018-01-24
  * Author: Andreas Thor
  * EMail: dr.andreas.thor@googlemail.com
  */

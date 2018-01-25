@@ -217,6 +217,53 @@ class TaskPoolGenerator {
 	
 	
 	
+	private function generateDimensionsPool (array $items, array $itemids, array $dimensionsAll) {
+		
+		$result = ["number" => $dimensionsAll["number"]];
+		$sizes = [];
+		
+		foreach ($dimensionsAll as $category => $minmax) {
+			if ($category=="number") continue;
+			
+			$sizes[$category] = 0;
+			foreach (ItemExplorer::groupBy($items, $itemids, $category) as $key => $groupItemIds) {
+				
+				// ignore condidtions with min=0 and max=all
+				if (($minmax["min"][$key]==0) && ($minmax["max"][$key]==count($groupItemIds))) continue;
+
+				$sizes[$category] += 1;
+			}
+			
+			if ($sizes[$category] == 0) {
+				unset ($sizes[$category]);
+			}
+		}
+		
+		if (count($sizes)==0) return $result;
+		
+		// add largest category
+		arsort($sizes);
+		reset($sizes);
+		$category = key($sizes);
+		$result[$category] = $dimensionsAll[$category];
+		
+		// add smallest categories as long as combinations do not execeed threshold 20
+		$overall = $sizes[$category];
+		unset($sizes[$category]);
+		asort($sizes);
+		foreach ($sizes as $category => $size) {
+			if ($overall*$size<20) {
+				$overall = $overall * $size;
+				$result[$category] = $dimensionsAll[$category];
+			} else {
+				break;
+			}
+		}
+		
+		return $result;
+		
+	}
+	
 	/**
 	 * $dimensions: [ name of category => [ "min" => [ category value => min number], "max => [ category value => max number ] ] ]  
 	 * @param array $dimensionsAll
@@ -228,16 +275,25 @@ class TaskPoolGenerator {
 		$_SESSION["tpg_groupPools"] = [];
 		$_SESSION["tpg_itemGroupVectors"] = [];
 		$_SESSION["tpg_itemGroups"] = [];
-		$_SESSION["tpg_numberOfItemPools"] = -1;
+		$_SESSION["tpg_numberOfItemPools"] = "-1";
+		
+		if (($dimensionsAll["number"]["min"]["all"] == 0) || ($dimensionsAll["number"]["max"]["all"] == 0)) {
+			return;
+		}
+		
+		
 		
 		
 		$items = EAL_ItemBasket::getItems();
 		$itemids = ItemExplorer::getItemIds($items);
 		
-		$dimensionsPool = $dimensionsAll;
-		if (array_key_exists ("topic1", $dimensionsAll)) {
-			$dimensionsPool = ["number" => $dimensionsAll["number"], "topic1" => $dimensionsAll["topic1"]];
+		$dimensionsPool = $this->generateDimensionsPool($items, $itemids, $dimensionsAll);
+		
+		$dimensionsToCheck = array_diff_key ($dimensionsAll, $dimensionsPool);
+		if (count($dimensionsToCheck)>0) {
+			$dimensionsToCheck = array_merge (["number" => $dimensionsAll["number"]], $dimensionsToCheck);
 		}
+		
 		
 		list ($itemVectors, $rangeVectors, $mapItemId2ItemIndex) = $this->generateItemVectorsAndRangeVectors($items, $itemids, $dimensionsPool);
 		list ($this->itemGroups, $this->itemGroupVectors) = $this->generateItemGroups($itemids, $itemVectors);
@@ -246,6 +302,7 @@ class TaskPoolGenerator {
 		
 		$_SESSION["tpg_dimensions_All"] = $dimensionsAll;
 		$_SESSION["tpg_dimensions_Pool"] = $dimensionsPool;
+		$_SESSION["tpg_dimensions_ToCheck"] = $dimensionsToCheck;
 		$_SESSION["tpg_groupPools"] = $this->groupPools;
 		$_SESSION["tpg_itemGroupVectors"] = $this->itemGroupVectors;
 		$_SESSION["tpg_itemGroups"] = $this->itemGroups;
@@ -261,16 +318,12 @@ class TaskPoolGenerator {
 		
 		$dimensionsAll = $_SESSION["tpg_dimensions_All"];
 		$dimensionsPool = $_SESSION["tpg_dimensions_Pool"];
+		$dimensionsToCheck = $_SESSION["tpg_dimensions_ToCheck"];
 		
-		$dimensionsToCheck = array_diff_key ($dimensionsAll, $dimensionsPool);
 		if (count($dimensionsToCheck)>0) {
-			
-			$dimensionsToCheck = array_merge (["number" => $dimensionsAll["number"]], $dimensionsToCheck);
-			
 			$items = EAL_ItemBasket::getItems();
 			$itemids = ItemExplorer::getItemIds($items);
 			list ($itemVectors, $rangeVectors, $mapItemId2ItemIndex) = $this->generateItemVectorsAndRangeVectors($items, $itemids, $dimensionsToCheck);
-			
 		}
 		
 		
@@ -346,26 +399,54 @@ class TaskPoolGenerator {
 
 	
 	
-	/**
-	 * Computes the overall number of item tools based on the generated grouped pools
-	 * @return number|GMP
-	 */	
-	private function getNumberOfItemPools (): GMP {
+	// Computes the overall number of item tools based on the generated grouped pools
+	private function getNumberOfItemPools () {
+		
+		$result = 0;;
+		for ($groupPoolIndex=0; $groupPoolIndex<count($this->groupPools); $groupPoolIndex++) {
+			$result += $this->getNumberOfItemPoolsInGroup ($groupPoolIndex);
+		}
+		return $result;
+	}
+	
+	
+	// Computes the number of item tools for a specific grouped pools
+	private function getNumberOfItemPoolsInGroup (int $groupPoolIndex) {
+		
+		$result = 1;
+		foreach ($this->groupPools[$groupPoolIndex] as $grIdx => $numberOfItems) {
+			// $count = "number" out of "all in group" = all! / (all-number)! * number!
+			
+			$min = min ($this->itemGroupVectors[$grIdx][0]-$numberOfItems, $numberOfItems);
+			$max = min ($this->itemGroupVectors[$grIdx][0]-$numberOfItems, $numberOfItems);
+			
+			$count = 1;
+			for ($x=$max+1; $x<=$this->itemGroupVectors[$grIdx][0]; $x+=1) {
+				$count = $count*$x;
+			}
+			for ($x=2; $x<=$min; $x+=1) {
+				$count = $count/$x;
+			}
+			$result = $result*$count;
+		}
+		return $result;
+	}
+	
+	
+/*	
+	// Computes the overall number of item tools based on the generated grouped pools
+	private function gmp_getNumberOfItemPools (): GMP {
 		
 		$result = gmp_init(0);
 		for ($groupPoolIndex=0; $groupPoolIndex<count($this->groupPools); $groupPoolIndex++) {
-			$result = gmp_add($result, $this->getNumberOfItemPoolsInGroup ($groupPoolIndex));
+			$result = gmp_add($result, $this->gmp_getNumberOfItemPoolsInGroup ($groupPoolIndex));
 		}
 		return $result;
 	}
 
 	
-	/**
-	 * Computes the number of item tools for a specific grouped pools
-	 * @return number|GMP
-	 */	
-	
-	private function getNumberOfItemPoolsInGroup (int $groupPoolIndex): GMP {
+	// Computes the number of item tools for a specific grouped pools
+	private function gmp_getNumberOfItemPoolsInGroup (int $groupPoolIndex): GMP {
 		
 		$result = 1;
 		foreach ($this->groupPools[$groupPoolIndex] as $grIdx => $numberOfItems) {
@@ -375,330 +456,7 @@ class TaskPoolGenerator {
 		}
 		return $result;		
 	}
-
-	
-	
-	/* ------------------------------------------------------------------------------------------ */
-	/* ------------------------------------------------------------------------------------------ */
-	/* ------------------------------------------------------------------------------------------ */
-	/* ------------------------------------------------------------------------------------------ */
-	/* ------------------------------------------------------------------------------------------ */
-	
-	
-	
-	private function generateGroupPools (array $rangeVectors) {
+*/
 		
-		
-		$sumItemGroupVectors = array_fill (0, count($rangeVectors["min"]), 0);
-		
-		$minPool = array_fill (0, count($this->itemGroupVectors), 0);
-		$maxPool = array_fill (0, count($this->itemGroupVectors), 0);
-		
-		for ($index = 0; $index < count($this->itemGroupVectors); $index += 1) {
-			$maxPool[$index] = $this->itemGroupVectors[$index][0];
-			foreach ($this->itemGroupVectors[$index] as $dim => $val) {
-				$sumItemGroupVectors[$dim] += ($dim==0) ? $val : $this->itemGroupVectors[$index][0]*$val;
-			}
-		}
-		
-		
-		
-		for ($index = 0; $index < count($this->itemGroupVectors); $index += 1) {
-			foreach ($this->itemGroupVectors[$index] as $dim => $val) {
-				
-				$number = ($dim==0) ? $val : $this->itemGroupVectors[$index][0]*$val;
-				
-				if ($sumItemGroupVectors[$dim]-$number < $rangeVectors["min"][$dim]) {
-					$min = $rangeVectors["min"][$dim] - $sumItemGroupVectors[$dim] + $number;
-					$minPool[$index] = max ($minPool[$index], $min);
-				}
-			}
-		}
-		
-		
-		
-		
-		$this->groupPools = [];
-		
-		
-		// pool = [g_0, g_1, ..., g_(n-1)] where g_k is the number of items in the pool of item group k
-		// n = number of item groups
-		$currentPool = $minPool; // array_fill (0, count($this->itemGroupVectors), 0);
-		
-		// values = [v_0, v_1, ..., v_(m-1)] where v_k is the number of items that fulfill condition (with index) k
-		// m = number of criteria
-		// condition v_0 = number of items overall
-		$currentValues = array_fill (0, count($rangeVectors["min"]), 0);
-		for ($index = 0; $index < count($this->itemGroupVectors); $index += 1) {
-			foreach ($this->itemGroupVectors[$index] as $dim => $val) {
-				$currentValues[$dim] += ($dim==0) ? $currentPool[$index] : $currentPool[$index]*$val;
-			}
-		}
-		
-		
-		for ($index = 0; $index < count($this->itemGroupVectors); $index += 1) {
-			foreach ($this->itemGroupVectors[$index] as $dim => $val) {
-				
-				$number_max = ($dim==0) ? $maxPool[$index] : $maxPool[$index]*$val;
-				$number_min = ($dim==0) ? $minPool[$index] : $minPool[$index]*$val;
-				
-				if ($currentValues[$dim] - $number_min + $number_max > $rangeVectors["max"][$dim]) {
-					$maxPool[$index] = $rangeVectors["max"][$dim] - $currentValues[$dim] + $number_min;
-				}
-			}
-		}
-		
-		
-		
-		
-		
-		
-		
-		
-		$currentGroupIndex = count($currentPool)-1;
-		
-		
-		// 		$currentGroupIndex = count($currentPool)-1;
-		$poolRESET = FALSE;
-		
-		
-		$time_start = time();
-		$time_break = $time_start + 60;
-		
-		
-		while (true) {
-			
-			// 			if (time()>$time_break) break;
-			
-			// if reset: add at least so many items as int $rangeVectors["min"][0] = minimum number of all items
-			if ($poolRESET) {
-				
-				$noOfItemsToAdd = $rangeVectors["min"][0];
-				for ($index = 0; $index<=$currentGroupIndex; $index+=1) {
-					$noOfItemsToAdd -= $currentPool[$index];
-				}
-				
-				$newCurrentGroupIndex = $currentGroupIndex;
-				
-				for ($index = count($this->itemGroupVectors)-1; $index>=0; $index-=1) {
-					
-					$vmax = $maxPool[$index] /*$this->itemGroupVectors[$index][0]*/; // max number of items in this group
-					if ($index > $currentGroupIndex) {
-						
-						if ($noOfItemsToAdd>$minPool[$index]) {
-							$vnew = min ($vmax, $noOfItemsToAdd);
-							$noOfItemsToAdd -= $vnew;
-							$newCurrentGroupIndex = $index;
-						} else {
-							$vnew = $minPool[$index];	// reset to min value of this item group
-							$noOfItemsToAdd -= $vnew;
-						}
-					} else {
-						if ($noOfItemsToAdd>0) {
-							$vnew = $currentPool[$index] + min ($vmax-$currentPool[$index], $noOfItemsToAdd);
-							$noOfItemsToAdd -= $vnew;
-							$newCurrentGroupIndex = $index;
-						} else {
-							break;
-						}
-					}
-					
-					$add = $vnew - $currentPool[$index];
-					
-					// adjust current values
-					foreach ($this->itemGroupVectors[$index] as $dim => $val) {
-						$currentValues[$dim] += ($dim==0) ? $add : $add*$val;
-					}
-					$currentPool[$index] = $vnew;
-					
-				}
-				
-				$currentGroupIndex = $newCurrentGroupIndex;
-			}
-			
-			
-			// check current pool
-			$poolIsOk = TRUE;
-			$poolIsTooLarge = FALSE;
-			$poolRESET = FALSE;
-			foreach ($currentValues as $dim => $value) {
-				if ($value < $rangeVectors["min"][$dim])  {
-					$poolIsOk = FALSE;
-					if ($poolIsTooLarge) break;
-				}
-				if ($value > $rangeVectors["max"][$dim]) {
-					$poolIsOk = FALSE;
-					$poolIsTooLarge = TRUE;
-					break;
-				}
-			}
-			
-			// if ok --> add to result
-			if ($poolIsOk) {
-				$this->groupPools[] = $currentPool;
-			}
-			
-			// if pool is too large OR we are at the end and cannot increase anymore in this group --> step back
-			if (  ($poolIsTooLarge) || ($currentPool[$currentGroupIndex] == $maxPool[$currentGroupIndex] /* $this->itemGroupVectors[$currentGroupIndex][0]*/  )) {
-				
-				$poolRESET = TRUE;
-				
-				do {
-					
-					/*
-					 // remove all items from current group
-					 foreach ($this->itemGroupVectors[$currentGroupIndex] as $dim => $val) {
-					 $currentValues[$dim] -= ($dim==0) ? $currentPool[$currentGroupIndex] : $currentPool[$currentGroupIndex]*$val;
-					 }
-					 $currentPool[$currentGroupIndex] = 0;
-					 */
-					
-					// step one group back
-					$currentGroupIndex -= 1;
-					if ($currentGroupIndex < 0) return;		// no more group --> EXIT
-					
-				} while ($currentPool[$currentGroupIndex] == $maxPool[$currentGroupIndex] /*$this->itemGroupVectors[$currentGroupIndex][0]*/ );
-				
-			}
-			
-			// add one item of current group
-			$currentPool[$currentGroupIndex] += 1;
-			foreach ($this->itemGroupVectors[$currentGroupIndex] as $dim => $val) {
-				$currentValues[$dim] += ($dim==0) ? 1 : $val;	// $val is either 0 or 1; $dim=0 counts the number of items
-			}
-			
-			
-		}
-		
-	}
-	
-	
-	
-	
-	/**
-	 *
-	 * @param GMP $start 0<=$start<N where N is the overall number of item pools (getNumberOfItemPools)
-	 * @param int $countc number of item pools to be returned (e.g., 10)
-	 */
-	
-	
-	public function getItemPools (GMP $start, GMP $count) {
-		
-		// find first groupPool that contributes (at least) one item pool to the result
-		$current = gmp_init(0);
-		$groupPoolIndex=0;
-		do {
-			$size = $this->getNumberOfItemPoolsInGroup($groupPoolIndex);
-			if ($current + $size <= $start) {
-				$current = gmp_add($current, $size);
-				$groupPoolIndex += 1;
-			} else {
-				break;
-			}
-		} while (true);
-		
-		
-		// $groupPoolIndex is now the index of the first pool that need to be considered
-		// $current is the number of skipped item pools so far
-		// $size is the number of item pools for $groupPoolIndex
-		
-		$result = [];
-		
-		$groupStart = gmp_sub($start, $current);	// start in groupPool
-		
-		
-		do {
-			$groupNumberOfAvailPools = gmp_sub ($size, $groupStart);
-			
-			if (gmp_cmp($groupNumberOfAvailPools, $count)>=0) {		// group pool has enough item pools
-				$result = array_merge ($result, $this->getItemPoolsInGroup ($groupPoolIndex, $groupStart, $count));
-				return $result;
-			} else {
-				$result = array_merge ($result, $this->getItemPoolsInGroup ($groupPoolIndex, $groupStart, $groupNumberOfAvailPools));
-				
-				// go to next pool
-				$groupPoolIndex += 1;
-				if ($groupPoolIndex >= count($this->groupPools)) return $result; 	// no more group pool available
-				
-				$count = gmp_sub ($count, $groupNumberOfAvailPools);	// number remaining item pools to generate
-				$groupStart = gmp_init(0);	// we start all pools except the first from the beginning
-				$size = $this->getNumberOfItemPoolsInGroup($groupPoolIndex);	// size of the new group pool
-				
-				
-			}
-		} while (true);
-	}
-	
-	
-	
-	private function getItemPoolsInGroup (int $groupPoolIndex, GMP $start, GMP $count) {
-		
-		$result = [];
-		$currentItemPool = [];
-		foreach ($this->groupPools[$groupPoolIndex] as $itemGroupIdx => $numberOfItems) {
-			$currentItemPool[] = ($numberOfItems==0) ? [] : range (0, $numberOfItems-1);
-		}
-		
-		// skip the first start entries
-		$i = gmp_init(0);
-		while (gmp_cmp($i, $start)<0) {
-			$currentItemPool = $this->getNextItemPool($groupPoolIndex, $currentItemPool);
-			$i = gmp_add($i, gmp_init(1));
-		}
-		
-		// collect the following count entries
-		$i = gmp_init(0);
-		while (gmp_cmp($i, $count)<0) {
-			
-			$resultPool = [];
-			foreach ($this->groupPools[$groupPoolIndex] as $itemGroupIdx => $numberOfItems) {
-				foreach ($currentItemPool[$itemGroupIdx] as $x) {
-					$resultPool[] = $this->itemGroups[$itemGroupIdx][$x];
-				}
-			}
-			$result[] = $resultPool;
-			
-			$currentItemPool = $this->getNextItemPool($groupPoolIndex, $currentItemPool);
-			
-			$i = gmp_add($i, gmp_init(1));
-		}
-		
-		return $result;
-	}
-	
-	
-	private function getNextItemPool (int $groupPoolIndex, array $currentItemPool) {
-		
-		for ($itemGroupIdx = count($currentItemPool)-1; $itemGroupIdx>=0; $itemGroupIdx=$itemGroupIdx-1) {
-			
-			$numberOfItems = $this->groupPools[$groupPoolIndex][$itemGroupIdx];
-			if ($numberOfItems==0) continue;
-			$currentItemPool[$itemGroupIdx] = $this->getNextSet ($currentItemPool[$itemGroupIdx], $this->itemGroupVectors[$itemGroupIdx][0]);
-			if (count($currentItemPool[$itemGroupIdx])>0) return $currentItemPool;
-			
-			$currentItemPool[$itemGroupIdx] = range (0, $numberOfItems-1);
-		}
-		
-		return [];
-	}
-	
-	
-	private function getNextSet (array $current, int $max) : array {
-		
-		for ($i = count($current)-1; $i>=0; $i=$i-1) {
-			
-			if ($current[$i] < $max - count($current) + $i) {
-				$current[$i] = $current[$i]+1;
-				
-				for ($k = $i+1; $k<count($current); $k=$k+1) {
-					$current[$k] = $current[$i] + ($k-$i);
-				}
-				return $current;
-			}
-		}
-		
-		return [];
-	}
-	
 }
 ?>

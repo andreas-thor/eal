@@ -58,7 +58,7 @@ class Blueprint {
 		
 		// show (previosuly) generated task pools (if available)
 		if (isset ($_SESSION['tpg_numberOfItemPools'])) {
-			printf ("<br/><h2>%s generated Task Pools</h2>", gmp_strval($_SESSION["tpg_numberOfItemPools"]));
+			printf ("<br/><h2>%s generated Task Pools (using %s; check online %s)</h2>", $_SESSION["tpg_numberOfItemPools"], implode (", ", array_keys($_SESSION["tpg_dimensions_Pool"])), implode(", ", array_keys($_SESSION["tpg_dimensions_ToCheck"])));
 			print ('<div id="itempoolstable"></div>');
 			
 			?>
