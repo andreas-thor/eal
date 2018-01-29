@@ -3,6 +3,7 @@
 require_once(__DIR__ . "/../anal/ItemExplorer.php");
 require_once(__DIR__ . "/../html/HTML_Item.php");
 require_once(__DIR__ . "/../html/HTML_ItemBasket.php");
+require_once(__DIR__ . "/../html/HTML_Review.php");
 
 class BulkViewer {
 

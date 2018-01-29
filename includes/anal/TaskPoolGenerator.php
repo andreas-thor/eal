@@ -418,7 +418,7 @@ class TaskPoolGenerator {
 			// $count = "number" out of "all in group" = all! / (all-number)! * number!
 			
 			$min = min ($this->itemGroupVectors[$grIdx][0]-$numberOfItems, $numberOfItems);
-			$max = min ($this->itemGroupVectors[$grIdx][0]-$numberOfItems, $numberOfItems);
+			$max = max ($this->itemGroupVectors[$grIdx][0]-$numberOfItems, $numberOfItems);
 			
 			$count = 1;
 			for ($x=$max+1; $x<=$this->itemGroupVectors[$grIdx][0]; $x+=1) {

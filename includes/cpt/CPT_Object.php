@@ -125,7 +125,7 @@ abstract class CPT_Object {
 		$editor_settings = array(
 				'media_buttons' => true,	// no media buttons
 				'teeny' => true,			// minimal editor
-				'quicktags' => false,		// hides Visual/Text tabs
+				'quicktags' => true,		// hides Visual/Text tabs
 				'textarea_rows' => 3,
 				'tinymce' => true
 		);
