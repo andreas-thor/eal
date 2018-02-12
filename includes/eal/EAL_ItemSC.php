@@ -21,6 +21,7 @@ class EAL_ItemSC extends EAL_Item {
 	}
 	
 	
+	
 	protected function loadFromPOSTRequest (string $prefix="") {
 		
 		parent::loadFromPOSTRequest($prefix);
@@ -95,7 +96,7 @@ class EAL_ItemSC extends EAL_Item {
 	}
 	
 	
-	protected function getPoints(): int {
+	public function getPoints(): int {
 	
 		$result = 0;
 		foreach ($this->answers as $a) {

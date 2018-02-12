@@ -25,6 +25,10 @@ require_once 'includes/page/Blueprint.php';
 require_once 'includes/class.PAG_TaxonomyImport.php';
 require_once 'includes/class.CLA_RoleTaxonomy.php';
 
+require_once 'includes/imex/IMEX_Easlit.php';
+require_once 'includes/imex/IMEX_Moodle.php';
+require_once 'includes/imex/Ilias.php';
+
 
 
 /* add JQuery */
@@ -59,7 +63,13 @@ register_activation_hook(__FILE__, function () {
 add_action('init', function () {
 	
 	if ($_REQUEST["page"] == "download") {
-		ImportExport::download(explode(",", $_REQUEST["itemids"]));
+// 		ImportExport::download(explode(",", $_REQUEST["itemids"]));
+// 		(new Ilias())->download(explode(",", $_REQUEST["itemids"]));
+
+		
+		(new IMEX_Moodle())->download(explode(",", $_REQUEST["itemids"]));
+		
+		
 		exit();
 	}
 	

@@ -106,7 +106,7 @@ class EAL_ItemMC extends EAL_Item {
 	
 	
 	
-	protected function getPoints(): int { 
+	public function getPoints(): int { 
 		
 		$result = 0;
 		foreach ($this->answers as $a) {

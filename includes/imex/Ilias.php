@@ -4,40 +4,34 @@ require_once ('ImportExport.php');
 
 class Ilias extends ImportExport {
 	
-	static $media = array ();
-	static $xml_MTImages;
+	private $media = array ();
+	private $xml_MTImages = array();
 	
-	public static function export (array $itemids) {
 	
-		$downloaddir = __DIR__ . "/../../download/";
-		if (!file_exists($downloaddir)) {
-			mkdir($downloaddir, 0777, true);
-		}
+	public function generateExportFile (array $itemids) {
 	
-		$docid = time();
-		$name = "{$docid}__0__qpl_1";
-		$zipname = $downloaddir . $name . ".zip";
+		$this->downloadfilename = time() . "__0__qpl_1";
+		$this->downloadextension = "zip";
+		
 		$zip = new ZipArchive();
-		$zip->open($zipname, ZipArchive::CREATE);
-		$zip->addFromString("{$name}/{$name}.xml", self::createQPL($itemids)->saveXML());
-		$zip->addFromString("{$name}/" . str_replace('_qpl_', '_qti_', $name) . ".xml", self::createQTI($itemids)->saveXML());
+		$zip->open($this->getDownloadFullname(), ZipArchive::CREATE);
+		$zip->addFromString("{$this->downloadfilename}/{$this->downloadfilename}.xml", $this->createQPL($itemids)->saveXML());
+		$zip->addFromString("{$this->downloadfilename}/" . str_replace('_qpl_', '_qti_', $this->downloadfilename) . ".xml", $this->createQTI($itemids)->saveXML());
 		
 		// copy media files (e.g., images) -- array is filled during createQPL/QTI /*
-		foreach (self::$media as $key => $file) {
+		foreach ($this->media as $key => $file) {
 			$fileshort = array_pop(explode ("/", $file));
-			$zip->addFromString("{$name}/objects/{$key}/{$fileshort}", file_get_contents($file));
+			$zip->addFromString("{$this->downloadfilename}/objects/{$key}/{$fileshort}", file_get_contents($file));
 		}
 		
-		
 		$zip->close();
-		return ["full"=>$zipname, "short"=>$name];
 	}
 	
 	
 	private function createQPL ($itemids) {
 	
 		$dom = DOMDocument::loadXML (
-				'<?xml version="1.0" encoding="utf-8"?>
+		   '<?xml version="1.0" encoding="utf-8"?>
 			<!DOCTYPE Test SYSTEM "http://www.ilias.uni-koeln.de/download/dtd/ilias_co.dtd">
 			<ContentObject Type="Questionpool_Test">
 				<MetaData>
@@ -136,7 +130,7 @@ class Ilias extends ImportExport {
 			$xml_PR->setAttribute("label", $item->title);
 			$xml_FL = $dom->createElement("flow");
 
-			$xml_FL->appendChild (self::createMaterialElement($dom, "text/html", wpautop($item->description) . "<!-- EAL --><hr/>" . wpautop($item->question)));
+			$xml_FL->appendChild ($this->createMaterialElement($dom, "text/html", wpautop($item->description) . "<!-- EAL --><hr/>" . wpautop($item->question)));
 				
 			$xml_RL = $dom->createElement("response_lid");
 			$xml_RL->setAttribute("ident", $item_data["ident"]);
@@ -154,7 +148,7 @@ class Ilias extends ImportExport {
 			foreach ($item->answers as $number => $answer) {
 				$xml_LAB = $dom->createElement("response_label");
 				$xml_LAB->setAttribute("ident", $number);
-				$xml_LAB->appendChild (self::createMaterialElement($dom, "text/html", $answer["answer"]));
+				$xml_LAB->appendChild ($this->createMaterialElement($dom, "text/html", $answer["answer"]));
 				$xml_RC->appendChild ($xml_LAB);
 			}
 				
@@ -217,11 +211,11 @@ class Ilias extends ImportExport {
 	
 	
 	
-	public function createMaterialElement ($dom, $type, $value) {
+	private function createMaterialElement ($dom, $type, $value) {
 		
 		// <matimage label="il_0_mob_3908" uri="objects/il_0_mob_3908/schoolsigngenericpicgettyimages640740604.jpg"/>
 		
-		self::$xml_MTImages = array ();
+		$this->xml_MTImages = array ();
 		
 		$value = preg_replace_callback(				// replace image references
 				'|(<img[^>]+)src=["\']([^"]*)["\']|',
@@ -232,14 +226,14 @@ class Ilias extends ImportExport {
 						return $match[1] . "src='" . $match[2] . "'";
 					}
 
-					$key = "il_0_mob_" . count(self::$media);
-					self::$media [$key] = $match[2];
+					$key = "il_0_mob_" . count($this->media);
+					$this->media [$key] = $match[2];
 					$fileshort = array_pop(explode ("/", $match[2]));
 					
 					$mimg = $dom->createElement("matimage");
 					$mimg->setAttribute("label", $key);
 					$mimg->setAttribute("uri", "objects/{$key}/{$fileshort}");
-					array_push(self::$xml_MTImages, $mimg);
+					array_push($this->xml_MTImages, $mimg);
 						
 					return $match[1] . "src=\"" . $key . "\"";
 				},
@@ -256,7 +250,7 @@ class Ilias extends ImportExport {
 		$xml_MA = $dom->createElement("material");
 		$xml_MA->appendChild ($xml_MT);
 		
-		foreach (self::$xml_MTImages as $mimg) {
+		foreach ($this->xml_MTImages as $mimg) {
 			$xml_MA->appendChild($mimg);
 		}
 		
@@ -270,7 +264,7 @@ class Ilias extends ImportExport {
 	 * @throws Exception
 	 * @return array of EAL_Item
 	 */
-	public static function import (array $file): array {
+	public function import (array $file): array {
 	
 		// remove extension ".zip"	==> $name = filename without extension
 		if (substr ($file['name'], -4) != ".zip") throw new Exception("Error! File is not a zip file");
@@ -291,7 +285,7 @@ class Ilias extends ImportExport {
 		/* get the list of itemids */
 		$doc_qpl_tst = new DOMDocument();
 		$doc_qpl_tst->loadXML($file_qpl_tst);
-		$itemids = self::parseQPL_TST($doc_qpl_tst);		// XML-ID => EAL-ID (if available)
+		$itemids = $this->parseQPL_TST($doc_qpl_tst);		// XML-ID => EAL-ID (if available)
 			
 		/* get the QTI document (that contains the questions) */
 		$isQPL = (strpos("{$dir}/{$name}/{$name}.xml", '_qpl_') == FALSE) ? FALSE : TRUE;
@@ -301,7 +295,7 @@ class Ilias extends ImportExport {
 		/* load the items based on the QTI document and the list of itemids */
 		$doc_qti = new DOMDocument();
 		$doc_qti->loadXML($file_qti);
-		$items = self::parseQTI($doc_qti, $dir, $name, $itemids);		// XML-ID => EAL-ID (all Items have an Id here)
+		$items = $this->parseQTI($doc_qti, $dir, $name, $itemids);		// XML-ID => EAL-ID (all Items have an Id here)
 		
 		/*
 		 if (!$isQPL) {

@@ -5,9 +5,9 @@ require_once 'EAL_Object.php';
 
 class EAL_Item extends EAL_Object {
 
-	public $title;
-	public $description;
-	public $question;
+	public $title;			// title 
+	public $description;	// description (e.g., vignette, use case, scenarion)
+	public $question;		// actual question
 	
 	public $level;
 	public $learnout;
@@ -17,7 +17,7 @@ class EAL_Item extends EAL_Object {
 	public $note;
 	public $flag;
 	
-	public $minnumber = null;
+	public $minnumber = null;	// minnumber/maxnumber: range of correct answers (relevant for MC only)
 	public $maxnumber = null;
 	
 	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
@@ -240,7 +240,7 @@ class EAL_Item extends EAL_Object {
 	
 	
 	
-	protected function getPoints(): int { return -1; }
+	public function getPoints(): int { return -1; }
 	
 	public function getStatusString (): string {
 		

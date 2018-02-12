@@ -119,7 +119,7 @@ class Importer {
 		}
 		
 		// TODO: check file format parameter (ILIAS5, ...)
-		$items = Ilias::import($_FILES['uploadedfile']);
+		$items = (new Ilias())->import($_FILES['uploadedfile']);
 		if (is_string($items)) {
 			printf ("<div class='wrap'><h1>Import Error: %s</h1></div>", $items);
 			return;
