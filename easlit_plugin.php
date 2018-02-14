@@ -63,27 +63,7 @@ register_activation_hook(__FILE__, function () {
 /* init custom post types */
 add_action('init', function () {
 	
-	if ($_REQUEST["page"] == "download") {
 
-		if ($_REQUEST["type"] == "item") {
-		
-			$itemids = explode(",", $_REQUEST["itemids"]);
-			
-			switch ($_REQUEST['format']) {
-				case 'moodle': (new IMEX_Moodle())->downloadItems($itemids); break;
-				case 'ilias': (new IMEX_Ilias())->downloadItems($itemids); break;
-			}
-			
-			exit();
-		} 
-		
-		if ($_REQUEST["type"] == "term") {
-			(new IMEX_Term())->downloadTerms ($_REQUEST["taxonomy"], $_REQUEST["termid"]);
-			exit(); 
-		}
-		 
-		
-	}
 	
 	if (! session_id())
 		session_start();
@@ -96,6 +76,30 @@ add_action('init', function () {
 	(new CPT_LearnOut())->init();
 	
 	RoleTaxonomy::init();
+	
+	if ($_REQUEST["page"] == "download") {
+		
+		if ($_REQUEST["type"] == "item") {
+			
+			$itemids = explode(",", $_REQUEST["itemids"]);
+			
+			switch ($_REQUEST['format']) {
+				case 'moodle': (new IMEX_Moodle())->downloadItems($itemids); break;
+				case 'ilias': (new IMEX_Ilias())->downloadItems($itemids); break;
+			}
+			
+			exit();
+		}
+		
+		if ($_REQUEST["type"] == "term") {
+			(new IMEX_Term())->downloadTerms ($_REQUEST["taxonomy"], $_REQUEST["termid"], $_REQUEST['format']);
+			exit();
+		}
+		
+		
+	}
+	
+	
 });
 
 
@@ -122,7 +126,7 @@ function setMainMenu() {
 		foreach ([new CPT_Item(), new CPT_ItemSC(), new CPT_ItemMC(), new CPT_Review() ] as $object) {
 			add_submenu_page($menuslug, $object->label, '<div class="dashicons-before ' . $object->dashicon . '" style="display:inline">&nbsp;</div> ' . $object->label, 'edit_posts', "edit.php?post_type={$object->type}");
 		}
-		add_submenu_page($menuslug, 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', ['Importer', 'createPage']);
+// 		add_submenu_page($menuslug, 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', ['Importer', 'createPage']);
 
 		// Menu: Metadata
 		$menuslug = 'edit.php?post_type=learnout';
@@ -149,6 +153,8 @@ function setMainMenu() {
 		foreach (['view_item', 'view_review', 'view_learnout'] as $view) {
 			add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', $view,     ['BulkViewer', 'page_' . $view]);
 		}
+		add_submenu_page('view', 'Viewer', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', ['Importer', 'createPage']);
+		
 	});
 	
 	
@@ -234,6 +240,7 @@ function setAdminMenu() {
 		
 		
 		setAdminMenu_Download_Item ($wp_admin_bar);
+		setAdminMenu_Upload_Item ($wp_admin_bar);
 		setAdminMenu_Download_Topic ($wp_admin_bar);
 
 		$wp_admin_bar->remove_menu('view');
@@ -284,6 +291,31 @@ function setAdminMenu_Download_Item($wp_admin_bar) {
 		'title' => 'Moodle',
 		'href' => sprintf('%s/admin.php?page=%s&type=%s&format=%s&itemids=%s', site_url(), 'download', 'item', 'moodle', $param_itemids)
 	));
+}
+
+function setAdminMenu_Upload_Item($wp_admin_bar) {
+	
+	if ($_SERVER['PHP_SELF']!='/wordpress/wp-admin/edit.php') return;
+	
+	if (($_REQUEST['post_type'] != 'item') && ($_REQUEST['post_type'] != 'itemsc') && ($_REQUEST['post_type'] != 'itemmc')) return;
+	
+	$wp_admin_bar->add_menu( array(
+		'id' => 'eal_upload_item',
+		'title' => sprintf("<div class='wp-menu-image dashicons-before dashicons-upload'>&nbsp;%s</div>", 'Upload'),
+		'href' => FALSE ) );
+	
+	$wp_admin_bar->add_menu( array(
+		'parent' => 'eal_upload_item',
+		'title' => 'Ilias',
+		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s', 'import', 'item', 'ilias')
+	));
+	
+	$wp_admin_bar->add_menu( array(
+		'parent' => 'eal_upload_item',
+		'title' => 'Moodle',
+		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s', 'import', 'item', 'moodle')
+	));
+	
 }
 
 function setAdminMenu_Download_Topic($wp_admin_bar) {

@@ -12,7 +12,7 @@ class Importer {
  			self::showUploadForm();
 		}
 		
-		if ($_POST['action']=='upload') {
+		if ($_POST['action']=='Upload') {
 			self::showPreview();
 		}
 
@@ -119,7 +119,17 @@ class Importer {
 		}
 		
 		// TODO: check file format parameter (ILIAS5, ...)
-		$items = (new IMEX_Ilias())->import($_FILES['uploadedfile']);
+		switch ($_REQUEST['format']) {
+			case 'ilias': $items = (new IMEX_Ilias())->upload($_FILES['uploadedfile']); break;
+			case 'moodle': $items = (new IMEX_Moodle())->upload($_FILES['uploadedfile']); break;
+			default: printf ("<div class='wrap'><h1>Unknown import format %s</h1></div>", $_REQUEST['format']); return;
+		}
+		
+		if (count($items)==0) {
+			printf ("<div class='wrap'><h1>No items found!</h1></div>");
+			return;
+		}
+		
 		if (is_string($items)) {
 			printf ("<div class='wrap'><h1>Import Error: %s</h1></div>", $items);
 			return;
@@ -212,28 +222,27 @@ class Importer {
 	
 	private static function showUploadForm () {
 		
+		$title = "";
+		if (($_REQUEST['post_type']=='item') && ($_REQUEST['format']=='ilias')) {
+			$title = "Items (from Ilias)";
+		}
+		if (($_REQUEST['post_type']=='item') && ($_REQUEST['format']=='moodle')) {
+			$title = "Items (from Moodle)";
+		}
+		
+		$action = sprintf ('admin.php?page=%s&post_type=%s&format=%s', $_REQUEST['page'], $_REQUEST['post_type'], $_REQUEST['format']);
+		
 		?>
+		
+		
 		<div class="wrap">
-			<h1>Upload Items &amp; Test Results</h1>
-			<form  enctype="multipart/form-data" action="admin.php?page=<?php print ($_REQUEST["page"]); ?>" method="post">
-				<table class="form-table">
-					<tbody>
-						<tr>
-							<th><label>File</label></th>
-							<td><input class="menu-name regular-text menu-item-textbox input-with-default-title" name="uploadedfile" type="file" size="30" accept="text/*"></td>
-						</tr>
-						<tr>
-							<th><label>Format</label></th>
-							<td><select style='width:12em' name="format"><option value="ilias5" selected>ILIAS 5</option></select></td>
-						</tr>
-						<tr>
-							<th>
-								<input type="submit" name="action" class="button button-primary" value="upload">
-							</th>
-							<td></td>
-						</tr>
-					</tbody>
-				</table>
+			<h1>Upload <?php print ($title); ?></h1>
+			<form  enctype="multipart/form-data" action="<?php print ($action); ?>" method="post">
+				<div>
+					<label class="screen-reader-text" for="async-upload">Upload</label>
+					<input name="uploadedfile" id="async-upload" type="file">
+					<input name="action" class="button button-primary" value="Upload" type="submit">
+				</div>
 			</form>
 		</div>	
 		<?php 		
