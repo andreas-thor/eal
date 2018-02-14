@@ -1,8 +1,8 @@
 <?php
 
-require_once ('ImportExport.php');
+require_once ('IMEX_Item.php');
 
-class Ilias extends ImportExport {
+class IMEX_Ilias extends IMEX_Item {
 	
 	private $media = array ();
 	private $xml_MTImages = array();
@@ -17,7 +17,7 @@ class Ilias extends ImportExport {
 		$zip->open($this->getDownloadFullname(), ZipArchive::CREATE);
 		$zip->addFromString("{$this->downloadfilename}/{$this->downloadfilename}.xml", $this->createQPL($itemids)->saveXML());
 		$zip->addFromString("{$this->downloadfilename}/" . str_replace('_qpl_', '_qti_', $this->downloadfilename) . ".xml", $this->createQTI($itemids)->saveXML());
-		
+		 
 		// copy media files (e.g., images) -- array is filled during createQPL/QTI /*
 		foreach ($this->media as $key => $file) {
 			$fileshort = array_pop(explode ("/", $file));
@@ -74,12 +74,17 @@ class Ilias extends ImportExport {
 	
 		foreach ($itemids as $item_id) {
 	
-			$item = new EAL_ItemSC($item_id);
-			if ($item->getId() != $item_id) {
-				$item = new EAL_ItemMC($item_id);
-			}
-			if ($item->getId() != $item_id) continue;
-					
+// 			$item = new EAL_ItemSC($item_id);
+// 			if ($item->getId() != $item_id) {
+// 				$item = new EAL_ItemMC($item_id);
+// 			}
+// 			if ($item->getId() != $item_id) continue;
+				
+			// load item
+			$post = get_post($item_id);
+			if ($post == null) continue;	// item (post) does not exist
+			$item = EAL_Item::load($post->post_type, $item_id);
+			
 			if ($item->getType() == 'itemsc') {
 				$item_data = array (
 						"questiontype" => "SINGLE CHOICE QUESTION",
@@ -264,7 +269,7 @@ class Ilias extends ImportExport {
 	 * @throws Exception
 	 * @return array of EAL_Item
 	 */
-	public function import (array $file): array {
+	public function upload (array $file): array {
 	
 		// remove extension ".zip"	==> $name = filename without extension
 		if (substr ($file['name'], -4) != ".zip") throw new Exception("Error! File is not a zip file");

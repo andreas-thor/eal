@@ -202,6 +202,27 @@ class ItemExplorer {
 		
 	}
 	
+	
+	public static function getItemIdsByRequest ():array {
+		
+		if ($_REQUEST['itemid'] != null) {
+			return [$_REQUEST['itemid']];
+		}
+		
+		if ($_REQUEST['itemids'] == null) {
+			return [];
+		}
+		
+		if (is_array($_REQUEST['itemids'])) {
+			return $_REQUEST['itemids'];
+		}
+		
+		if (is_string($_REQUEST['itemids'])) {
+			return explode (",", $_REQUEST["itemids"]);
+		}
+		
+	}
+	
 
 	
 }

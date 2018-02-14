@@ -1,8 +1,8 @@
 <?php
 
-require_once ('ImportExport.php');
+require_once ('IMEX_Item.php');
 
-class IMEX_Moodle extends ImportExport {
+class IMEX_Moodle extends IMEX_Item {
 	
 	
 	
@@ -19,7 +19,7 @@ class IMEX_Moodle extends ImportExport {
 		file_put_contents($this->getDownloadFullname(), $this->createXMLQuizDocument ($itemids)->saveXML());
 	}
 	
-	
+	 
 	/**
 	 * https://docs.moodle.org/34/en/Moodle_XML_format#Overall_structure_of_XML_file
 	 * @param array $itemids
@@ -153,7 +153,7 @@ class IMEX_Moodle extends ImportExport {
 		return $xmlAnswers;
 	}
 	
-	public function import(array $file) {}
+	public function upload (array $file) {}
 	
 }
 

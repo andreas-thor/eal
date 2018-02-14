@@ -11,12 +11,10 @@ class BulkViewer {
 	 * Entry functions from menu
 	 */
 	
-	public static function page_view_item ($itemids = array()) {
-		
-		if ($_REQUEST['itemid'] != null) $itemids = [$_REQUEST['itemid']];
-		if ($_REQUEST['itemids'] != null) {
-			if (is_array($_REQUEST['itemids'])) $itemids = $_REQUEST['itemids'];
-			if (is_string($_REQUEST['itemids'])) $itemids = explode (",", $_REQUEST["itemids"]);
+	public static function page_view_item ($itemids = NULL) {
+
+		if ($itemids == NULL) {
+			$itemids = ItemExplorer::getItemIdsByRequest();
 		}
 		
 		if ($_POST['action']=='import') $itemids = Importer::doImport($itemids, FALSE);
@@ -31,12 +29,7 @@ class BulkViewer {
 	
 	public static function page_view_review () {
 
-		$itemids = array();
-		if ($_REQUEST['itemid'] != null) $itemids = [$_REQUEST['itemid']];
-		if ($_REQUEST['itemids'] != null) {
-			if (is_array($_REQUEST['itemids'])) $itemids = $_REQUEST['itemids'];
-			if (is_string($_REQUEST['itemids'])) $itemids = explode (",", $_REQUEST["itemids"]);
-		}
+		$itemids = $itemids = ItemExplorer::getItemIdsByRequest();
 		
 		$reviewids = array();
 		if ($_REQUEST['reviewid'] != null) $reviewids = [$_REQUEST['reviewid']];

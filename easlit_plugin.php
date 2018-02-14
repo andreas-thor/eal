@@ -27,7 +27,8 @@ require_once 'includes/class.CLA_RoleTaxonomy.php';
 
 require_once 'includes/imex/IMEX_Easlit.php';
 require_once 'includes/imex/IMEX_Moodle.php';
-require_once 'includes/imex/Ilias.php';
+require_once 'includes/imex/IMEX_Ilias.php'; 
+require_once 'includes/imex/IMEX_Term.php';
 
 
 
@@ -63,14 +64,25 @@ register_activation_hook(__FILE__, function () {
 add_action('init', function () {
 	
 	if ($_REQUEST["page"] == "download") {
-// 		ImportExport::download(explode(",", $_REQUEST["itemids"]));
-// 		(new Ilias())->download(explode(",", $_REQUEST["itemids"]));
 
+		if ($_REQUEST["type"] == "item") {
 		
-		(new IMEX_Moodle())->download(explode(",", $_REQUEST["itemids"]));
+			$itemids = explode(",", $_REQUEST["itemids"]);
+			
+			switch ($_REQUEST['format']) {
+				case 'moodle': (new IMEX_Moodle())->downloadItems($itemids); break;
+				case 'ilias': (new IMEX_Ilias())->downloadItems($itemids); break;
+			}
+			
+			exit();
+		} 
 		
+		if ($_REQUEST["type"] == "term") {
+			(new IMEX_Term())->downloadTerms ($_REQUEST["taxonomy"], $_REQUEST["termid"]);
+			exit(); 
+		}
+		 
 		
-		exit();
 	}
 	
 	if (! session_id())
@@ -220,6 +232,11 @@ function setAdminMenu() {
 			"href" => sprintf('%s/wp-admin/profile.php#roleman', site_url())
 		));
 		
+		
+		setAdminMenu_Download_Item ($wp_admin_bar);
+		setAdminMenu_Download_Topic ($wp_admin_bar);
+
+		$wp_admin_bar->remove_menu('view');
 		$wp_admin_bar->remove_menu('updates');
 		$wp_admin_bar->remove_menu('comments');
 		$wp_admin_bar->remove_menu('new-content');
@@ -238,6 +255,71 @@ function setAdminMenu() {
 	});
 }
 
+
+function setAdminMenu_Download_Item($wp_admin_bar) {
+	
+	$itemids = NULL;
+	
+	switch ($_REQUEST["page"]) {
+		case "view_item": 	$itemids = ItemExplorer::getItemIdsByRequest(); break;
+		case "view_basket": $itemids = EAL_ItemBasket::get(); break;
+		default: return; 	// add download menu item for view-pages
+	}
+	
+	$param_itemids = implode(',', $itemids);
+	
+	$wp_admin_bar->add_menu( array(
+		'id' => 'eal_download_item',
+		'title' => sprintf("<div class='wp-menu-image dashicons-before dashicons-download'>&nbsp;%s</div>", 'Download'),
+		'href' => FALSE ) );
+	
+	$wp_admin_bar->add_menu( array(
+		'parent' => 'eal_download_item',
+		'title' => 'Ilias',
+		'href' => sprintf('%s/admin.php?page=%s&type=%s&format=%s&itemids=%s', site_url(), 'download', 'item', 'ilias', $param_itemids)
+	));
+	
+	$wp_admin_bar->add_menu( array(
+		'parent' => 'eal_download_item',
+		'title' => 'Moodle',
+		'href' => sprintf('%s/admin.php?page=%s&type=%s&format=%s&itemids=%s', site_url(), 'download', 'item', 'moodle', $param_itemids)
+	));
+}
+
+function setAdminMenu_Download_Topic($wp_admin_bar) {
+	
+	if (($_SERVER['PHP_SELF']!='/wordpress/wp-admin/edit-tags.php') && ($_SERVER['PHP_SELF']!='/wordpress/wp-admin/term.php')) return;
+	
+	$termid = -1;
+	if ($_SERVER['PHP_SELF']=='/wordpress/wp-admin/term.php') {
+		$termid = intval($_REQUEST['tag_ID']);
+	}
+	
+	$wp_admin_bar->add_menu( array(
+		'id' => 'eal_download_term',
+		'title' => sprintf("<div class='wp-menu-image dashicons-before dashicons-download'>&nbsp;%s</div>", 'Download'),
+		'href' => FALSE ) );
+	
+	$wp_admin_bar->add_menu( array(
+		'parent' => 'eal_download_term',
+		'title' => 'TXT',
+		'href' => sprintf('%s/admin.php?page=%s&type=%s&format=%s&taxonomy=%s&termid=%d', site_url(), 'download', 'term', 'txt', $_REQUEST['taxonomy'], $termid)
+	));
+	
+	$wp_admin_bar->add_menu( array(
+		'parent' => 'eal_download_term',
+		'title' => 'JSON',
+		'href' => sprintf('%s/admin.php?page=%s&type=%s&format=%s&taxonomy=%s&termid=%d', site_url(), 'download', 'term', 'json', $_REQUEST['taxonomy'], $termid)
+	));
+	
+	
+	
+	
+	
+	
+	
+	
+}
 
 function setDashboard() {
 	
