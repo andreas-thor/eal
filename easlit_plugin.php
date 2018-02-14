@@ -241,7 +241,7 @@ function setAdminMenu() {
 		
 		setAdminMenu_Download_Item ($wp_admin_bar);
 		setAdminMenu_Upload_Item ($wp_admin_bar);
-		setAdminMenu_Download_Topic ($wp_admin_bar);
+		setAdminMenu_Download_and_Upload_Topic ($wp_admin_bar);
 
 		$wp_admin_bar->remove_menu('view');
 		$wp_admin_bar->remove_menu('updates');
@@ -318,7 +318,7 @@ function setAdminMenu_Upload_Item($wp_admin_bar) {
 	
 }
 
-function setAdminMenu_Download_Topic($wp_admin_bar) {
+function setAdminMenu_Download_and_Upload_Topic($wp_admin_bar) {
 	
 	if (($_SERVER['PHP_SELF']!='/wordpress/wp-admin/edit-tags.php') && ($_SERVER['PHP_SELF']!='/wordpress/wp-admin/term.php')) return;
 	
@@ -330,20 +330,35 @@ function setAdminMenu_Download_Topic($wp_admin_bar) {
 	$wp_admin_bar->add_menu( array(
 		'id' => 'eal_download_term',
 		'title' => sprintf("<div class='wp-menu-image dashicons-before dashicons-download'>&nbsp;%s</div>", 'Download'),
-		'href' => FALSE ) );
+		'href' => FALSE
+	));
 	
 	$wp_admin_bar->add_menu( array(
+		'id' => 'eal_download_term_txt',
 		'parent' => 'eal_download_term',
 		'title' => 'TXT',
-		'href' => sprintf('%s/admin.php?page=%s&type=%s&format=%s&taxonomy=%s&termid=%d', site_url(), 'download', 'term', 'txt', $_REQUEST['taxonomy'], $termid)
+		'href' => sprintf('admin.php?page=%s&type=%s&format=%s&taxonomy=%s&termid=%d', 'download', 'term', 'txt', $_REQUEST['taxonomy'], $termid)
 	));
 	
 	$wp_admin_bar->add_menu( array(
+		'id' => 'eal_download_term_json',
 		'parent' => 'eal_download_term',
 		'title' => 'JSON',
-		'href' => sprintf('%s/admin.php?page=%s&type=%s&format=%s&taxonomy=%s&termid=%d', site_url(), 'download', 'term', 'json', $_REQUEST['taxonomy'], $termid)
+		'href' => sprintf('admin.php?page=%s&type=%s&format=%s&taxonomy=%s&termid=%d', 'download', 'term', 'json', $_REQUEST['taxonomy'], $termid)
 	));
 	
+	$wp_admin_bar->add_menu( array(
+		'id' => 'eal_upload_term',
+		'title' => sprintf("<div class='wp-menu-image dashicons-before dashicons-upload'>&nbsp;%s</div>", 'Upload'),
+		'href' => FALSE 
+	));
+	
+	$wp_admin_bar->add_menu( array(
+		'id' => 'eal_upload_term_txt',
+		'parent' => 'eal_upload_term',
+		'title' => 'TXT',
+		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s&taxonomy=%s&termid=%d', 'import', 'term', 'txt', $_REQUEST['taxonomy'], $termid)
+	));
 	
 	
 	
