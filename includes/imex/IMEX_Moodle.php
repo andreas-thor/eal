@@ -3,8 +3,9 @@
 require_once ('IMEX_Item.php');
 
 class IMEX_Moodle extends IMEX_Item {
-	
-	
+
+	// list of all possible fraction values (taken from moodle.uni-leipzig.de)
+	private $allFractions = ["100", "90", "83.33333", "80", "75", "70", "66.66667", "60", "50", "40", "33.33333", "30", "25", "20", "16.66667", "14.28571", "12.5", "11.11111", "10", "5", "0", "-5", "-10", "-11.11111", "-12.5", "-14.28571", "-16.66667", "-20", "-25", "-30", "-33.33333", "-40", "-50", "-60", "-66.66667", "-70", "-75", "-80", "-83.33333", "-90", "-100"];
 	
 
 	public function __construct() {
@@ -95,6 +96,26 @@ class IMEX_Moodle extends IMEX_Item {
 		return $xmlQuestion;
 	}
 	
+	/**
+	 * pick the closest fraction value from $this->allFraction (that contains all valid/possible fraction values)
+	 * @param float $fraction
+	 * @return string
+	 */	
+	private function getValidFractionValue (float $fraction): string {
+	
+		foreach ($this->allFractions as $index => $fracValue) {
+			
+			if ($fraction>=$fracValue) {
+				if ($index==0) {	// we are greater than the largest value --> tage largest value
+					return $fracValue;
+				}
+				// we are between two values; take the value we are closer to
+				return ((floatval($this->allFractions[$index-1])-$fraction) < ($fraction-floatval($fracValue))) ? $this->allFractions[$index-1] : $fracValue;
+			}
+		}
+		
+		return $this->allFractions[count($this->allFractions)-1]; // default = last possible value
+	}
 	
 	
 	private function createXMLSingleChoiceAnswers (DOMDocument $dom, EAL_ItemSC $item): array {
@@ -105,7 +126,7 @@ class IMEX_Moodle extends IMEX_Item {
 			$fraction = ($item->getPoints()) == 0 ? 0 : 100*$answer['points']/$item->getPoints();	// answer points in percent of overall item points 
 			
 			$xmlAnswer  = $dom->createElement('answer');
-			$xmlAnswer->setAttribute('fraction', $fraction);
+			$xmlAnswer->setAttribute('fraction', $this->getValidFractionValue($fraction));
 			$xmlAnswer->appendChild($dom->createElement('text', $answer['answer']));
 			 
 			$xmlFeedback  = $dom->createElement('feedback');
@@ -129,7 +150,6 @@ class IMEX_Moodle extends IMEX_Item {
 				$sumPositivePoints += $answer['positive']-$answer['negative'];
 			}
 		}
-// 		$factor = ($item->getPoints()) == 0 ? 0 : $sumPositivePoints / $item->getPoints();
 		
 		$xmlAnswers = array ();
 		
@@ -137,7 +157,7 @@ class IMEX_Moodle extends IMEX_Item {
 			$fraction = ($sumPositivePoints) == 0 ? 0 : 100*($answer['positive']-$answer['negative'])/$sumPositivePoints;	
 			
 			$xmlAnswer  = $dom->createElement('answer');
-			$xmlAnswer->setAttribute('fraction', $fraction);
+			$xmlAnswer->setAttribute('fraction', $this->getValidFractionValue($fraction));
 			$xmlAnswer->appendChild($dom->createElement('text', $answer['answer']));
 			
 			$xmlFeedback  = $dom->createElement('feedback');
