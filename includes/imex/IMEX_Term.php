@@ -1,6 +1,5 @@
 <?php
 
-// require_once( ABSPATH . 'wp-includes/class-wp-term.php' );
 require_once ('IMEX_Object.php');
 
 class IMEX_Term extends IMEX_Object {
@@ -8,9 +7,10 @@ class IMEX_Term extends IMEX_Object {
 	private $taxonomy;
 	private $allterms;
 	
+	
+	
 	public function __construct() {
 		parent::__construct();
-		
 	}
 	
 	
@@ -39,7 +39,7 @@ class IMEX_Term extends IMEX_Object {
 		
 		if ($format == "txt") {
 			foreach ($this->allterms as $at) {
-				$result .= str_repeat ("  ", $at[1]*2) . $at[0]->name . PHP_EOL;
+				$result .= str_repeat ("\t", $at[1]) . $at[0]->name . PHP_EOL;
 			}
 		} 
 		if ($format == "json") {
@@ -71,8 +71,27 @@ class IMEX_Term extends IMEX_Object {
 	}
 	
 	
-	public function upload(array $file) {}
+	public function uploadTerms (array $file, string $taxonomy, int $termId) {
+		
+		$lastParent = array (0 => $termId);		// level => term of parent
+		foreach (file ($file['tmp_name'], FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+			
+			$level = strlen($line) - strlen(ltrim($line));
+			if (!isset($lastParent[$level])) continue;	// could not find parent
 
+			$x = wp_insert_term( trim($line), $taxonomy, array('parent' => $lastParent[$level]) );
+			if (is_wp_error ($x)) continue;		// term does already exist
+			$lastParent[$level+1] = $x['term_id'];
+
+			
+			
+		}
+		
+		
+	}
+
+	
+	
 	
 }
 

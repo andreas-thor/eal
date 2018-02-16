@@ -22,7 +22,6 @@ require_once 'includes/page/Importer.php';
 require_once 'includes/page/Explorer.php';
 require_once 'includes/page/Blueprint.php';
 
-require_once 'includes/class.PAG_TaxonomyImport.php';
 require_once 'includes/class.CLA_RoleTaxonomy.php';
 
 require_once 'includes/imex/IMEX_Easlit.php';
@@ -137,7 +136,7 @@ function setMainMenu() {
 		if ($domain["name"] != "") {
 			add_submenu_page($menuslug, $domain["label"], '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> ' . $domain["label"], 'edit_posts', 'edit-tags.php?taxonomy=' . $domain["name"]);
 		}
-		add_submenu_page($menuslug, 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import-taxonomy', ['PAG_Taxonomy_Import', 'createPage']);
+		// add_submenu_page($menuslug, 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import-taxonomy', ['PAG_Taxonomy_Import', 'createPage']);
 		
 		// Menu: Item Basket
 		$menuslug = 'edit.php?post_type=itembasket';

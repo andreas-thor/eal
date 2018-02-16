@@ -13,7 +13,23 @@ class Importer {
 		}
 		
 		if ($_POST['action']=='Upload') {
-			self::showPreview();
+			
+			//	checks for errors and that file is uploaded
+			if (!(($_FILES['uploadedfile']['error'] == UPLOAD_ERR_OK) && (is_uploaded_file($_FILES['uploadedfile']['tmp_name'])))) {
+				printf ("<div class='wrap'><h1>File Error: %s</h1></div>", $_FILES['uploadedfile']['error']);
+				return;
+			}
+			
+			
+			if ($_REQUEST['post_type']=='term') {
+				(new IMEX_Term())->uploadTerms($_FILES['uploadedfile'], $_REQUEST['taxonomy'], $_REQUEST['termid']);
+			}
+
+			if ($_REQUEST['post_type']=='item') {
+				self::showPreview();
+			}
+			
+			
 		}
 
 	}
@@ -112,11 +128,7 @@ class Importer {
 	
 	private static function showPreview () {
 	
-		//	checks for errors and that file is uploaded
-		if (!(($_FILES['uploadedfile']['error'] == UPLOAD_ERR_OK) && (is_uploaded_file($_FILES['uploadedfile']['tmp_name'])))) {
-			printf ("<div class='wrap'><h1>File Error: %s</h1></div>", $_FILES['uploadedfile']['error']);
-			return;
-		}
+
 		
 		// TODO: check file format parameter (ILIAS5, ...)
 		switch ($_REQUEST['format']) {
@@ -222,6 +234,7 @@ class Importer {
 	
 	private static function showUploadForm () {
 		
+		$action = sprintf ('admin.php?page=%s&post_type=%s&format=%s', $_REQUEST['page'], $_REQUEST['post_type'], $_REQUEST['format']);
 		$title = "";
 		if (($_REQUEST['post_type']=='item') && ($_REQUEST['format']=='ilias')) {
 			$title = "Items (from Ilias)";
@@ -229,8 +242,11 @@ class Importer {
 		if (($_REQUEST['post_type']=='item') && ($_REQUEST['format']=='moodle')) {
 			$title = "Items (from Moodle)";
 		}
+		if (($_REQUEST['post_type']=='term') && ($_REQUEST['format']=='txt')) {
+			$title = "Taxonomy Terms (from TXT file)";
+			$action .= sprintf('&taxonomy=%s&termid=%d', $_REQUEST['taxonomy'], $_REQUEST['termid']);
+		}
 		
-		$action = sprintf ('admin.php?page=%s&post_type=%s&format=%s', $_REQUEST['page'], $_REQUEST['post_type'], $_REQUEST['format']);
 		
 		?>
 		

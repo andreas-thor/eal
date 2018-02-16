@@ -1,8 +1,7 @@
 <?php
 
 
-
-abstract class IMEX_Object {
+class IMEX_Object {
 	
 	protected $downloaddir;			// directory where the export file is stored
 	protected $downloadfilename;	// name of the export file (will be set in sub class)
@@ -20,9 +19,6 @@ abstract class IMEX_Object {
 	
 	
 	
-	abstract public function upload (array $file);
-	
-	
 	
 	protected function getDownloadFullname (): string {
 		return $this->downloaddir . $this->downloadfilename . "." . $this->downloadextension;
@@ -32,7 +28,7 @@ abstract class IMEX_Object {
  	protected function download () {
  		
  		/* generate HTTP response */
- 		header("Content-type: application/" . $this->downloadextension);
+ 		header("Content-type: application/" . $this->downloadextension . "; charset=utf-8");
  		header("Content-Disposition: attachment; filename=" . $this->downloadfilename . "." . $this->downloadextension);
  		header("Content-length: " . filesize($this->getDownloadFullname()));
  		header("Pragma: no-cache");
