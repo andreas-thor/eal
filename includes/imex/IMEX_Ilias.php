@@ -8,7 +8,9 @@ class IMEX_Ilias extends IMEX_Item {
 	private $xml_MTImages = array();
 	
 	
-	public function generateExportFile (array $itemids) {
+	
+	
+	protected function generateExportFile (array $itemids) {
 	
 		$this->downloadfilename = time() . "__0__qpl_1";
 		$this->downloadextension = "zip";
@@ -74,12 +76,6 @@ class IMEX_Ilias extends IMEX_Item {
 	
 		foreach ($itemids as $item_id) {
 	
-// 			$item = new EAL_ItemSC($item_id);
-// 			if ($item->getId() != $item_id) {
-// 				$item = new EAL_ItemMC($item_id);
-// 			}
-// 			if ($item->getId() != $item_id) continue;
-				
 			// load item
 			$post = get_post($item_id);
 			if ($post == null) continue;	// item (post) does not exist
@@ -214,19 +210,34 @@ class IMEX_Ilias extends IMEX_Item {
 	
 	}
 	
+	protected function processImage(string $src): string {
+		
+		$key = "il_0_mob_" . count($this->media);
+		$this->media [$key] = $src;
+		$fileshort = array_pop(explode ("/", $src));
+		
+// 		$mimg = $dom->createElement("matimage");
+// 		$mimg->setAttribute("label", $key);
+// 		$mimg->setAttribute("uri", "objects/{$key}/{$fileshort}");
+// 		array_push($this->xml_MTImages, $mimg);
+		
+		
+		$this->xml_MTImages[] = ['label' => $key, 'uri' => ('objects/' . $key . '/' . $fileshort)];
+		return $key;
+	}
 	
 	
 	private function createMaterialElement ($dom, $type, $value) {
 		
 		// <matimage label="il_0_mob_3908" uri="objects/il_0_mob_3908/schoolsigngenericpicgettyimages640740604.jpg"/>
 		
-		$this->xml_MTImages = array ();
 		
+		/*
 		$value = preg_replace_callback(				// replace image references
 				'|(<img[^>]+)src=["\']([^"]*)["\']|',
 				function ($match) use ($dom) {
 		
-					/* if img is stored inline (src="data:image/png;base64,iVBOR....") --> do nothing */
+					// if img is stored inline (src="data:image/png;base64,iVBOR....") --> do nothing 
 					if (strtolower (substr($match[2], 0, 5)) == 'data:') {
 						return $match[1] . "src='" . $match[2] . "'";
 					}
@@ -244,19 +255,23 @@ class IMEX_Ilias extends IMEX_Item {
 				},
 				$value
 				);		
+		*/
 		
-		
-		
+		// processAllImages might call processImage, that fills $this->media and $this->xml_MTImages 
+		$this->xml_MTImages = array ();
 		
 		$xml_MT = $dom->createElement("mattext");
-		$xml_MT->appendChild ($dom->createTextNode ($value));
+		$xml_MT->appendChild ($dom->createTextNode ($this->processAllImages($value)));
 		$xml_MT->setAttribute("texttype", $type);
 
 		$xml_MA = $dom->createElement("material");
 		$xml_MA->appendChild ($xml_MT);
 		
-		foreach ($this->xml_MTImages as $mimg) {
-			$xml_MA->appendChild($mimg);
+		foreach ($this->xml_MTImages as $mtimage) {
+			$xml_mimg = $dom->createElement("matimage");
+			$xml_mimg->setAttribute('label', $mtimage['label']);
+			$xml_mimg->setAttribute('uri', $mtimage['uri']);
+			$xml_MA->appendChild($xml_mimg);
 		}
 		
 		return $xml_MA;
@@ -454,6 +469,8 @@ class IMEX_Ilias extends IMEX_Item {
 	
 		return $items;
 	}
+	
+
 	
 	
 }

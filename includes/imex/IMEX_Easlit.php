@@ -43,6 +43,11 @@ class IMEX_Easlit extends IMEX_Item {
 		return json_encode($result);
 	}
 	
+	protected function processImage(string $src): string {
+		return $src;
+	}
+
+	
 }
 
 ?>
