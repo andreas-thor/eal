@@ -46,7 +46,9 @@ class IMEX_Moodle extends IMEX_Item {
 	
 	
 	protected function processImage(string $src): string {
-		return $src;
+		
+		$extension = substr ($src, -3);
+		return 'data:image/' . $extension . ';base64,' . base64_encode(file_get_contents($src));
 	}
 	
 	
@@ -73,7 +75,7 @@ class IMEX_Moodle extends IMEX_Item {
 		
 		// <questiontext format="html"><text>description and question</text></questiontext>
 		$xmlText = $dom->createElement('text');
-		$xmlText->appendChild($dom->createCDATASection(wpautop($item->description) . "<!-- EAL --><hr/>" . wpautop($item->question)));
+		$xmlText->appendChild($dom->createCDATASection($this->processAllImages(wpautop($item->description) . "<!-- EAL --><hr/>" . wpautop($item->question))));
 		$xmlQuestiontext  = $dom->createElement('questiontext');
 		$xmlQuestiontext->setAttribute('format', 'html');
 		$xmlQuestiontext->appendChild ($xmlText);
