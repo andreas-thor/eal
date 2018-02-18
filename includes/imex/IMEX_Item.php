@@ -6,7 +6,7 @@ require_once('IMEX_Object.php');
 abstract class IMEX_Item extends IMEX_Object {
 	
 	
-	protected const DESCRIPTION_QUESTION_SEPARATOR = '<!-- EAL --><hr/>';
+	const DESCRIPTION_QUESTION_SEPARATOR = '<!-- EAL --><hr/>';
 	
 	abstract protected function generateExportFile (array $itemids);
 	

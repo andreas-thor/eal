@@ -12,7 +12,7 @@ class IMEX_Moodle extends IMEX_Item {
 		
 		$this->downloadfilename = time().'_moodle_from_easlit';
 		$this->downloadextension = 'xml';
-		file_put_contents($this->getDownloadFullname(), $this->createXMLQuizDocument ($itemids)->saveXML());
+		file_put_contents($this->getDownloadFullname(), $this->create_XMLQuizDocument ($itemids)->saveXML());
 	}
 	
 	 
@@ -21,7 +21,7 @@ class IMEX_Moodle extends IMEX_Item {
 	 * @param array $itemids
 	 * @return DOMDocument
 	 */
-	private function createXMLQuizDocument (array $itemids): DOMDocument {
+	private function create_XMLQuizDocument (array $itemids): DOMDocument {
 
 		$dom = DOMDocument::loadXML (
 			'<?xml version="1.0" encoding="utf-8" ?>
@@ -45,16 +45,35 @@ class IMEX_Moodle extends IMEX_Item {
 	}
 	
 	
-	/**
-	 * The image is included into the export file via data:image because Moodle does not support accompanying files (e.g., in a zip)
-	 * {@inheritDoc}
-	 * @see IMEX_Item::processImage()
-	 */
-	protected function processImage(string $src): string {
+	private function parse_XMLQuizDocument (DOMDocument $dom): array {
 		
-		$extension = substr ($src, -3);
-		return 'data:image/' . $extension . ';base64,' . base64_encode(file_get_contents($src));
+		$quiz = $dom->documentElement;
+		if ($quiz->tagName != 'quiz') {
+			throw new Exception ('Root element must be <quiz>.');
+		}
+		
+		$xpath = new DOMXPath($dom);
+		$items = [];
+		foreach ($xpath->evaluate('./question', $quiz) as $question) {
+			
+			if ($question->getAttribute('type') == 'multichoice') {
+				$items[] = $this->parse_XMLMultiChoiceQuestionElement ($dom, $question);
+			}
+		}
+		
+		
+		// adjust item_ids
+		for ($idx=0; $idx<count($items); $idx++) {
+			if ($items[$idx]->getId()==-1) {
+				$items[$idx]->setId(-($idx+1));
+			}
+		}
+		
+		return $items;
+		
 	}
+	
+
 	
 	
 	
@@ -109,12 +128,13 @@ class IMEX_Moodle extends IMEX_Item {
 	
 	private function parse_XMLMultiChoiceQuestionElement (DOMDocument $dom, DOMNode $question): EAL_Item {
 		
-		$xpath = new DOMXPath($doc);
+		$xpath = new DOMXPath($dom);
 		
 		$item = (($xpath->evaluate('./single', $question)->textContent) == 'true') ? new EAL_ItemSC() : new EAL_ItemMC();
-		$item->title = $xpath->evaluate('./name/text', $question)->textContent;
+		$a = $xpath->evaluate('./name/text', $question)[0];
+		$item->title = $xpath->evaluate('./name/text', $question)[0]->textContent;
 	
-		$text = $xpath->evaluate('./questiontext/text', $question)->textContent;
+		$text = $xpath->evaluate('./questiontext/text', $question)[0]->textContent;
 		
 		// Description and Question are separated by horizontal line
 		$split = explode (self::DESCRIPTION_QUESTION_SEPARATOR, $text, 2);
@@ -126,12 +146,10 @@ class IMEX_Moodle extends IMEX_Item {
 			$item->question = $split[1];
 		}
 		
-		$points = intval($xpath->evaluate('./defaultgrade', $question)->textContent);
-		if ($item->getType()=="itemsc") {
-			$this->parse_XMLSingleChoiceAnswers ($dom, $question, $points, $item);
-		} else {
-			$this->parse_XMLMultipleChoiceAnswers ($dom, $question, $points, $item);
-		}
+		$points = intval($xpath->evaluate('./defaultgrade', $question)[0]->textContent);
+		$item->answers = ($item->getType()=="itemsc") ? $this->parse_XMLSingleChoiceAnswers ($dom, $question, $points) : $this->parse_XMLMultiChoiceAnswers ($dom, $question, $points);
+		
+		return $item;
 	}
 	
 	
@@ -165,17 +183,19 @@ class IMEX_Moodle extends IMEX_Item {
 	 * @param int $points overall points for this question
 	 * @param EAL_ItemSC $item
 	 */
-	private function parse_XMLSingleChoiceAnswers (DOMDocument $dom, DOMElement $question, int $points, EAL_ItemSC $item)  {
+	private function parse_XMLSingleChoiceAnswers (DOMDocument $dom, DOMElement $question, int $points): array  {
 		
-		$xpath = new DOMXPath($doc);
+		$xpath = new DOMXPath($dom);
 		
-		$item->answers = [];
+		$answers = [];
 		foreach ($xpath->evaluate('./answer', $question)  as $answer) {
 			
 			$fraction = doubleval($answer->getAttribute('fraction'));
 			$p = round ($fraction * $points / 100);		// we support int values only for points
-			$item->answers[] = ['answer' => $xpath->evaluate('./text', $answer)->textContent, 'points' => $p];
+			$answers[] = ['answer' => $xpath->evaluate('./text', $answer)[0]->textContent, 'points' => $p];
 		}
+		
+		return $answers;
 	}
 	
 	private function create_XMLMultipleChoiceAnswers (DOMDocument $dom, EAL_ItemMC $item): array {
@@ -204,19 +224,33 @@ class IMEX_Moodle extends IMEX_Item {
 			
 			$xmlAnswers[] = $xmlAnswer;
 		}
-		
-		
-		
+
 		return $xmlAnswers;
 	}
 	
-	private function parse_XMLMultiChoiceAnswers (DOMDocument $dom, DOMElement $answer, int $points, EAL_ItemMC $item)  {
+	
+	private function parse_XMLMultiChoiceAnswers (DOMDocument $dom, DOMElement $question, int $points): array  {
 		
+		$xpath = new DOMXPath($dom);
 		
+		$answers = [];
+		foreach ($xpath->evaluate('./answer', $question)  as $answer) {
+			
+			$fraction = doubleval($answer->getAttribute('fraction'));
+			$p = round ($fraction * $points / 100);		// we support int values only for points
+			$n = 0;
+			if ($p<0) {
+				$n = -$p;
+				$p = 0;
+			}
+			$answers[] = ['answer' => $xpath->evaluate('./text', $answer)[0]->textContent, 'positive' => $p, 'negative' => $n];
+		}
+		
+		return $answers;
 	}
 	
 	
-	public function upload (array $file) {
+	public function upload (array $file): array {
 		
 		// check for extension
 		if (substr ($file['name'], -4) != ".xml") {
@@ -225,27 +259,17 @@ class IMEX_Moodle extends IMEX_Item {
 
 		// load file
 		$xmlString = file_get_contents ($file['tmp_name']);
-		if ($xmlString == FALSE) {
+		if ($xmlString === FALSE) {
 			throw new Exception("Could not open XML file");
 		}
 		
 		// parse XML file
-		$doc = new DOMDocument();
-		if ($doc->loadXML($xmlString) == FALSE) {
+		$dom = new DOMDocument();
+		if ($dom->loadXML($xmlString) === FALSE) {
 			throw new Exception("Could not pasre XML file");
 		}
 		
-		$xpath = new DOMXPath($doc);
-		foreach ($xpath->evaluate('/quiz/question') as $question) {
-			
-			
-			if ($question->getAttribute('type') == 'multichoice') {
-				$this->parse_XMLMultiChoiceQuestionElement ($dom, $question);
-			}
-		}
-		
-		
-		
+		return $this->parse_XMLQuizDocument($dom);
 	}
 	
 	
@@ -268,6 +292,18 @@ class IMEX_Moodle extends IMEX_Item {
 		}
 		
 		return self::ALLFRACTIONS[count(self::ALLFRACTIONS)-1]; // default = last possible value
+	}
+	
+	
+	/**
+	 * The image is included into the export file via data:image because Moodle does not support accompanying files (e.g., in a zip)
+	 * {@inheritDoc}
+	 * @see IMEX_Item::processImage()
+	 */
+	protected function processImage(string $src): string {
+		
+		$extension = substr ($src, -3);
+		return 'data:image/' . $extension . ';base64,' . base64_encode(file_get_contents($src));
 	}
 	
 }
