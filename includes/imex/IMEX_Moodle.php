@@ -37,7 +37,7 @@ class IMEX_Moodle extends IMEX_Item {
 
 			// add question of type 'MultiChoice' for this item
 			if (($item->getType()=='itemsc') || ($item->getType()=='itemmc')) {
-				$dom->documentElement->appendChild ($this->createXMLMultiChoiceQuestionElement ($dom, $item));
+				$dom->documentElement->appendChild ($this->create_XMLMultiChoiceQuestionElement ($dom, $item));
 			}
 		}
 		
@@ -45,6 +45,11 @@ class IMEX_Moodle extends IMEX_Item {
 	}
 	
 	
+	/**
+	 * The image is included into the export file via data:image because Moodle does not support accompanying files (e.g., in a zip)
+	 * {@inheritDoc}
+	 * @see IMEX_Item::processImage()
+	 */
 	protected function processImage(string $src): string {
 		
 		$extension = substr ($src, -3);
@@ -59,7 +64,7 @@ class IMEX_Moodle extends IMEX_Item {
 	 * @param EAL_Item $item
 	 * @return DOMNode
 	 */
-	private function createXMLMultiChoiceQuestionElement (DOMDocument $dom, EAL_Item $item): DOMNode {
+	private function create_XMLMultiChoiceQuestionElement (DOMDocument $dom, EAL_Item $item): DOMNode {
 		
 		
 		// <question type="multichoice">...</question>
@@ -75,17 +80,19 @@ class IMEX_Moodle extends IMEX_Item {
 		
 		// <questiontext format="html"><text>description and question</text></questiontext>
 		$xmlText = $dom->createElement('text');
-		$xmlText->appendChild($dom->createCDATASection($this->processAllImages(wpautop($item->description) . "<!-- EAL --><hr/>" . wpautop($item->question))));
+		$xmlText->appendChild($dom->createCDATASection($this->processAllImages(wpautop($item->description) . self::DESCRIPTION_QUESTION_SEPARATOR . wpautop($item->question))));
+		
+		
 		$xmlQuestiontext  = $dom->createElement('questiontext');
 		$xmlQuestiontext->setAttribute('format', 'html');
 		$xmlQuestiontext->appendChild ($xmlText);
 		$xmlQuestion->appendChild($xmlQuestiontext);
-		
+
 		// <defaultgrade>number of maxpoints</defaultgrade>
 		$xmlQuestion->appendChild ($dom->createElement('defaultgrade', $item->getPoints()));
 		
 		// <answer>
-		$xmlAnswers = ($item->getType()=="itemsc") ? $this->createXMLSingleChoiceAnswers ($dom, $item) : $this->createXMLMultipleChoiceAnswers ($dom, $item);
+		$xmlAnswers = ($item->getType()=="itemsc") ? $this->create_XMLSingleChoiceAnswers ($dom, $item) : $this->create_XMLMultipleChoiceAnswers ($dom, $item);
 		foreach ($xmlAnswers as $xmlAnswer) {
 			$xmlQuestion->appendChild($xmlAnswer);
 		}
@@ -99,29 +106,36 @@ class IMEX_Moodle extends IMEX_Item {
 		return $xmlQuestion;
 	}
 	
-	/**
-	 * pick the closest fraction value from $this->allFraction (that contains all valid/possible fraction values)
-	 * @param float $fraction
-	 * @return string
-	 */	
-	private function getValidFractionValue (float $fraction): string {
 	
-		foreach (self::ALLFRACTIONS as $index => $fracValue) {
-			
-			if ($fraction>=$fracValue) {
-				if ($index==0) {	// we are greater than the largest value --> tage largest value
-					return $fracValue;
-				}
-				// we are between two values; take the value we are closer to
-				return ((floatval(self::ALLFRACTIONS[$index-1])-$fraction) < ($fraction-floatval($fracValue))) ? self::ALLFRACTIONS[$index-1] : $fracValue;
-			}
+	private function parse_XMLMultiChoiceQuestionElement (DOMDocument $dom, DOMNode $question): EAL_Item {
+		
+		$xpath = new DOMXPath($doc);
+		
+		$item = (($xpath->evaluate('./single', $question)->textContent) == 'true') ? new EAL_ItemSC() : new EAL_ItemMC();
+		$item->title = $xpath->evaluate('./name/text', $question)->textContent;
+	
+		$text = $xpath->evaluate('./questiontext/text', $question)->textContent;
+		
+		// Description and Question are separated by horizontal line
+		$split = explode (self::DESCRIPTION_QUESTION_SEPARATOR, $text, 2);
+		if (count($split)==1) {
+			$item->description = '';
+			$item->question = $split[0];
+		} else {
+			$item->description = $split[0];
+			$item->question = $split[1];
 		}
 		
-		return self::ALLFRACTIONS[count(self::ALLFRACTIONS)-1]; // default = last possible value
+		$points = intval($xpath->evaluate('./defaultgrade', $question)->textContent);
+		if ($item->getType()=="itemsc") {
+			$this->parse_XMLSingleChoiceAnswers ($dom, $question, $points, $item);
+		} else {
+			$this->parse_XMLMultipleChoiceAnswers ($dom, $question, $points, $item);
+		}
 	}
 	
 	
-	private function createXMLSingleChoiceAnswers (DOMDocument $dom, EAL_ItemSC $item): array {
+	private function create_XMLSingleChoiceAnswers (DOMDocument $dom, EAL_ItemSC $item): array {
 		
 		$xmlAnswers = array ();
 		
@@ -144,7 +158,21 @@ class IMEX_Moodle extends IMEX_Item {
 		return $xmlAnswers;
 	}
 	
-	private function createXMLMultipleChoiceAnswers (DOMDocument $dom, EAL_ItemMC $item): array {
+	
+	private function parse_XMLSingleChoiceAnswers (DOMDocument $dom, DOMElement $question, int $points, EAL_ItemSC $item)  {
+		
+		$xpath = new DOMXPath($doc);
+		
+		$item->answers = [];
+		foreach ($xpath->evaluate('./answer', $question)  as $answer) {
+			
+			$fraction = doubleval($answer->getAttribute('fraction'));
+			$p = round ($fraction * $points / 100);	
+			$item->answers[] = ['answer' => $xpath->evaluate('./text', $answer)->textContent, 'points' => $p];
+		}
+	}
+	
+	private function create_XMLMultipleChoiceAnswers (DOMDocument $dom, EAL_ItemMC $item): array {
 		
 		// points computation in Moodle is different to Ilias/Easlit
 		$sumPositivePoints = 0;	
@@ -176,7 +204,65 @@ class IMEX_Moodle extends IMEX_Item {
 		return $xmlAnswers;
 	}
 	
-	public function upload (array $file) {}
+	private function parse_XMLMultiChoiceAnswers (DOMDocument $dom, DOMElement $answer, int $points, EAL_ItemMC $item)  {
+		
+		
+	}
+	
+	
+	public function upload (array $file) {
+		
+		// check for extension
+		if (substr ($file['name'], -4) != ".xml") {
+			throw new Exception("Error! File is not a XML file");
+		}
+
+		// load file
+		$xmlString = file_get_contents ($file['tmp_name']);
+		if ($xmlString == FALSE) {
+			throw new Exception("Could not open XML file");
+		}
+		
+		// parse XML file
+		$doc = new DOMDocument();
+		if ($doc->loadXML($xmlString) == FALSE) {
+			throw new Exception("Could not pasre XML file");
+		}
+		
+		$xpath = new DOMXPath($doc);
+		foreach ($xpath->evaluate('/quiz/question') as $question) {
+			
+			
+			if ($question->getAttribute('type') == 'multichoice') {
+				$this->parse_XMLMultiChoiceQuestionElement ($dom, $question);
+			}
+		}
+		
+		
+		
+	}
+	
+	
+	/**
+	 * pick the closest fraction value from $this->allFraction (that contains all valid/possible fraction values)
+	 * @param float $fraction
+	 * @return string
+	 */
+	private function getValidFractionValue (float $fraction): string {
+		
+		foreach (self::ALLFRACTIONS as $index => $fracValue) {
+			
+			if ($fraction>=$fracValue) {
+				if ($index==0) {	// we are greater than the largest value --> tage largest value
+					return $fracValue;
+				}
+				// we are between two values; take the value we are closer to
+				return ((floatval(self::ALLFRACTIONS[$index-1])-$fraction) < ($fraction-floatval($fracValue))) ? self::ALLFRACTIONS[$index-1] : $fracValue;
+			}
+		}
+		
+		return self::ALLFRACTIONS[count(self::ALLFRACTIONS)-1]; // default = last possible value
+	}
 	
 }
 

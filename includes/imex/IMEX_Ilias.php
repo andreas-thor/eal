@@ -184,9 +184,6 @@ class IMEX_Ilias extends IMEX_Item {
 					}
 					$xml_RC->appendChild ($xml_CV);
 						
-					// 					if ($item->type == "itemsc") array_push ($item->answers, array ("answer" => $v["text"], "points" => $v["positive"]));
-					// 					if ($item->type == "itemmc") array_push ($item->answers, array ("answer" => $v["text"], "positive" => $v["positive"], "negative" => $v["negative"]));
-	
 					if ($item->getType() == "itemsc") $xml_SV = $dom->createElement("setvar", ($checked==1) ? $answer['points'] : 0);
 					if ($item->getType() == "itemmc") $xml_SV = $dom->createElement("setvar", ($checked==1) ? $answer['positive'] : $answer['negative']);
 	
@@ -210,17 +207,17 @@ class IMEX_Ilias extends IMEX_Item {
 	
 	}
 	
+	
+	/**
+	 * Images are replaced by new name (il_0_mob_[count]) and added to xml_MITImages (=> will later be added to the zip file9
+	 * {@inheritDoc}
+	 * @see IMEX_Item::processImage()
+	 */
 	protected function processImage(string $src): string {
 		
 		$key = "il_0_mob_" . count($this->media);
 		$this->media [$key] = $src;
 		$fileshort = array_pop(explode ("/", $src));
-		
-// 		$mimg = $dom->createElement("matimage");
-// 		$mimg->setAttribute("label", $key);
-// 		$mimg->setAttribute("uri", "objects/{$key}/{$fileshort}");
-// 		array_push($this->xml_MTImages, $mimg);
-		
 		
 		$this->xml_MTImages[] = ['label' => $key, 'uri' => ('objects/' . $key . '/' . $fileshort)];
 		return $key;
@@ -228,34 +225,6 @@ class IMEX_Ilias extends IMEX_Item {
 	
 	
 	private function createMaterialElement ($dom, $type, $value) {
-		
-		// <matimage label="il_0_mob_3908" uri="objects/il_0_mob_3908/schoolsigngenericpicgettyimages640740604.jpg"/>
-		
-		
-		/*
-		$value = preg_replace_callback(				// replace image references
-				'|(<img[^>]+)src=["\']([^"]*)["\']|',
-				function ($match) use ($dom) {
-		
-					// if img is stored inline (src="data:image/png;base64,iVBOR....") --> do nothing 
-					if (strtolower (substr($match[2], 0, 5)) == 'data:') {
-						return $match[1] . "src='" . $match[2] . "'";
-					}
-
-					$key = "il_0_mob_" . count($this->media);
-					$this->media [$key] = $match[2];
-					$fileshort = array_pop(explode ("/", $match[2]));
-					
-					$mimg = $dom->createElement("matimage");
-					$mimg->setAttribute("label", $key);
-					$mimg->setAttribute("uri", "objects/{$key}/{$fileshort}");
-					array_push($this->xml_MTImages, $mimg);
-						
-					return $match[1] . "src=\"" . $key . "\"";
-				},
-				$value
-				);		
-		*/
 		
 		// processAllImages might call processImage, that fills $this->media and $this->xml_MTImages 
 		$this->xml_MTImages = array ();
@@ -425,7 +394,7 @@ class IMEX_Ilias extends IMEX_Item {
 					);
 				
 			// Description and Question are separated by horizontal line
-			$split = explode ("<!-- EAL --><hr/>", $descques, 2);
+			$split = explode (self::DESCRIPTION_QUESTION_SEPARATOR, $descques, 2);
 			if (count($split)==1) {
 				$item->description = "";
 				$item->question = $split[0];
