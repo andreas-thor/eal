@@ -159,6 +159,12 @@ class IMEX_Moodle extends IMEX_Item {
 	}
 	
 	
+	/**
+	 * @param DOMDocument $dom
+	 * @param DOMElement $question
+	 * @param int $points overall points for this question
+	 * @param EAL_ItemSC $item
+	 */
 	private function parse_XMLSingleChoiceAnswers (DOMDocument $dom, DOMElement $question, int $points, EAL_ItemSC $item)  {
 		
 		$xpath = new DOMXPath($doc);
@@ -167,7 +173,7 @@ class IMEX_Moodle extends IMEX_Item {
 		foreach ($xpath->evaluate('./answer', $question)  as $answer) {
 			
 			$fraction = doubleval($answer->getAttribute('fraction'));
-			$p = round ($fraction * $points / 100);	
+			$p = round ($fraction * $points / 100);		// we support int values only for points
 			$item->answers[] = ['answer' => $xpath->evaluate('./text', $answer)->textContent, 'points' => $p];
 		}
 	}
