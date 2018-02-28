@@ -26,7 +26,6 @@ class CPT_ItemSC extends CPT_Item {
 
 		parent::addHooks();
 		
-		// TODO: Note that post ID may reference a post revision and not the last saved post. Use wp_is_post_revision() to get the ID of the real post.
 		add_action ("save_post_{$this->type}", array ('EAL_ItemSC', save), 10, 2);
 		add_action ("save_post_revision", array ('EAL_ItemSC', 'save'), 10, 2);
 	}

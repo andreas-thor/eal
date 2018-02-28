@@ -80,17 +80,25 @@ class EAL_ItemSC extends EAL_Item {
 	
 
 	/** 
+	 * $item to store might already be loaed (e.g., during import); otherwise loaded from $_POST data
 	 * save is called twice per update
-	 * 1) for the revision
-	 * 2) for the current version
-	 * @param unknown $post_id
-	 * @param unknown $post
+	 * 1) for the revision --> $revision will contain the id of the parent post
+	 * 2) for the current version --> $revision will be FALSE
+	 * @param int $post_id
+	 * @param WP_Post $post
 	 */
-	public static function save ($post_id, $post) {
+	public static function save (int $post_id, WP_Post $post) {
 		
-		$item = new EAL_ItemSC();
-		if ($_POST["post_type"] != $item->getType()) return;
-		$item->setId($post_id);		// set the correct id ($item is loaded from POST_REQUEST with parent_post_id)
+		global $item;
+		if ($item === NULL) {
+			$item = new EAL_ItemSC();	// load item from $_POST data
+		}
+		
+		$revision = wp_is_post_revision ($post_id);
+		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
+		if ($type != $item->getType()) return;
+		
+		$item->setId($post_id);		// set the correct id
 		$item->saveToDB();
 	}
 	

@@ -58,11 +58,18 @@ class EAL_ItemMC extends EAL_Item {
 	}
 	
 	
-	public static function save ($post_id, $post) {
+	public static function save (int $post_id, WP_Post $post) {
 	
-		$item = new EAL_ItemMC();
-		if ($_POST["post_type"] != $item->getType()) return;
-		$item->setId($post_id);		// set the correct id ($item is loaded from POST_REQUEST with parent_post_id)
+		global $item;
+		if ($item === NULL) {
+			$item = new EAL_ItemMC();	// load item from $_POST data
+		}
+		
+		$revision = wp_is_post_revision ($post_id);
+		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
+		if ($type != $item->getType()) return;
+		
+		$item->setId($post_id);		// set the correct id 
 		$item->saveToDB();
 	}
 	

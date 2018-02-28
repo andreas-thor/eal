@@ -23,8 +23,6 @@ class CPT_ItemMC extends CPT_Item {
 	public function addHooks() {
 		
 		parent::addHooks();
-		
-		// TODO: Note that post ID may reference a post revision and not the last saved post. Use wp_is_post_revision() to get the ID of the real post.
 		add_action ("save_post_{$this->type}", array ('EAL_ItemMC', save), 10, 2);
 		add_action ("save_post_revision", array ('EAL_ItemMC', 'save'), 10, 2);
 	}

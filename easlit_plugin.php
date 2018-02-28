@@ -29,7 +29,6 @@ require_once 'includes/imex/IMEX_Moodle.php';
 require_once 'includes/imex/IMEX_Ilias.php'; 
 require_once 'includes/imex/IMEX_Term.php';
 
-require_once 'includes/page/Foo_Widget.php';
 
 require_once(__DIR__ . "/../../../wp-admin/includes/screen.php");
 
@@ -110,6 +109,12 @@ add_action('init', function () {
 		}
 	}
 	
+	// import or update items
+	if ((in_array ($_POST['action'], ['import', 'update'])) && ($php_page == 'admin.php')) {
+		(new CPT_ItemSC())->addHooks();
+		(new CPT_ItemMC())->addHooks();
+	}
+	
 	
 	if ($php_page == 'revision.php') {
 		(new CPT_ItemSC())->addHooks();
@@ -147,173 +152,11 @@ setMainMenu();
 setAdminMenu();
 setDashboard();
 setMainHeader();
-
-
-/*
-function register_my_option(){
-	
-	$screen = get_current_screen(); //Initiate the $screen variable.
-	
-	add_filter('screen_layout_columns', 'display_my_option'); //Add our custom HTML to the screen options panel.
-	$screen->add_option('my_option', ''); //Register our new screen options tab.
-	
-}
-
-add_action('admin_head', 'register_my_option');
-
-function display_my_option() {
-	
-	printf ('
-
-<form name="my_option_form" method="post">
-<input type="hidden" name="my_option_submit" value="1">
-Your Name: <input type="text" name="text_name"><br/>
-Your Email: <input type="text" name="text_email"><br/>
-<input type="submit" value="Submit">
-</form>
-');
-
-
-}
-
-function save_my_option(){
-//Since we're going to be hooking this into WordPress's page load, the first thing we  need to do is make sure our form has been submitted.
-//The easiest way to do this is to check for the �hidden" value that we added to the beginning of our HTML form.
-if(isset($_POST['my_option_submit']) AND $_POST['my_option_submit'] == 1){
-//We'd do our saving or processing here.
-}
-}
-
-
-add_action('admin_init', 'save_my_option');
+setScreenSettings();
 
 
 
-add_filter( 'screen_options_show_screen', function( $show, WP_Screen $screen )
-{
-	return true;
-}, 10, 2 );
 
-*/
-
-function themename_widgets_init() {
-	register_sidebar( array(
-		'name'          => __( 'Primary Sidebar', 'theme_name' ),
-		'id'            => 'sidebar-1',
-		'before_widget' => '<aside id="%1$s" class="widget %2$s">',
-		'after_widget'  => '</aside>',
-		'before_title'  => '<h1 class="widget-title">',
-		'after_title'   => '</h1>',
-	) );
-	
-	register_sidebar( array(
-		'name'          => __( 'Secondary Sidebar', 'theme_name' ),
-		'id'            => 'sidebar-2',
-		'before_widget' => '<ul><li id="%1$s" class="widget %2$s">',
-		'after_widget'  => '</li></ul>',
-		'before_title'  => '<h3 class="widget-title">',
-		'after_title'   => '</h3>',
-	) );
-}
-add_action( 'widgets_init', 'themename_widgets_init' );
-
-
-add_action( 'widgets_init', function() { register_widget( 'Foo_Widget' ); } );
-
-add_action( 'admin_head', function () {
-	
-	
-	$s =get_current_screen();
-	$a = get_current_screen()->get_options();
-	$b = $a;
-	
-	
-});
-
-add_filter( 'screen_settings', function( $settings, WP_Screen $screen )
-{
-	
-// 	$args = array(
-// 		'label' => 'Movies',
-// 		'default' => 10,
-// 		'option' => 'cmi_movies_moi'
-// 	);
-	
-// 	$screen->add_option('moi', $args);
-	
-	
-// 	$screen->
-	
-	
-// 	 $amount = isset( $_GET['paged'] )
-// 	 ? filter_var(
-// 	 absint( $_GET['paged'] ),
-// 	 FILTER_SANITIZE_NUMBER_INT,
-// 	 FILTER_NULL_ON_FAILURE
-// 	 )
-// 	 : 1;
-	 
-// 	 $option = $screen->get_option('moi'); // , 'option');
-// 	 $per_page = get_user_meta(get_current_user_id(), $option, true);
-	 
-	 
-// 	return sprintf (
-// 		'<input type="checkbox" checked onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) { d.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; } document.getElementById(\'itemstats\').querySelector(\'#postbox-container-2\').style.display = (this.checked==true) ? \'block\' :  \'none\';"> Show Metadata</input>'
-		
-// 		);
-	
-	
-	
-	$y = ItemExplorer::getItemIdsByRequest();
-	$x = get_posts( array('numberposts' => -1, 'include' => $y, 'post_type' => NULL));
-	
-	return sprintf ('
-	<fieldset class="metabox-prefs view-mode">
-	<legend>Items</legend>
-	<label>
-<input type="checkbox" checked onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) { d.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; } document.getElementById(\'itemstats\').querySelector(\'#postbox-container-2\').style.display = (this.checked==true) ? \'block\' :  \'none\';"></input>
- Show Metadata	
-</label>
-
-
-	</fieldset>
-');
-	
-// 	 return sprintf(
-// 	 '<label for="amount">Amount %s: %s = %s</label> '
-// 	 .'<input step="1" min="1" max="999" class="screen-per-page" name="amount" val="%d">'
-// 	 .get_submit_button( 'Set', 'secondary', 'submit-amount', false ), $screen->base, $option, $per_page,
-// 	 $amount
-// 	 );
-	 
-}, 10, 2 );
-
-
-add_filter('set-screen-option', function (int $value, string $option) {
-	
-	return $value;
-	
-}, 1, 2);
-
-/*
-cmi_add_option();
-
-
-
-function cmi_add_option() {
-	
-	$option = 'per_page';
-	
-	$args = array(
-		'label' => 'Movies',
-		'default' => 10,
-		'option' => 'cmi_movies_per_page'
-	);
-	
-	add_screen_option( $option, $args );
-	
-}
-*/
 
 function setMainMenu() {
 	add_action('admin_menu', function () {
@@ -474,6 +317,7 @@ function setAdminMenu_Download_Item($wp_admin_bar) {
 	));
 }
 
+
 function setAdminMenu_Upload_Item($wp_admin_bar) {
 	
 	if ($_SERVER['PHP_SELF']!='/wordpress/wp-admin/edit.php') return;
@@ -498,6 +342,7 @@ function setAdminMenu_Upload_Item($wp_admin_bar) {
 	));
 	
 }
+
 
 function setAdminMenu_Download_and_Upload_Topic($wp_admin_bar) {
 	
@@ -548,6 +393,7 @@ function setAdminMenu_Download_and_Upload_Topic($wp_admin_bar) {
 	
 	
 }
+
 
 function setDashboard() {
 	
@@ -628,8 +474,6 @@ function setDashboard() {
 }
 
 
-
-
 function setMainHeader() {
 	
 	add_action ('admin_head', function () {
@@ -660,6 +504,105 @@ function setMainHeader() {
 	});
 	
 	
+}
+
+
+function setScreenSettings () {
+	
+	
+	add_filter( 'screen_settings', function( $settings, WP_Screen $screen )
+	{
+		
+		$php_page = array_pop (explode ('/', $_SERVER['SCRIPT_NAME']));
+		
+		if (($php_page == 'admin.php') && ($_REQUEST['page'] == 'view_item')) {
+
+			
+			$options = '<option value="-1" selected>[All]</option>';
+			foreach (ItemExplorer::getItemIdsByRequest() as $index => $id) {
+				$post = get_post($id);
+				if ($post === NULL) continue;
+				$options .= sprintf ('<option value="%d">%s</option>', $index, $post->post_title);
+			}
+			
+			
+			
+			$show_MetaData_JS = ' 
+				d = document.getElementById(\'itemcontainer\'); 
+				for (x=0; x<d.children.length; x++) { 
+					d.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; 
+				} 
+				document.getElementById(\'itemstats\').querySelector(\'#postbox-container-2\').style.display = (this.checked==true) ? \'block\' :  \'none\';';
+			
+			$select_Item_JS = ' 
+				d = document.getElementById(\'itemcontainer\'); 
+				for (x=0; x<d.children.length; x++) {  
+					d.children[x].style.display = ((this.value<0) || (this.value==x)) ? \'block\' :  \'none\'; 
+				} 
+				document.getElementById(\'itemstats\').style.display = (this.value<0) ? \'block\' :  \'none\';';
+				
+			
+			return sprintf ('
+				<fieldset class="metabox-prefs view-mode">
+					<legend>Items</legend>
+					<select  onChange="%s">%s</select><br />
+					<label><input type="checkbox" checked onChange="%s"></input>Show Metadata</label>
+				</fieldset>', $select_Item_JS, $options, $show_MetaData_JS);
+			
+		}
+		
+		// 	$args = array(
+		// 		'label' => 'Movies',
+		// 		'default' => 10,
+		// 		'option' => 'cmi_movies_moi'
+		// 	);
+		
+		// 	$screen->add_option('moi', $args);
+		
+		
+		// 	$screen->
+		
+		
+		// 	 $amount = isset( $_GET['paged'] )
+		// 	 ? filter_var(
+		// 	 absint( $_GET['paged'] ),
+		// 	 FILTER_SANITIZE_NUMBER_INT,
+		// 	 FILTER_NULL_ON_FAILURE
+		// 	 )
+		// 	 : 1;
+		
+		// 	 $option = $screen->get_option('moi'); // , 'option');
+		// 	 $per_page = get_user_meta(get_current_user_id(), $option, true);
+		
+		
+		// 	return sprintf (
+		// 		'<input type="checkbox" checked onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) { d.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; } document.getElementById(\'itemstats\').querySelector(\'#postbox-container-2\').style.display = (this.checked==true) ? \'block\' :  \'none\';"> Show Metadata</input>'
+		
+		// 		);
+		
+		
+		
+		
+		$x = get_posts( array('numberposts' => -1, 'include' => $y, 'post_type' => NULL));
+		
+
+		
+		// 	 return sprintf(
+		// 	 '<label for="amount">Amount %s: %s = %s</label> '
+		// 	 .'<input step="1" min="1" max="999" class="screen-per-page" name="amount" val="%d">'
+		// 	 .get_submit_button( 'Set', 'secondary', 'submit-amount', false ), $screen->base, $option, $per_page,
+		// 	 $amount
+		// 	 );
+		
+	}, 10, 2 );
+	
+	
+	add_filter('set-screen-option', function (int $value, string $option) {
+		
+		return $value;
+		
+	}, 1, 2);
+		
 }
 
 ?>

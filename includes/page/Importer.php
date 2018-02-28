@@ -41,6 +41,8 @@ class Importer {
 	 */
 	public static function doImport (array $itemids, bool $updateMetadataOnly = FALSE ) {
 
+		global $item;
+		
 		$result = array();
 		foreach ($itemids as $itemid) {
 		
@@ -56,6 +58,8 @@ class Importer {
 			if ($status == '') continue;	// must have status
 			if ($updateMetadataOnly && ($itemid<0)) continue;	// must have itemid if "update"
 		
+			
+			
 			$item = EAL_Item::load($_POST[$prefix."post_type"], -1, $prefix);	// load item from POST data (because tempid<0)
 			if ($updateMetadataOnly) {
 				$item_post = $item;
@@ -65,11 +69,19 @@ class Importer {
 				$item->note = $item_post->note;
 				$item->flag = $item_post->flag;
 			}
-			
+			/**
+			 *  In the mean time, a workaround worth trying would be:
+
+    use wp_insert_post to create an initial post and get the the post ID
+    use wp_update_post to insert your post data 
+			 */
 			
 			$terms = $_POST[$prefix."taxonomy"];
 		
+			// store initial post & item
 			if (($itemid<0) || ($_POST[$prefix."item_status"]<0)) {
+				
+				// import post/item
 				$postarr = array ();
 				$postarr['ID'] = 0;	// no EAL-ID
 				$postarr['post_title'] = $item->title;
@@ -77,24 +89,19 @@ class Importer {
 				$postarr['post_type'] = $item->getType();
 				$postarr['post_content'] = microtime();
 				$postarr['tax_input'] = array ($item->getDomain() => $terms);
-				$item->setId (wp_insert_post ($postarr));	// returns the item_id of the created post / item
-			} else {
-				$item->setId ($itemid);
-				$post = get_post ($item->getId());
-				$post->post_title = $item->title;
-				$post->post_status = $status;
-				$post->post_content = microtime();	// ensures revision
-				wp_set_post_terms($item->getId(), $terms, $item->getDomain(), FALSE );
-				wp_update_post ($post);
-			}
-		
-			?>
-						<script type="text/javascript" >
-			console.log ("Save", " <?php print ($item->title); ?>");
-			</script>
-			<?php
-			$item->saveToDB();
-			array_push ($result, $item->getId());
+				$itemid = wp_insert_post ($postarr);
+			} 
+			
+			// update post (also necessary for initial import to have first revision version)
+			$post = get_post ($itemid);
+			$post->post_title = $item->title;
+			$post->post_status = $status;
+			$post->post_content = microtime();	// ensures revision
+			wp_set_post_terms($itemid, $terms, $item->getDomain(), FALSE );
+			wp_update_post ($post);
+
+			
+			array_push ($result, $itemid);
 		}
 		return $result;
 	}

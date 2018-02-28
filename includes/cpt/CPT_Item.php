@@ -55,17 +55,29 @@ class CPT_Item extends CPT_Object{
 		
 
 		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
-		
+		add_filter( 'wp_prepare_revision_for_js', array ($this, 'filter_function_name_4025'), 10, 3 );
+	
 		
 		add_filter('posts_search', array ($this ,'WPCB_post_search'), 10, 2);
 		
 		/* hide shortlink block */
 		add_filter('get_sample_permalink_html', '__return_empty_string', 10, 5);
 		add_filter('pre_get_shortlink', '__return_empty_string' );
+		
+		add_action ('post_updated', array ($this, 'qwe'), 10, 3);
+		
 	}
 
-
+	public function qwe (int $post_ID, WP_Post $post_after, WP_Post $post_before) {
+		
+		$a = 7;
+	}
 	
+	public function filter_function_name_4025( $revisions_data, $revision, $post ){
+		
+		
+		return $revisions_data;
+	}
 
 	
 
