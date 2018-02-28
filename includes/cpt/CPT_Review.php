@@ -14,7 +14,9 @@ class CPT_Review extends CPT_Object {
 		$this->menu_pos = -1;
 		$this->cap_type = $this->type;
 		$this->dashicon = "dashicons-admin-comments";
-	
+		$this->supports = array();
+		$this->taxonomies = array();
+		
 		$this->table_columns = array (
 			'cb' => '<input type="checkbox" />', 
 			'review_title' => 'Title',
@@ -29,19 +31,12 @@ class CPT_Review extends CPT_Object {
 	}
 	
 
-	/*
-	 * #######################################################################
-	 * post type registration; specification of page layout
-	 * #######################################################################
-	 */
 	
-	public function init($args = array()) {
-
-		parent::init(array_merge ($args, array ('supports' => false, 'taxonomies' => array())));
-		
-		// TODO: delete review
-		add_filter('post_updated_messages', array ($this, 'WPCB_post_updated_messages') );
+	public function addHooks() {
+		parent::addHooks();
+		add_action ("save_post_{$this->type}", array ('EAL_Review', save), 10, 2);
 	}
+	
 	
 	
 	public function WPCB_post_row_actions($actions, $post){
@@ -99,6 +94,7 @@ class CPT_Review extends CPT_Object {
 	public function WPCB_register_meta_box_cb () {
 	
 		global $review, $post;
+		parent::WPCB_register_meta_box_cb();
 		
 		$review = new EAL_Review();
 		

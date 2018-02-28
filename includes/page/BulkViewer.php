@@ -7,6 +7,21 @@ require_once(__DIR__ . "/../html/HTML_Review.php");
 
 class BulkViewer {
 
+	
+	public static function cmi_add_option() {
+		
+		$option = 'per_page';
+		
+		$args = array(
+			'label' => 'Movies',
+			'default' => 10,
+			'option' => 'cmi_movies_per_page'
+		);
+		
+		add_screen_option( $option, $args );
+		
+	}
+	
 	/**
 	 * Entry functions from menu
 	 */
@@ -230,6 +245,41 @@ class BulkViewer {
 // 					$url, implode (',', $itemids),
 // 					self::getHTML_List(sprintf ('Item %sViewer', is_null($reviewids) ? '' : '+ Review '), '', $items_title, $items_content, $url . "&edit=1"));
 // 		} else {
+			
+		
+		
+		
+		printf ('
+			<div id="post-body" class="metabox-holder columns-2">
+				<div class="postbox-container" id="postbox-container-2">
+					<h1>%1$s</h1>%2$2s
+				</div>
+				<div class="postbox-container" id="postbox-container-1">
+					<div style="background-color:#FFFFFF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;">%3$s</div>
+				</div>
+			</div>',
+			'aa', the_widget( 'Foo_Widget' ), the_widget( 'Foo_Widget' ));
+		
+		
+		
+		printf ('<div class="widget-section">');
+		the_widget( 'Foo_Widget' );
+		printf ('</div>');
+		
+		?>
+		<div id="sidebar-primary" class="sidebar">
+		<?php if ( is_active_sidebar( 'primary' ) ) : ?>
+        <?php dynamic_sidebar( 'primary' ); ?>
+    <?php else : ?>
+        <aside id="archives" class"widget">
+            <h1 class="widget-title"><?php _e( 'Archives', 'shape' ); ?></h1>
+            <ul>
+                <?php the_widget( 'Foo_Widget' ); ?>
+            </ul>
+        </aside>
+    <?php endif; ?>
+</div>
+			<?php 
 			printf ('
 				<form  enctype="multipart/form-data" action="%s" method="post">
 					<input type="hidden" id="itemids" name="itemids" value="%s">

@@ -159,7 +159,6 @@ class EAL_Item extends EAL_Object {
 	
 	
 	
-	public static function save ($post_id, $post) { }
 	
 	public function saveToDB () {
 		

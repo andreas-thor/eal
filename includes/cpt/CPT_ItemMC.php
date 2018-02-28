@@ -20,15 +20,15 @@ class CPT_ItemMC extends CPT_Item {
 	}
 	
 	
-	public function init($args = array()) {
-		parent::init($args);
-		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
+	public function addHooks() {
 		
+		parent::addHooks();
+		
+		// TODO: Note that post ID may reference a post revision and not the last saved post. Use wp_is_post_revision() to get the ID of the real post.
+		add_action ("save_post_{$this->type}", array ('EAL_ItemMC', save), 10, 2);
+		add_action ("save_post_revision", array ('EAL_ItemMC', 'save'), 10, 2);
 	}
 	
-	
-	
-
 	
 	
 	
@@ -36,7 +36,7 @@ class CPT_ItemMC extends CPT_Item {
 
 	public function WPCB_wp_get_revision_ui_diff ($diff, $compare_from, $compare_to) {
 	
-		if (get_post ($compare_from->post_parent)->post_type != "itemmc") return $diff;
+		if (get_post ($compare_from->post_parent)->post_type != $this->type) return $diff;
 		
 		$eal_From = new EAL_ItemMC($compare_from->ID);
 		$eal_To = new EAL_ItemMC($compare_to->ID);

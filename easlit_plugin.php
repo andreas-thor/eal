@@ -29,6 +29,9 @@ require_once 'includes/imex/IMEX_Moodle.php';
 require_once 'includes/imex/IMEX_Ilias.php'; 
 require_once 'includes/imex/IMEX_Term.php';
 
+require_once 'includes/page/Foo_Widget.php';
+
+require_once(__DIR__ . "/../../../wp-admin/includes/screen.php");
 
 
 /* add JQuery */
@@ -62,19 +65,56 @@ register_activation_hook(__FILE__, function () {
 /* init custom post types */
 add_action('init', function () {
 	
+	if (! session_id()) {
+		session_start();
+	}
+	
+
+	RoleTaxonomy::init();
+	
+	// register custom post types
+	(new CPT_Item())->registerType();
+	(new CPT_ItemBasket())->registerType();
+	(new CPT_ItemMC())->registerType();
+	(new CPT_ItemSC())->registerType();
+	(new CPT_Review())->registerType();
+	(new CPT_LearnOut())->registerType();
+	
+	
+	
+	
+	$php_page = array_pop (explode ('/', $_SERVER['SCRIPT_NAME']));
 
 	
-	if (! session_id())
-		session_start();
+	// standard page
+	if ((in_array ($php_page, ['edit.php', 'post.php', 'post-new.php'])) && (!isset ($_REQUEST["page"]))) {
+		switch ($_REQUEST['post_type']) {
+			case 'itemsc':  
+				(new CPT_ItemSC())->addHooks(); 
+				break;
+			case 'itemmc': 
+				(new CPT_ItemMC())->addHooks(); 
+				break;
+			case 'learnout': 
+				(new CPT_LearnOut())->addHooks(); 
+				break;
+			case 'review': 
+				(new CPT_Review())->addHooks(); 
+				break;
+			case 'itembasket': 
+				(new CPT_ItemBasket())->addHooks(); 
+				break;
+			default: 
+				(new CPT_Item())->addHooks(); 
+				break;
+		}
+	}
 	
-	(new CPT_Item())->init();
-	(new CPT_ItemBasket())->init();
-	(new CPT_ItemSC())->init();
-	(new CPT_ItemMC())->init();
-	(new CPT_Review())->init();
-	(new CPT_LearnOut())->init();
 	
-	RoleTaxonomy::init();
+	if ($php_page == 'revision.php') {
+		(new CPT_ItemSC())->addHooks();
+		(new CPT_ItemMC())->addHooks(); 
+	}
 	
 	if ($_REQUEST["page"] == "download") {
 		
@@ -100,13 +140,180 @@ add_action('init', function () {
 	
 	
 });
-
+ 
 
 /* adjust user interface */ 
 setMainMenu();
 setAdminMenu();
 setDashboard();
+setMainHeader();
 
+
+/*
+function register_my_option(){
+	
+	$screen = get_current_screen(); //Initiate the $screen variable.
+	
+	add_filter('screen_layout_columns', 'display_my_option'); //Add our custom HTML to the screen options panel.
+	$screen->add_option('my_option', ''); //Register our new screen options tab.
+	
+}
+
+add_action('admin_head', 'register_my_option');
+
+function display_my_option() {
+	
+	printf ('
+
+<form name="my_option_form" method="post">
+<input type="hidden" name="my_option_submit" value="1">
+Your Name: <input type="text" name="text_name"><br/>
+Your Email: <input type="text" name="text_email"><br/>
+<input type="submit" value="Submit">
+</form>
+');
+
+
+}
+
+function save_my_option(){
+//Since we're going to be hooking this into WordPress's page load, the first thing we  need to do is make sure our form has been submitted.
+//The easiest way to do this is to check for the �hidden" value that we added to the beginning of our HTML form.
+if(isset($_POST['my_option_submit']) AND $_POST['my_option_submit'] == 1){
+//We'd do our saving or processing here.
+}
+}
+
+
+add_action('admin_init', 'save_my_option');
+
+
+
+add_filter( 'screen_options_show_screen', function( $show, WP_Screen $screen )
+{
+	return true;
+}, 10, 2 );
+
+*/
+
+function themename_widgets_init() {
+	register_sidebar( array(
+		'name'          => __( 'Primary Sidebar', 'theme_name' ),
+		'id'            => 'sidebar-1',
+		'before_widget' => '<aside id="%1$s" class="widget %2$s">',
+		'after_widget'  => '</aside>',
+		'before_title'  => '<h1 class="widget-title">',
+		'after_title'   => '</h1>',
+	) );
+	
+	register_sidebar( array(
+		'name'          => __( 'Secondary Sidebar', 'theme_name' ),
+		'id'            => 'sidebar-2',
+		'before_widget' => '<ul><li id="%1$s" class="widget %2$s">',
+		'after_widget'  => '</li></ul>',
+		'before_title'  => '<h3 class="widget-title">',
+		'after_title'   => '</h3>',
+	) );
+}
+add_action( 'widgets_init', 'themename_widgets_init' );
+
+
+add_action( 'widgets_init', function() { register_widget( 'Foo_Widget' ); } );
+
+add_action( 'admin_head', function () {
+	
+	
+	$s =get_current_screen();
+	$a = get_current_screen()->get_options();
+	$b = $a;
+	
+	
+});
+
+add_filter( 'screen_settings', function( $settings, WP_Screen $screen )
+{
+	
+// 	$args = array(
+// 		'label' => 'Movies',
+// 		'default' => 10,
+// 		'option' => 'cmi_movies_moi'
+// 	);
+	
+// 	$screen->add_option('moi', $args);
+	
+	
+// 	$screen->
+	
+	
+// 	 $amount = isset( $_GET['paged'] )
+// 	 ? filter_var(
+// 	 absint( $_GET['paged'] ),
+// 	 FILTER_SANITIZE_NUMBER_INT,
+// 	 FILTER_NULL_ON_FAILURE
+// 	 )
+// 	 : 1;
+	 
+// 	 $option = $screen->get_option('moi'); // , 'option');
+// 	 $per_page = get_user_meta(get_current_user_id(), $option, true);
+	 
+	 
+// 	return sprintf (
+// 		'<input type="checkbox" checked onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) { d.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; } document.getElementById(\'itemstats\').querySelector(\'#postbox-container-2\').style.display = (this.checked==true) ? \'block\' :  \'none\';"> Show Metadata</input>'
+		
+// 		);
+	
+	
+	
+	$y = ItemExplorer::getItemIdsByRequest();
+	$x = get_posts( array('numberposts' => -1, 'include' => $y, 'post_type' => NULL));
+	
+	return sprintf ('
+	<fieldset class="metabox-prefs view-mode">
+	<legend>Items</legend>
+	<label>
+<input type="checkbox" checked onChange="d = document.getElementById(\'itemcontainer\'); for (x=0; x<d.children.length; x++) { d.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; } document.getElementById(\'itemstats\').querySelector(\'#postbox-container-2\').style.display = (this.checked==true) ? \'block\' :  \'none\';"></input>
+ Show Metadata	
+</label>
+
+
+	</fieldset>
+');
+	
+// 	 return sprintf(
+// 	 '<label for="amount">Amount %s: %s = %s</label> '
+// 	 .'<input step="1" min="1" max="999" class="screen-per-page" name="amount" val="%d">'
+// 	 .get_submit_button( 'Set', 'secondary', 'submit-amount', false ), $screen->base, $option, $per_page,
+// 	 $amount
+// 	 );
+	 
+}, 10, 2 );
+
+
+add_filter('set-screen-option', function (int $value, string $option) {
+	
+	return $value;
+	
+}, 1, 2);
+
+/*
+cmi_add_option();
+
+
+
+function cmi_add_option() {
+	
+	$option = 'per_page';
+	
+	$args = array(
+		'label' => 'Movies',
+		'default' => 10,
+		'option' => 'cmi_movies_per_page'
+	);
+	
+	add_screen_option( $option, $args );
+	
+}
+*/
 
 function setMainMenu() {
 	add_action('admin_menu', function () {
@@ -157,31 +364,6 @@ function setMainMenu() {
 	});
 	
 	
-	/*
-	 * Adjust h1 label on table sites
-	 * You cannot add: (generic) item, item basket, review
-	 */
-	add_action('admin_head', function () {
-		
-		$headertext = array (
-			'item' => sprintf ('All Items <a href="%1$s/wp-admin/post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a><a href="%1$s/wp-admin/post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a>', site_url()),
-			'itembasket' => 'Item Basket',
-			'review' => 'All Reviews'
-		);
-		
-		printf ('<style>[for="wp_welcome_panel-hide"] {display: none !important;}</style>');
-
-		if (! isset($_REQUEST['page'])) {
-			if (isset ($headertext[$_REQUEST['post_type']])) {
-				printf ('<script type="text/javascript">');
-				printf ('	jQuery(document).ready( function($) { ');
-				printf ('		jQuery(jQuery(".wrap a")[0]).remove();');
-				printf ('		jQuery(jQuery(".wrap h1")[0]).replaceWith(\'<h1>%s</h1>\');', $headertext[$_REQUEST['post_type']]);
-				printf ('	});');
-				printf ('</script>');
-			}
-		}
-	});
 }
 
 
@@ -385,7 +567,7 @@ function setDashboard() {
 		unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_activity']);
 		unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_plugins']);
 		
-		wp_add_dashboard_widget('dashboard_items', 'Item Overview', function () {
+		wp_add_dashboard_widget('dashboard_items', '<input type="checkbox" checked/> <i>Item Overview</i>', function () {
 			
 			/* number of items, SCs, and MCs */
 			printf('<table border="0">');
@@ -445,5 +627,39 @@ function setDashboard() {
 	});
 }
 
+
+
+
+function setMainHeader() {
+	
+	add_action ('admin_head', function () {
+		
+		$php_page = array_pop (explode ('/', $_SERVER['SCRIPT_NAME']));
+
+		// standard page
+		if (($php_page == 'edit.php') && (!isset ($_REQUEST['page']))) {
+			
+			$title = '';
+			switch ($_REQUEST['post_type']) {
+				case 'item': 		$title = sprintf ('All Items <a href="%1$s/wp-admin/post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a><a href="%1$s/wp-admin/post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a>', site_url()); break;
+				case 'itemsc': 		$title = sprintf ('All Single Choice Items <a href="%1$s/wp-admin/post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a>', site_url()); break;
+				case 'itemmc': 		$title = sprintf ('All Multiple Choice Items <a href="%1$s/wp-admin/post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a>', site_url()); break;
+				case 'itembasket': 	$title = sprintf ('All Items in Basket'); break;
+				case 'review': 		$title = sprintf ('All Reviews'); break;
+				case 'learnout': 	$title = sprintf ('All Learning Outcomes <a href="%1$s/wp-admin/post-new.php?post_type=learnout" class="page-title-action">Add Learning Outcome</a>', site_url()); break;
+			}
+		
+			printf ('<script type="text/javascript">');
+			printf ('	jQuery(document).ready( function($) { ');
+			printf ('		jQuery(jQuery(".wrap a.page-title-action")[0]).remove();');
+			printf ('		jQuery(jQuery(".wrap h1")[0]).replaceWith(\'<h1>%s</h1>\');', $title);
+			printf ('	});');
+			printf ('</script>');
+		}
+		
+	});
+	
+	
+}
 
 ?>

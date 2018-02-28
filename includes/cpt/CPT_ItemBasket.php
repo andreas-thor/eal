@@ -18,10 +18,6 @@ class CPT_ItemBasket extends CPT_Item {
 	}
 	
 	
-	public function init($args = array()) {
-		parent::init($args);
-	}
-	
 
 }
 

@@ -138,9 +138,9 @@ class EAL_LearnOut extends EAL_Object  {
 	
 	public static function save ($post_id, $post) {
 	
-		$item = new EAL_LearnOut(-1);
-		if ($_POST["post_type"] != $item->getType()) return;
-		$item->saveToDB();
+		$lo = new EAL_LearnOut();
+		if ($_POST["post_type"] != $lo->getType()) return;
+		$lo->saveToDB();
 	}
 	
 	

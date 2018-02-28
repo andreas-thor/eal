@@ -14,7 +14,9 @@ class CPT_LearnOut extends CPT_Object {
 		$this->menu_pos = 0;
 		$this->cap_type = $this->type;
 		$this->dashicon = "dashicons-welcome-learn-more";
-	
+		$this->supports = array('title');
+		$this->taxonomies = array(RoleTaxonomy::getCurrentRoleDomain()["name"]);
+		
 		$this->table_columns = array (
 			'cb' => '<input type="checkbox" />',
 			'learnout_title' => 'Title',
@@ -28,28 +30,23 @@ class CPT_LearnOut extends CPT_Object {
 		);
 	}	
 	
-	/*
-	 * #######################################################################
-	 * post type registration; specification of page layout
-	 * #######################################################################
-	 */
-	
-	public function init($args = array()) {
-		parent::init(array_merge ($args, array ('supports' => array( 'title'))));
-	}
-	
-	
-	
 
+	
+	public function addHooks() {
+		parent::addHooks();
+		add_action ("save_post_{$this->type}", array ('EAL_LearnOut', save), 10, 2);
+	}
 	
 
 
 	
 	public function WPCB_register_meta_box_cb () {
 	
+		parent::WPCB_register_meta_box_cb();
+		
 		global $learnout;
 		$learnout = new EAL_LearnOut(-1);	// -1 == load from post
-	
+		
 		$domain = RoleTaxonomy::getCurrentRoleDomain();
 		if (($domain["name"] != "") && ($learnout->getDomain() != $domain["name"])) {
 			wp_die ("Learning outcome  does not belong to your current domain!");

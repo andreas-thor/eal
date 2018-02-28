@@ -62,6 +62,7 @@ class EAL_ItemMC extends EAL_Item {
 	
 		$item = new EAL_ItemMC();
 		if ($_POST["post_type"] != $item->getType()) return;
+		$item->setId($post_id);		// set the correct id ($item is loaded from POST_REQUEST with parent_post_id)
 		$item->saveToDB();
 	}
 	

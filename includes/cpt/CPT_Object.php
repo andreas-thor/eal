@@ -9,9 +9,12 @@ abstract class CPT_Object {
 	public $label;
 	public $menu_pos;
 	public $cap_type;
+	public $supports; 
+	public $taxonomies;
 	
 	public $table_columns;	
 	public $dashicon;
+	
 	
 	
 	/*
@@ -20,66 +23,78 @@ abstract class CPT_Object {
 	 * #######################################################################
 	 */
 	
-	public function init($args = array()) {
+	public function registerType() {
 		
 		register_post_type( $this->type,
-			array_merge (
-				array(
-					'labels' => array(
-						'name' => $this->label,
-						'singular_name' => $this->label,
-						'add_new' => 'Add ' . $this->label,
-						'add_new_item' => 'Add New ' . $this->label,
-						'edit' => 'Edit',
-						'edit_item' => 'Edit ' . $this->label,
-						'new_item' => 'New ' . $this->label,
-						'view' => 'View',
-						'view_item' => 'View ' . $this->label,
-						'search_items' => 'Search ' . $this->label,
-						'not_found' => 'No Items found',
-						'not_found_in_trash' => 'No Items found in Trash',
-						'parent' => 'Parent Item'
-					),
-		
-					'capabilities' => array(
-						"edit_posts" => "edit_{$this->cap_type}s",
-						"edit_others_posts" => "edit_others_{$this->cap_type}s",
-						"edit_published_posts" => "edit_published_{$this->cap_type}s",
-						"edit_private_posts" => "edit_private_{$this->cap_type}s",
-						"publish_posts" => "publish_{$this->cap_type}s",
-						"delete_posts" => "delete_{$this->cap_type}s",
-						"delete_others_posts" => "delete_others_{$this->cap_type}s",
-						"delete_published_posts" => "delete_published_{$this->cap_type}s",
-						"delete_private_posts" => "delete_private_{$this->cap_type}s",
-						"read_private_posts" => "read_private_{$this->cap_type}s",
-						"edit_post" => "edit_{$this->cap_type}",
-						"delete_post" => "delete_{$this->cap_type}",
-						"read_post" => "read_{$this->cap_type}"
-					),
-					'map_meta_cap' => true,	// http://wordpress.stackexchange.com/questions/108338/capabilities-and-custom-post-types
-						
-					'public' => false,
-					'menu_position' => $this->menu_pos,
-					'menu_icon' => 'dashicons-list-view', // dashicons-welcome-learn-more', 
-					'supports' => array( 'title', 'revisions'), // 'editor', 'comments'), // 'thumbnail', 'custom-fields' ),
-					'taxonomies' => array( 'topic' ),
-					'has_archive' => false, // false to allow for single view
-					'show_ui' => true,
-					'show_in_menu'    => $this->menu_pos > 0,
-					'register_meta_box_cb' => array ($this, 'WPCB_register_meta_box_cb')
-				), 
-				$args
-			)
+			array(
+				'labels' => array(
+					'name' => $this->label,
+					'singular_name' => $this->label,
+					'add_new' => 'Add ' . $this->label,
+					'add_new_item' => 'Add New ' . $this->label,
+					'edit' => 'Edit',
+					'edit_item' => 'Edit ' . $this->label,
+					'new_item' => 'New ' . $this->label,
+					'view' => 'View',
+					'view_item' => 'View ' . $this->label,
+					'search_items' => 'Search ' . $this->label,
+					'not_found' => 'No Items found',
+					'not_found_in_trash' => 'No Items found in Trash',
+					'parent' => 'Parent Item'
+				),
+	
+				'capabilities' => array(
+					"edit_posts" => "edit_{$this->cap_type}s",
+					"edit_others_posts" => "edit_others_{$this->cap_type}s",
+					"edit_published_posts" => "edit_published_{$this->cap_type}s",
+					"edit_private_posts" => "edit_private_{$this->cap_type}s",
+					"publish_posts" => "publish_{$this->cap_type}s",
+					"delete_posts" => "delete_{$this->cap_type}s",
+					"delete_others_posts" => "delete_others_{$this->cap_type}s",
+					"delete_published_posts" => "delete_published_{$this->cap_type}s",
+					"delete_private_posts" => "delete_private_{$this->cap_type}s",
+					"read_private_posts" => "read_private_{$this->cap_type}s",
+					"edit_post" => "edit_{$this->cap_type}",
+					"delete_post" => "delete_{$this->cap_type}",
+					"read_post" => "read_{$this->cap_type}"
+				),
+				'map_meta_cap' => true,	// http://wordpress.stackexchange.com/questions/108338/capabilities-and-custom-post-types
+					
+				'public' => false,
+				'menu_position' => $this->menu_pos,
+				'menu_icon' => 'dashicons-list-view',  
+				'supports' => $this->supports, 
+				'taxonomies' => $this->taxonomies,
+				'has_archive' => false, // false to allow for single view
+				'show_ui' => true,
+				'show_in_menu'    => $this->menu_pos > 0,
+				'register_meta_box_cb' => array ($this, 'WPCB_register_meta_box_cb')
+			) 
 		);
 
-		// TODO: Note that post ID may reference a post revision and not the last saved post. Use wp_is_post_revision() to get the ID of the real post.
-		add_action ("save_post_{$this->type}", array ("eal_{$this->type}", 'save'), 10, 2);
+
 		
-		
-		// Manage table of items (what columns to show; what columns are sortable
+		// Manage table of items (what columns to show; what columns are sortable; what views are available)
 		add_filter("manage_{$this->type}_posts_columns" , array ($this, 'WPCB_manage_posts_columns'));
 		add_filter("manage_edit-{$this->type}_sortable_columns", array ($this, 'WPCB_manage_edit_sortable_columns'));
 		add_action("manage_{$this->type}_posts_custom_column" , array ($this, 'WPCB_manage_posts_custom_column'), 10, 2 );
+		
+
+		add_filter( "views_edit-{$this->type}", function( $views )
+		{
+			$remove_views = [ 'all','publish','future','sticky','draft','pending',/*'trash',*/'mine' ];
+			foreach( (array) $remove_views as $view ) {
+				if (isset( $views[$view] )) unset( $views[$view] );
+			}
+			return $views;
+		} );
+		
+	}
+	
+	
+	
+	public function addHooks() {
+		
 		
 
 		// Generate databses query to retrieve all data
@@ -100,22 +115,20 @@ abstract class CPT_Object {
 		
 		add_filter( 'wp_count_posts', array ($this, 'WPCB_count_posts'), 10, 3);
 		
-		add_filter( "views_edit-{$this->type}", function( $views )
-		{
-			$remove_views = [ 'all','publish','future','sticky','draft','pending',/*'trash',*/'mine' ];
-			foreach( (array) $remove_views as $view ) {
-				if (isset( $views[$view] )) unset( $views[$view] );
-			}
-			return $views;
-		} );
+		add_filter('post_updated_messages', array ($this, 'WPCB_post_updated_messages') );
+		
+		
 		
 		
 		// quick edit is currently not supported
 		// add_action( 'quick_edit_custom_box', array ($this , 'WPCB_quick_edit_custom_box'), 10, 2 );
 	}		
 	
-	
-	
+	public function WPCB_register_meta_box_cb () {
+		remove_meta_box( 'slugdiv', $this->type, 'normal' );
+		
+
+	}
 	
 	
 	

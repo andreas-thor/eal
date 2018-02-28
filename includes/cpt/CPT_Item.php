@@ -11,11 +11,14 @@ class CPT_Item extends CPT_Object{
 	
 	public function __construct() {
 		
-		$this->type = "item";
-		$this->label = "All Items";
+		$this->type = 'item';
+		$this->label = 'All Items';
 		$this->menu_pos = 0;
-		$this->cap_type = "item";
-		$this->dashicon = "dashicons-format-aside";
+		$this->cap_type = 'item';
+		$this->dashicon = 'dashicons-format-aside';
+		$this->supports = array('title', 'revisions');
+		$this->taxonomies = array(RoleTaxonomy::getCurrentRoleDomain()["name"]);
+		
 		
 		$this->table_columns = array (
 				'cb' => '<input type="checkbox" />',
@@ -44,16 +47,14 @@ class CPT_Item extends CPT_Object{
 	 * #######################################################################
 	 */
 	
-	public function init($args = array()) {
+	public function addHooks() {
 		
-		parent::init($args);
+		parent::addHooks();
 
-		add_filter('post_updated_messages', array ($this, 'WPCB_post_updated_messages') );
 		add_action('contextual_help', array ($this, 'WPCB_contextual_help' ), 10, 3);
 		
-		if ($this->type != "itembasket") {
-			add_action ("save_post_revision", array ("eal_{$this->type}", 'save'), 10, 2);
-		}
+
+		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
 		
 		
 		add_filter('posts_search', array ($this ,'WPCB_post_search'), 10, 2);
@@ -160,6 +161,7 @@ class CPT_Item extends CPT_Object{
 	public function WPCB_register_meta_box_cb () {
 	
 		global $item, $post;
+		parent::WPCB_register_meta_box_cb();
 		
 		// check for correct domain 
 		$domain = RoleTaxonomy::getCurrentRoleDomain();
@@ -182,6 +184,7 @@ class CPT_Item extends CPT_Object{
 			#visibility { display: none; }
 			div.curtime { display: none; }
 		</style> <?php
+
 		
 		add_meta_box('mb_learnout', 'Learning Outcome', array ($this, 'WPCB_mb_learnout'), $this->type, 'normal', 'default');
 		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($this, 'WPCB_mb_description'), $this->type, 'normal', 'default', array ('name' => 'item_description', 'value' => $item->description) );
@@ -191,6 +194,8 @@ class CPT_Item extends CPT_Object{
 		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$item->getDomain()], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $item->getDomain() ));
 		add_meta_box('mb_item_note_flag', 'Notiz', array ($this, 'WPCB_mb_note_flag'), $this->type, 'normal', 'default');
 		
+		
+
 	}
 	
 	
@@ -233,8 +238,11 @@ class CPT_Item extends CPT_Object{
 		// we dynamically set the value of $POST["post_content"] to make sure that we have revision
 		printf ("<input type='hidden' id='post_content' name='post_content'  value='%s'>", microtime());
 		
+		
+		
 		global $item;
 		print (HTML_Item::getHTML_NoteFlag($item, HTML_Object::VIEW_EDIT));
+		
 	}
 
 	
@@ -419,6 +427,8 @@ class CPT_Item extends CPT_Object{
 		);
 		return $messages;
 	}	
+	
+	
 	
 	
 	

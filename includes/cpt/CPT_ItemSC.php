@@ -21,15 +21,19 @@ class CPT_ItemSC extends CPT_Item {
 		unset($this->table_columns["item_type"]);
 	}
 	
-	
-	public function init($args = array()) {
-		parent::init($args);
-		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
+
+	public function addHooks() {
+
+		parent::addHooks();
+		
+		// TODO: Note that post ID may reference a post revision and not the last saved post. Use wp_is_post_revision() to get the ID of the real post.
+		add_action ("save_post_{$this->type}", array ('EAL_ItemSC', save), 10, 2);
+		add_action ("save_post_revision", array ('EAL_ItemSC', 'save'), 10, 2);
 	}
-	
 	
 	public function WPCB_wp_get_revision_ui_diff ($diff, $compare_from, $compare_to) {
 	
+		
 		if (get_post ($compare_from->post_parent)->post_type != $this->type) return $diff;
 		
 		$eal_From = new EAL_ItemSC($compare_from->ID);
@@ -44,6 +48,8 @@ class CPT_ItemSC extends CPT_Item {
 		return $diff;
 	}	
 	
+	
+	
 	public function WPCB_register_meta_box_cb () {
 		
 		global $item;
@@ -57,6 +63,7 @@ class CPT_ItemSC extends CPT_Item {
 	
 		global $item;
 		print (HTML_ItemSC::getHTML_Answers($item, HTML_Object::VIEW_EDIT));
+
 	}
 		
 	

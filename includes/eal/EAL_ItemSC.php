@@ -78,15 +78,24 @@ class EAL_ItemSC extends EAL_Item {
 		
 	}
 	
-	
+
+	/** 
+	 * save is called twice per update
+	 * 1) for the revision
+	 * 2) for the current version
+	 * @param unknown $post_id
+	 * @param unknown $post
+	 */
 	public static function save ($post_id, $post) {
-	
+		
 		$item = new EAL_ItemSC();
 		if ($_POST["post_type"] != $item->getType()) return;
+		$item->setId($post_id);		// set the correct id ($item is loaded from POST_REQUEST with parent_post_id)
 		$item->saveToDB();
 	}
 	
 	
+
 	
 	public static function delete ($post_id) {
 	
