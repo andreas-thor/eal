@@ -36,10 +36,16 @@ require_once(__DIR__ . "/../../../wp-admin/includes/screen.php");
 /* add JQuery */
 add_action("admin_enqueue_scripts", function () {
 	wp_enqueue_script("jquery");
+	wp_enqueue_script("jquery-ui");
 	wp_enqueue_script("jquery-ui-core");
 	wp_enqueue_script("jquery-ui-slider");
+	
+	// for modal dialogs (e.g., automatic annotation)
+	wp_enqueue_script( 'jquery-ui-dialog' );
+	wp_enqueue_style( 'wp-jquery-ui-dialog' );
 });
 
+	
 /* register AJAX-PHP-function */
 add_action('wp_ajax_getCrossTable', array(
 	'Explorer',

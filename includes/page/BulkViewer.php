@@ -106,7 +106,7 @@ class BulkViewer {
 				</div>
 				<div id="itemcontainer">%2$s</div>
 			',
-			self::getHTML_Body($title, $content, '' /*$selectItem*/), implode("", $entries_content));
+			self::getHTML_Body($title, $content, $selectItem), implode("", $entries_content));
 		
 	}
 	

@@ -203,7 +203,7 @@ class CPT_Item extends CPT_Object{
 		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_question'), $this->type, 'normal', 'default', array ('name' => 'item_question', 'value' => $item->question));
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default');
 		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($this, 'WPCB_mb_answers'), $this->type, 'normal', 'default');
-		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$item->getDomain()], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $item->getDomain() ));
+		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$item->getDomain()] . '<a class="button" style="float:right" onclick="jQuery(\'#form-wrap\').dialog(\'open\');">Automatic</a>', array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $item->getDomain() ));
 		add_meta_box('mb_item_note_flag', 'Notiz', array ($this, 'WPCB_mb_note_flag'), $this->type, 'normal', 'default');
 		
 		
@@ -241,6 +241,54 @@ class CPT_Item extends CPT_Object{
 	}
 	
 	public function WPCB_mb_taxonomy ($post, $vars) {
+		
+		
+		
+		printf ('<div style="display:none" id="form-wrap">');
+// 		post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy_AUTO", "title" => "", "args" => $vars['args']));
+		printf ('
+		<div class="tabs-panel" style="display: block;">
+		<ul class="categorychecklist form-no-clear">');
+		
+		$a = get_terms(array ('taxonomy' => $vars['args']['taxonomy'], 'orderby' => 'count', 'order' => 'DESC', 'number' => 3));
+		foreach ($a as $term) {
+			printf (' 	
+			<li class="popular-category"><label class="selectit"><input id="in-popular-paedagogik-%1$d" type="checkbox" value="%1$d">%2$s</label></li>
+			', $term->term_id, $term->name);
+		}
+		
+// 		<li class="popular-category"><label class="selectit"><input id="in-popular-paedagogik-454" type="checkbox" value="454">V1</label></li>
+// 		<li id="popular-paedagogik-455" class="popular-category"><label class="selectit"><input id="in-popular-paedagogik-455" type="checkbox" value="455">V2</label></li>
+// 		<li id="popular-paedagogik-447" class="popular-category"><label class="selectit"><input id="in-popular-paedagogik-447" type="checkbox" checked="checked" value="447">b</label></li>
+		printf ('
+		</ul>
+		</div>
+	');		
+		
+		printf ('</div>');
+		
+		printf ('
+		<script type="text/javascript" >
+
+			jQuery(document).ready(function($) {
+				$("#form-wrap").dialog({
+					autoOpen: false, //FALSE if you open the dialog with, for example, a button click
+					title: "%s",
+					modal: true,
+					buttons: [ { 
+						text: "Annotate", 
+						class: "button-primary", 
+				      	click: function() {
+				        	$( this ).dialog( "close" );
+				      	}
+				    }  ]
+			});
+			});
+		</script>
+		', RoleTaxonomy::getDomains()[$vars['args']['taxonomy']]);
+		
+// 		echo '<a class="button" style="float:right" onclick="jQuery(\'#form-wrap\').dialog(\'open\');">Automatic</a><br/>';
+		
 		post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy", "title" => "", "args" => $vars['args']) );
 	}
 	
