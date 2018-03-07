@@ -18,8 +18,6 @@ class IMEX_Object {
 	}
 	
 	
-	
-	
 	protected function getDownloadFullname (): string {
 		return $this->downloaddir . $this->downloadfilename . "." . $this->downloadextension;
 	}

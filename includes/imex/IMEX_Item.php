@@ -41,6 +41,14 @@ abstract class IMEX_Item extends IMEX_Object {
 		$this->download();
 	}
 	
+	
+	/**
+	 * @param array $file uploaded file ['name' => orginal name, 'tmp_name' => uploaded file name]
+	 * @return array of EAL_Item
+	 * @throws Exception
+	 */
+	abstract public function parseItemsFromImportFile (array $file): array;
+	
 }
 
 ?>

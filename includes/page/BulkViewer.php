@@ -139,7 +139,7 @@ class BulkViewer {
 	 * @param array $reviewids
 	 */
 	
-	public static function viewItems (array $itemids, $reviewids, bool $editable, string $page) {
+	private static function viewItems (array $itemids, $reviewids, bool $editable, string $page) {
 		
 		// load all items
 		$items = array ();

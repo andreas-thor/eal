@@ -253,7 +253,7 @@ class IMEX_Ilias extends IMEX_Item {
 	 * @throws Exception
 	 * @return array of EAL_Item
 	 */
-	public function upload (array $file): array {
+	public function parseItemsFromImportFile (array $file): array {
 	
 		// remove extension ".zip"	==> $name = filename without extension
 		if (substr ($file['name'], -4) != ".zip") throw new Exception("Error! File is not a zip file");

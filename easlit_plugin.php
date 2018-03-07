@@ -21,6 +21,8 @@ require_once 'includes/page/BulkViewer.php';
 require_once 'includes/page/Importer.php';
 require_once 'includes/page/Explorer.php';
 require_once 'includes/page/Blueprint.php';
+require_once 'includes/page/PAG_Item_Bulkviewer.php';
+
 
 require_once 'includes/class.CLA_RoleTaxonomy.php';
 
@@ -201,12 +203,12 @@ function setMainMenu() {
 		add_menu_page('eal_page_basket', 'Item Basket <span class="update-plugins count-1"><span class="plugin-count">' . $c . '</span></span>', 'edit_posts', $menuslug, '', 'dashicons-cart', 34);
 		add_submenu_page($menuslug, 'Table',      '<div class="dashicons-before dashicons-format-aside"  style="display:inline">&nbsp;</div> Table',     'edit_posts', 'edit.php?post_type=itembasket');
 		add_submenu_page($menuslug, 'Explorer2',  '<div class="dashicons-before dashicons-chart-pie"     style="display:inline">&nbsp;</div> Explorer',  'edit_posts', 'item_explorer',  ['Explorer',   'page_explorer']);
-		add_submenu_page($menuslug, 'Viewer',     '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',    'edit_posts', 'view_basket',    ['BulkViewer', 'page_view_basket']);
+		add_submenu_page($menuslug, 'Viewer',     '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',    'edit_posts', 'view_basket',    ['PAG_Item_Bulkviewer', 'page_view_basket']);
 		add_submenu_page($menuslug, 'Generator2', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'test_generator', ['Blueprint',  'page_blueprint']);
 		
 		/* the following are not visible in the menu but must be registered */
 		foreach (['view_item', 'view_review', 'view_learnout'] as $view) {
-			add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', $view,     ['BulkViewer', 'page_' . $view]);
+			add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', $view,     ['PAG_Item_Bulkviewer', 'page_' . $view]);
 		}
 		add_submenu_page('view', 'Viewer', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', ['Importer', 'createPage']);
 		

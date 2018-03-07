@@ -8,30 +8,63 @@ class Importer {
 	
 	public static function createPage () {
 		
-		if ((!isset($_POST['action'])) || ($_POST['action']=='')) {
+		if ((!isset($_REQUEST['action'])) || ($_REQUEST['action']=='')) {
  			self::showUploadForm();
 		}
 		
-		if ($_POST['action']=='Upload') {
+		if ($_REQUEST['action']=='Upload') {
+			
+			$file = $_FILES['uploadedfile'];
 			
 			//	checks for errors and that file is uploaded
-			if (!(($_FILES['uploadedfile']['error'] == UPLOAD_ERR_OK) && (is_uploaded_file($_FILES['uploadedfile']['tmp_name'])))) {
-				printf ("<div class='wrap'><h1>File Error: %s</h1></div>", $_FILES['uploadedfile']['error']);
+			if (!(($file['error'] == UPLOAD_ERR_OK) && (is_uploaded_file($file['tmp_name'])))) {
+				self::showError(sprintf ('File Error: %s', $file['error']));
 				return;
 			}
 			
 			
 			if ($_REQUEST['post_type']=='term') {
-				(new IMEX_Term())->uploadTerms($_FILES['uploadedfile'], $_REQUEST['taxonomy'], $_REQUEST['termid']);
+				(new IMEX_Term())->uploadTerms($file, $_REQUEST['taxonomy'], $_REQUEST['termid']);
+				return;
 			}
 
 			if ($_REQUEST['post_type']=='item') {
-				self::showPreview();
+				
+				$formatImporter = NULL;
+				switch ($_REQUEST['format']) {
+					case 'ilias': $formatImporter = new IMEX_Ilias(); break;
+					case 'moodle': $formatImporter = new IMEX_Moodle(); break;
+				}
+				
+				if ($formatImporter === NULL) {
+					self::showError(sprintf ('Unknown import format: %s', $_REQUEST['format']));
+					return;
+				}
+				
+				$items = $formatImporter->parseItemsFromImportFile($file);
+				
+				if (is_string($items)) {
+					self::showError(sprintf ('Import Error: %s', $items));
+					return;
+				}
+				
+				if (count($items)==0) {
+					self::showError('No items found!');
+					return;
+				}
+				
+				self::showPreview($items);
+				
 			}
 			
 			
 		}
 
+	}
+	
+	
+	private static function showError (string $msg) {
+		printf ('<div class="wrap"><h1>%s</h1></div>', $msg);
 	}
 	
 	/**
@@ -133,27 +166,9 @@ class Importer {
 	}
 	
 	
-	private static function showPreview () {
+	private static function showPreview (array $items) {
 	
 
-		
-		// TODO: check file format parameter (ILIAS5, ...)
-		switch ($_REQUEST['format']) {
-			case 'ilias': $items = (new IMEX_Ilias())->upload($_FILES['uploadedfile']); break;
-			case 'moodle': $items = (new IMEX_Moodle())->upload($_FILES['uploadedfile']); break;
-			default: printf ("<div class='wrap'><h1>Unknown import format %s</h1></div>", $_REQUEST['format']); return;
-		}
-		
-		if (count($items)==0) {
-			printf ("<div class='wrap'><h1>No items found!</h1></div>");
-			return;
-		}
-		
-		if (is_string($items)) {
-			printf ("<div class='wrap'><h1>Import Error: %s</h1></div>", $items);
-			return;
-		}
-			
 		// Generate HTML content
 		$itemids = array ();
 		$items_title = array();

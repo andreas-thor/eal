@@ -249,8 +249,12 @@ class IMEX_Moodle extends IMEX_Item {
 		return $answers;
 	}
 	
-	
-	public function upload (array $file): array {
+	/**
+	 * 
+	 * {@inheritDoc}
+	 * @see IMEX_Item::parse()
+	 */
+	public function parseItemsFromImportFile (array $file): array {
 		
 		// check for extension
 		if (substr ($file['name'], -4) != ".xml") {

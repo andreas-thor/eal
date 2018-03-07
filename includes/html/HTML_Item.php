@@ -170,10 +170,10 @@ class HTML_Item  {
 	
 
 	
-	
+	// FIXME: Löschen, wenn neuer Bulkviewer implementiert
 	public static function getHTML_Metadata (EAL_Item $item, int $viewType, $prefix): string {
 	
-		$edit = ($item->getId() > 0) ? sprintf ('<span style="float: right; font-weight:normal" ><a href="post.php?action=edit&post=%d">Edit</a></span>', $item->getId()) : '';
+		$edit = ($item->getId() > 0) ? sprintf ('<span style="float: right; font-weight:normal" ><a style="vertical-align:middle" class="page-title-action" href="post.php?action=edit&post=%d">Edit</a></span>', $item->getId()) : '';
 		
 		// Status and Id
 		$res = sprintf ('

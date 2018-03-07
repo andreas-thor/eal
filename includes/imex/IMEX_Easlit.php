@@ -22,7 +22,7 @@ class IMEX_Easlit extends IMEX_Item {
 		
 	}
 	
-	public function upload(array $file) {}
+	public function parseItemsFromImportFile(array $file): array {}
 
 
 	
