@@ -53,7 +53,8 @@ class Importer {
 					return;
 				}
 				
-				self::showPreview($items);
+				PAG_Item_Bulkviewer::printItemList($items, TRUE, TRUE);
+// 				self::showPreview($items);
 				
 			}
 			

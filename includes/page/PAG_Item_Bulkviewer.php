@@ -19,8 +19,17 @@ class PAG_Item_Bulkviewer {
 		if ($itemids == NULL) {
 			$itemids = ItemExplorer::getItemIdsByRequest();
 		}
+
+		if ($_REQUEST['action']=='import') {
+			$itemids = IMEX_Item::importItems($itemids, FALSE);
+		}
+			
+		if ($_REQUEST['action']=='update') {
+			$itemids = IMEX_Item::importItems($itemids, TRUE);
+		}
 		
-		// load all items (if not given)
+		
+		// load all items
 		$items = [];
 		foreach ($itemids as $item_id) {
 			if (array_key_exists($item_id, $items)) continue;	// item already loaded
@@ -29,41 +38,69 @@ class PAG_Item_Bulkviewer {
 			$items[$item_id] = EAL_Item::load($post->post_type, $item_id);
 		}
 		
-		self::printItemList($items);
+		$editable = $_REQUEST['action'] === 'edit';
 		
-// 		if ($_POST['action']=='import') $itemids = Importer::doImport($itemids, FALSE);
-// 		if ($_POST['action']=='update') $itemids = Importer::doImport($itemids, TRUE);
+		self::printItemList($items, $editable, FALSE);
+		
+ 		
+ 		
 // 		self::viewItems($itemids, NULL, $_REQUEST['edit']=='1', $_REQUEST["page"]);
 	}
 	
 	
 	public static function page_view_basket () {
-		self::printItemList(EAL_ItemBasket::getItems());
+		self::printItemList(EAL_ItemBasket::getItems(), FALSE, FALSE);
 	}
 	
 	
-	private static function printItemList (array $items, string $action = "view") {
+	public static function printItemList (array $items, bool $editable, bool $isImport) {
 		
-
+		$listOfItemIds = implode(',', array_keys ($items));
 		
+		// Add list of items to <select>-List in screen settings
 ?>
+		<script>
+			jQuery(document).ready(function () {
+				jQuery("#screen_seetings_item_select_list").append("<?php 
+					$pos = 0;
+					foreach ($items as $item) { printf ('<option value=\"%d\">%s</option>', $pos++, $item->title); } 
+				?>");
+			});
+			// ");
+		</script>
+		
+		
 		<div class="wrap">
-			<h1>Mein neuer Item Viewer</h1>
-			<hr class="wp-header-end">
-			<?php foreach ($items as $item) { self::printItem($item); } ?>
+			<form  enctype="multipart/form-data" action="admin.php?page=view_item" method="post">
+				
+
+				<h1>Mein neuer Item Viewer 
+				
+				<?php if ($editable) { ?>
+					<input type="submit" name="publish" id="publish" class="button button-primary button-large" value="<?php echo ($isImport ? 'Import ' : 'Update All '); echo count($items); ?> Items">
+					<input type="hidden" id="itemids" name="itemids" value="<?php echo $listOfItemIds ?>">
+					<input type="hidden" name="action" value="<?php echo ($isImport ? 'import' : 'update') ?>">
+				<?php } else { ?>
+					<a href="admin.php?page=view_item&itemids=<?php echo $listOfItemIds ?>&action=edit" class="page-title-action">Edit All <?php echo count($items) ?> Items</a>
+				<?php } ?>
+				
+				
+				</h1>
+				<hr class="wp-header-end">
+				<div id="itemcontainer">
+					<?php foreach ($items as $item) { self::printItem($item, $editable, $isImport); } ?>
+				</div>
+			</form>
 		</div>
 			
 <?php 		
 	}
 	
 	
-	private static function printItem (EAL_Item $item, int $viewType = HTML_Object::VIEW_REVIEW) {
+	private static function printItem (EAL_Item $item, bool $editable, bool $isImport) {
 		
-		$viewType = HTML_Object::VIEW_EDIT;
-		$prefix = "item_{$item->getId()}_";
-		
-		// FIXME edit link anpassen
-		$edit = ($item->getId() > 0) ? sprintf ('<span style="float: right; font-weight:normal" ><a style="vertical-align:middle" class="page-title-action" href="post.php?action=edit&post=%d">Edit</a></span>', $item->getId()) : '';
+ 		$prefix = "item_{$item->getId()}_";
+
 ?>		
 		
 		<div id="poststuff">
@@ -74,6 +111,14 @@ class PAG_Item_Bulkviewer {
 							<input type="text" size="30" value="<?php echo $item->title ?>" id="title" readonly>
 						</div>
 					</div><!-- /titlediv -->
+					
+					<?php if ($editable) { ?>
+						<input type="hidden" name="<?php echo $prefix ?>post_ID"      value="<?php echo $item->getId() ?>">
+				  		<input type="hidden" name="<?php echo $prefix ?>post_type"    value="<?php echo $item->getType() ?>">
+		  				<input type="hidden" name="<?php echo $prefix ?>post_content" value="<?php echo microtime() ?>">
+		  				<input type="hidden" name="<?php echo $prefix ?>post_title"   value="<?php echo htmlentities ($item->title, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>">
+					<?php } ?>
+					
 				</div><!-- /post-body-content -->
 				<div id="postbox-container-1" class="postbox-container">
 					<?php // echo HTML_Item::getHTML_Metadata($item, $editable ? HTML_Object::VIEW_EDIT   : HTML_Object::VIEW_STUDENT, "item_{$item->getId()}_") ?>
@@ -81,32 +126,41 @@ class PAG_Item_Bulkviewer {
 					<div id="mb_status" class="postbox ">
 						<h2 class="hndle">
 							<span>Item (<?php  echo ($item->getId()>0 ? 'ID:'.$item->getId() : 'new') ?>)</span>
-							<?php  echo $edit ?> 
+							<?php 
+								if (($item->getId() > 0) && (!$isImport)) {
+									printf ('<span style="float: right; font-weight:normal" ><a style="vertical-align:middle" class="page-title-action" href="post.php?action=edit&post=%d">Edit</a></span>', $item->getId());
+								}
+								
+							?> 
 						</h2>
+
 						<div class="inside">
-							<?php echo HTML_Item::getHTML_Status($item, $viewType, $prefix) ?>
+						<?php if ($editable) {
+	printf ('<span style="float: right; font-weight:normal" ><a style="vertical-align:middle" >(Set this status for all items)</a></span>');
+}?>
+							<?php echo HTML_Item::getHTML_Status($item, $editable, $isImport, $prefix) ?>
+							
 						</div>
 					</div>
 		
 					<div id="mb_learnout" class="postbox ">
 						<h2 class="hndle"><span>Learning Outcome</span></h2>
-						<div class="inside"><?php echo HTML_Item::getHTML_LearningOutcome($item, $viewType, $prefix) ?></div>
+						<div class="inside"><?php echo HTML_Item::getHTML_LearningOutcome($item, $editable, $prefix) ?></div>
 					</div>
 			
 					<div id="mb_level" class="postbox ">
 						<h2 class="hndle"><span>Anforderungsstufe</span></h2>
-						<div class="inside"><?php echo HTML_Item::getHTML_Level($item, $viewType, $prefix) ?></div>
+						<div class="inside"><?php echo HTML_Item::getHTML_Level($item, $editable, $prefix) ?></div>
 					</div>
 					
-			
 					<div class="postbox ">
 						<h2 class="hndle"><span><?php echo RoleTaxonomy::getDomains()[$item->getDomain()] ?></span></h2>
-						<div class="inside"><?php echo HTML_Object::getHTML_Topic($item->getDomain(), $item->getId(), $viewType, $prefix) ?></div>
+						<div class="inside"><?php echo HTML_Object::getHTML_Topic($item->getDomain(), $item->getId(), $editable, $prefix) ?></div>
 					</div>
 	
 					<div class="postbox ">
 						<h2 class="hndle"><span>Notiz</span></h2>
-						<div class="inside"><?php echo HTML_Item::getHTML_NoteFlag($item, $viewType, $prefix) ?></div>
+						<div class="inside"><?php echo HTML_Item::getHTML_NoteFlag($item, $editable, $prefix) ?></div>
 					</div>
 					
 				</div>

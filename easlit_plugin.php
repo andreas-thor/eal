@@ -523,39 +523,51 @@ function setScreenSettings () {
 		
 		$php_page = array_pop (explode ('/', $_SERVER['SCRIPT_NAME']));
 		
-		if (($php_page == 'admin.php') && ($_REQUEST['page'] == 'view_item')) {
+		if    ((($php_page == 'admin.php') && ($_REQUEST['page']=='view_item')) 
+			|| (($php_page == 'edit.php')  && ($_REQUEST['page']=='view_basket')) 
+		   	|| (($php_page == 'admin.php') &&(($_REQUEST['page']=='import') && ($_REQUEST['post_type']=='item') && ($_REQUEST['action']=='Upload'))))
+		
+		{
 
 			
-			$options = '<option value="-1" selected>[All]</option>';
-			foreach (ItemExplorer::getItemIdsByRequest() as $index => $id) {
-				$post = get_post($id);
-				if ($post === NULL) continue;
-				$options .= sprintf ('<option value="%d">%s</option>', $index, $post->post_title);
-			}
+// 			$options = '<option value="-1" selected>[All]</option>';
+// 			foreach (ItemExplorer::getItemIdsByRequest() as $index => $id) {
+// 				$post = get_post($id);
+// 				if ($post === NULL) continue;
+// 				$options .= sprintf ('<option value="%d">%s</option>', $index, $post->post_title);
+// 			}
 			
 			
 			
-			$show_MetaData_JS = ' 
-				d = document.getElementById(\'itemcontainer\'); 
-				for (x=0; x<d.children.length; x++) { 
-					d.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; 
-				} 
-				document.getElementById(\'itemstats\').querySelector(\'#postbox-container-2\').style.display = (this.checked==true) ? \'block\' :  \'none\';';
+			$show_MetaData_JS = " 
+				var isChecked = this.checked;
+				jQuery('div #postbox-container-1').each (
+					function() {
+						this.style.display = (isChecked) ? 'block' :  'none'; 
+					}
+				);";
+
+// 				d = document.getElementById(\'itemcontainer\'); 
+// 				for (x=0; x<d.children.length; x++) { 
+// 					d.children[x].querySelector(\'#postbox-container-1\').style.display = (this.checked==true) ? \'block\' :  \'none\'; 
+// 				} 
+//				document.getElementById(\'itemstats\').querySelector(\'#postbox-container-2\').style.display = (this.checked==true) ? \'block\' :  \'none\';';
 			
 			$select_Item_JS = ' 
+
 				d = document.getElementById(\'itemcontainer\'); 
 				for (x=0; x<d.children.length; x++) {  
 					d.children[x].style.display = ((this.value<0) || (this.value==x)) ? \'block\' :  \'none\'; 
 				} 
-				document.getElementById(\'itemstats\').style.display = (this.value<0) ? \'block\' :  \'none\';';
+// 				document.getElementById(\'itemstats\').style.display = (this.value<0) ? \'block\' :  \'none\';';
 				
 			
 			return sprintf ('
 				<fieldset class="metabox-prefs view-mode">
 					<legend>Items</legend>
-					<select  onChange="%s">%s</select><br />
+					<select id="screen_seetings_item_select_list" onChange="%s"><option value="-1" selected>[All]</option></select><br />
 					<label><input type="checkbox" checked onChange="%s"></input>Show Metadata</label>
-				</fieldset>', $select_Item_JS, $options, $show_MetaData_JS);
+				</fieldset>', $select_Item_JS, $show_MetaData_JS);
 			
 		}
 		

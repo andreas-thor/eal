@@ -63,7 +63,7 @@ class EAL_Item extends EAL_Object {
 		$this->question = '';
 
 		$this->level = ["FW" => null, "KW" => null, "PW" => null];
-		$this->learnout_id = POST['learnout_id'] ?? $_GET['learnout_id'] ?? null;
+		$this->learnout_id = $_POST['learnout_id'] ?? $_GET['learnout_id'] ?? null;
 		$this->learnout = null;
 		
 		$this->difficulty = null;

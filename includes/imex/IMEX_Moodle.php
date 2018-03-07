@@ -61,15 +61,16 @@ class IMEX_Moodle extends IMEX_Item {
 			}
 		}
 		
-		
-		// adjust item_ids
-		for ($idx=0; $idx<count($items); $idx++) {
-			if ($items[$idx]->getId()==-1) {
-				$items[$idx]->setId(-($idx+1));
+		$result = [];
+		foreach ($items as $idx => $item) {
+			if ($item->getId()==-1) {		// adjust itemid for new item
+				$item->setId(-($idx+1));
 			}
+			$result[$item->getId()] = $item;
+			
 		}
 		
-		return $items;
+		return $result;
 		
 	}
 	

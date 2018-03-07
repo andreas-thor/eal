@@ -17,7 +17,7 @@ class HTML_Item  {
 	 * @param string $prefix
 	 */
 	
-	public static function getHTML_Status (EAL_Item $item, int $viewType, string $prefix=""): string {
+	public static function getHTML_Status (EAL_Item $item, bool $editable, bool $isImport, string $prefix=""): string {
 	
 		$result = sprintf ("<select class='importstatus' style='width:100%%' name='%sitem_status' align='right'>", $prefix);
 		
@@ -25,15 +25,15 @@ class HTML_Item  {
 			foreach (["Published", "Pending Review", "Draft"] as $i=>$status) {
 				$result .= sprintf (
 					"<option %s value='%d' %s>%s %s</option>", 
-					($viewType == HTML_Object::VIEW_STUDENT) || ($viewType == HTML_Object::VIEW_REVIEW) ? "style='display:none'" : "",	// editable?
+					($editable) ? "" : "style='display:none'",	// hide if not ediatble 
 					$i+1, // status value as int
 					($status == $item->getStatusString()) ? "selected" : "",	// select current based in item status
-					($viewType == HTML_Object::VIEW_IMPORT) ? "Update as" : "",	// import => indicate "update item"
+					($isImport) ? "Update as" : "",	// import => indicate "update item"
 					$status);	// status value as string
 			}
 		}
 		
-		if ($viewType == HTML_Object::VIEW_IMPORT) {
+		if ($isImport) {
 			foreach (["Published", "Pending Review", "Draft"] as $i=>$status) {
 				$result .= sprintf (
 					"<option value='%d' %s>New as %s</option>",
@@ -57,25 +57,25 @@ class HTML_Item  {
 	 * @param string $prefix
 	 */
 	
-	public static function getHTML_LearningOutcome (EAL_Item $item, int $viewType, string $prefix = ""): string {
+	public static function getHTML_LearningOutcome (EAL_Item $item, bool $editable, string $prefix = ""): string {
 	
 		$learnout = $item->getLearnOut();
 		$learnout_id = ($learnout == null) ? -1 : $learnout->getId();
 	
 		$htmlList .= "<select name='{$prefix}learnout_id' onchange='for (x=0; x<this.nextSibling.childNodes.length; x++) { this.nextSibling.childNodes[x].style.display = (this.selectedIndex == x) ? \"block\" : \"none\"; }' style='width:100%' align='right'>";
 	
-		if (($learnout_id == -1) || ($viewType==HTML_Object::VIEW_EDIT) || ($viewType==HTML_Object::VIEW_IMPORT)) {
-			$htmlList .= sprintf ("<option value='0' style='display:%s' %s>[None]</option>", ($viewType==HTML_Object::VIEW_EDIT) || ($viewType==HTML_Object::VIEW_IMPORT)? "block" : "none", ($learnout_id == -1) ? "selected" : "");
+		if (($learnout_id == -1) || ($editable)) {
+			$htmlList .= sprintf ("<option value='0' style='display:%s' %s>[None]</option>", ($editable) ? "block" : "none", ($learnout_id == -1) ? "selected" : "");
 			$htmlDesc  = sprintf ("<div style='display:%s'></div>", ($learnout_id == -1) ? "block" : "none");
 		}
 			
-		$allLO = (($viewType == HTML_Object::VIEW_STUDENT) || ($viewType == HTML_Object::VIEW_REVIEW)) ? [$learnout] : EAL_LearnOut::getListOfLearningOutcomes();
+		$allLO = ($editable) ? EAL_LearnOut::getListOfLearningOutcomes() : [$learnout];
 		foreach ($allLO as $pos => $lo) {
 			if ($lo->id == -1) continue; 
 			$htmlList .= sprintf (
 				"<option value='%d' style='display:%s' %s>%s</option>",
 				$lo->id, // value = LO Id
-				($viewType==HTML_Object::VIEW_EDIT) || ($viewType==HTML_Object::VIEW_IMPORT) ? "block" : "none",	// show options only during EDIT or IMPORT
+				($editable) ? "block" : "none",	// show options only during EDIT or IMPORT
 				$learnout_id==$lo->id ? " selected" : "",	// select current LO
 				htmlentities($lo->title, ENT_COMPAT | ENT_HTML401, 'UTF-8'));	// LO title
 				$htmlDesc .= sprintf ("<div style='display:%s'>%s</div>", ($learnout_id==$lo->id) ? "block" : "none", htmlentities($lo->description, ENT_COMPAT | ENT_HTML401, 'UTF-8'));
@@ -93,7 +93,7 @@ class HTML_Item  {
 	 * @param string $prefix
 	 */
 	
-	public static function getHTML_Level (EAL_Item $item, int $viewType, string $prefix = ""): string {
+	public static function getHTML_Level (EAL_Item $item, bool $editable, string $prefix = ""): string {
 		
 		?>
 		<script>
@@ -115,6 +115,11 @@ class HTML_Item  {
 		</script>
 		<?php		
 		
+		$disabled = !$editable;
+		$background = ($item->getLearnOut() !== NULL);
+		$callback = (($editable) && ($background)) ? "checkLOLevel" : "";
+		
+		/*
 		$disabled = TRUE;
 		$background = FALSE;
 		$callback = "";
@@ -130,6 +135,7 @@ class HTML_Item  {
 				$disabled = FALSE;
 				break;
 		}
+		*/
 		
 		return HTML_Object::getHTML_Level($prefix . "item", $item->level, (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level), $disabled, $background, $callback);
 		
@@ -149,7 +155,7 @@ class HTML_Item  {
 	 * @param int $viewType
 	 * @param string $prefix
 	 */
-	public static function getHTML_NoteFlag (EAL_Item $item, int $viewType, string $prefix=""): string {
+	public static function getHTML_NoteFlag (EAL_Item $item, bool $editable, string $prefix=""): string {
 		
 		return sprintf ('
 			<div class="form-field">
@@ -162,10 +168,10 @@ class HTML_Item  {
 			</div>',
 			$prefix,
 			$item->flag == 1 ? "checked" : "", 
-			($viewType == HTML_Object::VIEW_EDIT)  || ($viewType == HTML_Object::VIEW_IMPORT) ? "" : "onclick='return false;'", 
+			$editable ? "" : "onclick='return false;'", 
 			$prefix,
 			htmlentities ($item->note, ENT_COMPAT | ENT_HTML401, 'UTF-8'), 
-			($viewType == HTML_Object::VIEW_EDIT) || ($viewType == HTML_Object::VIEW_IMPORT) ? "" : "readonly");
+			$editable ? "" : "readonly");
 	}
 	
 

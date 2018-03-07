@@ -171,7 +171,7 @@ class CPT_Review extends CPT_Object {
 	public function WPCB_mb_learnout ($post, $vars) {
 	
 		global $review;
-		print (HTML_Item::getHTML_LearningOutcome($review->getItem(), HTML_Object::VIEW_REVIEW));
+		print (HTML_Item::getHTML_LearningOutcome($review->getItem(), FALSE));
 	}
 	
 	

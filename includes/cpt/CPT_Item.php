@@ -213,7 +213,7 @@ class CPT_Item extends CPT_Object{
 	
 	public function WPCB_mb_learnout ($post, $vars) {
 		global $item;
-		print (HTML_Item::getHTML_LearningOutcome($item, HTML_Object::VIEW_EDIT));
+		print (HTML_Item::getHTML_LearningOutcome($item, TRUE));
 	}
 
 	public function WPCB_mb_description ($post, $vars) {
@@ -232,7 +232,7 @@ class CPT_Item extends CPT_Object{
 	
 	public function WPCB_mb_level ($post, $vars) {
 		global $item;
-		print (HTML_Item::getHTML_Level($item, HTML_Object::VIEW_EDIT));
+		print (HTML_Item::getHTML_Level($item, true));
 	}
 	
 	
@@ -298,10 +298,8 @@ class CPT_Item extends CPT_Object{
 		// we dynamically set the value of $POST["post_content"] to make sure that we have revision
 		printf ("<input type='hidden' id='post_content' name='post_content'  value='%s'>", microtime());
 		
-		
-		
 		global $item;
-		print (HTML_Item::getHTML_NoteFlag($item, HTML_Object::VIEW_EDIT));
+		print (HTML_Item::getHTML_NoteFlag($item, true));
 		
 	}
 
