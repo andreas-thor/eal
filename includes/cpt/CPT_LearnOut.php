@@ -135,7 +135,7 @@ class CPT_LearnOut extends CPT_Object {
 
 	public function WPCB_mb_level ($post, $vars) {
 		global $learnout;
-		print (HTML_Learnout::getHTML_Level($learnout, HTML_Object::VIEW_EDIT));
+		$learnout->getHTMLPrinter()->printLevel(TRUE);
 	}
 		
 
@@ -300,8 +300,9 @@ class CPT_LearnOut extends CPT_Object {
 		}
 	
 	}	
-	
-	
+
+	// FIXME: implement
+	public function WPCB_post_updated_messages ( $messages ) { } 
 		
 	
 }

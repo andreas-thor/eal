@@ -41,6 +41,9 @@ class EAL_LearnOut extends EAL_Object  {
 	}
 	
 	
+	public function getHTMLPrinter (): HTML_Learnout {
+		return new HTML_Learnout($this);
+	}
 	
 	/**
 	 * Initialize learning outcome from _POST Request data
@@ -155,7 +158,7 @@ class EAL_LearnOut extends EAL_Object  {
 				WHERE P.post_status = 'publish'
 				AND L.domain = '" . RoleTaxonomy::getCurrentRoleDomain()["name"] . "'
 				ORDER BY L.title
-				");
+				", ARRAY_A);
 	}
 	
 	

@@ -213,7 +213,7 @@ class CPT_Item extends CPT_Object{
 	
 	public function WPCB_mb_learnout ($post, $vars) {
 		global $item;
-		print (HTML_Item::getHTML_LearningOutcome($item, TRUE));
+		$item->getHTMLPrinter()->printLearningOutcome(TRUE);
 	}
 
 	public function WPCB_mb_description ($post, $vars) {
@@ -232,12 +232,14 @@ class CPT_Item extends CPT_Object{
 	
 	public function WPCB_mb_level ($post, $vars) {
 		global $item;
-		print (HTML_Item::getHTML_Level($item, true));
+		$item->getHTMLPrinter()->printLevel(TRUE);
+// 		print (HTML_Item::getHTML_Level($item, true));
 	}
 	
 	
 	public function WPCB_mb_answers ($post, $vars) {
-		wp_die ("<pre>Can not call WPCB_mb_answers on CPT_Item.</pre>");
+		global $item;
+		$item->getHTMLPrinter()->printAnswers(FALSE, TRUE, FALSE);
 	}
 	
 	public function WPCB_mb_taxonomy ($post, $vars) {
@@ -299,8 +301,7 @@ class CPT_Item extends CPT_Object{
 		printf ("<input type='hidden' id='post_content' name='post_content'  value='%s'>", microtime());
 		
 		global $item;
-		print (HTML_Item::getHTML_NoteFlag($item, true));
-		
+		$item->getHTMLPrinter()->printNoteFlag(TRUE);
 	}
 
 	

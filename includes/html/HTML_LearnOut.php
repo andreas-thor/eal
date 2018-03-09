@@ -3,7 +3,41 @@
 require_once (__DIR__ . "/../eal/EAL_LearnOut.php");
 
 
-class HTML_Learnout {
+class HTML_Learnout extends HTML_Object {
+	
+	protected $learnout;
+	
+	function __construct(EAL_LearnOut $learnout) {
+		$this->learnout = $learnout;
+	}
+	
+	
+	public function printTopic (bool $isEditable, string $prefix = "") {
+		parent::printTopicObject($this->learnout->getDomain(), $this->learnout->getId(), $isEditable, $prefix);
+	}
+	
+	
+	public function printLevel (bool $isEditable, string $prefix="") {
+?>
+		<script>
+			// callback javascript function is called when a new level is clicked --> matching verbs are shown
+			function showSuperVerbs (e, levIT, levITs, levLO, levLOs) {
+				var j = jQuery.noConflict();
+				j(document).find("#eal_superverbs").find("div").hide();
+				j(document).find("#eal_superverbs").find("div:eq(" + (levIT-1) + ")").show();
+			}
+		</script>
+
+<?php
+		$callback = ($isEditable) ? "showSuperVerbs" : "";
+		
+		// FIXME: Ist das hier richtig, dass nochmal item an prefix angehangen wird???
+		parent::printLevelObject ($prefix . "learnout", $this->learnout->level, NULL, !$isEditable, FALSE, $callback);
+		
+	}
+	
+	
+	
 	
 	
 	public static function getHTML_Level (EAL_LearnOut $learnout, int $viewType, string $prefix = ""): string {

@@ -3,7 +3,7 @@
 require_once (__DIR__ . "/../class.CLA_RoleTaxonomy.php");
 require_once 'EAL_Object.php';
 
-class EAL_Item extends EAL_Object {
+abstract class EAL_Item extends EAL_Object {
 
 	public $title;			// title 
 	public $description;	// description (e.g., vignette, use case, scenarion)
@@ -41,6 +41,8 @@ class EAL_Item extends EAL_Object {
 			"lo" => "Learning Outcome"
 	];
 	
+	
+	public abstract function getHTMLPrinter (): HTML_Item;
 	
 	
 	function __construct(int $item_id = -1, string $prefix="") {

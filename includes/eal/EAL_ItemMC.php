@@ -19,6 +19,10 @@ class EAL_ItemMC extends EAL_Item {
 		parent::__construct($item_id, $prefix);
 	}
 	
+	public function getHTMLPrinter (): HTML_Item {
+		return new HTML_ItemMC($this);
+	}
+	
 	
 	/**
 	 * Create new item from _POST

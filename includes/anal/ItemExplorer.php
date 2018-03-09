@@ -171,8 +171,8 @@ class ItemExplorer {
 		if ($cat == "lo") {
 			$labels = [];
 			foreach (EAL_LearnOut::getListOfLearningOutcomes() as $pos => $lo) {
-				if (in_array($lo->id, $keys)) {
-					$labels[$lo->id] = $lo->title;
+				if (in_array($lo['id'], $keys)) {
+					$labels[$lo['id']] = $lo['title'];
 				}
 			}
 			natcasesort ($labels);

@@ -57,6 +57,10 @@ class EAL_Review extends EAL_Object {
 	}
 	
 	
+	public function getHTMLPrinter (): HTML_Review {
+		return new HTML_Review($this);
+	}
+	
 	/**
 	 * Initialize learning outcome from _POST Request data
 	 */

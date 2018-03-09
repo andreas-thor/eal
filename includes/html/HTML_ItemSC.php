@@ -4,119 +4,105 @@ require_once ("HTML_Object.php");
 
 require_once (__DIR__ . "/../eal/EAL_ItemSC.php");
 
-class HTML_ItemSC  {
+class HTML_ItemSC extends HTML_Item {
 	
+	 
 	
-	/**
-	 * 
-	 * @param EAL_ItemSC $item
-	 * @param int $viewType STUDENT (read only, answers only), REVIEWER (read only, points), EDITOR (editable) 
-	 */
-	
-	public static function getHTML_Answers (EAL_ItemSC $item, int $viewType, string $prefix=""): string {
-	
-		$html_Answers = "";
-		$result = "";
-		
-		// answer as radio buttons ...
-		if ($viewType == HTML_Object::VIEW_STUDENT) {
-			foreach ($item->answers as $a) {
-				$html_Answers .= sprintf ('<div style="margin-top:1em"><input type="radio" />%s</div>', $a['answer']);
-			}
-			$result = sprintf ('<div style="margin-top:1em">%s</div>', $html_Answers);
-		}
+	private function printAnswerLine (string $prefix, string $answer, string $points, bool $showButtons, string $fontWeight, bool $isReadOnly, bool $includeFormValue) {
+?>
+		<tr>
+			<td style="width:100%-9em">
+				<input 
+					type="text" 
+					<?php if ($includeFormValue) printf ('name="%sanswer[]" ', $prefix); ?>
+					value="<?php echo htmlentities($answer, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>"  
+					style="width:100%; font-weight:<?php echo $fontWeight ?>" 
+					<?php if ($isReadOnly) echo " readonly " ?>
+					size="255" />
+			</td>
+			<td style="width:3em">
+				<input type="text" name="<?php echo $prefix ?>points[]" value="<?php echo $points ?>" 
+				<?php if ($isReadOnly) echo " readonly " ?>
+				size="1" />
+			</td>
+			<?php if ($showButtons) { ?>
+				<td style="width:6em">
+					<a class="button" onclick="addAnswer(this);">&nbsp;+&nbsp;</a>
+					<a class="button" onclick="removeAnswer(this);">&nbsp;-&nbsp;</a>
+				</td>
+			<?php } ?>
+		</tr>
 
-		// answers a table line with 2 columns (answers, points); points>0 in bold ...
-		if ($viewType == HTML_Object::VIEW_REVIEW) {
-			foreach ($item->answers as $a) {
-				$html_Answers .= sprintf('
-					<tr align="left">
-						<td style="width:100%%-3em"><input type="text" value="%s" style="width:100%%; font-weight:%s" size="255" readonly/></td>
-						<td style="width:3em"><input type="text" value="%d" size="1"  readonly /></td>
-					</tr>',
-					htmlentities($a['answer'], ENT_COMPAT | ENT_HTML401, 'UTF-8'), 
-					$a['points']>0 ? 'bold' : 'normal',
-					$a['points']
-				);
-			}
-			$result = sprintf ('<table style="font-size: 100%%">%s</table>', $html_Answers);
-		}
+
+<?php 		
 		
-		// like REVIEW, but sendable POST request data (name attribute)		
-		if ($viewType == HTML_Object::VIEW_IMPORT) {
-			foreach ($item->answers as $a) {
-				$html_Answers .= sprintf('
-					<tr align="left">
-						<td style="width:100%%-3em"><input type="text" name="%1$sanswer[]" value="%2$s" style="width:100%%; font-weight:%3$s" size="255" readonly/></td>
-						<td style="width:3em"><input type="text" name="%1$spoints[]" value="%4$d" size="1"  readonly /></td>
-					</tr>', 
-					$prefix, 
-					htmlentities($a['answer'], ENT_COMPAT | ENT_HTML401, 'UTF-8'), 
-					$a['points']>0 ? 'bold' : 'normal',
-					$a['points'] 
-				);
-			}
-			$result = sprintf ('<table style="font-size: 100%%">%s</table>', $html_Answers);
-		} 
-		
-		
-		if ($viewType == HTML_Object::VIEW_EDIT) {
-		
-			// used to be inserted dynamically when new answer is added
-			$answerLine = '
-				<tr>
-					<td style="width:100%%-9em"><input type="text" name="%1$sanswer[]" value="%2$s" style="width:100%%" size="255"</td>
-					<td style="width:3em"><input type="text" name="%1$spoints[]" value="%3$d" size="1" /></td>
-					<td style="width:6em">
-						<a class="button" onclick="addAnswer(this);">&nbsp;+&nbsp;</a>
-						<a class="button" onclick="removeAnswer(this);">&nbsp;-&nbsp;</a>
-					</td>
-				</tr>';
-			
-			
-			// Javascript for + / - button interaction
-			?>
-			<script>
+	} 
 	
-				var $ =jQuery.noConflict();
-
-				// add new answer option after current line
-				function addAnswer (e) { 
-					$(e).parent().parent().after('<?php echo (preg_replace("/\r\n|\r|\n/",'', sprintf($answerLine, $prefix, '', 0))); ?>' );
-				}
-
-				// delete current answer options but make sure that header + at least one option remain
-				function removeAnswer (e) {
-					if ($(e).parent().parent().parent().children().size() > 2) {
-						$(e).parent().parent().remove();
-					}
-				}
-				
-			</script>
-			<?php	
-
-			// answers as table line with 3 columns (answer, points, action buttons) ...
-			foreach ($item->answers as $a) {
-				$html_Answers .= sprintf($answerLine, $prefix, htmlentities($a['answer'], ENT_COMPAT | ENT_HTML401, 'UTF-8'), $a['points']);
-			}
-			
-			// ... packaged in a table
-			$result = sprintf ('
-				<table style="font-size:100%%">
-					<tr align="left">
-						<th>Antwort-Text</th>
-						<th>Punkte</th>
-						<th>Aktionen</th>
-					</tr>
-					%s
-				</table>', 
-				$html_Answers);
-		}
-		
-		
-		return $result;
 	
+
+	
+	
+	protected function printAnswers_Preview () {
+?> 
+		<div style="margin-top:1em">
+			<?php foreach ($this->item->answers as $a) { ?> 
+				<div style="margin-top:1em">
+					<input type="radio" name="<?php echo $this->item->getId() ?>" />
+					<?php echo $a['answer'] ?>
+				</div>
+			<?php } ?>
+		</div>
+<?php 
 	}
+	
+	
+	protected function printAnswers_Editor (string $prefix) {
+?>
+		<script>
+			// Javascript for + / - button interaction
+			var $ = jQuery.noConflict();
+
+			// add new answer option after current line
+			function addAnswer (e) { 
+				$(e).parent().parent().after(`<?php $this->printAnswerLine($prefix, '', 0, TRUE, 'normal', FALSE, TRUE); ?>` );
+			}
+
+			// delete current answer options but make sure that header + at least one option remain
+			function removeAnswer (e) {
+				if ($(e).parent().parent().parent().children().size() > 2) {
+					$(e).parent().parent().remove();
+				}
+			}
+		</script>
+			
+		<table style="font-size:100%">
+			<tr align="left">
+				<th>Antwort-Text</th>
+				<th>Punkte</th>
+				<th>Aktionen</th>
+			</tr>
+			<?php 
+			foreach ($this->item->answers as $a) {
+				$this->printAnswerLine($prefix, $a['answer'], $a['points'], TRUE, 'normal', FALSE, TRUE);
+			}
+			?>
+		</table>
+<?php 		
+	}
+	
+	
+	protected function printAnswers_ForReview (bool $isImport, string $prefix) {
+?>
+		<table style="font-size: 100%">
+			<?php 
+			foreach ($this->item->answers as $a) { 
+				$this->printAnswerLine($prefix, $a['answer'], $a['points'], FALSE, $a['points']>0 ? 'bold' : 'normal', TRUE, $isImport);
+			} 
+			?>
+		</table>
+<?php 		
+	}
+	
 	
 	
 	public static function compareAnswers (EAL_ItemSC $old, EAL_ItemSC $new): array {

@@ -97,7 +97,9 @@ class PAG_Item_Bulkviewer {
 	}
 	
 	
-	private static function printItem (EAL_Item $item, bool $editable, bool $isImport) {
+	private static function printItem (EAL_Item $item, bool $isEditable, bool $isImport) {
+		
+		$htmlPrinter = $item->getHTMLPrinter();
 		
  		$prefix = "item_{$item->getId()}_";
 
@@ -112,7 +114,7 @@ class PAG_Item_Bulkviewer {
 						</div>
 					</div><!-- /titlediv -->
 					
-					<?php if ($editable) { ?>
+					<?php if ($isEditable) { ?>
 						<input type="hidden" name="<?php echo $prefix ?>post_ID"      value="<?php echo $item->getId() ?>">
 				  		<input type="hidden" name="<?php echo $prefix ?>post_type"    value="<?php echo $item->getType() ?>">
 		  				<input type="hidden" name="<?php echo $prefix ?>post_content" value="<?php echo microtime() ?>">
@@ -135,38 +137,49 @@ class PAG_Item_Bulkviewer {
 						</h2>
 
 						<div class="inside">
-						<?php if ($editable) {
-	printf ('<span style="float: right; font-weight:normal" ><a style="vertical-align:middle" >(Set this status for all items)</a></span>');
-}?>
-							<?php echo HTML_Item::getHTML_Status($item, $editable, $isImport, $prefix) ?>
-							
+							<?php 
+								if ($isEditable) { 
+									printf ('<span style="float: right; font-weight:normal" ><a style="vertical-align:middle" >(Set this status for all items)</a></span>');
+								}
+								$htmlPrinter->printStatus ($isEditable, $isImport, $prefix);
+							?>
 						</div>
 					</div>
 		
 					<div id="mb_learnout" class="postbox ">
 						<h2 class="hndle"><span>Learning Outcome</span></h2>
-						<div class="inside"><?php echo HTML_Item::getHTML_LearningOutcome($item, $editable, $prefix) ?></div>
+						<div class="inside"><?php $htmlPrinter->printLearningOutcome($isEditable, $prefix) ?></div>
 					</div>
 			
 					<div id="mb_level" class="postbox ">
 						<h2 class="hndle"><span>Anforderungsstufe</span></h2>
-						<div class="inside"><?php echo HTML_Item::getHTML_Level($item, $editable, $prefix) ?></div>
+						<div class="inside"><?php $htmlPrinter->printLevel($isEditable, $prefix) ?></div>
 					</div>
 					
 					<div class="postbox ">
 						<h2 class="hndle"><span><?php echo RoleTaxonomy::getDomains()[$item->getDomain()] ?></span></h2>
-						<div class="inside"><?php echo HTML_Object::getHTML_Topic($item->getDomain(), $item->getId(), $editable, $prefix) ?></div>
+						<div class="inside"><?php echo $htmlPrinter->printTopic($isEditable, $prefix) ?></div>
+						<!--  HTML_Object::getHTML_Topic($item->getDomain(), $item->getId(), $isEditable, $prefix)  -->
 					</div>
 	
 					<div class="postbox ">
 						<h2 class="hndle"><span>Notiz</span></h2>
-						<div class="inside"><?php echo HTML_Item::getHTML_NoteFlag($item, $editable, $prefix) ?></div>
+						<div class="inside"><?php $htmlPrinter->printNoteFlag($isEditable, $prefix) ?></div>
 					</div>
 					
 				</div>
 	
 				<div id="postbox-container-2" class="postbox-container">
-					<?php echo HTML_Item::getHTML_Item ($item, $editable ? HTML_Object::VIEW_REVIEW : HTML_Object::VIEW_STUDENT, "item_{$item->getId()}_") ?>
+
+					<div class="postbox" style="background-color:transparent; border:none">
+						<div class="inside">
+							<?php $htmlPrinter->printDescription($isImport, $prefix) ?>
+							<?php $htmlPrinter->printQuestion($isImport, $prefix) ?>
+							<?php $htmlPrinter->printAnswers(!$isEditable, FALSE, $isImport) ?>
+						</div>
+					</div>
+				
+					<?php // echo HTML_Item::getHTML_Item ($item, $isEditable ? HTML_Object::VIEW_REVIEW : HTML_Object::VIEW_STUDENT, "item_{$item->getId()}_") ?>
 				</div>
 			</div><!-- /post-body -->
 			<br class="clear">

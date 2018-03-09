@@ -3,18 +3,23 @@
 
 require_once (__DIR__ . "/../eal/EAL_Review.php");
 
-class HTML_Review {
+class HTML_Review extends HTML_Object {
 	
+	protected $review;
 	
-	public static function getHTML_Level (EAL_Review $review, int $viewType, string $prefix=""): string {
-		
-		$disabled = TRUE;
-		if ($viewType == HTML_Object::VIEW_EDIT) $disabled = FALSE;
-		
-		return HTML_Object::getHTML_Level($prefix . 'review', $review->level, $review->getItem()->level, $disabled, TRUE, '');
+	function __construct(EAL_Review $review) {
+		$this->review = $review;
 	}
 	
+	
 
+	
+
+	public function printLevel (bool $isEditable, string $prefix="") {
+		parent::printLevelObject ($prefix . 'review', $this->review->level, $this->review->getItem()->level, !$isEditable, TRUE, '');
+	}
+	
+	public function printTopic(bool $isEditable, string $prefix = "") { }
 	
 	
 	public static function getHTML_Overall (EAL_Review $review, int $viewType, string $prefix="", string $callback=""): string {
@@ -124,7 +129,14 @@ class HTML_Review {
 			self::getHTML_Score($review, $viewType, $prefix),
 			wpautop(htmlentities($review->feedback, ENT_COMPAT | ENT_HTML401, 'UTF-8')));
 	}
-	
+
+	public static function getHTML_Level (EAL_Review $review, int $viewType, string $prefix=""): string {
+		
+		$disabled = TRUE;
+		if ($viewType == HTML_Object::VIEW_EDIT) $disabled = FALSE;
+		
+		return HTML_Object::getHTML_Level($prefix . 'review', $review->level, $review->getItem()->level, $disabled, TRUE, '');
+	}
 	
 }
 ?>

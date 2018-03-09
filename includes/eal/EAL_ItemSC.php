@@ -5,7 +5,7 @@ require_once ("EAL_Item.php");
 class EAL_ItemSC extends EAL_Item {
 	
 	public $answers;
-	
+	 
 	
 	function __construct(int $item_id = -1, string $prefix="") {
 		$this->answers = array (
@@ -18,6 +18,10 @@ class EAL_ItemSC extends EAL_Item {
 		
 		
 		
+	}
+	
+	public function getHTMLPrinter (): HTML_Item {
+		return new HTML_ItemSC($this);
 	}
 	
 	

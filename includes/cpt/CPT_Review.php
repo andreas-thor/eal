@@ -14,7 +14,7 @@ class CPT_Review extends CPT_Object {
 		$this->menu_pos = -1;
 		$this->cap_type = $this->type;
 		$this->dashicon = "dashicons-admin-comments";
-		$this->supports = array();
+		$this->supports = array('');
 		$this->taxonomies = array();
 		
 		$this->table_columns = array (
@@ -93,7 +93,7 @@ class CPT_Review extends CPT_Object {
 	
 	public function WPCB_register_meta_box_cb () {
 	
-		global $review, $post;
+		global $review, $post, $item;
 		parent::WPCB_register_meta_box_cb();
 		
 		$review = new EAL_Review();
@@ -126,8 +126,13 @@ class CPT_Review extends CPT_Object {
 	
 		global $review;
 		if (!is_null($review->getItem())) {
-			$html = HTML_Item::getHTML_Item($review->getItem(), HTML_Object::VIEW_REVIEW);
-			echo $html;
+?>
+			<input type="hidden" name="item_id"  value="<?php echo $review->getItem()->getId() ?>">
+<?php 			
+			$htmlPrinter = $review->getItem()->getHTMLPrinter();
+			$htmlPrinter->printDescription(FALSE);
+			$htmlPrinter->printQuestion(FALSE);
+			$htmlPrinter->printAnswers(FALSE, FALSE, FALSE);
 		}
 	}
 	
@@ -141,7 +146,9 @@ class CPT_Review extends CPT_Object {
 	public function WPCB_mb_level ($post, $vars) {
 
 		global $review;
-		print (HTML_Review::getHTML_Level($review, HTML_Object::VIEW_EDIT));
+		
+		$review->getHTMLPrinter()->printLevel(TRUE);
+// 		print (HTML_Review::getHTML_Level($review, HTML_Object::VIEW_EDIT));
 	}
 	
 	
@@ -171,7 +178,7 @@ class CPT_Review extends CPT_Object {
 	public function WPCB_mb_learnout ($post, $vars) {
 	
 		global $review;
-		print (HTML_Item::getHTML_LearningOutcome($review->getItem(), FALSE));
+		$review->getItem()->getHTMLPrinter()->printLearningOutcome(FALSE);
 	}
 	
 	

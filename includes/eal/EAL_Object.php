@@ -3,7 +3,7 @@
 require_once (__DIR__ . "/../class.CLA_RoleTaxonomy.php");
 
 
-class EAL_Object {
+abstract class EAL_Object {
 	
 	private $id;		// set/get make sure that integer values are stored only
 	private $type;		// read-only; will be set during constructor based on concrete class type (EAL_ItemMC, EAL_ItemSC, ...)

@@ -58,12 +58,7 @@ class CPT_ItemSC extends CPT_Item {
 	
 
 	
-	public function WPCB_mb_answers ($post, $vars) {
-	
-		global $item;
-		print (HTML_ItemSC::getHTML_Answers($item, HTML_Object::VIEW_EDIT));
 
-	}
 		
 	
 	
