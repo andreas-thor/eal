@@ -21,7 +21,9 @@ require_once 'includes/page/BulkViewer.php';
 require_once 'includes/page/Importer.php';
 require_once 'includes/page/Explorer.php';
 require_once 'includes/page/Blueprint.php';
+
 require_once 'includes/page/PAG_Item_Bulkviewer.php';
+require_once 'includes/page/PAG_Learnout_Bulkviewer.php';
 
 
 require_once 'includes/class.CLA_RoleTaxonomy.php';
@@ -207,9 +209,12 @@ function setMainMenu() {
 		add_submenu_page($menuslug, 'Generator2', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'test_generator', ['Blueprint',  'page_blueprint']);
 		
 		/* the following are not visible in the menu but must be registered */
-		foreach (['view_item', 'view_review', 'view_learnout'] as $view) {
-			add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', $view,     ['PAG_Item_Bulkviewer', 'page_' . $view]);
-		}
+		add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', 'view_item',     ['PAG_Item_Bulkviewer', 'page_view_item']);
+		add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', 'view_item_with_reviews',     ['PAG_Item_Bulkviewer', 'page_view_item_with_reviews']);
+		add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', 'view_review',   ['PAG_Item_Bulkviewer', 'page_view_review']);
+		add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', 'view_learnout', ['PAG_Learnout_Bulkviewer', 'page_view_learnout']);
+		
+		
 		add_submenu_page('view', 'Viewer', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', ['Importer', 'createPage']);
 		
 	});
@@ -523,9 +528,12 @@ function setScreenSettings () {
 		
 		$php_page = array_pop (explode ('/', $_SERVER['SCRIPT_NAME']));
 		
-		if    ((($php_page == 'admin.php') && ($_REQUEST['page']=='view_item')) 
+		if    ((($php_page == 'admin.php') && (in_array($_REQUEST['page'], ['view_item', 'view_item_with_reviews', 'view_review']))) 
 			|| (($php_page == 'edit.php')  && ($_REQUEST['page']=='view_basket')) 
-		   	|| (($php_page == 'admin.php') &&(($_REQUEST['page']=='import') && ($_REQUEST['post_type']=='item') && ($_REQUEST['action']=='Upload'))))
+		   	|| (($php_page == 'admin.php') &&(($_REQUEST['page']=='import') && ($_REQUEST['post_type']=='item') && ($_REQUEST['action']=='Upload')))
+			|| (($php_page == 'admin.php') && ($_REQUEST['page']=='view_learnout'))
+			
+			)
 		
 		{
 
@@ -565,7 +573,7 @@ function setScreenSettings () {
 			return sprintf ('
 				<fieldset class="metabox-prefs view-mode">
 					<legend>Items</legend>
-					<select id="screen_seetings_item_select_list" onChange="%s"><option value="-1" selected>[All]</option></select><br />
+					<select id="screen_settings_item_select_list" onChange="%s"><option value="-1" selected>[All]</option></select><br />
 					<label><input type="checkbox" checked onChange="%s"></input>Show Metadata</label>
 				</fieldset>', $select_Item_JS, $show_MetaData_JS);
 			

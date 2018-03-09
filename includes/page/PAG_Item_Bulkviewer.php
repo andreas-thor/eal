@@ -14,7 +14,7 @@ class PAG_Item_Bulkviewer {
 	 * Entry functions from menu
 	 */
 	
-	public static function page_view_item ($itemids = NULL) {
+	public static function page_view_item ($withReviews = FALSE) {
 
 		if ($itemids == NULL) {
 			$itemids = ItemExplorer::getItemIdsByRequest();
@@ -38,9 +38,17 @@ class PAG_Item_Bulkviewer {
 			$items[$item_id] = EAL_Item::load($post->post_type, $item_id);
 		}
 		
+		$reviews = [];
+		if ($withReviews) {
+			foreach ($items as $item_id => $item) {
+				$reviews[$item_id] = $item->getReviews();
+			}
+		}
+		
+		
 		$editable = $_REQUEST['action'] === 'edit';
 		
-		self::printItemList($items, $editable, FALSE);
+		self::printItemList($items, $reviews, $editable, FALSE);
 		
  		
  		
@@ -49,11 +57,51 @@ class PAG_Item_Bulkviewer {
 	
 	
 	public static function page_view_basket () {
-		self::printItemList(EAL_ItemBasket::getItems(), FALSE, FALSE);
+		self::printItemList(EAL_ItemBasket::getItems(), [], FALSE, FALSE);
 	}
 	
+	public static function page_view_item_with_reviews () {
+		self::page_view_item(TRUE);		
+	}
 	
-	public static function printItemList (array $items, bool $editable, bool $isImport) {
+	public static function page_view_review () {
+		
+		$reviewids = array();
+		if ($_REQUEST['reviewid'] != null) $reviewids = [$_REQUEST['reviewid']];
+		if ($_REQUEST['reviewids'] != null) {
+			if (is_array($_REQUEST['reviewids'])) $reviewids = $_REQUEST['reviewids'];
+			if (is_string($_REQUEST['reviewids'])) $reviewids = explode (",", $_REQUEST["reviewids"]);
+		}
+		
+		$items = [];
+		$reviews = [];
+		foreach ($reviewids as $review_id) {
+			
+			$review = new EAL_Review($review_id);
+			$item = $review->getItem();
+			if ($item === NULL) continue;
+			
+			if (!array_key_exists($item->getId(), $items)) {
+				$items[$item->getId()] = $item;
+				$reviews[$item->getId()] = [];
+			}
+			$reviews[$item->getId()][] = $review;
+		}
+		
+		self::printItemList($items, $reviews, FALSE, FALSE);
+		
+		
+	
+	}
+	
+	/**
+	 * 
+	 * @param array $items
+	 * @param array $reviews = [item_id => [ reviews ]]
+	 * @param bool $editable
+	 * @param bool $isImport
+	 */
+	public static function printItemList (array $items, array $reviews, bool $editable, bool $isImport) {
 		
 		$listOfItemIds = implode(',', array_keys ($items));
 		
@@ -61,9 +109,9 @@ class PAG_Item_Bulkviewer {
 ?>
 		<script>
 			jQuery(document).ready(function () {
-				jQuery("#screen_seetings_item_select_list").append("<?php 
+				jQuery("#screen_settings_item_select_list").append("<?php 
 					$pos = 0;
-					foreach ($items as $item) { printf ('<option value=\"%d\">%s</option>', $pos++, $item->title); } 
+					foreach ($items as $item) { printf ('<option value=\"%d\">%s</option>', $pos++, htmlentities ($item->title, ENT_COMPAT | ENT_HTML401, 'UTF-8')); } 
 				?>");
 			});
 			// ");
@@ -88,7 +136,9 @@ class PAG_Item_Bulkviewer {
 				</h1>
 				<hr class="wp-header-end">
 				<div id="itemcontainer">
-					<?php foreach ($items as $item) { self::printItem($item, $editable, $isImport); } ?>
+					<?php foreach ($items as $item) { 
+						self::printItem($item, array_key_exists ($item->getId(), $reviews) ? $reviews[$item->getId()] : [], $editable, $isImport); 
+					} ?>
 				</div>
 			</form>
 		</div>
@@ -97,7 +147,7 @@ class PAG_Item_Bulkviewer {
 	}
 	
 	
-	private static function printItem (EAL_Item $item, bool $isEditable, bool $isImport) {
+	private static function printItem (EAL_Item $item, array $reviews, bool $isEditable, bool $isImport) {
 		
 		$htmlPrinter = $item->getHTMLPrinter();
 		
@@ -183,6 +233,47 @@ class PAG_Item_Bulkviewer {
 				</div>
 			</div><!-- /post-body -->
 			<br class="clear">
+			
+			<!-- Show Reviews -->
+			
+			<?php 
+				foreach ($reviews as $review) { 
+					$htmlPrinterReview = $review->getHTMLPrinter();
+			?>
+			
+				<div id="post-body" class="metabox-holder columns-2">
+					<div id="postbox-container-1" class="postbox-container">
+						
+						<div id="mb_status" class="postbox ">
+							<h2 class="hndle">
+								<span>Review (<?php  echo ('ID:'.$review->getId()) ?>)</span>
+								<span style="float: right; font-weight:normal"><a style="vertical-align:middle" class="page-title-action" href="post.php?action=edit&post=<?php echo $review->getId() ?>">Edit</a></span>
+							</h2>
+							<div class="inside"><?php $htmlPrinterReview->printOverall (FALSE); ?></div>
+						</div>
+			
+						<div id="mb_level" class="postbox ">
+							<h2 class="hndle"><span>Anforderungsstufe</span></h2>
+							<div class="inside"><?php $htmlPrinterReview->printLevel(FALSE) ?></div>
+						</div>
+						
+					</div>
+		
+					<div id="postbox-container-2" class="postbox-container">
+	
+						<div class="postbox" style="background-color:transparent; border:none">
+							<div class="inside">
+								<?php $htmlPrinterReview->printScore(FALSE) ?>
+								<?php $htmlPrinterReview->printFeedback(FALSE) ?>
+							</div>
+						</div>
+					
+						<?php // echo HTML_Item::getHTML_Item ($item, $isEditable ? HTML_Object::VIEW_REVIEW : HTML_Object::VIEW_STUDENT, "item_{$item->getId()}_") ?>
+					</div>
+				</div><!-- /post-body -->
+				<br class="clear" />	
+			<?php } ?>
+			
 		</div>
 		
 		

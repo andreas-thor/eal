@@ -17,6 +17,22 @@ class HTML_Learnout extends HTML_Object {
 	}
 	
 	
+	
+	public function printDescription (bool $isImport, string $prefix="") {
+		?>
+		<div>
+			<?php if ($isImport) { ?>
+				<input 
+					type="hidden" 
+					name="<?php echo $prefix ?>learnout_description" 
+					value="<?php echo htmlentities($this->learnout->description, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" />			
+			<?php } ?> 
+			<?php echo wpautop($this->learnout->description) ?>
+		</div>
+<?php 		
+	}
+	
+	
 	public function printLevel (bool $isEditable, string $prefix="") {
 ?>
 		<script>

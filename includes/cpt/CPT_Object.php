@@ -277,7 +277,7 @@ abstract class CPT_Object {
 				echo ("{$post->no_of_reviews}<div class='row-actions'>");
 				if ($post->no_of_reviews>0) {
 					echo ("<span class='view'><a href='edit.php?post_type=review&item_id={$post->ID}' title='List All Reviews'>List</a> | </span>");
-					echo ("<span class='view'><a href='admin.php?page=view_review&itemid={$post->ID}' title='View All Reviews'>View</a> | </span>");
+					echo ("<span class='view'><a href='admin.php?page=view_item_with_reviews&itemid={$post->ID}' title='View All Reviews'>View</a> | </span>");
 				}
 				echo ("<span class='edit'><a href='post-new.php?post_type=review&item_id={$post->ID}' title='Add New Review'>Add</a></span>");
 				echo ("<span class='inline hide-if-no-js'></span></div>");

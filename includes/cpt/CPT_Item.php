@@ -143,7 +143,7 @@ class CPT_Item extends CPT_Object{
 		}
 
 		if ($wp_list_table->current_action() == 'view_review') {
-			$sendback = add_query_arg( 'itemids', $_REQUEST['post'], 'admin.php?page=view_review' );
+			$sendback = add_query_arg( 'itemids', $_REQUEST['post'], 'admin.php?page=view_item_with_reviews' );
 			wp_redirect($sendback);
 			exit();
 		}

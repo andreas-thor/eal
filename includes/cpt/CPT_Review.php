@@ -109,7 +109,12 @@ class CPT_Review extends CPT_Object {
 		}
 		
 		
-		?><style> #minor-publishing { display: none; } </style> <?php
+		?>
+		
+		
+		
+		
+		<?php
 		
 		add_meta_box('mb_item', 'Item: ' . $review->getItem()->title, array ($this, 'WPCB_mb_item'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_learnout', 'Learning Outcome', array ($this, 'WPCB_mb_learnout'), $this->type, 'side', 'default');
@@ -125,58 +130,48 @@ class CPT_Review extends CPT_Object {
 	public function WPCB_mb_item ($post, $vars) {
 	
 		global $review;
-		if (!is_null($review->getItem())) {
+		if (is_null($review->getItem())) return;
 ?>
-			<input type="hidden" name="item_id"  value="<?php echo $review->getItem()->getId() ?>">
+		
+		<!-- remove visibility etc. -->
+		<style> #minor-publishing { display: none; } </style>  
+		
+		<!-- remove "Add new Review -->
+		<script type="text/javascript">
+			jQuery(document).ready( function($) { 
+				$(".wrap a.page-title-action")[0].remove();
+			});
+		</script>
+		
+
+
 <?php 			
-			$htmlPrinter = $review->getItem()->getHTMLPrinter();
-			$htmlPrinter->printDescription(FALSE);
-			$htmlPrinter->printQuestion(FALSE);
-			$htmlPrinter->printAnswers(FALSE, FALSE, FALSE);
-		}
+		$htmlPrinter = $review->getItem()->getHTMLPrinter();
+		$htmlPrinter->printDescription(FALSE);
+		$htmlPrinter->printQuestion(FALSE);
+		$htmlPrinter->printAnswers(FALSE, FALSE, FALSE);
 	}
 	
 	
 	public function WPCB_mb_score ($post, $vars) {
-		
 		global $review;
-		print (HTML_Review::getHTML_Score($review, HTML_Object::VIEW_EDIT));
+		$review->getHTMLPrinter()->printScore(TRUE);
 	}
+	
 	
 	public function WPCB_mb_level ($post, $vars) {
-
 		global $review;
-		
 		$review->getHTMLPrinter()->printLevel(TRUE);
-// 		print (HTML_Review::getHTML_Level($review, HTML_Object::VIEW_EDIT));
 	}
-	
 	
 
 	public function WPCB_mb_overall ($post, $vars) {
-	
-		?>
-		<script>
-			function setAccept (val) {
-				var $ = jQuery.noConflict();
-				if (val==1) {
-					if (confirm('Sollen alle Bewertungen auf "gut" gesetzt werden?')) {
-						$(document).find("#mb_score").find("input").each ( function() {
-		 					if (this.value==1) this.checked = true;
-						});
-					}
-				}
-			}
-		</script>
-		<?php
-		
 		global $review;
-		print (HTML_Review::getHTML_Overall($review, HTML_Object::VIEW_EDIT, "", "setAccept(this.value);"));
+		$review->getHTMLPrinter()->printOverall(TRUE);
 	}
 	
 	
 	public function WPCB_mb_learnout ($post, $vars) {
-	
 		global $review;
 		$review->getItem()->getHTMLPrinter()->printLearningOutcome(FALSE);
 	}
