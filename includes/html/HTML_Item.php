@@ -15,6 +15,10 @@ abstract class HTML_Item extends HTML_Object {
 	}
 	
 	
+	/**********************************************************************************************
+	 * ANSWERS
+	 **********************************************************************************************/
+	
 	public function printAnswers (bool $isPreview, bool $isEditable, bool $isImport, string $prefix="") {
 		
 		if ($isPreview) {
@@ -36,9 +40,11 @@ abstract class HTML_Item extends HTML_Object {
 	protected abstract function printAnswers_ForReview (bool $isImport, string $prefix);
 	
 	
-	/**
-	 * Drop down list of available statuses (if $isEditable)
-	 */
+	
+	/**********************************************************************************************
+	 * STATUS
+	 *  Drop down list of available statuses (if $isEditable)
+	 **********************************************************************************************/
 	
 	public function printStatus (bool $isEditable, bool $isImport, string $prefix="") {
 		
@@ -73,10 +79,11 @@ abstract class HTML_Item extends HTML_Object {
 <?php 
 	}
 	
-	
-	/*
+
+	/**********************************************************************************************
+	 * LEARNING OUTCOMES
 	 * Drop down list of all learning outcomes (if $isEditable)
-	 */
+	 **********************************************************************************************/
 	
 	public function printLearningOutcome (bool $isEditable, string $prefix="") {
 		
@@ -125,14 +132,72 @@ abstract class HTML_Item extends HTML_Object {
 	}
 	
 	
+	public static function compareLearningOutcome (EAL_Item $old, EAL_Item $new): array {
+		
+		$old_learnout = $old->getLearnOut();
+		$old_learnout_id = ($old_learnout === NULL) ? -1 : $old_learnout->getId();
+		$new_learnout = $new->getLearnOut();
+		$new_learnout_id = ($new_learnout === NULL) ? -1 : $new_learnout->getId();
+		
+		// no spaces in <td>-Element due to typesetting class of revision screen
+		ob_start();
+?>		
+		<table class="diff">
+			<colgroup>
+				<col class="content diffsplit left">
+				<col class="content diffsplit middle">
+				<col class="content diffsplit right">
+			</colgroup>
+			<tbody>
+				<tr>
+					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old_learnout_id != $new_learnout_id) ? 'class="diff-deletedline"' : '' ?>><select style="width:100%"><option selected><?php echo ($old_learnout === NULL) ? '' : $old_learnout->title; ?></option></select><div><?php echo htmlentities(($old_learnout === NULL) ? '' : $old_learnout->description, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></div></td>
+					<td></td>
+					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old_learnout_id != $new_learnout_id) ? 'class="diff-addedline"' : '' ?>><select style="width:100%"><option selected><?php echo ($new_learnout === NULL) ? '' : $new_learnout->title; ?></option></select><div><?php echo htmlentities(($new_learnout === NULL) ? '' : $new_learnout->description, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></div></td>
+				</tr>
+			</tbody>
+		</table>
+<?php 
+							
+		$diff .= ob_get_contents();
+		ob_end_clean();
+		return array ("id" => 'lo', 'name' => 'Learning Outcome', 'diff' => $diff);
+	}
+	
 
+	
+	/**********************************************************************************************
+	 * LEVEL
+	 **********************************************************************************************/
+	
 	
 	public function printTopic (bool $isEditable, string $prefix = "") {
 		parent::printTopicObject($this->item->getDomain(), $this->item->getId(), $isEditable, $prefix);
 	}
 	
+	public function compareTopic (EAL_Item $old, EAL_Item $new): array {
+		
+		// no spaces in <td>-Element due to typesetting class of revision screen
+		ob_start();
+		
+		foreach (wp_get_post_terms($id, $domain, array("fields" => "names")) as $t) {
+			?>
+				<input type='checkbox' checked onclick='return false;'>
+				<?php echo $t ?>
+				<br/>
+<?php 				
+			}
+			
+			$diff .= ob_get_contents();
+			ob_end_clean();
+			return array ('id' => 'topic', 'name' => RoleTaxonomy::getDomains()[$old->getDomain()] , 'diff' => $diff);
+			
+	}
 	
-
+	
+	
+	/**********************************************************************************************
+	 * LEVEL 
+	 **********************************************************************************************/
 	
 	public function printLevel (bool $isEditable, string $prefix="") {
 		?>
@@ -162,89 +227,6 @@ abstract class HTML_Item extends HTML_Object {
 	}
 	
 
-	
-
-	
-	public function printNoteFlag (bool $isEditable, string $prefix="") {
-?>		
-		<div class="form-field">
-			<table>
-				<tr>
-					<td style="width:1em">
-						<input 
-							type="checkbox" value="1"
-							name="<?php echo $prefix?>item_flag" 
-							<?php if ($this->item->flag == 1) echo " checked " ?>
-							<?php if (!$isEditable) echo " onclick='return false;' " ?> 
-						/>
-					</td>
-					<td style="width:100%-1em">
-						<input 
-							name="<?php echo $prefix ?>item_note" 
-							value="<?php echo htmlentities ($this->item->note, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" 
-							style="width:100%" size="255" aria-required="true" 
-							<?php if (!$isEditable) echo " readonly " ?> 
-						/>
-					</td>
-				</tr>
-			</table>
-		</div>
-<?php 
-	}
-	
-	
-	public function printDescription (bool $isImport, string $prefix="") {
-?>		
-		<div>
-			<?php if ($isImport) { ?>
-				<input 
-					type="hidden" 
-					name="<?php echo $prefix ?>item_description" 
-					value="<?php echo htmlentities($this->item->description, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" />			
-			<?php } ?> 
-			<?php echo wpautop($this->item->description) ?>
-		</div>
-<?php 		
-	}
-	
-	
-	public function printQuestion (bool $isImport, string $prefix="") {
-?>
-		<div>
-			<?php if ($isImport) { ?>
-				<input 
-					type="hidden" 
-					name="<?php echo $prefix ?>item_question" 
-					value="<?php echo htmlentities($this->item->question, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" />			
-			<?php } ?> 
-			<?php echo wpautop($this->item->question) ?>
-		</div>
-<?php
-	}
-	
-	
-
-	
-	
-	/**
-	 * Methods for comparing two item versions
-	 * @param EAL_Item $new
-	 */
-	
-	public static function compareTitle (EAL_Item $old, EAL_Item $new): array {
-		return array ("id" => 'title', 'name' => 'Titel', 'diff' => self::compareText ($old->title ?? "", $new->title ?? ""));
-	}
-	
-	
-	public static function compareDescription (EAL_Item $old, EAL_Item $new): array {
-		return array ("id" => 'description', 'name' => 'Fall- oder Problemvignette', 'diff' => self::compareText ($old->description ?? "", $new->description ?? ""));
-	}
-	
-	
-	public static function compareQuestion (EAL_Item $old, EAL_Item $new): array {
-		return array ("id" => 'question', 'name' => 'Aufgabenstellung', 'diff' => self::compareText ($old->question ?? "", $new->question ?? ""));
-	}
-	
 	
 	public static function compareLevel (EAL_Item $old, EAL_Item $new): array {
 		$diff  = sprintf ("<table class='diff'>");
@@ -282,6 +264,128 @@ abstract class HTML_Item extends HTML_Object {
 	}
 	
 	
+	/**********************************************************************************************
+	 * NOTE + FLAG
+	 **********************************************************************************************/
+	
+	public function printNoteFlag (bool $isEditable, string $prefix="") {
+?>		
+		<div class="form-field">
+			<table>
+				<tr>
+					<td style="width:1em">
+						<input 
+							type="checkbox" value="1"
+							name="<?php echo $prefix?>item_flag" 
+							<?php if ($this->item->flag == 1) echo " checked " ?>
+							<?php if (!$isEditable) echo " onclick='return false;' " ?> 
+						/>
+					</td>
+					<td style="width:100%-1em">
+						<input 
+							name="<?php echo $prefix ?>item_note" 
+							value="<?php echo htmlentities ($this->item->note, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" 
+							style="width:100%" size="255" aria-required="true" 
+							<?php if (!$isEditable) echo " readonly " ?> 
+						/>
+					</td>
+				</tr>
+			</table>
+		</div>
+<?php 
+	}
+	
+		
+	public static function compareNoteFlag (EAL_Item $old, EAL_Item $new): array {
+		
+		// no spaces in <td>-Element due to typesetting class of revision screen
+		ob_start();
+		?>
+		<table class="diff">
+			<colgroup>
+				<col class="content diffsplit left">
+				<col class="content diffsplit middle">
+				<col class="content diffsplit right">
+			</colgroup>
+			<tbody>
+				<tr>
+					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old->flag!=$new->flag) ? 'class="diff-deletedline"' : '' ?>><input type="checkbox" <?php if ($old->flag == 1) echo 'checked' ?> onclick="return false;" /></div><div <?php echo ($old->note!=$new->note) ? 'class="diff-deletedline"' : '' ?>><?php echo htmlentities ($old->note, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></td>
+					<td></td>
+					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old->flag!=$new->flag) ? 'class="diff-addedline"' : '' ?>><input type="checkbox" <?php if ($new->flag == 1) echo 'checked' ?> onclick="return false;" /></div><div <?php echo ($old->note!=$new->note) ? 'class="diff-deletedline"' : '' ?>><?php echo htmlentities ($new->note, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></td>
+				</tr>
+			</tbody>
+		</table>
+<?php 
+							
+		$diff .= ob_get_contents();
+		ob_end_clean();
+		return array ("id" => 'noteflag', 'name' => 'Notiz', 'diff' => $diff);
+		
+	}
+	
+	
+	/**********************************************************************************************
+	 * TITLE
+	 **********************************************************************************************/
+	
+	public static function compareTitle (EAL_Item $old, EAL_Item $new): array {
+		return array ("id" => 'title', 'name' => 'Titel', 'diff' => self::compareText ($old->title ?? "", $new->title ?? ""));
+	}
+	
+	
+	/**********************************************************************************************
+	 * DESCRIPTION
+	 **********************************************************************************************/
+	
+	public function printDescription (bool $isImport, string $prefix="") {
+?>		
+		<div>
+			<?php if ($isImport) { ?>
+				<input 
+					type="hidden" 
+					name="<?php echo $prefix ?>item_description" 
+					value="<?php echo htmlentities($this->item->description, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" />			
+			<?php } ?> 
+			<?php echo wpautop($this->item->description) ?>
+		</div>
+<?php 		
+	}
+	
+	public static function compareDescription (EAL_Item $old, EAL_Item $new): array {
+		return array ("id" => 'description', 'name' => 'Fall- oder Problemvignette', 'diff' => self::compareText ($old->description ?? "", $new->description ?? ""));
+	}
+	
+	
+	/**********************************************************************************************
+	 * QUESTION
+	 **********************************************************************************************/
+	
+	public function printQuestion (bool $isImport, string $prefix="") {
+?>
+		<div>
+			<?php if ($isImport) { ?>
+				<input 
+					type="hidden" 
+					name="<?php echo $prefix ?>item_question" 
+					value="<?php echo htmlentities($this->item->question, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" />			
+			<?php } ?> 
+			<?php echo wpautop($this->item->question) ?>
+		</div>
+<?php
+	}
+	
+	
+	public static function compareQuestion (EAL_Item $old, EAL_Item $new): array {
+		return array ("id" => 'question', 'name' => 'Aufgabenstellung', 'diff' => self::compareText ($old->question ?? "", $new->question ?? ""));
+	}
+
+	
+
+	
+
+	
+	/** Helper function for comparison */
+	
 	private static function compareText (string $old, string $new): string {
 		
 		$old = normalize_whitespace (strip_tags ($old));
@@ -304,202 +408,7 @@ abstract class HTML_Item extends HTML_Object {
 		return $diff;
 		
 	}
-	
-	/* -------------LÖSCHEN -------------------*/
-	/* -------------LÖSCHEN -------------------*/
-	/* -------------LÖSCHEN -------------------*/
-	/* -------------LÖSCHEN -------------------*/
-	
-	// FIXME: Löschen
-	public static function getHTML_Item (EAL_Item $item, int $viewType, $namePrefix = ""): string {
 		
-		$answers_html = "";
-		switch (get_class($item)) {
-			case 'EAL_ItemSC': $answers_html = HTML_ItemSC::getHTML_Answers($item, $viewType, $namePrefix); break;
-			case 'EAL_ItemMC': $answers_html = HTML_ItemMC::getHTML_Answers($item, $viewType, $namePrefix); break;
-		}
-		
-		
-		
-		
-		//  		<input type="hidden" id="%sitem_description" name="%sitem_description"  value="%s">
-		//  		<input type="hidden" id="%sitem_question" name="%sitem_question"  value="%s">
-		
-		$result = "";
-		if ($viewType == HTML_Object::VIEW_IMPORT) {
-			$result = sprintf ('
- 				<div>
-			  		<input type="hidden" name="%1$sitem_description"  value="%2$s">
-			  		<input type="hidden" name="%1$sitem_question"  value="%3$s">
- 					<div>%4$s</div>
- 					<div style="background-color:#F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;">
- 						<div>%5$s</div>
- 						<div>%6$s</div>
- 					</div>
- 				</div>',
-				$namePrefix,
-				htmlentities($item->description, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
-				htmlentities($item->question, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
-				wpautop($item->description),
-				wpautop($item->question),
-				$answers_html
-				);
-			
-			
-			
-			
-			
-		}
-		
-		
-		
-		
-		
-		
-		if (($viewType == HTML_Object::VIEW_STUDENT) || ($viewType == HTML_Object::VIEW_REVIEW)) {
-			
-			$result = sprintf ('
- 				<div>
- 					<input type="hidden" name="%1$sitem_id"  value="%2$s">
- 					<div>%3$s</div>
- 					<div style="background-color:#F2F6FF; margin-top:1em; padding:1em; border-width:1px; border-style:solid; border-color:#CCCCCC;">
- 						<div>%4$s</div>
- 						<div>%5$s</div>
- 					</div>
- 				</div>',
-				$namePrefix,
-				$item->getId(),
-				wpautop($item->description),
-				wpautop($item->question),
-				$answers_html
-				);
-		}
-		
-		return $result;
-	}
-
-	
-	
-	
-	// FIXME: Löschen, wenn neuer Bulkviewer implementiert
-	public static function getHTML_Metadata (EAL_Item $item, int $viewType, $prefix): string {
-		
-		$edit = ($item->getId() > 0) ? sprintf ('<span style="float: right; font-weight:normal" ><a style="vertical-align:middle" class="page-title-action" href="post.php?action=edit&post=%d">Edit</a></span>', $item->getId()) : '';
-		
-		// Status and Id
-		$res = sprintf ('
-			<div id="mb_status" class="postbox ">
-				<h2 class="hndle"><span>Item (%s)</span>%s</h2>
-				<div class="inside">%s</div>
-			</div>', $item->getId() > 0 ? "ID=" . $item->getId() : "New", $edit, self::getHTML_Status($item, $viewType, $prefix));
-		
-		
-		// Learning Outcome (Title + Description), if available
-		$res .= sprintf ('
-			<div id="mb_learnout" class="postbox ">
-				<h2 class="hndle"><span>Learning Outcome</span></h2>
-				<div class="inside">%s</div>
-			</div>', self::getHTML_LearningOutcome($item, $viewType, $prefix));
-		
-		
-		// Level-Table
-		$res .= sprintf ('
-			<div id="mb_level" class="postbox ">
-				<h2 class="hndle"><span>Anforderungsstufe</span></h2>
-				<div class="inside">%s</div>
-			</div>', self::getHTML_Level($item, $viewType, $prefix));
-		
-		
-		// Taxonomy Terms: Name of Taxonomy and list of terms (if available)
-		$res .= sprintf ('
-			<div class="postbox ">
-				<h2 class="hndle"><span>%s</span></h2>
-				<div class="inside">%s</div>
-			</div>',
-			RoleTaxonomy::getDomains()[$item->getDomain()],
-			HTML_Object::getHTML_Topic($item->getDomain(), $item->getId(), $viewType, $prefix));
-		
-		
-		// Note + Flag
-		$res .= sprintf ('
-			<div class="postbox ">
-				<h2 class="hndle"><span>Notiz</span></h2>
-				<div class="inside">%s</div>
-			</div>',
-			self::getHTML_NoteFlag($item, $viewType, $prefix));
-		
-		
-		if (($viewType == HTML_Object::VIEW_EDIT) || ($viewType == HTML_Object::VIEW_IMPORT)) {
-			$res .= sprintf ('
-				<input type="hidden" name="%1$spost_ID"  value="%2$s">
-		  		<input type="hidden" name="%1$spost_type"  value="%3$s">
-		  		<input type="hidden" name="%1$spost_content"  value="%4$s">
-		  		<input type="hidden" name="%1$spost_title"  value="%5$s">
-				',
-				$prefix,
-				$item->getId(),
-				$item->getType(),
-				microtime(),
-				htmlentities ($item->title, ENT_COMPAT | ENT_HTML401, 'UTF-8')
-				);
-		}
-		
-		
-		return $res;
-	}
-	
-	
-	// FIXME: DELETE
-	public static function getHTML_Level (EAL_Item $item, bool $isEditable, string $prefix = ""): string {
-		
-		?>
-		<script>
-			function checkLOLevel (e, levIT, levITs, levLO, levLOs) {
-				if (levIT == levLO) return;
-
-				if (levLO == 0) {
-					alert (unescape ("Learning Outcome hat keine Anforderungsstufe f%FCr diese Wissensdimension."));
-					return;
-				}
-				
-				if (levIT > levLO) {
-					alert ("Learning Outcome hat niedrigere Anforderungsstufe! (" + levLOs + ")");
-				} else {
-					alert (unescape ("Learning Outcome hat h%F6here Anforderungsstufe! (") + levLOs + ")");
-				}	
-				
-			}
-		</script>
-		<?php		
-		
-		$disabled = !$isEditable;
-		$background = ($item->getLearnOut() !== NULL);
-		$callback = (($isEditable) && ($background)) ? "checkLOLevel" : "";
-		
-		/*
-		$disabled = TRUE;
-		$background = FALSE;
-		$callback = ""; 
-		switch ($viewType) {
-			case HTML_Object::VIEW_REVIEW:
-				$background = TRUE;
-				break;
-			case HTML_Object::VIEW_EDIT:
-				$disabled = FALSE;
-				$callback = "checkLOLevel";
-				break;
-			case HTML_Object::VIEW_IMPORT:
-				$disabled = FALSE;
-				break;
-		}
-		*/
-		
-		// FIXME: Ist das hier richtig, dass nochmal item an prefix angehangen wird???
-		return HTML_Object::getHTML_Level2($prefix . "item", $item->level, (($item->getLearnOut() == null) ? null : $item->getLearnOut()->level), $disabled, $background, $callback);
-		
-	}
-	
-	
 }
 
 ?>

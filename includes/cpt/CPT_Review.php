@@ -60,19 +60,19 @@ class CPT_Review extends CPT_Object {
 		global $post_type;
 		if ($post_type != $this->type) return;
 		
-		?>
+?>
 		<script type="text/javascript">
 			jQuery(document).ready(function() {
 				var htmlselect = ["action", "action2"];
 				htmlselect.forEach(function (s, i, o) {
 					jQuery("select[name='" + s + "'] > option").remove();
-			        jQuery('<option>').val('bulk').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('-1').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('view').text('<?php _e('View Reviews')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('trash').text('<?php _e('Trash Reviews')?>').appendTo("select[name='" + s + "']");
 			      });
 			});			    
 	    </script>
-		<?php
+<?php
 	}
 
 	
@@ -81,6 +81,8 @@ class CPT_Review extends CPT_Object {
 		if ($_REQUEST["post_type"] != $this->type) return;
 		$wp_list_table = _get_list_table('WP_Posts_List_Table');
 	
+		$a = $wp_list_table->current_action();
+		
 		if ($wp_list_table->current_action() == 'view') {
 			$sendback = add_query_arg( 'reviewids', $_REQUEST['post'], 'admin.php?page=view_review' );
 			wp_redirect($sendback);
@@ -204,6 +206,33 @@ class CPT_Review extends CPT_Object {
 	}
 	
 	
+	public function WPCB_posts_orderby($orderby_statement) {
+		
+		global $wp_query, $wpdb;
+		
+		if ($wp_query->query["post_type"] == $this->type) {
+			
+			switch ($wp_query->get('orderby')) {
+				case $this->table_columns['review_title']: 	$orderby_statement = 'I.title'; break;
+				case $this->table_columns['item_id']: 		$orderby_statement = 'I.ID'; break;
+				case $this->table_columns['last_modified']: $orderby_statement = $wpdb->posts . '.post_modified'; break;
+				case $this->table_columns['review_author']:	$orderby_statement = 'UR.user_login'; break;
+				case $this->table_columns['item_author']: 	$orderby_statement = 'UR.user_login'; break;
+				
+				// score: missing is considered as ==2; compute negative sum, because 1 is best and 3 is worst
+				case $this->table_columns['score']: 		$orderby_statement = '-(COALESCE (R.description_correctness, 2) + COALESCE (R.description_relevance, 2) + COALESCE (R.description_wording, 2) + COALESCE (R.question_correctness, 2) + COALESCE (R.question_relevance, 2) + COALESCE (R.question_wording, 2) + COALESCE (R.answers_correctness, 2) + COALESCE (R.answers_relevance, 2) + COALESCE (R.answers_wording, 2))'; break;
+				case $this->table_columns['change_level']: 	$orderby_statement = 'change_level'; break;
+				case $this->table_columns['overall']: 		$orderby_statement = 'R.overall'; break;
+				default: 									$orderby_statement = $wpdb->posts . '.post_modified';	// default: last modified
+			}
+			$orderby_statement .= ' ' . $wp_query->get('order');
+		}
+		
+		return $orderby_statement;
+	}
+	
+
+	
 	
 	public function WPCB_posts_join ($join, $checktype = TRUE) {
 		global $wp_query, $wpdb;
@@ -221,32 +250,8 @@ class CPT_Review extends CPT_Object {
 	
 	
 	
-	
-	
-	public function WPCB_posts_orderby($orderby_statement) {
-	
-		global $wp_query, $wpdb;
-	
-		// 		$orderby_statement = parent::WPCB_posts_orderby($orderby_statement);
-	
-		if ($wp_query->query["post_type"] == $this->type) {
-			
-			// default: last modified DESC
-			$orderby_statement = "{$wpdb->posts}.post_modified DESC";
-			
-			if ($wp_query->get( 'orderby' ) == "Title")		 	$orderby_statement = "I.title " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == $this->table_columns['last_modified'])		$orderby_statement = "{$wpdb->posts}.post_modified {$wp_query->get('order')}";
-// 			if ($wp_query->get( 'orderby' ) == "Date")		 	$orderby_statement = "{$wpdb->posts}.post_date " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "Type") 			$orderby_statement = "I.type " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "Author Review")	$orderby_statement = "UR.user_login " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "Author Item") 	$orderby_statement = "UI.user_login " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "Level") 		$orderby_statement = "change_level " . $wp_query->get( 'order' );
-			if ($wp_query->get( 'orderby' ) == "Overall") 		$orderby_statement = "R.overall " . $wp_query->get( 'order' );
-		}
-	
-		return $orderby_statement;
-	}
-	
+
+
 	
 	
 	public function WPCB_posts_where($where, $checktype = TRUE) {

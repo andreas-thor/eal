@@ -298,42 +298,40 @@ abstract class CPT_Object {
 			} break;
 				
 			case 'score':
-				if (($post->description_correctness == 1) && ($post->description_relevance == 1) && ($post->description_wording == 1)) {
-					echo ('<div class="dashicons-before dashicons-star-filled" style="display:inline">&nbsp;</div>');
-				} else {
-					if (($post->description_correctness < 3) && ($post->description_relevance < 3) && ($post->description_wording < 3)) {
-						echo ('<div class="dashicons-before dashicons-star-half" style="display:inline">&nbsp;</div>');
-					} else {
-						echo ('<div class="dashicons-before dashicons-star-empty" style="display:inline">&nbsp;</div>');
-					}
-				}
-			
-				if (($post->question_correctness == 1) && ($post->question_relevance == 1) && ($post->question_wording == 1)) {
-					echo ('<div class="dashicons-before dashicons-star-filled" style="display:inline">&nbsp;</div>');
-				} else {
-					if (($post->question_correctness < 3) && ($post->question_relevance < 3) && ($post->question_wording < 3)) {
-						echo ('<div class="dashicons-before dashicons-star-half" style="display:inline">&nbsp;</div>');
-					} else {
-						echo ('<div class="dashicons-before dashicons-star-empty" style="display:inline">&nbsp;</div>');
-					}
-				}
-			
-				if (($post->answers_correctness == 1) && ($post->answers_relevance == 1) && ($post->answers_wording == 1)) {
-					echo ('<div class="dashicons-before dashicons-star-filled" style="display:inline">&nbsp;</div>');
-				} else {
-					if (($post->answers_correctness < 3) && ($post->answers_relevance < 3) && ($post->answers_wording < 3)) {
-						echo ('<div class="dashicons-before dashicons-star-half" style="display:inline">&nbsp;</div>');
-					} else {
-						echo ('<div class="dashicons-before dashicons-star-empty" style="display:inline">&nbsp;</div>');
-					}
-				}
+				printf ('<div class="dashicons-before %s" style="display:inline">&nbsp;</div>', self::getScoreSymbol ($post->description_correctness, $post->description_relevance, $post->description_wording));
+				printf ('<div class="dashicons-before %s" style="display:inline">&nbsp;</div>', self::getScoreSymbol ($post->question_correctness, $post->question_relevance, $post->question_wording));
+				printf ('<div class="dashicons-before %s" style="display:inline">&nbsp;</div>', self::getScoreSymbol ($post->answers_correctness, $post->answers_relevance, $post->answers_wording));
 				break;
+
 			
 			case 'change_level':
 				if ($post->change_level > 0) echo ('<div class="dashicons-before dashicons-warning" style="display:inline">&nbsp;</div>');
 				break;				
 	
 		}
+	}
+	
+	
+	private function getScoreSymbol (int $correctness, int $relevance, int $wording): string {
+		
+		// missing values
+		if (($correctness == 0) || ($relevance == 0) || ($wording == 0)) {
+			return '';
+		}
+		
+		// all "1"
+		if (($correctness == 1) && ($relevance == 1) && ($wording == 1)) {
+			return 'dashicons-star-filled';
+		}
+		
+		// all "1" or "2"
+		if (($correctness < 3) && ($relevance < 3) && ($wording < 3)) {
+			return 'dashicons-star-half';
+		}
+		
+		// at least one 3
+		return 'dashicons-star-empty';
+		
 	}
 	
 	

@@ -114,8 +114,8 @@ class CPT_Item extends CPT_Object{
 					jQuery("select[name='" + s + "'] > option").remove();
 			        jQuery('<option>').val('-1').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('view').text('<?php _e('View Items')?>').appendTo("select[name='" + s + "']");
+			        jQuery('<option>').val('view_review').text('<?php _e('View Items with Reviews')?>').appendTo("select[name='" + s + "']");
 			        jQuery('<option>').val('trash').text('<?php _e('Trash Items')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('view_review').text('<?php _e('View Reviews')?>').appendTo("select[name='" + s + "']");
 
 			        <?php if ($post_type == "itembasket") { ?> 
 				        jQuery('<option>').val('remove_from_basket').text('<?php _e('Remove Items From Basket')?>').appendTo("select[name='" + s + "']");
@@ -233,7 +233,6 @@ class CPT_Item extends CPT_Object{
 	public function WPCB_mb_level ($post, $vars) {
 		global $item;
 		$item->getHTMLPrinter()->printLevel(TRUE);
-// 		print (HTML_Item::getHTML_Level($item, true));
 	}
 	
 	
@@ -360,24 +359,24 @@ class CPT_Item extends CPT_Object{
 	
 		if ($wp_query->query["post_type"] == $this->type) {
 			
-			// default: last modified DESC
-			$orderby_statement = "{$wpdb->posts}.post_modified DESC";
-			
-			if ($wp_query->get('orderby') == $this->table_columns['item_title'])	 	$orderby_statement = "I.title {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['last_modified'])		$orderby_statement = "{$wpdb->posts}.post_modified {$wp_query->get('order')}";
-// 			if ($wp_query->get('orderby') == $this->table_columns['date'])		 		$orderby_statement = "{$wpdb->posts}.post_date {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['item_type']) 		$orderby_statement = "I.type {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['item_author'])	 	$orderby_statement = "U.user_login {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['item_points']) 		$orderby_statement = "I.points {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['level_FW']) 			$orderby_statement = "I.level_FW {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['level_PW']) 			$orderby_statement = "I.level_PW {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['level_KW']) 			$orderby_statement = "I.level_KW {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['no_of_reviews'])		$orderby_statement = "no_of_reviews {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['item_learnout'])		$orderby_statement = "L.title {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['difficulty']) 		$orderby_statement = "I.difficulty {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['note']) 				$orderby_statement = "I.note {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['flag']) 				$orderby_statement = "I.flag {$wp_query->get('order')}";
-			if ($wp_query->get('orderby') == $this->table_columns['id']) 				$orderby_statement = "I.id {$wp_query->get('order')}";
+			switch ($wp_query->get('orderby')) {
+				case $this->table_columns['item_title']: 	$orderby_statement = 'I.title'; break;
+				case $this->table_columns['last_modified']: $orderby_statement = $wpdb->posts . '.post_modified'; break;
+				case $this->table_columns['item_type']: 	$orderby_statement = 'I.type'; break;
+				case $this->table_columns['item_author']: 	$orderby_statement = 'U.user_login'; break;
+				case $this->table_columns['item_points']: 	$orderby_statement = 'I.points'; break;
+				case $this->table_columns['level_FW']: 		$orderby_statement = 'I.level'; break;
+				case $this->table_columns['level_PW']: 		$orderby_statement = 'I.level_PW'; break;
+				case $this->table_columns['level_KW']: 		$orderby_statement = 'I.level_KW'; break;
+				case $this->table_columns['no_of_reviews']:	$orderby_statement = 'no_of_reviews'; break;
+				case $this->table_columns['item_learnout']:	$orderby_statement = 'L.title'; break;
+				case $this->table_columns['difficulty']: 	$orderby_statement = 'I.difficulty'; break;
+				case $this->table_columns['note']: 			$orderby_statement = 'I.note'; break;
+				case $this->table_columns['flag']: 			$orderby_statement = 'I.flag'; break;
+				case $this->table_columns['id']: 			$orderby_statement = 'I.id'; break;
+				default: 									$orderby_statement = $wpdb->posts . '.post_modified';	// default: last modified 
+			}
+			$orderby_statement .= ' ' . $wp_query->get('order');
 		}
 	
 		return $orderby_statement;

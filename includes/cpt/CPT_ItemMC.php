@@ -42,9 +42,11 @@ class CPT_ItemMC extends CPT_Item {
 		$diff[0] = HTML_Item::compareTitle($eal_From, $eal_To); 
 		$diff[1] = HTML_Item::compareDescription($eal_From, $eal_To); 
 		$diff[2] = HTML_Item::compareQuestion($eal_From, $eal_To); 
-		$diff[3] = HTML_Item::compareLevel($eal_From, $eal_To);
-		$diff[4] = HTML_ItemMC::compareAnswers($eal_From, $eal_To);
-	
+		$diff[3] = HTML_ItemMC::compareAnswers($eal_From, $eal_To);
+		$diff[4] = HTML_Item::compareLevel($eal_From, $eal_To);
+		$diff[5] = HTML_Item::compareNoteFlag($eal_From, $eal_To);
+		$diff[6] = HTML_Item::compareLearningOutcome($eal_From, $eal_To);
+		
 		return $diff;
 	}	
 	

@@ -58,6 +58,8 @@ abstract class IMEX_Item extends IMEX_Object {
 	 */
 	public static function importItems (array $itemids, bool $updateMetadataOnly = FALSE ): array {
 		
+		global $item; 
+		
 		$result = array();
 		foreach ($itemids as $itemid) {
 			

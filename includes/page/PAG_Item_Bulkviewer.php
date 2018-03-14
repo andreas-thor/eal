@@ -122,7 +122,7 @@ class PAG_Item_Bulkviewer {
 			<form  enctype="multipart/form-data" action="admin.php?page=view_item" method="post">
 				
 
-				<h1>Mein neuer Item Viewer 
+				<h1>Item Viewer 
 				
 				<?php if ($editable) { ?>
 					<input type="submit" name="publish" id="publish" class="button button-primary button-large" value="<?php echo ($isImport ? 'Import ' : 'Update All '); echo count($items); ?> Items">
@@ -267,8 +267,6 @@ class PAG_Item_Bulkviewer {
 								<?php $htmlPrinterReview->printFeedback(FALSE) ?>
 							</div>
 						</div>
-					
-						<?php // echo HTML_Item::getHTML_Item ($item, $isEditable ? HTML_Object::VIEW_REVIEW : HTML_Object::VIEW_STUDENT, "item_{$item->getId()}_") ?>
 					</div>
 				</div><!-- /post-body -->
 				<br class="clear" />	

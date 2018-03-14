@@ -111,7 +111,8 @@ class Importer {
 			 */
 			
 			$terms = $_POST[$prefix."taxonomy"];
-		
+			global $item;
+			
 			// store initial post & item
 			if (($itemid<0) || ($_POST[$prefix."item_status"]<0)) {
 				
