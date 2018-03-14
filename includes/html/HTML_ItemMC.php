@@ -5,7 +5,7 @@ require_once (__DIR__ . "/../eal/EAL_ItemMC.php");
 
 class HTML_ItemMC extends HTML_Item  {
 	
-
+ 
 	private function printAnswerLine (string $prefix, string $answer, string $pointsPositive, string $pointsNegative, bool $showButtons, string $fontWeight, bool $isReadOnly, bool $includeFormValue) {
 ?>
 		<tr>
@@ -113,38 +113,53 @@ class HTML_ItemMC extends HTML_Item  {
 	}
 	
 	
+	
+	
 	public static function compareAnswers (EAL_ItemMC $old, EAL_ItemMC $new): array {
 		
-		$diff  = sprintf ("<table class='diff'>");
-		$diff .= sprintf ("<colgroup><col class='content diffsplit left'><col class='content diffsplit middle'><col class='content diffsplit right'></colgroup>");
-		$diff .= sprintf ("<tbody><tr>");
-		$diff .= sprintf ("<td><div>%s</div></td><td></td>", self::compareAnswers1($new->answers, $old->answers, "deleted"));
-		$diff .= sprintf ("<td><div>%s</div></td>", self::compareAnswers1($old->answers, $new->answers, "added"));
-		$diff .= sprintf ("</tr></tbody></table>");
+		ob_start();
+		?>
+		<table class="diff">
+			<colgroup>
+				<col class="content diffsplit left">
+				<col class="content diffsplit middle">
+				<col class="content diffsplit right">
+			</colgroup>
+			<tbody>
+				<tr>
+					<td><div><?php self::printCompareAnswers1($old->answers, $new->answers, "deleted") ?></div></td>
+					<td></td>
+					<td><div><?php self::printCompareAnswers1($new->answers, $old->answers, "added") ?></div></td>
+				</tr>
+			</tbody>
+		</table
+
+<?php 
+		$diff .= ob_get_contents();
+		ob_end_clean();
 		return array ("id" => 'answers', 'name' => 'Antwortoptionen', 'diff' => $diff);
 		
 	}
 	
-	private static function compareAnswers1 (array $old, array $new, string $class): string {
-		
-		$res = "<table >";
-		
-		foreach ($old as $i => $a) {
-			$res .= "<tr align='left' >";
-			$bgcolor = ($new[$i]['positive'] != $a['positive']) ? "class='diff-{$class}line'" : "";
-			$res .= "<td style='border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px' align='left' {$bgcolor}>{$a['positive']}</td>";
-			$bgcolor = ($new[$i]['negative'] != $a['negative']) ? "class='diff-{$class}line'" : "";
-			$res .= "<td style='border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px' align='left' {$bgcolor}>{$a['negative']}</td>";
-			$bgcolor = ($new[$i]['answer'] != $a['answer']) ? "class='diff-{$class}line'" : "";
-			$res .= "<td style='width:98%; padding:0; padding-left:10px' align='left' {$bgcolor}>{$a['answer']}</td></tr>";
-			
-		}
-		
-		$res .= "</table></div>";
-		
-		return $res;
-	}
+	
 
+	
+	private static function printCompareAnswers1 (array $old, array $new, string $class) {
+?>		
+		<table>
+			<?php foreach ($old as $i => $a) { ?>
+				<tr align="left">
+					<td style="border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px" align="left" 
+						<?php if ($new[$i]['positive'] != $a['positive']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['positive'] ?></td>
+					<td style="border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px" align="left" 
+						<?php if ($new[$i]['negative'] != $a['negative']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['negative'] ?></td>
+					<td style="width:98%; padding:0; padding-left:10px" align="left" <?php if ($new[$i]['answer'] != $a['answer']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['answer'] ?></td>
+				</tr>
+			<?php } ?>
+		</table>
+<?php 		
+	}
+	
 
 	
 	

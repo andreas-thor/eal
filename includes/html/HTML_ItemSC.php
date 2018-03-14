@@ -106,13 +106,27 @@ class HTML_ItemSC extends HTML_Item {
 	
 	
 	public static function compareAnswers (EAL_ItemSC $old, EAL_ItemSC $new): array {
-		
-		$diff  = sprintf ("<table class='diff'>");
-		$diff .= sprintf ("<colgroup><col class='content diffsplit left'><col class='content diffsplit middle'><col class='content diffsplit right'></colgroup>");
-		$diff .= sprintf ("<tbody><tr>");
-		$diff .= sprintf ("<td><div>%s</div></td><td></td>", self::compareAnswers1($old->answers, $new->answers, "deleted"));
-		$diff .= sprintf ("<td><div>%s</div></td>", self::compareAnswers1($new->answers, $old->answers, "added"));
-		$diff .= sprintf ("</tr></tbody></table>");
+
+		ob_start();
+?>
+		<table class="diff">
+			<colgroup>
+				<col class="content diffsplit left">
+				<col class="content diffsplit middle">
+				<col class="content diffsplit right">
+			</colgroup>
+			<tbody>
+				<tr>
+					<td><div><?php self::printCompareAnswers1($old->answers, $new->answers, "deleted") ?></div></td>
+					<td></td>
+					<td><div><?php self::printCompareAnswers1($new->answers, $old->answers, "added") ?></div></td>
+				</tr>
+			</tbody>
+		</table
+
+<?php 
+		$diff .= ob_get_contents();
+		ob_end_clean();
 		return array ("id" => 'answers', 'name' => 'Antwortoptionen', 'diff' => $diff);
 		
 	}
@@ -120,22 +134,18 @@ class HTML_ItemSC extends HTML_Item {
 	
 
 	
-	private static function compareAnswers1 (array $old, array $new, string $class): string {
-		
-		$res = "<table >";
-		
-		foreach ($old as $i => $a) {
-			$bgcolor = ($new[$i]['points'] != $a['points']) ? "class='diff-{$class}line'" : "";
-			$res .= "<tr align='left' ><td  style='border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px' align='left' {$bgcolor}>";
-			$res .= "{$a['points']}</td>";
-			$bgcolor = ($new[$i]['answer'] != $a['answer']) ? "class='diff-{$class}line'" : "";
-			$res .= "<td style='width:99%; padding:0; padding-left:10px' align='left' {$bgcolor}>{$a['answer']}</td></tr>";
-			
-		}
-		
-		$res .= "</table></div>";
-		
-		return $res;
+	private static function printCompareAnswers1 (array $old, array $new, string $class) {
+?>		
+		<table>
+			<?php foreach ($old as $i => $a) { ?>
+				<tr align="left">
+					<td style="border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px" align="left" 
+					<?php if ($new[$i]['points'] != $a['points']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['points'] ?></td>
+					<td style="width:99%; padding:0; padding-left:10px" align="left" <?php if ($new[$i]['answer'] != $a['answer']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['answer'] ?></td>
+				</tr>
+			<?php } ?>
+		</table>
+<?php 		
 	}
 	
 	

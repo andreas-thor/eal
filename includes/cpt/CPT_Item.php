@@ -55,6 +55,11 @@ class CPT_Item extends CPT_Object{
 		
 
 		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
+		
+		add_filter ('wp_ajax_get_revision_diffs', array ($this, 'X'), 10, 3 );
+		
+		add_filter( 'revision_text_diff_options', array ($this, 'Y'), 10, 3);
+		
 		add_filter( 'wp_prepare_revision_for_js', array ($this, 'filter_function_name_4025'), 10, 3 );
 	
 		
@@ -66,6 +71,14 @@ class CPT_Item extends CPT_Object{
 		
 		add_action ('post_updated', array ($this, 'qwe'), 10, 3);
 		
+	}
+
+	public function X () {
+		$a = 7;
+	}
+	
+	public function Y ($a, $b, $c) {
+		$a = 7;
 	}
 
 	public function qwe (int $post_ID, WP_Post $post_after, WP_Post $post_before) {

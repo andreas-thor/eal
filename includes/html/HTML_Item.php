@@ -307,7 +307,7 @@ abstract class HTML_Item extends HTML_Object {
 				<tr>
 					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old->flag!=$new->flag) ? 'class="diff-deletedline"' : '' ?>><input type="checkbox" <?php if ($old->flag == 1) echo 'checked' ?> onclick="return false;" /></div><div <?php echo ($old->note!=$new->note) ? 'class="diff-deletedline"' : '' ?>><?php echo htmlentities ($old->note, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></td>
 					<td></td>
-					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old->flag!=$new->flag) ? 'class="diff-addedline"' : '' ?>><input type="checkbox" <?php if ($new->flag == 1) echo 'checked' ?> onclick="return false;" /></div><div <?php echo ($old->note!=$new->note) ? 'class="diff-deletedline"' : '' ?>><?php echo htmlentities ($new->note, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></td>
+					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old->flag!=$new->flag) ? 'class="diff-addedline"' : '' ?>><input type="checkbox" <?php if ($new->flag == 1) echo 'checked' ?> onclick="return false;" /></div><div <?php echo ($old->note!=$new->note) ? 'class="diff-addedline"' : '' ?>><?php echo htmlentities ($new->note, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></td>
 				</tr>
 			</tbody>
 		</table>

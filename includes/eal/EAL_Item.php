@@ -300,6 +300,8 @@ abstract class EAL_Item extends EAL_Object {
 			PRIMARY KEY  (test_id, item_id, user_id)
 			) {$wpdb->get_charset_collate()};"
 		);
+		
+
 	}
 		
 
