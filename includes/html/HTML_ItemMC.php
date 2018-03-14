@@ -78,7 +78,7 @@ class HTML_ItemMC extends HTML_Item  {
 	}
 	
 	protected function printAnswers_ForReview(bool $isImport, string $prefix) {
-		?>
+?>
 		Minimum: <input type="text" name="<?php echo $prefix ?>item_minnumber" value="<?php echo $this->item->minnumber ?>" size="1" readonly /> 
 		&nbsp;&nbsp;&nbsp;
 		Maximum: <input type="text" name="<?php echo $prefix ?>item_maxnumber" value="<?php echo $this->item->minnumber ?>" size="1" readonly />

@@ -47,6 +47,7 @@ class CPT_ItemMC extends CPT_Item {
 		$diff[5] = HTML_Item::compareNoteFlag($eal_From, $eal_To);
 		$diff[6] = HTML_Item::compareLearningOutcome($eal_From, $eal_To);
 		
+		
 		return $diff;
 	}	
 	

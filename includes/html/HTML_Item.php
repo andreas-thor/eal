@@ -174,24 +174,6 @@ abstract class HTML_Item extends HTML_Object {
 		parent::printTopicObject($this->item->getDomain(), $this->item->getId(), $isEditable, $prefix);
 	}
 	
-	public function compareTopic (EAL_Item $old, EAL_Item $new): array {
-		
-		// no spaces in <td>-Element due to typesetting class of revision screen
-		ob_start();
-		
-		foreach (wp_get_post_terms($id, $domain, array("fields" => "names")) as $t) {
-			?>
-				<input type='checkbox' checked onclick='return false;'>
-				<?php echo $t ?>
-				<br/>
-<?php 				
-			}
-			
-			$diff .= ob_get_contents();
-			ob_end_clean();
-			return array ('id' => 'topic', 'name' => RoleTaxonomy::getDomains()[$old->getDomain()] , 'diff' => $diff);
-			
-	}
 	
 	
 	
@@ -229,12 +211,26 @@ abstract class HTML_Item extends HTML_Object {
 
 	
 	public static function compareLevel (EAL_Item $old, EAL_Item $new): array {
-		$diff  = sprintf ("<table class='diff'>");
-		$diff .= sprintf ("<colgroup><col class='content diffsplit left'><col class='content diffsplit middle'><col class='content diffsplit right'></colgroup>");
-		$diff .= sprintf ("<tbody><tr>");
-		$diff .= sprintf ("<td align='left'><div>%s</div></td><td></td>", self::compareLevel1($old->level, $new->level, "deleted"));
-		$diff .= sprintf ("<td><div>%s</div></td>", self::compareLevel1($new->level, $old->level, "added"));
-		$diff .= sprintf ("</tr></tbody></table>");
+		
+		ob_start();
+?>
+		<table class="diff">
+			<colgroup>
+				<col class="content diffsplit left">
+				<col class="content diffsplit middle">
+				<col class="content diffsplit right">
+			</colgroup>
+			<tbody>
+				<tr>
+					<td align="left"><div><?php echo self::compareLevel1($old->level, $new->level, "deleted") ?></div></td>
+					<td></td>
+					<td><div><?php echo self::compareLevel1($new->level, $old->level, "added") ?></div></td>
+				</tr>
+			</tbody>
+		</table>
+<?php 
+		$diff = ob_get_contents();
+		ob_end_clean();
 		return array ("id" => 'level', 'name' => 'Anforderungsstufe', 'diff' => $diff);
 	}
 	

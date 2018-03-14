@@ -117,6 +117,9 @@ class HTML_ItemSC extends HTML_Item {
 		
 	}
 	
+	
+
+	
 	private static function compareAnswers1 (array $old, array $new, string $class): string {
 		
 		$res = "<table >";
