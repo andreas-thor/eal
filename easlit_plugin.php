@@ -17,7 +17,6 @@ require_once 'includes/cpt/CPT_ItemMC.php';
 require_once 'includes/cpt/CPT_LearnOut.php';
 require_once 'includes/cpt/CPT_Review.php';
 
-require_once 'includes/page/BulkViewer.php';
 require_once 'includes/page/Importer.php';
 require_once 'includes/page/Explorer.php';
 require_once 'includes/page/Blueprint.php';
