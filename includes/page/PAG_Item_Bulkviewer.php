@@ -89,9 +89,6 @@ class PAG_Item_Bulkviewer {
 		}
 		
 		self::printItemList($items, $reviews, FALSE, FALSE);
-		
-		
-	
 	}
 	
 	/**

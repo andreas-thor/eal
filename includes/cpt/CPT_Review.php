@@ -97,31 +97,7 @@ class CPT_Review extends CPT_Object {
 			wp_die ("You are not allowed to edit this review!");
 		}
 		
-		
 		?>
-		
-		
-		
-		
-		<?php
-		
-		add_meta_box('mb_item', 'Item: ' . $review->getItem()->title, array ($this, 'WPCB_mb_item'), $this->type, 'normal', 'default' );
-		add_meta_box('mb_learnout', 'Learning Outcome', array ($this, 'WPCB_mb_learnout'), $this->type, 'side', 'default');
-		add_meta_box('mb_score', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($this, 'WPCB_mb_score'), $this->type, 'normal', 'default' );
-		add_meta_box('mb_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'normal', 'default');
-		add_meta_box('mb_feedback', 'Feedback', array ($this, 'WPCB_mb_editor'), $this->type, 'normal', 'default', array ('name' => 'review_feedback', 'value' => $review->feedback));
-		add_meta_box('mb_overall', 'Revisionsurteil', array ($this, 'WPCB_mb_overall'), $this->type, 'side', 'default');
-		
-	}
-		
-		
-	
-	public function WPCB_mb_item ($post, $vars) {
-	
-		global $review;
-		if (is_null($review->getItem())) return;
-?>
-		
 		<!-- remove visibility etc. -->
 		<style> #minor-publishing { display: none; } </style>  
 		
@@ -131,39 +107,25 @@ class CPT_Review extends CPT_Object {
 				$(".wrap a.page-title-action")[0].remove();
 			});
 		</script>
+
+		<?php 
 		
-
-
-<?php 			
-		$htmlPrinter = $review->getItem()->getHTMLPrinter();
-		$htmlPrinter->printDescription(FALSE);
-		$htmlPrinter->printQuestion(FALSE);
-		$htmlPrinter->printAnswers(FALSE, FALSE, FALSE);
+		add_meta_box('mb_item', 'Item: ' . $review->getItem()->title, array ($review->getHTMLPrinter(), 'metaboxItem'), $this->type, 'normal', 'default' );
+		add_meta_box('mb_score', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($review->getHTMLPrinter(), 'metaboxScore'), $this->type, 'normal', 'default' );
+		add_meta_box('mb_feedback', 'Feedback', array ($review->getHTMLPrinter(), 'metaboxFeedback'), $this->type, 'normal', 'default');
+		
+		
+		add_meta_box('mb_overall', 'Revisionsurteil', array ($review->getHTMLPrinter(), 'metaboxOverall'), $this->type, 'side', 'default');
+		add_meta_box('mb_learnout', 'Learning Outcome', array ($review->getHTMLPrinter(), 'metaboxLearningOutcome'), $this->type, 'side', 'default');
+		add_meta_box('mb_level', 'Anforderungsstufe', array ($review->getHTMLPrinter(), 'metaboxLevel'), $this->type, 'side', 'default');
+		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$review->getItem()->getDomain()], array ($review->getHTMLPrinter(), metaboxTopic), $this->type, 'side', 'default');
+		
 	}
+		
+		
 	
-	
-	public function WPCB_mb_score ($post, $vars) {
-		global $review;
-		$review->getHTMLPrinter()->printScore(TRUE);
-	}
-	
-	
-	public function WPCB_mb_level ($post, $vars) {
-		global $review;
-		$review->getHTMLPrinter()->printLevel(TRUE);
-	}
 	
 
-	public function WPCB_mb_overall ($post, $vars) {
-		global $review;
-		$review->getHTMLPrinter()->printOverall(TRUE);
-	}
-	
-	
-	public function WPCB_mb_learnout ($post, $vars) {
-		global $review;
-		$review->getItem()->getHTMLPrinter()->printLearningOutcome(FALSE);
-	}
 	
 	
 	public function WPCB_posts_fields ( $array ) {

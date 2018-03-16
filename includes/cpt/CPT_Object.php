@@ -132,21 +132,7 @@ abstract class CPT_Object {
 	
 	
 	
-	public function WPCB_mb_editor ($post, $vars) {
-		
-		$editor_settings = array(
-				'media_buttons' => true,	// no media buttons
-				'teeny' => true,			// minimal editor
-				'quicktags' => true,		// hides Visual/Text tabs
-				'textarea_rows' => 3,
-				'tinymce' => true
-		);
-		
-		// TODO: HTML Layout geht verloren!!! mit oder ohne???
-// 		echo (wp_editor($vars['args']['value'] , $vars['args']['name'], $editor_settings ));
-		echo (wp_editor(wpautop(stripslashes($vars['args']['value'])) , $vars['args']['name'], $editor_settings ));
-	}
-	
+
 	
 	
 	
@@ -367,16 +353,6 @@ abstract class CPT_Object {
 
 
 
-
-	public function getTopicTerm ($term, $level) {
-	
-		// 		$result = str_repeat ("&nbsp;", $level*2) . "+ " . $term->name;
-		$result = "&nbsp;&gt;&gt;&nbsp;" . $term->name;
-		foreach (get_terms ('topic', array ('parent'=> $term->term_id)) as $t) {
-			$result .= /*"<br/>" . */ $this->getTopicTerm ($t, $level+1);
-		}
-		return $result;
-	}
 	
 	
 	

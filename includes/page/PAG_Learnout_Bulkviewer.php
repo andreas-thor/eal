@@ -5,6 +5,9 @@ require_once(__DIR__ . "/../html/HTML_Item.php");
 require_once(__DIR__ . "/../html/HTML_ItemBasket.php");
 require_once(__DIR__ . "/../html/HTML_Review.php");
 
+require_once(__DIR__ . "/../imex/IMEX_LearnOut.php");
+
+
 class PAG_Learnout_Bulkviewer {
 
 	
@@ -23,7 +26,11 @@ class PAG_Learnout_Bulkviewer {
 			if (is_string($_REQUEST['learnoutids'])) $learnoutids = explode (",", $_REQUEST["learnoutids"]);
 		}
 		
-				
+		
+		if ($_REQUEST['action']=='update') {
+			$learnoutids = IMEX_LearnOut::updateLearnouts ($learnoutids);
+		}
+
 		
 		// load all learning outcomes
 		$learnouts = [];

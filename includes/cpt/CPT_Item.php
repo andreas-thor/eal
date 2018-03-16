@@ -195,63 +195,13 @@ class CPT_Item extends CPT_Object{
 		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($item->getHTMLPrinter(), metaboxAnswers), $this->type, 'normal', 'default');
 		
 		
-		
 		add_meta_box('mb_learnout', 'Learning Outcome', array ($item->getHTMLPrinter(), metaboxLearningOutcome), $this->type, 'side', 'default');
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($item->getHTMLPrinter(), metaboxLevel), $this->type, 'side', 'default');
-		
-		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$item->getDomain()] . '<a class="button" style="float:right" onclick="jQuery(\'#auto-annotate\').dialog(\'open\');">Automatic</a>', array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $item->getDomain() ));
+		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$item->getDomain()], array ($item->getHTMLPrinter(), metaboxTopic), $this->type, 'side', 'default');
 		add_meta_box('mb_item_note_flag', 'Notiz', array ($item->getHTMLPrinter(), metaboxNoteFlag), $this->type, 'side', 'default');
-		
-		
 
 	}
 	
-	
-	
-	public function WPCB_mb_taxonomy ($post, $vars) {
-?>
-		
-		<div style="display:none" id="auto-annotate">
-			<div class="tabs-panel" style="display: block;">
-				<ul class="categorychecklist form-no-clear">
-				<?php 
-					$a = get_terms(array ('taxonomy' => $vars['args']['taxonomy'], 'orderby' => 'count', 'order' => 'DESC', 'number' => 3));
-					foreach ($a as $term) {	
-				?>
-						<li class="popular-category">
-							<label class="selectit">
-								<input id="in-popular-paedagogik-<?= $term->term_id?>" type="checkbox" value="<?=$term->term_id?>">
-								<?=$term->name?>
-							</label>
-						</li>
-				<?php 
-					} 
-				?>
-				</ul>
-			</div>
-		</div>
-		
-		<script type="text/javascript" >
-
-			jQuery(document).ready(function($) {
-				$("#auto-annotate").dialog({
-					autoOpen: false, //FALSE if you open the dialog with, for example, a button click
-					title: "<?php echo RoleTaxonomy::getDomains()[$vars['args']['taxonomy']] ?>",
-					modal: true,
-					buttons: [ { 
-						text: "Annotate", 
-						class: "button-primary", 
-				      	click: function() {
-				        	$( this ).dialog( "close" );
-				      	}
-				    }  ]
-			});
-			});
-
-		</script>
-<?php 		
-		post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy", "title" => "", "args" => $vars['args']) );
-	}
 	
 	
 	

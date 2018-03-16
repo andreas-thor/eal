@@ -66,9 +66,7 @@ class CPT_LearnOut extends CPT_Object {
 		
 		add_meta_box('mb_description', 'Beschreibung', array ($learnout->getHTMLPrinter(), 'metaboxDescription'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($learnout->getHTMLPrinter(), 'metaboxLevel'), $this->type, 'side', 'default');
-		
-		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$learnout->getDomain()], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $learnout->getDomain() ));
-		
+		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$learnout->getDomain()], array ($learnout->getHTMLPrinter(), 'metaboxTopic'), $this->type, 'side', 'default');
 	}	
 
 	
@@ -76,10 +74,6 @@ class CPT_LearnOut extends CPT_Object {
 		wp_enqueue_script( 'script-name', get_template_directory_uri() . '/js/example.js', array(), '1.0.0', true );
 	}
 	
-	
-	public function WPCB_mb_taxonomy ($post, $vars) {
-		post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy", "title" => "", "args" => $vars['args']) );
-	}
 	
 	
 	

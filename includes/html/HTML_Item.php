@@ -175,12 +175,61 @@ abstract class HTML_Item extends HTML_Object {
 
 	
 	/**********************************************************************************************
-	 * LEVEL
+	 * TOPIC
 	 **********************************************************************************************/
 	
-	public function metaboxLevel() {
-		$this->printLevel(TRUE);
+
+	public function metaboxTopic () {
+		
+		?>
+		
+		<div style="display:none" id="auto-annotate">
+			<div class="tabs-panel" style="display: block;">
+				<ul class="categorychecklist form-no-clear">
+				<?php 
+					$a = get_terms(array ('taxonomy' => $this->item->getDomain(), 'orderby' => 'count', 'order' => 'DESC', 'number' => 3));
+					foreach ($a as $term) {	
+				?>
+						<li class="popular-category">
+							<label class="selectit">
+								<input id="in-popular-paedagogik-<?= $term->term_id?>" type="checkbox" value="<?=$term->term_id?>">
+								<?=$term->name?>
+							</label>
+						</li>
+				<?php 
+					} 
+				?>
+				</ul>
+			</div>
+		</div>
+		
+		<script type="text/javascript" >
+
+			jQuery(document).ready(function($) {
+				$("#auto-annotate").dialog({
+					autoOpen: false, //FALSE if you open the dialog with, for example, a button click
+					title: "<?php echo RoleTaxonomy::getDomains()[$this->item->getDomain()] ?>",
+					modal: true,
+					buttons: [ { 
+						text: "Annotate", 
+						class: "button-primary", 
+				      	click: function() {
+				        	$( this ).dialog( "close" );
+				      	}
+				    }  ]
+				});
+
+
+				$("#mb_item_taxonomy").children("h2").children("span").first().append ('<a class="button" style="float:right" onclick="jQuery(\'#auto-annotate\').dialog(\'open\');">Automatic</a>');
+			});
+
+		</script>
+<?php 		
+		
+		global $post;
+		post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy", "title" => "", "args" => array ( "taxonomy" => $this->item->getDomain())));
 	}
+	
 	
 	public function printTopic (bool $isEditable, string $prefix = "") {
 		parent::printTopicObject($this->item->getDomain(), $this->item->getId(), $isEditable, $prefix);
@@ -192,6 +241,11 @@ abstract class HTML_Item extends HTML_Object {
 	/**********************************************************************************************
 	 * LEVEL 
 	 **********************************************************************************************/
+	
+	public function metaboxLevel() {
+		$this->printLevel(TRUE);
+	}
+	
 	
 	public function printLevel (bool $isEditable, string $prefix="") {
 		?>
