@@ -10,6 +10,22 @@ abstract class HTML_Object {
 	const VIEW_EDIT = 3;
 	const VIEW_IMPORT = 4;
 	
+	
+	protected function printEditor (string $id, string $content) {
+			
+		$editor_settings = array(
+			'media_buttons' => true,	// no media buttons
+			'teeny' => true,			// minimal editor
+			'quicktags' => true,		// hides Visual/Text tabs
+			'textarea_rows' => 3,
+			'tinymce' => true
+		);
+		
+		// TODO: HTML Layout geht verloren!!! mit oder ohne???
+		// 		echo (wp_editor($vars['args']['value'] , $vars['args']['name'], $editor_settings ));
+		echo (wp_editor(wpautop(stripslashes($content)) , $id, $editor_settings ));
+	}
+	
 	public abstract function printTopic (bool $isEditable, string $prefix = "");
 	
 	

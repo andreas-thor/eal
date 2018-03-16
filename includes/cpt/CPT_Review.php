@@ -28,6 +28,11 @@ class CPT_Review extends CPT_Object {
 			'change_level' => 'Level', 
 			'overall' => 'Overall'
 		);
+		
+		$this->bulk_actions = array (
+			'view' => 'View Reviews',
+			'trash' => 'Trash Reviews'
+		);
 	}
 	
 
@@ -55,25 +60,7 @@ class CPT_Review extends CPT_Object {
 	}
 	
 	
-	function WPCB_add_bulk_actions() {
-		
-		global $post_type;
-		if ($post_type != $this->type) return;
-		
-?>
-		<script type="text/javascript">
-			jQuery(document).ready(function() {
-				var htmlselect = ["action", "action2"];
-				htmlselect.forEach(function (s, i, o) {
-					jQuery("select[name='" + s + "'] > option").remove();
-			        jQuery('<option>').val('-1').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('view').text('<?php _e('View Reviews')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('trash').text('<?php _e('Trash Reviews')?>').appendTo("select[name='" + s + "']");
-			      });
-			});			    
-	    </script>
-<?php
-	}
+
 
 	
 	function WPCB_process_bulk_action() {

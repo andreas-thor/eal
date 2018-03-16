@@ -17,6 +17,66 @@ class HTML_Learnout extends HTML_Object {
 	}
 	
 	
+	public function metaboxDescription () {
+		
+		$this->printEditor('learnout_description', $this->learnout->description);
+		
+		
+		// list of super verbs
+		$verbs = array (
+			1 => array ("auflisten", "auswählen", "beschriften", "identifizieren", "nennen"),
+			2 => array ("begründen", "Beispiele geben", "beschreiben", "erklären", "klassifizieren", "konvertieren", "schätzen", "transferieren", "übersetzen", "verallgemeinern", "zusammenfassen"),
+			3 => array ("ändern", "anwenden", "beantragen", "berechnen", "bestimmen", "durchführen", "prüfen", "testen",  "übertragen", "verwenden", "vorbereiten", "zeigen"),
+			4 => array ("analysieren", "gegenüberstellen", "kategorisieren", "priorisieren", "strukturieren", "unterscheiden", "unterteilen", "vergleichen", "vorhersagen"),
+			5 => array ("bewerten", "diskutieren", "entscheiden", "interpretieren", "kritisieren", "verteidigen"),
+			6 => array ("aufbauen", "erstellen", "gestalten", "kombinieren", "konzipieren", "modellieren", "produzieren", "überarbeiten", "umgestalten")
+		);
+		?>
+		<script>
+			function showTermButtons (j) {
+				j("#eal_topicterms").empty()		
+				// search all checked terms incl. their ancestors
+				j("#topic-all").find ("input[type='checkbox']").filter(":checked").parentsUntil(j( "#topic-all" )).filter ("li").children("label").each (function (i, e) {
+					// add term button
+					j("#eal_topicterms").append (
+							"<a style='margin:3px' class='button' onclick=\"tinyMCE.editors['learnout_description'].execCommand( 'mceInsertContent', false, '" + e.childNodes[1].textContent + "');\">" + e.childNodes[1].textContent + "</a>");
+				})
+			}
+				
+			jQuery(document).ready( function() {
+		
+				var j = jQuery.noConflict();
+				showTermButtons(j);	
+			
+				// add "on change" handler to all terms (input-checkbox); both in tab "All" as well as "Most used"
+				j("#topic-all").add(j("#topic-pop")).change(function() { showTermButtons (j); });
+			});
+		</script>
+		
+		<!-- div area where optic terms will be added -->
+		<div id="eal_topicterms" style="margin:10px"></div>
+		
+		<!--  area for super verbs -->
+		<div id="eal_superverbs" style="margin:10px">
+		<?php foreach ($verbs as $level => $terms) { ?>
+			<div style="display:<?=((($this->learnout->level["FW"]==$level) || ($this->learnout->level["PW"]==$level) || ($this->learnout->level["KW"]==$level)) ? 'block' : 'none') ?>">
+			<?php 
+				foreach ($terms as $t) { 
+					$tname = htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1');
+			?>
+					<a style="margin:3px" class="button" onclick="tinyMCE.editors['learnout_description'].execCommand( 'mceInsertContent', false, '<?=$tname?>');">
+						<?=$tname?>
+					</a>
+			<?php 
+				} 
+			?>
+		
+			</div>
+		
+		<?php } ?>
+		</div>
+<?php 		
+	}
 	
 	public function printDescription (bool $isImport, string $prefix="") {
 		?>
@@ -32,6 +92,11 @@ class HTML_Learnout extends HTML_Object {
 <?php 		
 	}
 	
+	
+	
+	public function metaboxLevel () {
+		$this->printLevel(TRUE);
+	}
 	
 	public function printLevel (bool $isEditable, string $prefix="") {
 ?>

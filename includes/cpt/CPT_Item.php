@@ -38,6 +38,15 @@ class CPT_Item extends CPT_Object{
 				'note' => 'Note',
 				'flag' => 'Flag'
 		);
+		
+		$this->bulk_actions = array (
+			'view' => 'View Items',
+			'view_review' => 'View Items with Reviews',
+			'trash' => 'Trash Items',
+			'add_to_basket' => 'Add Items To Basket'
+		);
+		
+		
 	}
 	
 	
@@ -111,36 +120,6 @@ class CPT_Item extends CPT_Object{
 	
 
 	
-	function WPCB_add_bulk_actions() {
-	
-		global $post_type;
-  		if ($post_type != $this->type) return;
-	
-		?>
-		<script type="text/javascript">
-			jQuery(document).ready(function() {
-
-				var htmlselect = ["action", "action2"];
-					    	
-				htmlselect.forEach(function (s, i, o) {
-						  		
-					jQuery("select[name='" + s + "'] > option").remove();
-			        jQuery('<option>').val('-1').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('view').text('<?php _e('View Items')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('view_review').text('<?php _e('View Items with Reviews')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('trash').text('<?php _e('Trash Items')?>').appendTo("select[name='" + s + "']");
-
-			        <?php if ($post_type == "itembasket") { ?> 
-				        jQuery('<option>').val('remove_from_basket').text('<?php _e('Remove Items From Basket')?>').appendTo("select[name='" + s + "']");
-					<?php } else { ?>
-				        jQuery('<option>').val('add_to_basket').text('<?php _e('Add Items To Basket')?>').appendTo("select[name='" + s + "']");
-					<?php } ?>
-			      });
-			});			    
-	    </script>
-		<?php
-
-	}
 		
 	function WPCB_process_bulk_action() {
 	
@@ -211,83 +190,53 @@ class CPT_Item extends CPT_Object{
 		</style> <?php
 
 		
-		add_meta_box('mb_learnout', 'Learning Outcome', array ($this, 'WPCB_mb_learnout'), $this->type, 'normal', 'default');
-		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($this, 'WPCB_mb_description'), $this->type, 'normal', 'default', array ('name' => 'item_description', 'value' => $item->description) );
-		add_meta_box('mb_question', 'Aufgabenstellung', array ($this, 'WPCB_mb_question'), $this->type, 'normal', 'default', array ('name' => 'item_question', 'value' => $item->question));
-		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default');
-		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($this, 'WPCB_mb_answers'), $this->type, 'normal', 'default');
-		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$item->getDomain()] . '<a class="button" style="float:right" onclick="jQuery(\'#form-wrap\').dialog(\'open\');">Automatic</a>', array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $item->getDomain() ));
-		add_meta_box('mb_item_note_flag', 'Notiz', array ($this, 'WPCB_mb_note_flag'), $this->type, 'normal', 'default');
+		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($item->getHTMLPrinter(), metaboxDescription), $this->type, 'normal', 'default' );
+		add_meta_box('mb_question', 'Aufgabenstellung', array ($item->getHTMLPrinter(), metaboxQuestion), $this->type, 'normal', 'default');
+		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($item->getHTMLPrinter(), metaboxAnswers), $this->type, 'normal', 'default');
+		
+		
+		
+		add_meta_box('mb_learnout', 'Learning Outcome', array ($item->getHTMLPrinter(), metaboxLearningOutcome), $this->type, 'side', 'default');
+		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($item->getHTMLPrinter(), metaboxLevel), $this->type, 'side', 'default');
+		
+		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$item->getDomain()] . '<a class="button" style="float:right" onclick="jQuery(\'#auto-annotate\').dialog(\'open\');">Automatic</a>', array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $item->getDomain() ));
+		add_meta_box('mb_item_note_flag', 'Notiz', array ($item->getHTMLPrinter(), metaboxNoteFlag), $this->type, 'side', 'default');
 		
 		
 
 	}
 	
 	
-	public function WPCB_mb_learnout ($post, $vars) {
-		global $item;
-		$item->getHTMLPrinter()->printLearningOutcome(TRUE);
-	}
-
-	public function WPCB_mb_description ($post, $vars) {
-		parent::WPCB_mb_editor ($post, $vars);
-	}
-	
-	public function WPCB_mb_question ($post, $vars, $buttons = array()) {
-		parent::WPCB_mb_editor ($post, $vars);
-		
-		printf("<div style='margin:10px'>");
-		foreach ($buttons as $short => $long) {
-			printf ("<a style='margin:3px' class='button' onclick=\"tinyMCE.editors['%s'].execCommand( 'mceInsertContent', false, '%s');\">%s</a>", $vars['args']['name'], htmlentities($long, ENT_SUBSTITUTE, 'ISO-8859-1'), htmlentities($short, ENT_SUBSTITUTE, 'ISO-8859-1'));
-		}
-		printf ("</div>");
-	}
-	
-	public function WPCB_mb_level ($post, $vars) {
-		global $item;
-		$item->getHTMLPrinter()->printLevel(TRUE);
-	}
-	
-	
-	public function WPCB_mb_answers ($post, $vars) {
-		global $item;
-		$item->getHTMLPrinter()->printAnswers(FALSE, TRUE, FALSE);
-	}
 	
 	public function WPCB_mb_taxonomy ($post, $vars) {
+?>
 		
-		
-		
-		printf ('<div style="display:none" id="form-wrap">');
-// 		post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy_AUTO", "title" => "", "args" => $vars['args']));
-		printf ('
-		<div class="tabs-panel" style="display: block;">
-		<ul class="categorychecklist form-no-clear">');
-		
-		$a = get_terms(array ('taxonomy' => $vars['args']['taxonomy'], 'orderby' => 'count', 'order' => 'DESC', 'number' => 3));
-		foreach ($a as $term) {
-			printf (' 	
-			<li class="popular-category"><label class="selectit"><input id="in-popular-paedagogik-%1$d" type="checkbox" value="%1$d">%2$s</label></li>
-			', $term->term_id, $term->name);
-		}
-		
-// 		<li class="popular-category"><label class="selectit"><input id="in-popular-paedagogik-454" type="checkbox" value="454">V1</label></li>
-// 		<li id="popular-paedagogik-455" class="popular-category"><label class="selectit"><input id="in-popular-paedagogik-455" type="checkbox" value="455">V2</label></li>
-// 		<li id="popular-paedagogik-447" class="popular-category"><label class="selectit"><input id="in-popular-paedagogik-447" type="checkbox" checked="checked" value="447">b</label></li>
-		printf ('
-		</ul>
+		<div style="display:none" id="auto-annotate">
+			<div class="tabs-panel" style="display: block;">
+				<ul class="categorychecklist form-no-clear">
+				<?php 
+					$a = get_terms(array ('taxonomy' => $vars['args']['taxonomy'], 'orderby' => 'count', 'order' => 'DESC', 'number' => 3));
+					foreach ($a as $term) {	
+				?>
+						<li class="popular-category">
+							<label class="selectit">
+								<input id="in-popular-paedagogik-<?= $term->term_id?>" type="checkbox" value="<?=$term->term_id?>">
+								<?=$term->name?>
+							</label>
+						</li>
+				<?php 
+					} 
+				?>
+				</ul>
+			</div>
 		</div>
-	');		
 		
-		printf ('</div>');
-		
-		printf ('
 		<script type="text/javascript" >
 
 			jQuery(document).ready(function($) {
-				$("#form-wrap").dialog({
+				$("#auto-annotate").dialog({
 					autoOpen: false, //FALSE if you open the dialog with, for example, a button click
-					title: "%s",
+					title: "<?php echo RoleTaxonomy::getDomains()[$vars['args']['taxonomy']] ?>",
 					modal: true,
 					buttons: [ { 
 						text: "Annotate", 
@@ -298,24 +247,12 @@ class CPT_Item extends CPT_Object{
 				    }  ]
 			});
 			});
+
 		</script>
-		', RoleTaxonomy::getDomains()[$vars['args']['taxonomy']]);
-		
-// 		echo '<a class="button" style="float:right" onclick="jQuery(\'#form-wrap\').dialog(\'open\');">Automatic</a><br/>';
-		
+<?php 		
 		post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy", "title" => "", "args" => $vars['args']) );
 	}
 	
-	
-	public function WPCB_mb_note_flag ($post, $vars) {
-	
-		// we dynamically set the value of $POST["post_content"] to make sure that we have revision
-		printf ("<input type='hidden' id='post_content' name='post_content'  value='%s'>", microtime());
-		
-		global $item;
-		$item->getHTMLPrinter()->printNoteFlag(TRUE);
-	}
-
 	
 	
 	

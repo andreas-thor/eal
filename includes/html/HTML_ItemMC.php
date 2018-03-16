@@ -5,6 +5,20 @@ require_once (__DIR__ . "/../eal/EAL_ItemMC.php");
 
 class HTML_ItemMC extends HTML_Item  {
 	
+	
+	function __construct(EAL_Item $item) {
+		parent::__construct($item);
+		
+		$this->buttons_question = array (
+			'Wähle 1-3 aus 4' => 'Wählen Sie mindestens eine, maximal drei aus den vier Antwortoptionen aus. ',
+			'Wähle 1-4 aus 5' => 'Wählen Sie mindestens eine, maximal vier aus den fünf Antwortoptionen aus. ',
+			'Wähle 1-5 aus 6' => 'Wählen Sie mindestens eine, maximal fünf aus den sechs Antwortoptionen aus. ',
+			'Wähle korrekte' => 'Wählen Sie die korrekte(n) aus den folgenden Antwortoptionen aus.',
+			'Teilpunktbewertung' => 'Punkte erhalten Sie für jede richtige Antwort (Teilpunktbewertung). '
+		);
+	}
+	
+	
  
 	private function printAnswerLine (string $prefix, string $answer, string $pointsPositive, string $pointsNegative, bool $showButtons, string $fontWeight, bool $isReadOnly, bool $includeFormValue) {
 ?>

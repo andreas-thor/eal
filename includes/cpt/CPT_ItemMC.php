@@ -64,21 +64,6 @@ class CPT_ItemMC extends CPT_Item {
 
 	
 	
-	public function WPCB_mb_question ($post, $vars, $buttons = array()) {
-	
-		parent::WPCB_mb_question ($post, $vars, array (
-				"Wähle 1-3 aus 4" => "Wählen Sie mindestens eine, maximal drei aus den vier Antwortoptionen aus. ",
-				"Wähle 1-4 aus 5" => "Wählen Sie mindestens eine, maximal vier aus den fünf Antwortoptionen aus. ",
-				"Wähle 1-5 aus 6" => "Wählen Sie mindestens eine, maximal fünf aus den sechs Antwortoptionen aus. ",
-				"Wähle korrekte" => "Wählen Sie die korrekte(n) aus den folgenden Antwortoptionen aus.",
-				"Teilpunktbewertung" => "Punkte erhalten Sie für jede richtige Antwort (Teilpunktbewertung). "
-		));
-	
-	
-	}
-	
-	
-	
 }
 
 	

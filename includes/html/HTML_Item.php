@@ -9,6 +9,7 @@ require_once (__DIR__ . "/../eal/EAL_Item.php");
 abstract class HTML_Item extends HTML_Object {
 	
 	protected $item;
+	protected $buttons_question;
 	
 	function __construct(EAL_Item $item) {
 		$this->item = $item;
@@ -18,6 +19,10 @@ abstract class HTML_Item extends HTML_Object {
 	/**********************************************************************************************
 	 * ANSWERS
 	 **********************************************************************************************/
+	
+	public function metaboxAnswers () {
+		$this->printAnswers(FALSE, TRUE, FALSE);
+	}
 	
 	public function printAnswers (bool $isPreview, bool $isEditable, bool $isImport, string $prefix="") {
 		
@@ -84,6 +89,10 @@ abstract class HTML_Item extends HTML_Object {
 	 * LEARNING OUTCOMES
 	 * Drop down list of all learning outcomes (if $isEditable)
 	 **********************************************************************************************/
+	
+	public function metaboxLearningOutcome () {
+		$this->printLearningOutcome(TRUE);
+	}
 	
 	public function printLearningOutcome (bool $isEditable, string $prefix="") {
 		
@@ -169,6 +178,9 @@ abstract class HTML_Item extends HTML_Object {
 	 * LEVEL
 	 **********************************************************************************************/
 	
+	public function metaboxLevel() {
+		$this->printLevel(TRUE);
+	}
 	
 	public function printTopic (bool $isEditable, string $prefix = "") {
 		parent::printTopicObject($this->item->getDomain(), $this->item->getId(), $isEditable, $prefix);
@@ -264,6 +276,15 @@ abstract class HTML_Item extends HTML_Object {
 	 * NOTE + FLAG
 	 **********************************************************************************************/
 	
+	public function metaboxNoteFlag () {
+?>			
+		<!-- we dynamically set the value of $POST["post_content"] to make sure that we have a new revision  -->
+		<input type="hidden" id="post_content" name="post_content" value="<?php echo microtime() ?>">
+<?php 			
+		$this->printNoteFlag(TRUE);
+	}
+	
+	
 	public function printNoteFlag (bool $isEditable, string $prefix="") {
 ?>		
 		<div class="form-field">
@@ -333,6 +354,11 @@ abstract class HTML_Item extends HTML_Object {
 	 * DESCRIPTION
 	 **********************************************************************************************/
 	
+	public function metaboxDescription () {
+		$this->printEditor ('item_description', $this->item->description);
+	}
+	
+	
 	public function printDescription (bool $isImport, string $prefix="") {
 ?>		
 		<div>
@@ -355,6 +381,22 @@ abstract class HTML_Item extends HTML_Object {
 	/**********************************************************************************************
 	 * QUESTION
 	 **********************************************************************************************/
+	
+	public function metaboxQuestion () {
+		
+		$this->printEditor ('item_question', $this->item->question);
+?>
+		<div style="margin:10px">
+		<?php foreach ($this->buttons_question as $short => $long) { ?>
+			<a style="margin:3px" class="button" 
+				onclick="tinyMCE.editors['item_question'].execCommand( 'mceInsertContent', false, '<?php echo htmlentities($long, ENT_SUBSTITUTE, 'ISO-8859-1')?>');">
+				<?php echo htmlentities($short, ENT_SUBSTITUTE, 'ISO-8859-1') ?>
+			</a>
+		<?php } ?>
+		</div>
+<?php 
+		
+	}
 	
 	public function printQuestion (bool $isImport, string $prefix="") {
 ?>

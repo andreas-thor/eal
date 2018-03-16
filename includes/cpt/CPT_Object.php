@@ -14,7 +14,7 @@ abstract class CPT_Object {
 	
 	public $table_columns;	
 	public $dashicon;
-	
+	public $bulk_actions;
 	
 	
 	/*
@@ -73,7 +73,6 @@ abstract class CPT_Object {
 		);
 
 
-		
 		// Manage table of items (what columns to show; what columns are sortable; what views are available)
 		add_filter("manage_{$this->type}_posts_columns" , array ($this, 'WPCB_manage_posts_columns'));
 		add_filter("manage_edit-{$this->type}_sortable_columns", array ($this, 'WPCB_manage_edit_sortable_columns'));
@@ -151,7 +150,26 @@ abstract class CPT_Object {
 	
 	
 	
-	
+	public function WPCB_add_bulk_actions () {
+		
+		global $post_type;
+		if ($post_type != $this->type) return;
+		
+?>
+		<script type="text/javascript">
+			jQuery(document).ready(function() {
+				var htmlselect = ["action", "action2"];
+				htmlselect.forEach(function (s, i, o) {
+					jQuery("select[name='" + s + "'] > option").remove();
+			        jQuery('<option>').val('-1').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
+					<?php foreach ($this->bulk_actions as $name => $value) { ?>
+				        jQuery('<option>').val('<?=$name?>').text('<?php _e($value) ?>').appendTo("select[name='" + s + "']");
+				    <?php } ?>
+			      });
+			});			    
+	    </script>
+<?php 
+	}
 
 	
 	

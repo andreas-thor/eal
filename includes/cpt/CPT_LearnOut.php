@@ -28,6 +28,13 @@ class CPT_LearnOut extends CPT_Object {
 			'level_PW' => 'PW',
 			'no_of_items' => 'Items'
 		);
+		
+		$this->bulk_actions = array (
+			'view' => 'View Learning Outcomes', 
+			'trash' => 'Trash Learning Outcomes',
+			'view_items' => 'View Items',
+			'add_to_basket' => 'Add Items To Basket'
+		);
 	}	
 	
 
@@ -55,39 +62,12 @@ class CPT_LearnOut extends CPT_Object {
 		
 		?>  <style> #minor-publishing { display: none; } </style> <?php
 		
-		add_meta_box('mb_description', 'Beschreibung', array ($this, 'WPCB_mb_description'), $this->type, 'normal', 'default', array ('name' => 'learnout_description', 'value' => $learnout->description) );
-		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($this, 'WPCB_mb_level'), $this->type, 'side', 'default', array ('level' => $learnout->level, 'prefix' => 'learnout'));
+		
+		
+		add_meta_box('mb_description', 'Beschreibung', array ($learnout->getHTMLPrinter(), 'metaboxDescription'), $this->type, 'normal', 'default' );
+		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($learnout->getHTMLPrinter(), 'metaboxLevel'), $this->type, 'side', 'default');
+		
 		add_meta_box('mb_item_taxonomy', RoleTaxonomy::getDomains()[$learnout->getDomain()], array ($this, 'WPCB_mb_taxonomy'), $this->type, 'side', 'default', array ( "taxonomy" => $learnout->getDomain() ));
-		
-		
-		
-		// term selections --> show buttons for text modules 	
-?>
-<script>
-
-	function showTermButtons (j) {
-		j("#eal_topicterms").empty()		
-		// search all checked terms incl. their ancestors
-		j("#topic-all").find ("input[type='checkbox']").filter(":checked").parentsUntil(j( "#topic-all" )).filter ("li").children("label").each (function (i, e) {
-			// add term button
-			j("#eal_topicterms").append (
-					"<a style='margin:3px' class='button' onclick=\"tinyMCE.editors['learnout_description'].execCommand( 'mceInsertContent', false, '" + e.childNodes[1].textContent + "');\">" + e.childNodes[1].textContent + "</a>");
-		})
-	}
-		
-	function codeAddress() {
-	
-		var j = jQuery.noConflict();
-		showTermButtons(j);	
-	
-		// add "on change" handler to all terms (input-checkbox); both in tab "All" as well "Must used"
-		j("#topic-all").add(j("#topic-pop")).change(function() { showTermButtons (j); });
-	}
-	
-	window.onload = codeAddress;
-</script>
-<?php	
-		
 		
 	}	
 
@@ -102,43 +82,6 @@ class CPT_LearnOut extends CPT_Object {
 	}
 	
 	
-	public function WPCB_mb_description ($post, $vars) {
-	
-		global $learnout;
-		parent::WPCB_mb_editor ($post, $vars);
-
-		
-		printf("<div id='eal_topicterms' style='margin:10px'></div>");
-		
-		
-		$verbs = array ( 
-			1 => array ("auflisten", "auswählen", "beschriften", "identifizieren", "nennen"),
-			2 => array ("begründen", "Beispiele geben", "beschreiben", "erklären", "klassifizieren", "konvertieren", "schätzen", "transferieren", "übersetzen", "verallgemeinern", "zusammenfassen"),
-			3 => array ("ändern", "anwenden", "beantragen", "berechnen", "bestimmen", "durchführen", "prüfen", "testen",  "übertragen", "verwenden", "vorbereiten", "zeigen"),
-			4 => array ("analysieren", "gegenüberstellen", "kategorisieren", "priorisieren", "strukturieren", "unterscheiden", "unterteilen", "vergleichen", "vorhersagen"),
-			5 => array ("bewerten", "diskutieren", "entscheiden", "interpretieren", "kritisieren", "verteidigen"),
-			6 => array ("aufbauen", "erstellen", "gestalten", "kombinieren", "konzipieren", "modellieren", "produzieren", "überarbeiten", "umgestalten")
-		);
-
-		printf("<div id='eal_superverbs' style='margin:10px'>");
-		foreach ($verbs as $level => $terms) {
-			// show only verbs that matches the current LO level
-			printf ("<div style='display:%s'>", (($learnout->level["FW"]==$level) || ($learnout->level["PW"]==$level) || ($learnout->level["KW"]==$level)) ? 'block' : 'none');
-			foreach ($terms as $t) {
-				printf ("<a style='margin:3px' class='button' onclick=\"tinyMCE.editors['%s'].execCommand( 'mceInsertContent', false, '%s');\">%s</a>", $vars['args']['name'], htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1'), htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1'));
-			}
-			printf ("</div>");
-		}
-		printf ("</div>");
-	}
-	
-
-	public function WPCB_mb_level ($post, $vars) {
-		global $learnout;
-		$learnout->getHTMLPrinter()->printLevel(TRUE);
-	}
-		
-
 	
 	
 	
@@ -191,9 +134,6 @@ class CPT_LearnOut extends CPT_Object {
 			}
 			
 		}
-	
-	
-	
 		return $where;
 	}
 	
@@ -235,31 +175,6 @@ class CPT_LearnOut extends CPT_Object {
 	
 	
 	
-	function WPCB_add_bulk_actions() {
-	
-		global $post_type;
-		if ($post_type != $this->type) return;
-	
-		?>
-		<script type="text/javascript">
-			jQuery(document).ready(function() {
-
-				var htmlselect = ["action", "action2"];
-					    	
-				htmlselect.forEach(function (s, i, o) {
-						  		
-					jQuery("select[name='" + s + "'] > option").remove();
-			        jQuery('<option>').val('-1').text('<?php _e('[Bulk Actions]')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('view').text('<?php _e('View Learning Outcomes')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('trash').text('<?php _e('Trash Learning Outcomes')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('view_items').text('<?php _e('View Items')?>').appendTo("select[name='" + s + "']");
-			        jQuery('<option>').val('add_to_basket').text('<?php _e('Add Items To Basket')?>').appendTo("select[name='" + s + "']");
-			      });
-			});			    
-	    </script>
-		<?php
-
-	}
 		
 		
 	function WPCB_process_bulk_action() {
