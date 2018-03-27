@@ -23,7 +23,7 @@ class HTML_Review extends HTML_Object {
 	}
 
 	public function printLevel (bool $isEditable, string $prefix="") {
-		parent::printLevelObject ($prefix . 'review', $this->review->level, $this->review->getItem()->level, !$isEditable, TRUE, '');
+		parent::printLevelObject ($prefix . 'review', $this->review->getLevel(), $this->review->getItem()->getLevel(), !$isEditable, TRUE, '');
 	}
 
 	

@@ -98,7 +98,7 @@ class IMEX_Ilias extends IMEX_Item {
 				
 			$xml_IT = $dom->createElement("item");
 			$xml_IT->setAttribute("ident", "il_0_qst_{$item_id}");
-			$xml_IT->setAttribute("title", $item->title);
+			$xml_IT->setAttribute("title", $item->getTitle());
 			$xml_IT->setAttribute("maxattempts", 1);
 				
 			$xml_IT->appendChild ($dom->createElement("qticomment", "[EALID:{$item_id}]"));
@@ -128,10 +128,10 @@ class IMEX_Ilias extends IMEX_Item {
 				
 			/* Presentation */
 			$xml_PR = $dom->createElement("presentation");
-			$xml_PR->setAttribute("label", $item->title);
+			$xml_PR->setAttribute("label", $item->getTitle());
 			$xml_FL = $dom->createElement("flow");
 
-			$xml_FL->appendChild ($this->createMaterialElement($dom, "text/html", wpautop($item->description) . "<!-- EAL --><hr/>" . wpautop($item->question)));
+			$xml_FL->appendChild ($this->createMaterialElement($dom, "text/html", wpautop($item->getDescription()) . "<!-- EAL --><hr/>" . wpautop($item->getQuestion())));
 				
 			$xml_RL = $dom->createElement("response_lid");
 			$xml_RL->setAttribute("ident", $item_data["ident"]);
@@ -309,7 +309,7 @@ class IMEX_Ilias extends IMEX_Item {
 	 * returns map of all questions; qref --> pcid
 	 * qref is the internal id for referencing questions between QTI and QPL files
 	 * PCID is the external id (written by EAL) to match between ILAS and EAL; PCID can be an empty string if not available
-	 * @param unknown $dom
+	 * @param DOMDocument $doc
 	 */
 	private static function parseQPL_TST (DOMDocument $doc) {
 	
@@ -358,10 +358,11 @@ class IMEX_Ilias extends IMEX_Item {
 			if ($item->getId() < 0) $item->setId (-$countItems);
 				
 			// get title and description + question
-			$item->setDomain(RoleTaxonomy::getCurrentRoleDomain()["name"]);	// necessary, if we import item from different domain and want to store it in current domain
-			$item->title = $itemXML->getAttribute("title");
-			$descques = $xpath->evaluate ("./presentation/flow/material/mattext/text()", $itemXML)[0]->wholeText;
+//			$item->setDomain(RoleTaxonomy::getCurrentRoleDomain()["name"]);	// necessary, if we import item from different domain and want to store it in current domain
+//			$item->title = $itemXML->getAttribute("title");
 			
+			
+			$descques = $xpath->evaluate ("./presentation/flow/material/mattext/text()", $itemXML)[0]->wholeText;
 			// TODO: Eigentlich aus MatLabel die IMG-Referenzen ziehen!!
 			$descques = preg_replace_callback(				// replace image references
 					'|(<img[^>]+)src=["\']([^"]*)["\']|',
@@ -393,15 +394,11 @@ class IMEX_Ilias extends IMEX_Item {
 					$descques
 					);
 				
-			// Description and Question are separated by horizontal line
+			// Description and Question are separated by horizontal line; description is optional
 			$split = explode (self::DESCRIPTION_QUESTION_SEPARATOR, $descques, 2);
-			if (count($split)==1) {
-				$item->description = "";
-				$item->question = $split[0];
-			} else {
-				$item->description = $split[0];
-				$item->question = $split[1];
-			}
+			$item->init($itemXML->getAttribute("title"), (count($split)>1) ? $split[0] : "", $split[count($split)-1]);	// automatically sets current domain
+			
+			
 				
 			// collect answer ids
 			$answers = array ();

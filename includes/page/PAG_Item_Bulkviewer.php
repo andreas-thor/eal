@@ -108,7 +108,7 @@ class PAG_Item_Bulkviewer {
 			jQuery(document).ready(function () {
 				jQuery("#screen_settings_item_select_list").append("<?php 
 					$pos = 0;
-					foreach ($items as $item) { printf ('<option value=\"%d\">%s</option>', $pos++, htmlentities ($item->title, ENT_COMPAT | ENT_HTML401, 'UTF-8')); } 
+					foreach ($items as $item) { printf ('<option value=\"%d\">%s</option>', $pos++, htmlentities ($item->getTitle(), ENT_COMPAT | ENT_HTML401, 'UTF-8')); } 
 				?>");
 			});
 			// ");
@@ -157,7 +157,7 @@ class PAG_Item_Bulkviewer {
 				<div id="post-body-content">
 					<div id="titlediv">
 						<div id="titlewrap">
-							<input type="text" size="30" value="<?php echo $item->title ?>" id="title" readonly>
+							<input type="text" size="30" value="<?php echo $item->getTitle() ?>" id="title" readonly>
 						</div>
 					</div><!-- /titlediv -->
 					
@@ -165,7 +165,7 @@ class PAG_Item_Bulkviewer {
 						<input type="hidden" name="<?php echo $prefix ?>post_ID"      value="<?php echo $item->getId() ?>">
 				  		<input type="hidden" name="<?php echo $prefix ?>post_type"    value="<?php echo $item->getType() ?>">
 		  				<input type="hidden" name="<?php echo $prefix ?>post_content" value="<?php echo microtime() ?>">
-		  				<input type="hidden" name="<?php echo $prefix ?>post_title"   value="<?php echo htmlentities ($item->title, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>">
+		  				<input type="hidden" name="<?php echo $prefix ?>post_title"   value="<?php echo htmlentities ($item->getTitle(), ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>">
 					<?php } ?>
 					
 				</div><!-- /post-body-content -->

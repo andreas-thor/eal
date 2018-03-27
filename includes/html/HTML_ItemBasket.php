@@ -24,7 +24,7 @@ class HTML_ItemBasket  {
 		
 		$res_Level = sprintf ('<tr><td colspan="2"><b>%s</b></td></tr>', 'Anforderungsstufe');
 		foreach (ItemExplorer::groupBy($items, $itemids, 'level') as $key => $val) {
-			$res_Level .= sprintf ('<tr><td style="width:4em"><input type="text" value="%d" size="1" readonly /></td><td>%s</td></tr>', count($val), EAL_Item::$level_label[$key-1]);
+			$res_Level .= sprintf ('<tr><td style="width:4em"><input type="text" value="%d" size="1" readonly /></td><td>%s</td></tr>', count($val), EAL_Level::LABEL[$key]);
 		}
 		
 		$res_Dim = sprintf ('<tr><td colspan="2"><b>%s</b></td></tr>', 'Wissensdimension');
@@ -34,7 +34,7 @@ class HTML_ItemBasket  {
 		
 		$res_LO = sprintf ('<tr><td colspan="2"><b>%s</b></td></tr>', 'Learning Outcome');
 		foreach (ItemExplorer::groupBy($items, $itemids, 'lo') as $key => $val) {
-			$res_LO .= sprintf ('<tr><td style="width:4em"><input type="text" value="%d" size="1" readonly /></td><td style="text-align:left">%s</td></tr>', count($val), $items[$val[0]]->getLearnOut()->title);
+			$res_LO .= sprintf ('<tr><td style="width:4em"><input type="text" value="%d" size="1" readonly /></td><td style="text-align:left">%s</td></tr>', count($val), $items[$val[0]]->getLearnOut()->getTitle());
 		}
 		
 		

@@ -26,7 +26,7 @@ class IMEX_LearnOut extends IMEX_Object {
 			
 			
 			$post = get_post ($learnout->getId());
-			$post->post_title = $learnout->title;
+			$post->post_title = $learnout->getTitle();
 			$post->post_status = "publish";
 			$post->post_content = microtime();	// ensures revision
 			wp_set_post_terms($learnout->getId(), $terms, $learnout->getDomain(), FALSE );

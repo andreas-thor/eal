@@ -180,9 +180,9 @@ function setMainMenu() {
 		// Menu: Items
 		$menuslug = 'edit.php?post_type=item';
 		
-		add_menu_page('eal_page_items', 'Items', 'edit_posts', $menuslug, '', (new CPT_Item())->dashicon, 31);
+		add_menu_page('eal_page_items', 'Items', 'edit_posts', $menuslug, '', (new CPT_Item())->getDashIcon(), 31);
 		foreach ([new CPT_Item(), new CPT_ItemSC(), new CPT_ItemMC(), new CPT_Review() ] as $object) {
-			add_submenu_page($menuslug, $object->label, '<div class="dashicons-before ' . $object->dashicon . '" style="display:inline">&nbsp;</div> ' . $object->label, 'edit_posts', "edit.php?post_type={$object->type}");
+			add_submenu_page($menuslug, $object->getLabel(), '<div class="dashicons-before ' . $object->getDashIcon() . '" style="display:inline">&nbsp;</div> ' . $object->getLabel(), 'edit_posts', "edit.php?post_type={$object->getType()}");
 		}
 // 		add_submenu_page($menuslug, 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', ['Importer', 'createPage']);
 
@@ -425,34 +425,34 @@ function setDashboard() {
 		unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_activity']);
 		unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_plugins']);
 		
-		wp_add_dashboard_widget('dashboard_items', '<input type="checkbox" checked/> <i>Item Overview</i>', function () {
+		wp_add_dashboard_widget('dashboard_items', '<i>Item Overview</i>', function () {
 			
 			/* number of items, SCs, and MCs */
-			printf('<table border="0">');
+			?> <table border="0"> <?php 
 			foreach ([
 				new CPT_Item(),
 				new CPT_ItemSC(),
 				new CPT_ItemMC()
 			] as $object) {
-				$counts = $object->WPCB_count_posts(NULL, $object->type, NULL);
+				$counts = $object->WPCB_count_posts(NULL, $object->getType(), NULL);
 				printf('
 				<tr>
 					<td style="width:11em"><div class="dashicons-before %1$s" style="display:inline">&nbsp;</div> %2$s</td>
 					<td align="right" style="width:4em"><a href="edit.php?post_type=%3$s">%4$d</a></td>
 					<td align="right" style="width:10em">&nbsp;(<a href="edit.php?post_type=%3$s&post_status=pending">%5$d</a> pending review)</td>
-				</tr>', $object->dashicon, $object->label, $object->type, $counts->publish + $counts->pending + $counts->draft, $counts->pending);
+				</tr>', $object->getDashIcon(), $object->getLabel(), $object->getType(), $counts->publish + $counts->pending + $counts->draft, $counts->pending);
 			}
 			printf('</table><hr>');
 			
 			/* number of reviews */
 			printf('<table border="0">');
 			$object = new CPT_Review();
-			$counts = $object->WPCB_count_posts(NULL, $object->type, NULL);
+			$counts = $object->WPCB_count_posts(NULL, $object->getType(), NULL);
 			printf('
 			<tr>
 				<td style="width:11em"><div class="dashicons-before %1$s" style="display:inline">&nbsp;</div>%2$ss</td>
 				<td align="right" style="width:4em"><a href="edit.php?post_type=%3$s">%4$d</a></td>
-			</tr>', $object->dashicon, $object->label, $object->type, $counts->publish + $counts->pending + $counts->draft);
+			</tr>', $object->getDashIcon(), $object->getLabel(), $object->getType(), $counts->publish + $counts->pending + $counts->draft);
 			printf('</table>');
 		});
 			
@@ -474,12 +474,12 @@ function setDashboard() {
 				
 				/* number of learning outcomes */
 				$object = new CPT_LearnOut();
-				$counts = $object->WPCB_count_posts(NULL, $object->type, NULL);
+				$counts = $object->WPCB_count_posts(NULL, $object->getType(), NULL);
 				printf('
 			<tr>
 				<td style="width:11em"><div class="dashicons-before %1$s" style="display:inline">&nbsp;</div>%2$ss</td>
 				<td align="right" style="width:4em"><a href="edit.php?post_type=%3$s">%4$d</a></td>
-			</tr>', $object->dashicon, $object->label, $object->type, $counts->publish + $counts->pending + $counts->draft);
+			</tr>', $object->getDashIcon(), $object->getLabel(), $object->getType(), $counts->publish + $counts->pending + $counts->draft);
 				printf('</table>');
 			});
 	});

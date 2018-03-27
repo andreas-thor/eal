@@ -163,10 +163,8 @@ class HTML_ItemMC extends HTML_Item  {
 		<table>
 			<?php foreach ($old as $i => $a) { ?>
 				<tr align="left">
-					<td style="border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px" align="left" 
-						<?php if ($new[$i]['positive'] != $a['positive']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['positive'] ?></td>
-					<td style="border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px" align="left" 
-						<?php if ($new[$i]['negative'] != $a['negative']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['negative'] ?></td>
+					<td style="border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px" align="left" <?php if ($new[$i]['positive'] != $a['positive']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['positive'] ?></td>
+					<td style="border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px" align="left" <?php if ($new[$i]['negative'] != $a['negative']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['negative'] ?></td>
 					<td style="width:98%; padding:0; padding-left:10px" align="left" <?php if ($new[$i]['answer'] != $a['answer']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['answer'] ?></td>
 				</tr>
 			<?php } ?>

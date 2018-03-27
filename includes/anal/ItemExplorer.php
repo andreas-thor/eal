@@ -135,7 +135,7 @@ class ItemExplorer {
 	 * @param array $items
 	 * @param array $itemids
 	 * @param array $allcat
-	 * @return [valcat1 => [ valcat2 => [ ... valcatn => [itemids]]]]
+	 * @return array [valcat1 => [ valcat2 => [ ... valcatn => [itemids]]]]
 	 */
 	
 	public static function groupRecursive (array $items, array $itemids, array $allcat, $parentKey = -1) {
@@ -181,7 +181,7 @@ class ItemExplorer {
 		
 		switch ($cat) {
 			case 'type': 	return ["itemsc" => "Single Choice", "itemmc" => "Multiple Choice"];
-			case 'level': 	return EAL_Item::$category_value_label["level"]; // array_merge ([""], EAL_Item::$level_label); // add empty value for index=0 because labels are enumerated 1..6
+			case 'level': 	return EAL_Level::LABEL; // EAL_Item::$category_value_label["level"]; // array_merge ([""], EAL_Item::$level_label); // add empty value for index=0 because labels are enumerated 1..6
 			case 'dim': 	return ["FW"=>"FW", "KW"=>"KW", "PW"=>"PW"];
 		}
 		return [];

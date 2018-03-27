@@ -48,7 +48,7 @@ abstract class HTML_Item extends HTML_Object {
 	
 	/**********************************************************************************************
 	 * STATUS
-	 *  Drop down list of available statuses (if $isEditable)
+	 * Drop down list of available statuses (if $isEditable)
 	 **********************************************************************************************/
 	
 	public function printStatus (bool $isEditable, bool $isImport, string $prefix="") {
@@ -105,7 +105,7 @@ abstract class HTML_Item extends HTML_Object {
 			$allLO = array_merge($allLO, EAL_LearnOut::getListOfLearningOutcomes());
 		} else {
 			if (!($learnout === NULL)) {	// add item's learnout if available
-				$allLO[] = ['id'=>$learnout->getId(), 'title'=>$learnout->title, 'description'=>$learnout->description];
+				$allLO[] = ['id'=>$learnout->getId(), 'title'=>$learnout->getTitle(), 'description'=>$learnout->description];
 			}
 		}
 ?>
@@ -159,9 +159,9 @@ abstract class HTML_Item extends HTML_Object {
 			</colgroup>
 			<tbody>
 				<tr>
-					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old_learnout_id != $new_learnout_id) ? 'class="diff-deletedline"' : '' ?>><select style="width:100%"><option selected><?php echo ($old_learnout === NULL) ? '' : $old_learnout->title; ?></option></select><div><?php echo htmlentities(($old_learnout === NULL) ? '' : $old_learnout->description, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></div></td>
+					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old_learnout_id != $new_learnout_id) ? 'class="diff-deletedline"' : '' ?>><select style="width:100%"><option selected><?php echo ($old_learnout === NULL) ? '' : $old_learnout->getTitle(); ?></option></select><div><?php echo htmlentities(($old_learnout === NULL) ? '' : $old_learnout->description, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></div></td>
 					<td></td>
-					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old_learnout_id != $new_learnout_id) ? 'class="diff-addedline"' : '' ?>><select style="width:100%"><option selected><?php echo ($new_learnout === NULL) ? '' : $new_learnout->title; ?></option></select><div><?php echo htmlentities(($new_learnout === NULL) ? '' : $new_learnout->description, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></div></td>
+					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old_learnout_id != $new_learnout_id) ? 'class="diff-addedline"' : '' ?>><select style="width:100%"><option selected><?php echo ($new_learnout === NULL) ? '' : $new_learnout->getTitle(); ?></option></select><div><?php echo htmlentities(($new_learnout === NULL) ? '' : $new_learnout->description, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></div></td>
 				</tr>
 			</tbody>
 		</table>
@@ -180,8 +180,7 @@ abstract class HTML_Item extends HTML_Object {
 	
 
 	public function metaboxTopic () {
-		
-		?>
+?>
 		
 		<div style="display:none" id="auto-annotate">
 			<div class="tabs-panel" style="display: block;">
@@ -248,7 +247,7 @@ abstract class HTML_Item extends HTML_Object {
 	
 	
 	public function printLevel (bool $isEditable, string $prefix="") {
-		?>
+?>
 		<script>
 			function checkLOLevel (e, levIT, levITs, levLO, levLOs) {
 				if (levIT == levLO) return;
@@ -266,12 +265,12 @@ abstract class HTML_Item extends HTML_Object {
 				
 			}
 		</script>
-		<?php
+<?php
 		$hasLO = ($this->item->getLearnOut() !== NULL);
 		$callback = (($isEditable) && ($hasLO)) ? "checkLOLevel" : "";
 		
 		// FIXME: Ist das hier richtig, dass nochmal item an prefix angehangen wird???
-		parent::printLevelObject ($prefix . "item", $this->item->level, $hasLO ? $this->item->getLearnOut()->level : null, !$isEditable, $hasLO, $callback);
+		parent::printLevelObject ($prefix . "item", $this->item->getLevel(), $hasLO ? $this->item->getLearnOut()->getLevel(): null, !$isEditable, $hasLO, $callback);
 	}
 	
 
@@ -288,41 +287,43 @@ abstract class HTML_Item extends HTML_Object {
 			</colgroup>
 			<tbody>
 				<tr>
-					<td align="left"><div><?php echo self::compareLevel1($old->level, $new->level, "deleted") ?></div></td>
+					<td align="left"><div><?php self::printCompareLevel1($old->getLevel(), $new->getLevel(), "deleted") ?></div></td>
 					<td></td>
-					<td><div><?php echo self::compareLevel1($new->level, $old->level, "added") ?></div></td>
+					<td><div><?php self::printCompareLevel1($new->getLevel(), $old->getLevel(), "added") ?></div></td>
 				</tr>
 			</tbody>
 		</table>
 <?php 
 		$diff = ob_get_contents();
 		ob_end_clean();
-		return array ("id" => 'level', 'name' => 'Anforderungsstufe', 'diff' => $diff);
+		return array ('id' => 'level', 'name' => 'Anforderungsstufe', 'diff' => $diff);
 	}
 	
 	
-	private static function compareLevel1 (array $old, array $new, string $class): string {
-		$res = "<table style='width:1%'><tr><td></td>";
-		foreach ($old as $c => $v) {
-			$res .= sprintf ('<td>%s</td>', $c);
-		}
-		$res .= sprintf ('</tr>');
+	private static function printCompareLevel1 (EAL_Level $old, EAL_Level $new, string $class) {
+?>
+		<table style="width:1%">
+			<tr>
+				<td></td>
+				<?php foreach (EAL_Level::TYPE as $type) { ?>
+					<td><?php echo $type ?></td>
+				<?php } ?>
+			</tr>
 		
-		foreach (EAL_Item::$level_label as $n => $r) {	// n=0..5, $r=Erinnern...Erschaffen
-			$bgcolor = (($new["FW"]!=$n+1) &&  ($old["FW"]==$n+1)) || (($new["KW"]!=$n+1) && ($old["KW"]==$n+1)) || (($new["PW"]!=$n+1) && ($old["PW"]==$n+1)) ? "class='diff-{$class}line'" : "";
-			// || (($new["FW"]==$n+1) &&  ($old["FW"]!=$n+1)) || (($new["KW"]==$n+1) && ($old["KW"]!=$n+1)) || (($new["PW"]==$n+1) && ($old["PW"]!=$n+1))
-			
-			$res .= sprintf ('<tr><td style="padding:0px 5px 0px 5px;" align="left" %s>%d.&nbsp;%s</td>', $bgcolor, $n+1, $r);
-			foreach ($old as $c=>$v) {	// c=FW,KW,PW; v=1..6
-				$bgcolor = (($v==$n+1)&& ($new[$c]!=$n+1)) ? "class='diff-{$class}line'" : "";
-				$res .= sprintf ("<td align='left' style='padding:0px 5px 0px 5px;' %s>", $bgcolor);
-				$res .= sprintf ("<input type='radio' %s></td>", (($v==$n+1)?'checked':'disabled'));
-				
-			}
-			$res .= '</tr>';
-		}
-		$res .= sprintf ('</table>');
-		return $res;
+		<?php foreach (EAL_Level::LABEL as $n => $r) {	// n=1..6, $r=Erinnern...Erschaffen 
+			$rowDiff = FALSE;
+			foreach (EAL_Level::TYPE as $type) {
+				$rowDiff = $rowDiff || (($old->get($type)==$n) && ($new->get($type)!=$n));
+			} ?>
+			<tr>
+				<td style="padding:0px 5px 0px 5px;" align="left" <?php if ($rowDiff) echo 'class="diff-'. $class . 'line"' ?> ><?= $n ?>.&nbsp;<?= $r ?></td>
+				<?php foreach (EAL_Level::TYPE as $type) {	?>
+					<td align="left" style="padding:0px 5px 0px 5px;" <?php if (($old->get($type)==$n) && ($new->get($type)!=$n)) echo 'class="diff-'. $class . 'line"' ?>><input type="radio" <?php echo (($old->get($type)==$n)?'checked':'disabled') ?>></td>
+				<?php } ?>				
+			</tr>
+		<?php } ?>
+		</table>
+<?php 
 	}
 	
 	
@@ -400,7 +401,7 @@ abstract class HTML_Item extends HTML_Object {
 	 **********************************************************************************************/
 	
 	public static function compareTitle (EAL_Item $old, EAL_Item $new): array {
-		return array ("id" => 'title', 'name' => 'Titel', 'diff' => self::compareText ($old->title ?? "", $new->title ?? ""));
+		return array ("id" => 'title', 'name' => 'Titel', 'diff' => self::compareText ($old->getTitle() ?? "", $new->getTitle() ?? ""));
 	}
 	
 	
@@ -409,7 +410,7 @@ abstract class HTML_Item extends HTML_Object {
 	 **********************************************************************************************/
 	
 	public function metaboxDescription () {
-		$this->printEditor ('item_description', $this->item->description);
+		$this->printEditor ('item_description', $this->item->getDescription());
 	}
 	
 	
@@ -420,15 +421,15 @@ abstract class HTML_Item extends HTML_Object {
 				<input 
 					type="hidden" 
 					name="<?php echo $prefix ?>item_description" 
-					value="<?php echo htmlentities($this->item->description, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" />			
+					value="<?php echo htmlentities($this->item->getDescription(), ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" />			
 			<?php } ?> 
-			<?php echo wpautop($this->item->description) ?>
+			<?php echo wpautop($this->item->getDescription()) ?>
 		</div>
 <?php 		
 	}
 	
 	public static function compareDescription (EAL_Item $old, EAL_Item $new): array {
-		return array ("id" => 'description', 'name' => 'Fall- oder Problemvignette', 'diff' => self::compareText ($old->description ?? "", $new->description ?? ""));
+		return array ("id" => 'description', 'name' => 'Fall- oder Problemvignette', 'diff' => self::compareText ($old->getDescription() ?? "", $new->getDescription() ?? ""));
 	}
 	
 	
@@ -438,7 +439,7 @@ abstract class HTML_Item extends HTML_Object {
 	
 	public function metaboxQuestion () {
 		
-		$this->printEditor ('item_question', $this->item->question);
+		$this->printEditor ('item_question', $this->item->getQuestion());
 ?>
 		<div style="margin:10px">
 		<?php foreach ($this->buttons_question as $short => $long) { ?>
@@ -459,16 +460,16 @@ abstract class HTML_Item extends HTML_Object {
 				<input 
 					type="hidden" 
 					name="<?php echo $prefix ?>item_question" 
-					value="<?php echo htmlentities($this->item->question, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" />			
+					value="<?php echo htmlentities($this->item->getQuestion(), ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" />			
 			<?php } ?> 
-			<?php echo wpautop($this->item->question) ?>
+			<?php echo wpautop($this->item->getQuestion()) ?>
 		</div>
 <?php
 	}
 	
 	
 	public static function compareQuestion (EAL_Item $old, EAL_Item $new): array {
-		return array ("id" => 'question', 'name' => 'Aufgabenstellung', 'diff' => self::compareText ($old->question ?? "", $new->question ?? ""));
+		return array ("id" => 'question', 'name' => 'Aufgabenstellung', 'diff' => self::compareText ($old->getQuestion() ?? "", $new->getQuestion() ?? ""));
 	}
 
 	

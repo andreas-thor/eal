@@ -3,13 +3,13 @@
 require_once (__DIR__ . "/../class.CLA_RoleTaxonomy.php");
 require_once 'EAL_Object.php';
 
+
 abstract class EAL_Item extends EAL_Object {
 
-	public $title;			// title 
-	public $description;	// description (e.g., vignette, use case, scenarion)
-	public $question;		// actual question
+	private $title;			// title 
+	private $description;	// description (e.g., vignette, use case, scenarion)
+	private $question;		// actual question
 	
-	public $level;
 	public $learnout;
 	public $learnout_id;
 	
@@ -22,8 +22,6 @@ abstract class EAL_Item extends EAL_Object {
 	
 	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	public static $level_type = ["FW", "KW", "PW"];
-	
-	public static $flag_icon = ["", "dashicons-star-filled", "dashicons-flag", "dashicons-yes", "dashicons-no"];
 	
 	public static $category_value_label = [
 			"type" => ["itemsc" => "Single Choice", "itemmc" => "Multiple Choice"],
@@ -41,6 +39,19 @@ abstract class EAL_Item extends EAL_Object {
 			"lo" => "Learning Outcome"
 	];
 	
+	
+	
+	public function getTitle (): string {
+		return $this->title;
+	}
+	
+	public function getDescription (): string {
+		return $this->description;
+	}
+	
+	public function getQuestion (): string {
+		return $this->question;
+	}
 	
 	public abstract function getHTMLPrinter (): HTML_Item;
 	
@@ -60,11 +71,8 @@ abstract class EAL_Item extends EAL_Object {
 		} 
 
 		$this->setId ($item_id);
-		$this->title = '';
-		$this->description = '';
-		$this->question = '';
+		$this->init('', '', '');
 
-		$this->level = ["FW" => null, "KW" => null, "PW" => null];
 		$this->learnout_id = $_POST['learnout_id'] ?? $_GET['learnout_id'] ?? null;
 		$this->learnout = null;
 		
@@ -84,7 +92,13 @@ abstract class EAL_Item extends EAL_Object {
 	}
 	
 	
-
+	public function init (string $title, string $description, string $question, string $domain = NULL) {
+		$this->title = $title;
+		$this->description = $description;
+		$this->question = $question;
+		$this->setDomain($domain ?? RoleTaxonomy::getCurrentRoleDomain()["name"]);
+	}
+	
 	
 	
 	
@@ -103,11 +117,8 @@ abstract class EAL_Item extends EAL_Object {
 		$this->title = stripslashes($_POST[$prefix."post_title"]);
 		$this->description = isset($_POST[$prefix.'item_description']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_description'])) : null;
 		$this->question = isset ($_POST[$prefix.'item_question']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_question'])) : null;
-
-		$this->level = ["FW" => null, "KW" => null, "PW" => null];
-		$this->level["FW"] = $_POST[$prefix.'item_level_FW'] ?? null;
-		$this->level["KW"] = $_POST[$prefix.'item_level_KW'] ?? null;
-		$this->level["PW"] = $_POST[$prefix.'item_level_PW'] ?? null;
+		$this->level = new EAL_Level($_POST, $prefix.'item_level');
+		
 		
 		$this->learnout_id = $_GET[$prefix.'learnout_id'] ?? $_POST[$prefix.'learnout_id'] ?? null;
 		$this->learnout = null;		// lazy loading
@@ -139,11 +150,7 @@ abstract class EAL_Item extends EAL_Object {
 		$this->title = $sqlres['title'];
 		$this->description = $sqlres['description'];
 		$this->question = $sqlres['question'];
-	
-		$this->level = ["FW" => null, "KW" => null, "PW" => null];
-		$this->level["FW"] = $sqlres['level_FW'];
-		$this->level["KW"] = $sqlres['level_KW'];
-		$this->level["PW"] = $sqlres['level_PW'];
+		$this->level = new EAL_Level($sqlres);
 	
 		$this->learnout_id = $sqlres['learnout_id'];
 		$this->learnout = null; // lazy loading
@@ -173,9 +180,9 @@ abstract class EAL_Item extends EAL_Object {
 					'title' => $this->title,
 					'description' => $this->description,
 					'question' => $this->question,
-					'level_FW' => $this->level["FW"],
-					'level_KW' => $this->level["KW"],
-					'level_PW' => $this->level["PW"],
+					'level_FW' => $this->level->get('FW'),
+					'level_KW' => $this->level->get('KW'),
+					'level_PW' => $this->level->get('PW'),
 					'points'   => $this->getPoints(),
 					'difficulty' => $this->difficulty,
 					'learnout_id' => $this->learnout_id,
@@ -203,7 +210,9 @@ abstract class EAL_Item extends EAL_Object {
 	 */
 	public function getLearnOut () {
 		
-		if (is_null ($this->learnout_id )) return null;
+		if (is_null ($this->learnout_id )) {
+			return null;
+		}
 		
 		if (is_null ($this->learnout)) {
 			$this->learnout = new EAL_LearnOut($this->learnout_id);
@@ -241,7 +250,8 @@ abstract class EAL_Item extends EAL_Object {
 	
 	
 	
-	public function getPoints(): int { return -1; }
+	public abstract function getPoints(): int;
+	
 	
 	public function getStatusString (): string {
 		

@@ -6,9 +6,20 @@ require_once (__DIR__ . "/../eal/EAL_LearnOut.php");
 class HTML_Learnout extends HTML_Object {
 	
 	protected $learnout;
+	protected $buttons_verb;
 	
 	function __construct(EAL_LearnOut $learnout) {
 		$this->learnout = $learnout;
+		
+		// list of super verbs
+		$this->buttons_verb = array (
+			1 => array ("auflisten", "auswählen", "beschriften", "identifizieren", "nennen"),
+			2 => array ("begründen", "Beispiele geben", "beschreiben", "erklären", "klassifizieren", "konvertieren", "schätzen", "transferieren", "übersetzen", "verallgemeinern", "zusammenfassen"),
+			3 => array ("ändern", "anwenden", "beantragen", "berechnen", "bestimmen", "durchführen", "prüfen", "testen",  "übertragen", "verwenden", "vorbereiten", "zeigen"),
+			4 => array ("analysieren", "gegenüberstellen", "kategorisieren", "priorisieren", "strukturieren", "unterscheiden", "unterteilen", "vergleichen", "vorhersagen"),
+			5 => array ("bewerten", "diskutieren", "entscheiden", "interpretieren", "kritisieren", "verteidigen"),
+			6 => array ("aufbauen", "erstellen", "gestalten", "kombinieren", "konzipieren", "modellieren", "produzieren", "überarbeiten", "umgestalten")
+		);
 	}
 	 
 	
@@ -26,18 +37,8 @@ class HTML_Learnout extends HTML_Object {
 	public function metaboxDescription () {
 		
 		$this->printEditor('learnout_description', $this->learnout->description);
-		
-		
-		// list of super verbs
-		$verbs = array (
-			1 => array ("auflisten", "auswählen", "beschriften", "identifizieren", "nennen"),
-			2 => array ("begründen", "Beispiele geben", "beschreiben", "erklären", "klassifizieren", "konvertieren", "schätzen", "transferieren", "übersetzen", "verallgemeinern", "zusammenfassen"),
-			3 => array ("ändern", "anwenden", "beantragen", "berechnen", "bestimmen", "durchführen", "prüfen", "testen",  "übertragen", "verwenden", "vorbereiten", "zeigen"),
-			4 => array ("analysieren", "gegenüberstellen", "kategorisieren", "priorisieren", "strukturieren", "unterscheiden", "unterteilen", "vergleichen", "vorhersagen"),
-			5 => array ("bewerten", "diskutieren", "entscheiden", "interpretieren", "kritisieren", "verteidigen"),
-			6 => array ("aufbauen", "erstellen", "gestalten", "kombinieren", "konzipieren", "modellieren", "produzieren", "überarbeiten", "umgestalten")
-		);
-		?>
+?>
+
 		<script>
 			function showTermButtons (j) {
 				j("#eal_topicterms").empty()		
@@ -64,8 +65,8 @@ class HTML_Learnout extends HTML_Object {
 		
 		<!--  area for super verbs -->
 		<div id="eal_superverbs" style="margin:10px">
-		<?php foreach ($verbs as $level => $terms) { ?>
-			<div style="display:<?=((($this->learnout->level["FW"]==$level) || ($this->learnout->level["PW"]==$level) || ($this->learnout->level["KW"]==$level)) ? 'block' : 'none') ?>">
+		<?php foreach ($this->buttons_verb as $level => $terms) { ?>
+			<div style="display:<?=($this->learnout->getLevel()->hasLevel($level) ? 'block' : 'none') ?>">
 			<?php 
 				foreach ($terms as $t) { 
 					$tname = htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1');
@@ -119,7 +120,7 @@ class HTML_Learnout extends HTML_Object {
 		$callback = ($isEditable) ? "showSuperVerbs" : "";
 		
 		// FIXME: Ist das hier richtig, dass nochmal item an prefix angehangen wird???
-		parent::printLevelObject ($prefix . "learnout", $this->learnout->level, NULL, !$isEditable, FALSE, $callback);
+		parent::printLevelObject ($prefix . "learnout", $this->learnout->getLevel(), NULL, !$isEditable, FALSE, $callback);
 		
 	}
 	

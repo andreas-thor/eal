@@ -285,9 +285,9 @@ class RoleTaxonomy {
 	
 	/**
 	 * Specifies if current user can edit item
-	 * @param unknown $post
+	 * @param WP_Post $post
 	 */
-	public static function canEditItemPost ($post) {
+	public static function canEditItemPost (WP_Post $post) {
 		
 		if ($post->post_author == get_current_user_id()) return TRUE;	// current user
 		if ($post->post_status == "draft") return FALSE;
@@ -304,9 +304,9 @@ class RoleTaxonomy {
 	
 	/**
 	 * Specifies if current user can edit review 
-	 * @param unknown $post
+	 * @param WP_Post $post
 	 */
-	public static function canEditReviewPost ($post) {
+	public static function canEditReviewPost (WP_Post $post) {
 	
 		if ($post->post_author == get_current_user_id()) return TRUE;	// current user
 		

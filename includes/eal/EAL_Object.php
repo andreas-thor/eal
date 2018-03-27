@@ -1,7 +1,7 @@
 <?php 
 
 require_once (__DIR__ . "/../class.CLA_RoleTaxonomy.php");
-
+require_once 'EAL_Level.php';
 
 abstract class EAL_Object {
 	
@@ -9,6 +9,7 @@ abstract class EAL_Object {
 	private $type;		// read-only; will be set during constructor based on concrete class type (EAL_ItemMC, EAL_ItemSC, ...)
 	private $domain;	// each item belongs to a domain (when newly created: domain = current user's role domain)
 	
+	public $level;			// array: ["FW"=>..., "KW"=>..., "PW"=>...] ; 0 or NULL = not defined; values between 1 and 6
 	
 	
 	function __construct () {
@@ -19,6 +20,8 @@ abstract class EAL_Object {
 		if ($this instanceof EAL_Review) 	$this->type = "review";
 		
 		$this->setDomain(RoleTaxonomy::getCurrentRoleDomain()["name"]);
+		
+		$this->level = new EAL_Level();
 		
 		
 	}
@@ -52,6 +55,9 @@ abstract class EAL_Object {
 		$this->domain = $domain ?? "";
 	}
 	
+	public function getLevel (): EAL_Level {
+		return $this->level;
+	}
 	
 }
 ?>

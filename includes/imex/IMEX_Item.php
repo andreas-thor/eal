@@ -100,7 +100,7 @@ abstract class IMEX_Item extends IMEX_Object {
 				// import post/item
 				$postarr = array ();
 				$postarr['ID'] = 0;	// no EAL-ID
-				$postarr['post_title'] = $item->title;
+				$postarr['post_title'] = $item->getTitle();
 				$postarr['post_status'] = $status;
 				$postarr['post_type'] = $item->getType();
 				$postarr['post_content'] = microtime();
@@ -110,7 +110,7 @@ abstract class IMEX_Item extends IMEX_Object {
 			
 			// update post (also necessary for initial import to have first revision version)
 			$post = get_post ($itemid);
-			$post->post_title = $item->title;
+			$post->post_title = $item->getTitle();
 			$post->post_status = $status;
 			$post->post_content = microtime();	// ensures revision
 			wp_set_post_terms($itemid, $terms, $item->getDomain(), FALSE );

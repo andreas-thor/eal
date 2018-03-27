@@ -7,7 +7,6 @@ class EAL_Review extends EAL_Object {
 	public $item_id;
 	public $item;
 	public $score;
-	public $level;
 	public $feedback;
 	public $overall;
 	
@@ -32,7 +31,6 @@ class EAL_Review extends EAL_Object {
 			}
 		}
 		
-		$this->level = ["FW" => null, "KW" => null, "PW" => null];
 		$this->feedback = '';
 		$this->overall = 0;
 		
@@ -78,9 +76,7 @@ class EAL_Review extends EAL_Object {
 			}
 		}
 		
-		$this->level["FW"] = isset ($_POST['review_level_FW']) ? $_POST['review_level_FW'] : null;
-		$this->level["KW"] = isset ($_POST['review_level_KW']) ? $_POST['review_level_KW'] : null;
-		$this->level["PW"] = isset ($_POST['review_level_PW']) ? $_POST['review_level_PW'] : null;
+		$this->level = new EAL_Level($_POST, 'review_level');
 		$this->feedback = isset ($_POST['review_feedback']) ? html_entity_decode (stripslashes($_POST['review_feedback'])) : null;
 		$this->overall  = isset ($_POST['review_overall'])  ? $_POST['review_overall']  : null;
 	}
@@ -107,9 +103,8 @@ class EAL_Review extends EAL_Object {
 			}
 		}
 		
-		$this->level["FW"] = $sqlres['level_FW'];
-		$this->level["KW"] = $sqlres['level_KW'];
-		$this->level["PW"] = $sqlres['level_PW'];
+		$this->level = new EAL_Level($sqlres);
+		
 		$this->feedback = $sqlres['feedback'];
 		$this->overall = $sqlres['overall'];
 	}
@@ -134,9 +129,9 @@ class EAL_Review extends EAL_Object {
 				array(
 					'id' => $this->getId(),
 					'item_id' => $this->item_id,
-					'level_FW' => $this->level["FW"],
-					'level_KW' => $this->level["KW"],
-					'level_PW' => $this->level["PW"],
+					'level_FW' => $this->level->get('FW'),
+					'level_KW' => $this->level->get('KW'),
+					'level_PW' => $this->level->get('PW'),
 					'feedback' => $this->feedback,
 					'overall'  => $this->overall
 				),

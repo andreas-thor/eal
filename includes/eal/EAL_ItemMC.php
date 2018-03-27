@@ -26,8 +26,7 @@ class EAL_ItemMC extends EAL_Item {
 	
 	/**
 	 * Create new item from _POST
-	 * @param unknown $post_id
-	 * @param unknown $post
+	 * @param string $prefix
 	 */
 	protected function loadFromPOSTRequest (string $prefix="") {
 	
@@ -117,7 +116,6 @@ class EAL_ItemMC extends EAL_Item {
 	}
 	
 	
-	
 	public function getPoints(): int { 
 		
 		$result = 0;
@@ -130,7 +128,6 @@ class EAL_ItemMC extends EAL_Item {
 	
 	
 	
-		
 
 
 	
@@ -159,6 +156,8 @@ class EAL_ItemMC extends EAL_Item {
 		
 	
 	}
+
+
 	
 	
 	

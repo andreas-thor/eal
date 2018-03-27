@@ -110,7 +110,7 @@ class CPT_Review extends CPT_Object {
 
 		<?php 
 		
-		add_meta_box('mb_item', 'Item: ' . $review->getItem()->title, array ($review->getHTMLPrinter(), 'metaboxItem'), $this->type, 'normal', 'default' );
+		add_meta_box('mb_item', 'Item: ' . $review->getItem()->getTitle(), array ($review->getHTMLPrinter(), 'metaboxItem'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_score', 'Fall- oder Problemvignette, Aufgabenstellung und Antwortoptionen', array ($review->getHTMLPrinter(), 'metaboxScore'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_feedback', 'Feedback', array ($review->getHTMLPrinter(), 'metaboxFeedback'), $this->type, 'normal', 'default');
 		

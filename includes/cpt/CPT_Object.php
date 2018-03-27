@@ -5,17 +5,29 @@ require_once(__DIR__ . "/../eal/EAL_ItemBasket.php");
 abstract class CPT_Object {
 	
 	
-	public $type;
-	public $label;
-	public $menu_pos;
-	public $cap_type;
-	public $supports; 
-	public $taxonomies;
+	protected $type;
+	protected $label;
+	protected $menu_pos;
+	protected $cap_type;
+	protected $supports; 
+	protected $taxonomies;
 	
-	public $table_columns;	
-	public $dashicon;
-	public $bulk_actions;
+	protected $table_columns;	
+	protected $dashicon;
+	protected $bulk_actions;
 	
+	
+	public function getType(): string {
+		return $this->type;
+	}
+	
+	public function getLabel(): string {
+		return $this->label;
+	}
+	
+	public function getDashIcon(): string {
+		return $this->dashicon;
+	}
 	
 	/*
 	 * #######################################################################
@@ -92,6 +104,8 @@ abstract class CPT_Object {
 	
 	
 	
+	
+	
 	public function addHooks() {
 		
 		
@@ -161,11 +175,10 @@ abstract class CPT_Object {
 	
 	
 	/** TODO: Check if editable (based on user rights); if post_status = trash --> not editable
-	 * @param unknown $column
-	 * @param unknown $post_id
+	 * @param string $column
 	 */
 
-	public function WPCB_manage_posts_custom_column ( $column, $post_id ) {
+	public function WPCB_manage_posts_custom_column ( string $column, $post_id ) {
 	
 		global $post;
 	
@@ -226,7 +239,7 @@ abstract class CPT_Object {
 				break;
 			
 			case 'item_type':
-				printf ('<a href="%1$s"><div class="dashicons-before %2$s" style="display:inline">&nbsp;</div></a>', add_query_arg ('item_type', $post->item_type, $basic_url), $this->dashicon);
+				printf ('<a href="%1$s"><div class="dashicons-before %2$s" style="display:inline">&nbsp;</div></a>', add_query_arg ('item_type', $post->item_type, $basic_url), $this->getDashIcon());
 				break;
 	
 			case 'taxonomy':
@@ -256,15 +269,15 @@ abstract class CPT_Object {
 				break;
 	
 			case 'level_FW':
-				if ($post->level_FW > 0) printf ('<a href="%1$s">%2$s</a>', add_query_arg ('level_FW', $post->level_FW, $basic_url), EAL_Item::$level_label[$post->level_FW-1]);
+				if ($post->level_FW > 0) printf ('<a href="%1$s">%2$s</a>', add_query_arg ('level_FW', $post->level_FW, $basic_url), EAL_Level::LABEL[$post->level_FW]);
 				break;
 	
 			case 'level_PW':
-				if ($post->level_PW > 0) printf ('<a href="%1$s">%2$s</a>', add_query_arg ('level_PW', $post->level_PW, $basic_url), EAL_Item::$level_label[$post->level_PW-1]);
+				if ($post->level_PW > 0) printf ('<a href="%1$s">%2$s</a>', add_query_arg ('level_PW', $post->level_PW, $basic_url), EAL_Level::LABEL[$post->level_PW]);
 				break;
 	
 			case 'level_KW':
-				if ($post->level_KW > 0) printf ('<a href="%1$s">%2$s</a>', add_query_arg ('level_KW', $post->level_KW, $basic_url), EAL_Item::$level_label[$post->level_KW-1]);
+				if ($post->level_KW > 0) printf ('<a href="%1$s">%2$s</a>', add_query_arg ('level_KW', $post->level_KW, $basic_url), EAL_Level::LABEL[$post->level_KW]);
 				break;
 	
 			case 'item_learnout':
@@ -456,7 +469,7 @@ abstract class CPT_Object {
 				echo ("<select class='postform' name='level_{$lt}'>");
 				echo ("<option value='0'>All {$lt}</option>");
 				foreach(array (1, 2, 3, 4, 5, 6) as $v) {
-					echo ("<option value='${v}' " . (($v==$selected)?'selected':'') . ">" . EAL_Item::$level_label[$v-1] . "</option>");
+					echo ("<option value='${v}' " . (($v==$selected)?'selected':'') . ">" . EAL_Level::LABEL[$v] . "</option>");
 				}
 				echo ("</select>");
 			}

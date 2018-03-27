@@ -22,7 +22,7 @@ class HTML_Object {
 	}
 	
 	
-	protected function printLevelObject ($prefix, $level, $default, bool $disabled, bool $background, string $callback) {
+	protected function printLevelObject (string $prefix, EAL_Level $level, EAL_Level $default, bool $disabled, bool $background, string $callback) {
 ?>
 		<script>
 			function disableOtherLevels (e) {
@@ -37,26 +37,26 @@ class HTML_Object {
 		<table style="font-size:100%">
 			<tr>
 				<td></td>
-				<?php foreach ($level as $c => $v) { ?>
-					<td><?php echo $c ?></td>
+				<?php foreach (EAL_Level::TYPE as $type) { ?>
+					<td><?php echo $type ?></td>
 				<?php } ?>
 			</tr>
 			
-			<?php foreach (EAL_Item::$level_label as $n => $r) {	// n=0..5, $r=Erinnern...Erschaffen  ?>
+			<?php foreach (EAL_Level::LABEL as $n => $r) {	// n=1..6, $r=Erinnern...Erschaffen  ?>
 			<tr>
-				<td><?php echo $n+1 ?>. <?php echo $r ?></td>
-				<?php foreach ($level as $c=>$v) {	// c=FW,KW,PW; v=1..6 
-					$bgcolor = (($default[$c]==$n+1) && ($background==1)) ? '#E0E0E0' : 'transparent';
-					$checkedDisabled = (($v==$n+1) ? 'checked': ($disabled ? 'disabled' : ''));
-					$name = $prefix . '_level_' . $c;
-					$onClick = ($callback != '') ? sprintf ("%s (this, %d, '%s', %d, 's');", $callback, $n+1, EAL_Item::$level_label[$n], $default[$c], (($default[$c]>0) ? EAL_Item::$level_label[$default[$c]-1] : '')) : '';
+				<td><?php echo $n ?>. <?php echo $r ?></td>
+				<?php foreach (EAL_Level::TYPE as $type) {	
+					$bgcolor = (($default->get($type)==$n) && ($background==1)) ? '#E0E0E0' : 'transparent';
+					$checkedDisabled = (($level->get($type)==$n) ? 'checked': ($disabled ? 'disabled' : ''));
+					$name = $prefix . '_level_' . $type;
+					$onClick = ($callback != '') ? sprintf ("%s (this, %d, '%s', %d, 's');", $callback, $n, $r, $default->get($type), (($default->get($type)>0) ? EAL_Level::LABEL[$default->get($type)] : '')) : '';
 				?>
 					<td valign="bottom" align="left" style="padding:3px; padding-left:5px; background-color:<?php echo $bgcolor ?>">
 						<input 
 							type="radio" 
 							id="<?php echo $name ?>_<?php echo $r ?>"  
 							name="<?php echo $name ?>" 
-							value="<?php echo $n+1 ?>" 
+							value="<?php echo $n ?>" 
 							<?php echo $checkedDisabled ?>  
 							onclick="disableOtherLevels(this); <?php echo $onClick ?>"
 						/>

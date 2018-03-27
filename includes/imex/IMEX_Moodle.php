@@ -94,13 +94,13 @@ class IMEX_Moodle extends IMEX_Item {
 
 		// <name><text>title of question</text></name>
 		$xmlName = $dom->createElement('name');
-		$xmlName->appendChild ($dom->createElement('text', $item->title));
+		$xmlName->appendChild ($dom->createElement('text', $item->getTitle()));
 		$xmlQuestion->appendChild($xmlName);
 		
 		
 		// <questiontext format="html"><text>description and question</text></questiontext>
 		$xmlText = $dom->createElement('text');
-		$xmlText->appendChild($dom->createCDATASection($this->processAllImages(wpautop($item->description) . self::DESCRIPTION_QUESTION_SEPARATOR . wpautop($item->question))));
+		$xmlText->appendChild($dom->createCDATASection($this->processAllImages(wpautop($item->getDescription()) . self::DESCRIPTION_QUESTION_SEPARATOR . wpautop($item->getQuestion()))));
 		
 		
 		$xmlQuestiontext  = $dom->createElement('questiontext');
@@ -132,20 +132,12 @@ class IMEX_Moodle extends IMEX_Item {
 		$xpath = new DOMXPath($dom);
 		
 		$item = (($xpath->evaluate('./single', $question)->textContent) == 'true') ? new EAL_ItemSC() : new EAL_ItemMC();
-		$a = $xpath->evaluate('./name/text', $question)[0];
-		$item->title = $xpath->evaluate('./name/text', $question)[0]->textContent;
-	
-		$text = $xpath->evaluate('./questiontext/text', $question)[0]->textContent;
-		
+
 		// Description and Question are separated by horizontal line
+		$text = $xpath->evaluate('./questiontext/text', $question)[0]->textContent;
 		$split = explode (self::DESCRIPTION_QUESTION_SEPARATOR, $text, 2);
-		if (count($split)==1) {
-			$item->description = '';
-			$item->question = $split[0];
-		} else {
-			$item->description = $split[0];
-			$item->question = $split[1];
-		}
+		
+		$item->init($xpath->evaluate('./name/text', $question)[0]->textContent, (count($split)>1) ? $split[0] : '', $split[count($split)-1]);
 		
 		$points = intval($xpath->evaluate('./defaultgrade', $question)[0]->textContent);
 		$item->answers = ($item->getType()=="itemsc") ? $this->parse_XMLSingleChoiceAnswers ($dom, $question, $points) : $this->parse_XMLMultiChoiceAnswers ($dom, $question, $points);

@@ -5,12 +5,14 @@ require_once 'EAL_Object.php';
 
 class EAL_LearnOut extends EAL_Object  {
 
-	public $title;
+	private $title;
 	public $description;
-	public $level;
 	
 	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	
+	public function getTitle (): string {
+		return $this->title;
+	}
 	
 	
 	function __construct(int $learnout_id=-1, string $prefix="") {
@@ -19,7 +21,6 @@ class EAL_LearnOut extends EAL_Object  {
 		$this->setId (-1);
 		$this->title = '';
 		$this->description = 'Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage ...';
-		$this->level = ["FW" => null, "KW" => null, "PW" => null];
 		
 		
 		if ($learnout_id > 0) {
@@ -53,10 +54,8 @@ class EAL_LearnOut extends EAL_Object  {
 		$this->setId ($_POST[$prefix."post_ID"]);
 		$this->title = stripslashes($_POST[$prefix."post_title"]);
 		$this->description = isset ($_POST[$prefix.'learnout_description']) ? html_entity_decode (stripslashes($_POST[$prefix.'learnout_description'])) : null;
-		$this->level["FW"] = $_POST[$prefix.'learnout_level_FW'] ?? null;
-		$this->level["KW"] = $_POST[$prefix.'learnout_level_KW'] ?? null;
-		$this->level["PW"] = $_POST[$prefix.'learnout_level_PW'] ?? null;
-		  
+		$this->level = new EAL_Level($_POST, $prefix.'learnout_level');
+
 		$this->setDomain($_POST[$prefix."domain"]);
 		if (($this->getDomain() == "") && (isset($_POST[$prefix.'tax_input']))) {
 			foreach ($_POST[$prefix.'tax_input'] as $key => $value) {
@@ -77,9 +76,7 @@ class EAL_LearnOut extends EAL_Object  {
 		$this->setId ($sqlres['id']);
 		$this->title = $sqlres['title'];
 		$this->description = $sqlres['description'];
-		$this->level["FW"] = $sqlres['level_FW'];
-		$this->level["KW"] = $sqlres['level_KW'];
-		$this->level["PW"] = $sqlres['level_PW'];
+		$this->level = new EAL_Level($sqlres);
 		$this->setDomain($sqlres['domain']);
 	}
 	
@@ -130,9 +127,9 @@ class EAL_LearnOut extends EAL_Object  {
 				'id' => $this->getId(),
 				'title' => $this->title,
 				'description' => $this->description,
-				'level_FW' => $this->level["FW"],
-				'level_KW' => $this->level["KW"],
-				'level_PW' => $this->level["PW"],
+				'level_FW' => $this->level->get('FW'),
+				'level_KW' => $this->level->get('KW'),
+				'level_PW' => $this->level->get('PW'),
 				'domain' => $this->getDomain()
 		),
 		array('%d','%s','%s','%d','%d','%d','%s')
