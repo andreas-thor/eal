@@ -140,7 +140,13 @@ class IMEX_Moodle extends IMEX_Item {
 		$item->init($xpath->evaluate('./name/text', $question)[0]->textContent, (count($split)>1) ? $split[0] : '', $split[count($split)-1]);
 		
 		$points = intval($xpath->evaluate('./defaultgrade', $question)[0]->textContent);
-		$item->answers = ($item->getType()=="itemsc") ? $this->parse_XMLSingleChoiceAnswers ($dom, $question, $points) : $this->parse_XMLMultiChoiceAnswers ($dom, $question, $points);
+		
+		if ($item->getType()=="itemsc") {
+			$this->parse_XMLSingleChoiceAnswers ($dom, $question, $item, $points);
+		}
+		if ($item->getType()=="itemmc") {
+			$this->parse_XMLMultiChoiceAnswers ($dom, $question, $item, $points);
+		}
 		
 		return $item;
 	}
@@ -150,12 +156,13 @@ class IMEX_Moodle extends IMEX_Item {
 		
 		$xmlAnswers = array ();
 		
-		foreach ($item->answers as $answer) {
-			$fraction = ($item->getPoints()) == 0 ? 0 : 100*$answer['points']/$item->getPoints();	// answer points in percent of overall item points 
+		for ($index=0; $index<$item->getNumberOfAnswers(); $index++) {
+				
+			$fraction = ($item->getPoints()) == 0 ? 0 : 100*$item->getPointsChecked($index)/$item->getPoints();	// answer points in percent of overall item points 
 			
 			$xmlAnswer  = $dom->createElement('answer');
 			$xmlAnswer->setAttribute('fraction', $this->getValidFractionValue($fraction));
-			$xmlAnswer->appendChild($dom->createElement('text', $answer['answer']));
+			$xmlAnswer->appendChild($dom->createElement('text', $item->getAnswer($index)));
 			 
 			$xmlFeedback  = $dom->createElement('feedback');
 			$xmlFeedback->setAttribute('format', 'html');
@@ -176,39 +183,37 @@ class IMEX_Moodle extends IMEX_Item {
 	 * @param int $points overall points for this question
 	 * @param EAL_ItemSC $item
 	 */
-	private function parse_XMLSingleChoiceAnswers (DOMDocument $dom, DOMElement $question, int $points): array  {
+	private function parse_XMLSingleChoiceAnswers (DOMDocument $dom, DOMElement $question, EAL_ItemSC $item, int $points)  {
 		
 		$xpath = new DOMXPath($dom);
 		
-		$answers = [];
+		$item->clearAnswers();
 		foreach ($xpath->evaluate('./answer', $question)  as $answer) {
 			
 			$fraction = doubleval($answer->getAttribute('fraction'));
 			$p = round ($fraction * $points / 100);		// we support int values only for points
-			$answers[] = ['answer' => $xpath->evaluate('./text', $answer)[0]->textContent, 'points' => $p];
+			$item->addAnswer($xpath->evaluate('./text', $answer)[0]->textContent, $p);
 		}
-		
-		return $answers;
 	}
 	
 	private function create_XMLMultipleChoiceAnswers (DOMDocument $dom, EAL_ItemMC $item): array {
 		
 		// points computation in Moodle is different to Ilias/Easlit
 		$sumPositivePoints = 0;	
-		foreach ($item->answers as $answer) {
-			if ($answer['positive']>$answer['negative']) {
-				$sumPositivePoints += $answer['positive']-$answer['negative'];
+		for ($index=0; $index<$item->getNumberOfAnswers(); $index++) {
+			if ($item->getPointsPos($index) > $item->getPointsNeg($index)) {
+				$sumPositivePoints += $item->getPointsPos($index) - $item->getPointsNeg($index);
 			}
 		}
 		
 		$xmlAnswers = array ();
 		
-		foreach ($item->answers as $answer) {
-			$fraction = ($sumPositivePoints) == 0 ? 0 : 100*($answer['positive']-$answer['negative'])/$sumPositivePoints;	
+		for ($index=0; $index < $item->getNumberOfAnswers(); $index++) {
+			$fraction = ($sumPositivePoints) == 0 ? 0 : 100*($item->getPointsPos($index) - $item->getPointsNeg($index)) / $sumPositivePoints;	
 			
 			$xmlAnswer  = $dom->createElement('answer');
 			$xmlAnswer->setAttribute('fraction', $this->getValidFractionValue($fraction));
-			$xmlAnswer->appendChild($dom->createElement('text', $answer['answer']));
+			$xmlAnswer->appendChild($dom->createElement('text', $item->getAnswer($index)));
 			
 			$xmlFeedback  = $dom->createElement('feedback');
 			$xmlFeedback->setAttribute('format', 'html');
@@ -222,11 +227,11 @@ class IMEX_Moodle extends IMEX_Item {
 	}
 	
 	
-	private function parse_XMLMultiChoiceAnswers (DOMDocument $dom, DOMElement $question, int $points): array  {
+	private function parse_XMLMultiChoiceAnswers (DOMDocument $dom, DOMElement $question, EAL_ItemMC $item, int $points)  {
 		
 		$xpath = new DOMXPath($dom);
 		
-		$answers = [];
+		$item->clearAnswers();
 		foreach ($xpath->evaluate('./answer', $question)  as $answer) {
 			
 			$fraction = doubleval($answer->getAttribute('fraction'));
@@ -236,10 +241,9 @@ class IMEX_Moodle extends IMEX_Item {
 				$n = -$p;
 				$p = 0;
 			}
-			$answers[] = ['answer' => $xpath->evaluate('./text', $answer)[0]->textContent, 'positive' => $p, 'negative' => $n];
+			$item->addAnswer($xpath->evaluate('./text', $answer)[0]->textContent, $p, $n);
 		}
 		
-		return $answers;
 	}
 	
 	/**

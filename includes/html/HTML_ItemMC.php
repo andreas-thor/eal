@@ -18,9 +18,13 @@ class HTML_ItemMC extends HTML_Item  {
 		);
 	}
 	
+	private function getItem(): EAL_ItemMC {
+		return $this->item;
+	}
+	
 	
  
-	private function printAnswerLine (string $prefix, string $answer, string $pointsPositive, string $pointsNegative, bool $showButtons, string $fontWeight, bool $isReadOnly, bool $includeFormValue) {
+	private function printAnswerLine (string $prefix, string $answer, int $pointsPositive, int $pointsNegative, bool $showButtons, string $fontWeight, bool $isReadOnly, bool $includeFormValue) {
 ?>
 		<tr>
 			<td style="width:100%-12em">
@@ -72,9 +76,9 @@ class HTML_ItemMC extends HTML_Item  {
 			}
 		</script>
 		
-		Minimum: <input type="text" name="<?php echo $prefix ?>item_minnumber" value="<?php echo $this->item->minnumber ?>" size="1" /> 
+		Minimum: <input type="text" name="<?php echo $prefix ?>item_minnumber" value="<?php echo $this->getItem()->minnumber ?>" size="1" /> 
 		&nbsp;&nbsp;&nbsp;
-		Maximum: <input type="text" name="<?php echo $prefix ?>item_maxnumber" value="<?php echo $this->item->minnumber ?>" size="1" />
+		Maximum: <input type="text" name="<?php echo $prefix ?>item_maxnumber" value="<?php echo $this->getItem()->minnumber ?>" size="1" />
 		<table style="font-size:100%">
 			<tr align="left">
 				<th>Antwort-Text</th>
@@ -83,8 +87,8 @@ class HTML_ItemMC extends HTML_Item  {
 				<th>Aktionen</th>
 			</tr>
 			<?php 
-				foreach ($this->item->answers as $a) {
-					$this->printAnswerLine($prefix, $a['answer'], $a['positive'], $a['negative'], TRUE, 'normal', FALSE, TRUE);
+				for ($index=0; $index<$this->getItem()->getNumberOfAnswers(); $index++) {
+					$this->printAnswerLine($prefix, $this->getItem()->getAnswer($index), $this->getItem()->getPointsPos($index), $this->getItem()->getPointsNeg($index), TRUE, 'normal', FALSE, TRUE);
 				}
 			?>
 		</table>
@@ -93,13 +97,13 @@ class HTML_ItemMC extends HTML_Item  {
 	
 	protected function printAnswers_ForReview(bool $isImport, string $prefix) {
 ?>
-		Minimum: <input type="text" name="<?php echo $prefix ?>item_minnumber" value="<?php echo $this->item->minnumber ?>" size="1" readonly /> 
+		Minimum: <input type="text" name="<?php echo $prefix ?>item_minnumber" value="<?php echo $this->getItem()->minnumber ?>" size="1" readonly /> 
 		&nbsp;&nbsp;&nbsp;
-		Maximum: <input type="text" name="<?php echo $prefix ?>item_maxnumber" value="<?php echo $this->item->minnumber ?>" size="1" readonly />
+		Maximum: <input type="text" name="<?php echo $prefix ?>item_maxnumber" value="<?php echo $this->getItem()->minnumber ?>" size="1" readonly />
 		<table style="font-size:100%">
 			<?php 
-				foreach ($this->item->answers as $a) {
-					$this->printAnswerLine($prefix, $a['answer'], $a['positive'], $a['negative'], FALSE, $a['positive']>$a['negative'] ? 'bold' : 'normal', TRUE, $isImport);
+				for ($index=0; $index<$this->getItem()->getNumberOfAnswers(); $index++) {
+					$this->printAnswerLine($prefix, $this->getItem()->getAnswer($index), $this->getItem()->getPointsPos($index), $this->getItem()->getPointsNeg($index), $this->getItem()->getPointsPos($index)>$this->getItem()->getPointsNeg($index) ? 'bold' : 'normal', TRUE, $isImport);
 				}
 			?>
 		</table>
@@ -112,14 +116,14 @@ class HTML_ItemMC extends HTML_Item  {
 ?>
 		<div style="margin-top:1em">
 			<div style="margin-top:1em">
-				Minimum: <input type="text" value="<?php echo $this->item->minnumber ?>" size="1" readonly/> 
+				Minimum: <input type="text" value="<?php echo $this->getItem()->minnumber ?>" size="1" readonly/> 
 				&nbsp;&nbsp;&nbsp;
-				Maximum: <input type="text" value="<?php echo $this->item->maxnumber ?>" size="1" readonly/>
+				Maximum: <input type="text" value="<?php echo $this->getItem()->maxnumber ?>" size="1" readonly/>
 			</div>					
-			<?php foreach ($this->item->answers as $a) { ?> 
+			<?php for ($index=0; $index<$this->getItem()->getNumberOfAnswers(); $index++) { ?> 
 				<div style="margin-top:1em">
 					<input type="checkbox"/>
-					<?php echo $a['answer'] ?>
+					<?php echo $this->getItem()->getAnswer($index) ?>
 				</div>
 			<?php } ?>
 		</div>
@@ -141,9 +145,9 @@ class HTML_ItemMC extends HTML_Item  {
 			</colgroup>
 			<tbody>
 				<tr>
-					<td><div><?php self::printCompareAnswers1($old->answers, $new->answers, "deleted") ?></div></td>
+					<td><div><?php self::printCompareAnswers1($old, $new, "deleted") ?></div></td>
 					<td></td>
-					<td><div><?php self::printCompareAnswers1($new->answers, $old->answers, "added") ?></div></td>
+					<td><div><?php self::printCompareAnswers1($new, $old, "added") ?></div></td>
 				</tr>
 			</tbody>
 		</table
@@ -158,14 +162,14 @@ class HTML_ItemMC extends HTML_Item  {
 	
 
 	
-	private static function printCompareAnswers1 (array $old, array $new, string $class) {
+	private static function printCompareAnswers1 (EAL_ItemMC $old, EAL_ItemMC $new, string $class) {
 ?>		
 		<table>
-			<?php foreach ($old as $i => $a) { ?>
+			<?php for ($index=0; $index<$old->getNumberOfAnswers(); $index++) { ?>
 				<tr align="left">
-					<td style="border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px" align="left" <?php if ($new[$i]['positive'] != $a['positive']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['positive'] ?></td>
-					<td style="border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px" align="left" <?php if ($new[$i]['negative'] != $a['negative']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['negative'] ?></td>
-					<td style="width:98%; padding:0; padding-left:10px" align="left" <?php if ($new[$i]['answer'] != $a['answer']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['answer'] ?></td>
+					<td style="border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px" align="left" <?php if ($new->getPointsPos($index) != $old->getPointsPos($index)) printf ('class="diff-%sline"', $class) ?>><?php echo $old->getPointsPos($index) ?></td>
+					<td style="border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px" align="left" <?php if ($new->getPointsNeg($index) != $old->getPointsNeg($index)) printf ('class="diff-%sline"', $class) ?>><?php echo $old->getPointsNeg($index) ?></td>
+					<td style="width:98%; padding:0; padding-left:10px" align="left" <?php if ($new->getAnswer($index) != $old->getAnswer($index)) printf ('class="diff-%sline"', $class) ?>><?php echo $old->getAnswer($index) ?></td>
 				</tr>
 			<?php } ?>
 		</table>

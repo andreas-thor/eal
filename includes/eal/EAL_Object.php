@@ -9,7 +9,10 @@ abstract class EAL_Object {
 	private $type;		// read-only; will be set during constructor based on concrete class type (EAL_ItemMC, EAL_ItemSC, ...)
 	private $domain;	// each item belongs to a domain (when newly created: domain = current user's role domain)
 	
-	public $level;			// array: ["FW"=>..., "KW"=>..., "PW"=>...] ; 0 or NULL = not defined; values between 1 and 6
+	/**
+	 * @var EAL_Level 
+	 */
+	protected $level;			
 	
 	
 	function __construct () {

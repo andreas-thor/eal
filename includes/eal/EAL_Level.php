@@ -1,9 +1,20 @@
 <?php
 
+/**
+ * 
+ * @author Andreas Thor
+ *
+ */
+
 class EAL_Level {
 	
 	const LABEL = ['1' => 'Erinnern', '2' => 'Verstehen', '3' => 'Anwenden', '4' => 'Analysieren', '5' => 'Evaluieren', '6' => 'Erschaffen'];
-	const TYPE = ['FW', 'KW', 'PW'];
+	
+	/**
+	 * Dimension types, i.e., FW, KW, PW
+	 * @var array
+	 */
+	const TYPE = ['FW', 'KW', 'PW'];	// dimensions
 
 	private $level;
 

@@ -10,17 +10,17 @@ abstract class EAL_Item extends EAL_Object {
 	private $description;	// description (e.g., vignette, use case, scenarion)
 	private $question;		// actual question
 	
-	public $learnout;
-	public $learnout_id;
+	private $learnout;
+	private $learnout_id;
 	
 	public $difficulty;
-	public $note;
-	public $flag;
+	
+	private $note;
+	private $flag;
 	
 	public $minnumber = null;	// minnumber/maxnumber: range of correct answers (relevant for MC only)
 	public $maxnumber = null;
 	
-	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	public static $level_type = ["FW", "KW", "PW"];
 	
 	public static $category_value_label = [
@@ -51,6 +51,14 @@ abstract class EAL_Item extends EAL_Object {
 	
 	public function getQuestion (): string {
 		return $this->question;
+	}
+	
+	public function getNote(): string {
+		return $this->note;
+	}
+	
+	public function getFlag(): int {
+		return $this->flag ?? 0;
 	}
 	
 	public abstract function getHTMLPrinter (): HTML_Item;
@@ -100,6 +108,15 @@ abstract class EAL_Item extends EAL_Object {
 	}
 	
 	
+	
+	public function copyMetadata (EAL_Item $sourceItem) {
+		
+		$this->level = $sourceItem->level;
+		$this->learnout_id = $sourceItem->learnout_id;
+		$this->leanout = NULL;
+		$this->note = $sourceItem->getNote();
+		$this->flag = $sourceItem->getFlag();
+	}
 	
 	
 	public static function load (string $item_type, int $item_id, string $prefix=""): EAL_Item {
@@ -188,8 +205,8 @@ abstract class EAL_Item extends EAL_Object {
 					'learnout_id' => $this->learnout_id,
 					'type' => $this->getType(),
 					'domain' => $this->getDomain(),
-					'note' => $this->note,
-					'flag' => $this->flag,
+					'note' => $this->getNote(),
+					'flag' => $this->getFlag(),
 					'minnumber' => $this->minnumber,
 					'maxnumber' => $this->maxnumber
 			),
@@ -221,6 +238,14 @@ abstract class EAL_Item extends EAL_Object {
 		return $this->learnout;
 	}
 	
+	
+	/**
+	 * 
+	 * @return int Id of learning outcome, or -1 if no learning outcome available
+	 */
+	public function getLearnOutId(): int {
+		return $this->learnout_id ?? -1;
+	}
 	
 	/**
 	 * 

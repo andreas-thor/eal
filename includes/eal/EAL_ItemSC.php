@@ -8,17 +8,38 @@ class EAL_ItemSC extends EAL_Item {
 	 
 	
 	function __construct(int $item_id = -1, string $prefix="") {
-		$this->answers = array (
-			array ('answer' => '', 'points' => 1),
-			array ('answer' => '', 'points' => 0),
-			array ('answer' => '', 'points' => 0),
-			array ('answer' => '', 'points' => 0));
+		
+		$this->clearAnswers();
+		$this->addAnswer('', 1);
+		$this->addAnswer('', 0);
+		$this->addAnswer('', 0);
+		$this->addAnswer('', 0);
 		
 		parent::__construct($item_id, $prefix);
-		
-		
-		
 	}
+	
+	public function clearAnswers() {
+		$this->answers = array();
+	}
+	
+	public function addAnswer (string $text, int $points) {
+		array_push ($this->answers, array ('answer' => $text, 'points' => $points));
+	}
+	
+	public function getNumberOfAnswers (): int {
+		return count($this->answers);
+	}
+	
+	public function getAnswer (int $index): string {
+		return $this->answers[$index]['answer'];
+	}
+	
+	public function getPointsChecked (int $index): int {
+		return $this->answers[$index]['points'];
+	}
+	
+	
+	
 	
 	public function getHTMLPrinter (): HTML_Item {
 		return new HTML_ItemSC($this);
@@ -30,10 +51,10 @@ class EAL_ItemSC extends EAL_Item {
 		
 		parent::loadFromPOSTRequest($prefix);
 		
-		$this->answers = array();
+		$this->clearAnswers();
 		if (isset($_POST[$prefix.'answer'])) {
 			foreach ($_POST[$prefix.'answer'] as $k => $v) {
-				array_push ($this->answers, array ('answer' => html_entity_decode (stripslashes($v)), 'points' => $_POST[$prefix.'points'][$k]));
+				$this->addAnswer(html_entity_decode (stripslashes($v)), $_POST[$prefix.'points'][$k]);
 			}
 		}
 	}
@@ -44,10 +65,11 @@ class EAL_ItemSC extends EAL_Item {
 		parent::loadFromDB($item_id);
 	
 		global $wpdb;
-		$this->answers = array();
+		
+		$this->clearAnswers();
 		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_{$this->getType()} WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
 		foreach ($sqlres as $a) {
-			array_push ($this->answers, array ('answer' => $a['answer'], 'points' => $a['points']));
+			$this->addAnswer($a['answer'], $a['points']);
 		}
 		
 	}
@@ -62,12 +84,13 @@ class EAL_ItemSC extends EAL_Item {
 		
 		/** TODO: Sanitize all values */
 		
-		if (count($this->answers)>0) {
+		if ($this->getNumberOfAnswers()>0) {
 		
 			$values = array();
 			$insert = array();
-			foreach ($this->answers as $k => $a) {
-				array_push($values, $this->getId(), $k+1, $a['answer'], $a['points']);
+			
+			for ($index=0; $index<$this->getNumberOfAnswers(); $index++) {
+				array_push($values, $this->getId(), $index+1, $this->getAnswer($index), $this->getPointsChecked($index));
 				array_push($insert, "(%d, %d, %s, %d)");
 			}
 		
@@ -78,7 +101,7 @@ class EAL_ItemSC extends EAL_Item {
 		}
 		
 		// delete remaining answers
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$this->getType()} WHERE item_id=%d AND id>%d", array ($this->getId(), count($this->answers))));
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$this->getType()} WHERE item_id=%d AND id>%d", array ($this->getId(), $this->getNumberOfAnswers())));
 		
 	}
 	
@@ -120,8 +143,8 @@ class EAL_ItemSC extends EAL_Item {
 	public function getPoints(): int {
 	
 		$result = 0;
-		foreach ($this->answers as $a) {
-			$result = max ($result, $a['points']);
+		for ($index=0; $index<$this->getNumberOfAnswers(); $index++) {
+			$result = max ($result, $this->getPointsChecked($index));
 		}
 		return $result;
 	

@@ -23,20 +23,23 @@ class HTML_Learnout extends HTML_Object {
 	}
 	 
 	
+	private function getLearnout(): EAL_LearnOut {
+		return $this->learnout;
+	}
 	
 	public function metaboxTopic () {
 		global $post;
-		post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy", "title" => "", "args" => array ( "taxonomy" => $this->learnout->getDomain() ) ) );
+		post_categories_meta_box( $post, array ("id" => "WPCB_mb_taxonomy", "title" => "", "args" => array ( "taxonomy" => $this->getLearnout()->getDomain() ) ) );
 	}
 	
 	public function printTopic (bool $isEditable, string $prefix = "") {
-		parent::printTopicObject($this->learnout->getDomain(), $this->learnout->getId(), $isEditable, $prefix);
+		parent::printTopicObject($this->getLearnout()->getDomain(), $this->getLearnout()->getId(), $isEditable, $prefix);
 	}
 	
 	
 	public function metaboxDescription () {
 		
-		$this->printEditor('learnout_description', $this->learnout->description);
+		$this->printEditor('learnout_description', $this->getLearnout()->getDescription());
 ?>
 
 		<script>
@@ -66,7 +69,7 @@ class HTML_Learnout extends HTML_Object {
 		<!--  area for super verbs -->
 		<div id="eal_superverbs" style="margin:10px">
 		<?php foreach ($this->buttons_verb as $level => $terms) { ?>
-			<div style="display:<?=($this->learnout->getLevel()->hasLevel($level) ? 'block' : 'none') ?>">
+			<div style="display:<?=($this->getLearnout()->getLevel()->hasLevel($level) ? 'block' : 'none') ?>">
 			<?php 
 				foreach ($terms as $t) { 
 					$tname = htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1');
@@ -92,9 +95,9 @@ class HTML_Learnout extends HTML_Object {
 				<input 
 					type="hidden" 
 					name="<?php echo $prefix ?>learnout_description" 
-					value="<?php echo htmlentities($this->learnout->description, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" />			
+					value="<?php echo htmlentities($this->getLearnout()->getDescription(), ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" />			
 			<?php } ?> 
-			<?php echo wpautop($this->learnout->description) ?>
+			<?php echo wpautop($this->getLearnout()->getDescription()) ?>
 		</div>
 <?php 		
 	}
@@ -120,7 +123,7 @@ class HTML_Learnout extends HTML_Object {
 		$callback = ($isEditable) ? "showSuperVerbs" : "";
 		
 		// FIXME: Ist das hier richtig, dass nochmal item an prefix angehangen wird???
-		parent::printLevelObject ($prefix . "learnout", $this->learnout->getLevel(), NULL, !$isEditable, FALSE, $callback);
+		parent::printLevelObject ($prefix . "learnout", $this->getLearnout()->getLevel(), NULL, !$isEditable, FALSE, $callback);
 		
 	}
 	

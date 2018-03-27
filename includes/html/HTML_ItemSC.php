@@ -18,8 +18,12 @@ class HTML_ItemSC extends HTML_Item {
 		);
 	}
 	
+	private function getItem(): EAL_ItemSC {
+		return $this->item;
+	}
 	
-	private function printAnswerLine (string $prefix, string $answer, string $points, bool $showButtons, string $fontWeight, bool $isReadOnly, bool $includeFormValue) {
+	
+	private function printAnswerLine (string $prefix, string $answer, int $points, bool $showButtons, string $fontWeight, bool $isReadOnly, bool $includeFormValue) {
 ?>
 		<tr>
 			<td style="width:100%-9em">
@@ -56,10 +60,10 @@ class HTML_ItemSC extends HTML_Item {
 	protected function printAnswers_Preview () {
 ?> 
 		<div style="margin-top:1em">
-			<?php foreach ($this->item->answers as $a) { ?> 
+			<?php for ($index=0; $index<$this->getItem()->getNumberOfAnswers(); $index++) { ?> 
 				<div style="margin-top:1em">
-					<input type="radio" name="<?php echo $this->item->getId() ?>" />
-					<?php echo $a['answer'] ?>
+					<input type="radio" name="<?php echo $this->getItem()->getId() ?>" />
+					<?php echo $this->getItem()->getAnswer($index) ?>
 				</div>
 			<?php } ?>
 		</div>
@@ -93,8 +97,8 @@ class HTML_ItemSC extends HTML_Item {
 				<th>Aktionen</th>
 			</tr>
 			<?php 
-			foreach ($this->item->answers as $a) {
-				$this->printAnswerLine($prefix, $a['answer'], $a['points'], TRUE, 'normal', FALSE, TRUE);
+			for ($index=0; $index<$this->getItem()->getNumberOfAnswers(); $index++) {
+				$this->printAnswerLine($prefix, $this->getItem()->getAnswer($index), $this->getItem()->getPointsChecked($index), TRUE, 'normal', FALSE, TRUE);
 			}
 			?>
 		</table>
@@ -106,8 +110,8 @@ class HTML_ItemSC extends HTML_Item {
 ?>
 		<table style="font-size: 100%">
 			<?php 
-			foreach ($this->item->answers as $a) { 
-				$this->printAnswerLine($prefix, $a['answer'], $a['points'], FALSE, $a['points']>0 ? 'bold' : 'normal', TRUE, $isImport);
+			for ($index=0; $index<$this->getItem()->getNumberOfAnswers(); $index++) {
+				$this->printAnswerLine($prefix, $this->getItem()->getAnswer($index), $this->getItem()->getPointsChecked($index), FALSE, $this->getItem()->getPointsChecked($index)>0 ? 'bold' : 'normal', TRUE, $isImport);
 			} 
 			?>
 		</table>
@@ -128,9 +132,9 @@ class HTML_ItemSC extends HTML_Item {
 			</colgroup>
 			<tbody>
 				<tr>
-					<td><div><?php self::printCompareAnswers1($old->answers, $new->answers, "deleted") ?></div></td>
+					<td><div><?php self::printCompareAnswers1($old, $new, "deleted") ?></div></td>
 					<td></td>
-					<td><div><?php self::printCompareAnswers1($new->answers, $old->answers, "added") ?></div></td>
+					<td><div><?php self::printCompareAnswers1($new, $old, "added") ?></div></td>
 				</tr>
 			</tbody>
 		</table
@@ -138,21 +142,21 @@ class HTML_ItemSC extends HTML_Item {
 <?php 
 		$diff .= ob_get_contents();
 		ob_end_clean();
-		return array ("id" => 'answers', 'name' => 'Antwortoptionen', 'diff' => $diff);
+		return array ('id' => 'answers', 'name' => 'Antwortoptionen', 'diff' => $diff);
 		
 	}
 	
 	
 
 	
-	private static function printCompareAnswers1 (array $old, array $new, string $class) {
+	private static function printCompareAnswers1 (EAL_ItemSC $old, EAL_ItemSC $new, string $class) {
 ?>		
 		<table>
-			<?php foreach ($old as $i => $a) { ?>
+			<?php for ($index=0; $index<$old->getNumberOfAnswers(); $index++) { ?>
 				<tr align="left">
 					<td style="border-style:inset; border-width:1px; width:1%; padding:1px 10px 1px 10px" align="left" 
-					<?php if ($new[$i]['points'] != $a['points']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['points'] ?></td>
-					<td style="width:99%; padding:0; padding-left:10px" align="left" <?php if ($new[$i]['answer'] != $a['answer']) printf ('class="diff-%sline"', $class) ?>><?php echo $a['answer'] ?></td>
+					<?php if ($new->getPointsChecked($index) != $old->getPointsChecked($index)) printf ('class="diff-%sline"', $class) ?>><?php echo $old->getPointsChecked($index) ?></td>
+					<td style="width:99%; padding:0; padding-left:10px" align="left" <?php if ($new->getAnswer($index) != $old->getAnswer($index)) printf ('class="diff-%sline"', $class) ?>><?php echo $old->getAnswer($index) ?></td>
 				</tr>
 			<?php } ?>
 		</table>

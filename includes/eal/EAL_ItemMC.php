@@ -2,22 +2,56 @@
 
 require_once ("EAL_Item.php");
 
+
+
+
 class EAL_ItemMC extends EAL_Item {
+	
+	
+	
 	
 	public $answers = array();
 
 	
 	function __construct(int $item_id = -1, string $prefix="") {
-		$this->answers = array (
-				array ('answer' => '', 'positive' => 1, 'negative' => 0),
-				array ('answer' => '', 'positive' => 1, 'negative' => 0),
-				array ('answer' => '', 'positive' => 0, 'negative' => 1),
-				array ('answer' => '', 'positive' => 0, 'negative' => 1)
-		);
+		
+		$this->clearAnswers();
+		$this->addAnswer('', 1, 0);
+		$this->addAnswer('', 1, 0);
+		$this->addAnswer('', 0, 1);
+		$this->addAnswer('', 0, 1);
+		
 		$this->minnumber=0;
-		$this->maxnumber=count($this->answers);
+		$this->maxnumber=$this->getNumberOfAnswers();
 		parent::__construct($item_id, $prefix);
 	}
+	
+	
+	
+	public function clearAnswers() {
+		$this->answers = array();
+	}
+	
+	public function addAnswer (string $text, int $pos, int $neg) {
+		array_push ($this->answers, array ('answer' => $text, 'positive' => $pos, 'negative' => $neg));
+	}
+	
+	public function getNumberOfAnswers (): int {
+		return count($this->answers);
+	}
+	
+	public function getAnswer (int $index): string {
+		return $this->answers[$index]['answer'];
+	}
+	
+	public function getPointsPos (int $index): int {
+		return $this->answers[$index]['positive'];
+	}
+	
+	public function getPointsNeg (int $index): int {
+		return $this->answers[$index]['negative'];
+	}
+	
 	
 	public function getHTMLPrinter (): HTML_Item {
 		return new HTML_ItemMC($this);
@@ -32,15 +66,15 @@ class EAL_ItemMC extends EAL_Item {
 	
 		parent::loadFromPOSTRequest($prefix);
 		
-		$this->answers = array();
+		$this->clearAnswers();
 		if (isset($_POST[$prefix.'answer'])) {
 			foreach ($_POST[$prefix.'answer'] as $k => $v) {
-				array_push ($this->answers, array ('answer' => html_entity_decode (stripslashes($v)), 'positive' => $_POST[$prefix.'positive'][$k], 'negative' => $_POST[$prefix.'negative'][$k]));
+				$this->addAnswer(html_entity_decode (stripslashes($v)), $_POST[$prefix.'positive'][$k], $_POST[$prefix.'negative'][$k]);
 			}
 		}
 		
 		$this->minnumber = $_POST[$prefix.'item_minnumber'] ?? 0;
-		$this->maxnumber = $_POST[$prefix.'item_maxnumber'] ?? count($this->answers);
+		$this->maxnumber = $_POST[$prefix.'item_maxnumber'] ?? $this->getNumberOfAnswers();
 		
 	}
 	
@@ -48,16 +82,16 @@ class EAL_ItemMC extends EAL_Item {
 	protected function loadFromDB (int $item_id) {
 	
 		parent::loadFromDB($item_id);
-		
 		global $wpdb;
-		$this->answers = array();
+		
+		$this->clearAnswers();
 		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_{$this->getType()} WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
 		foreach ($sqlres as $a) {
-			array_push ($this->answers, array ('answer' => $a['answer'], 'positive' => $a['positive'], 'negative' => $a['negative']));
+			$this->addAnswer($a['answer'], $a['positive'], $a['negative']);
 		}
 		
 		if (!isset($this->minnumber)) $this->minnumber = 0;
-		if (!isset($this->maxnumber)) $this->maxnumber = count($this->answers);
+		if (!isset($this->maxnumber)) $this->maxnumber = $this->getNumberOfAnswers();
 	}
 	
 	
@@ -85,12 +119,12 @@ class EAL_ItemMC extends EAL_Item {
 		
 		/** TODO: Sanitize all values */
 		
-		if (count($this->answers)>0) {
+		if ($this->getNumberOfAnswers()>0) {
 			
 			$values = array();
 			$insert = array();
-			foreach ($this->answers as $k => $a) {
-				array_push($values, $this->getId(), $k+1, $a['answer'], $a['positive'], $a['negative']);
+			for ($index=0; $index<$this->getNumberOfAnswers(); $index++) {
+				array_push($values, $this->getId(), $index+1, $this->getAnswer($index), $this->getPointsPos($index), $this->getPointsNeg($index));
 				array_push($insert, "(%d, %d, %s, %d, %d)");
 			}
 			
@@ -103,7 +137,7 @@ class EAL_ItemMC extends EAL_Item {
 		}
 
 		// delete remaining answers
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$this->getType()} WHERE item_id=%d AND id>%d", array ($this->getId(), count($this->answers))));
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$this->getType()} WHERE item_id=%d AND id>%d", array ($this->getId(), $this->getNumberOfAnswers())));
 		
 	}
 	
@@ -119,8 +153,8 @@ class EAL_ItemMC extends EAL_Item {
 	public function getPoints(): int { 
 		
 		$result = 0;
-		foreach ($this->answers as $a) {
-			$result += max ($a['positive'], $a['negative']);
+		for ($index=0; $index<$this->getNumberOfAnswers(); $index++) {
+			$result += max ($this->getPointsPos($index), $this->getPointsNeg($index));
 		}
 		return $result;
 	

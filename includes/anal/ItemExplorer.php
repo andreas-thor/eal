@@ -4,7 +4,9 @@
 class ItemExplorer {
 	
 	
-
+	private static function getItem (array $items, int $itemid) : EAL_Item {
+		return $items[$itemid];
+	}
 	
 	
 	/**
@@ -41,11 +43,11 @@ class ItemExplorer {
 		if ($cat == 'level') {
 			$result = [1 => array(), 2 => array(), 3 => array(), 4 => array(), 5 => array(), 6 => array()];
 			foreach ($itemids as $item_id) {
-				$item = $items[$item_id];
-				foreach (EAL_Item::$level_type as $dim) {
-					if ($item->level[$dim] > 0) {
-						if (!in_array($item_id, $result[$item->level[$dim]])) {
-							array_push ($result[$item->level[$dim]], $item_id);
+				$item = self::getItem($items, $item_id);
+				foreach (EAL_Level::TYPE as $dim) {
+					if ($item->getLevel()->get($dim) > 0) {
+						if (!in_array($item_id, $result[$item->getLevel()->get($dim)])) {
+							array_push ($result[$item->getLevel()->get($dim)], $item_id);
 						}
 					}
 				}
@@ -55,11 +57,13 @@ class ItemExplorer {
 		
 		// group by dimension  
 		if ($cat == 'dim') {
-			foreach (EAL_Item::$level_type as $dim) $result [$dim] = array();
+			foreach (EAL_Level::TYPE as $dim) {
+				$result [$dim] = array();
+			}
 			foreach ($itemids as $item_id) {
-				$item = $items[$item_id];
-				foreach (EAL_Item::$level_type as $dim) {
-					if ($item->level[$dim] > 0) {
+				$item = self::getItem($items, $item_id);
+				foreach (EAL_Level::TYPE as $dim) {
+					if ($item->getLevel()->get($dim) > 0) {
 						array_push ($result[$dim], $item_id);
 					}
 				}
@@ -71,10 +75,10 @@ class ItemExplorer {
 		if ($cat == 'lo') {
 			$result = array();
 			foreach ($itemids as $item_id) {
-				$item = $items[$item_id];
-				if ($item->learnout_id > 0) {
-					if (!isset ($result[$item->learnout_id])) $result[$item->learnout_id] = array();
-					array_push ($result[$item->learnout_id], $item_id);
+				$item = self::getItem($items, $item_id);
+				if ($item->getLearnOutId() > 0) {
+					if (!isset ($result[$item->getLearnOutId()])) $result[$item->getLearnOutId()] = array();
+					array_push ($result[$item->getLearnOutId()], $item_id);
 				}
 			}
 			return $result;

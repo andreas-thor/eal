@@ -80,10 +80,7 @@ abstract class IMEX_Item extends IMEX_Object {
 			if ($updateMetadataOnly) {
 				$item_post = $item;
 				$item = EAL_Item::load($_REQUEST[$prefix."post_type"], $itemid);
-				$item->level = $item_post->level;
-				$item->learnout_id = $item_post->learnout_id;
-				$item->note = $item_post->note;
-				$item->flag = $item_post->flag;
+				$item->copyMetadata($item_post);
 			}
 			/**
 			 *  In the mean time, a workaround worth trying would be:

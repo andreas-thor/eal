@@ -6,12 +6,15 @@ require_once 'EAL_Object.php';
 class EAL_LearnOut extends EAL_Object  {
 
 	private $title;
-	public $description;
+	private $description;
 	
-	public static $level_label = ["Erinnern", "Verstehen", "Anwenden", "Analysieren", "Evaluieren", "Erschaffen"];
 	
 	public function getTitle (): string {
 		return $this->title;
+	}
+	
+	public function getDescription (): string {
+		return $this->description;
 	}
 	
 	
@@ -40,6 +43,12 @@ class EAL_LearnOut extends EAL_Object  {
 			}
 		}	
 	}
+	
+	
+	public function copyMetadata (EAL_LearnOut $sourceLO) {
+		$this->level = $sourceLO->level;
+	}
+	
 	
 	
 	public function getHTMLPrinter (): HTML_Learnout {

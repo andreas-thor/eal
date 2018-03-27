@@ -105,7 +105,7 @@ abstract class HTML_Item extends HTML_Object {
 			$allLO = array_merge($allLO, EAL_LearnOut::getListOfLearningOutcomes());
 		} else {
 			if (!($learnout === NULL)) {	// add item's learnout if available
-				$allLO[] = ['id'=>$learnout->getId(), 'title'=>$learnout->getTitle(), 'description'=>$learnout->description];
+				$allLO[] = ['id'=>$learnout->getId(), 'title'=>$learnout->getTitle(), 'description'=>$learnout->getDescription()];
 			}
 		}
 ?>
@@ -159,9 +159,9 @@ abstract class HTML_Item extends HTML_Object {
 			</colgroup>
 			<tbody>
 				<tr>
-					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old_learnout_id != $new_learnout_id) ? 'class="diff-deletedline"' : '' ?>><select style="width:100%"><option selected><?php echo ($old_learnout === NULL) ? '' : $old_learnout->getTitle(); ?></option></select><div><?php echo htmlentities(($old_learnout === NULL) ? '' : $old_learnout->description, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></div></td>
+					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old_learnout_id != $new_learnout_id) ? 'class="diff-deletedline"' : '' ?>><select style="width:100%"><option selected><?php echo ($old_learnout === NULL) ? '' : $old_learnout->getTitle(); ?></option></select><div><?php echo htmlentities(($old_learnout === NULL) ? '' : $old_learnout->getDescription(), ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></div></td>
 					<td></td>
-					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old_learnout_id != $new_learnout_id) ? 'class="diff-addedline"' : '' ?>><select style="width:100%"><option selected><?php echo ($new_learnout === NULL) ? '' : $new_learnout->getTitle(); ?></option></select><div><?php echo htmlentities(($new_learnout === NULL) ? '' : $new_learnout->description, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></div></td>
+					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old_learnout_id != $new_learnout_id) ? 'class="diff-addedline"' : '' ?>><select style="width:100%"><option selected><?php echo ($new_learnout === NULL) ? '' : $new_learnout->getTitle(); ?></option></select><div><?php echo htmlentities(($new_learnout === NULL) ? '' : $new_learnout->getDescription(), ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></div></td>
 				</tr>
 			</tbody>
 		</table>
@@ -270,7 +270,7 @@ abstract class HTML_Item extends HTML_Object {
 		$callback = (($isEditable) && ($hasLO)) ? "checkLOLevel" : "";
 		
 		// FIXME: Ist das hier richtig, dass nochmal item an prefix angehangen wird???
-		parent::printLevelObject ($prefix . "item", $this->item->getLevel(), $hasLO ? $this->item->getLearnOut()->getLevel(): null, !$isEditable, $hasLO, $callback);
+		parent::printLevelObject ($prefix . "item", $this->item->getLevel(), $hasLO ? $this->item->getLearnOut()->getLevel(): new EAL_Level(), !$isEditable, $hasLO, $callback);
 	}
 	
 
@@ -349,14 +349,14 @@ abstract class HTML_Item extends HTML_Object {
 						<input 
 							type="checkbox" value="1"
 							name="<?php echo $prefix?>item_flag" 
-							<?php if ($this->item->flag == 1) echo " checked " ?>
+							<?php if ($this->item->getFlag() == 1) echo " checked " ?>
 							<?php if (!$isEditable) echo " onclick='return false;' " ?> 
 						/>
 					</td>
 					<td style="width:100%-1em">
 						<input 
 							name="<?php echo $prefix ?>item_note" 
-							value="<?php echo htmlentities ($this->item->note, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" 
+							value="<?php echo htmlentities ($this->item->getNote(), ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" 
 							style="width:100%" size="255" aria-required="true" 
 							<?php if (!$isEditable) echo " readonly " ?> 
 						/>
@@ -381,9 +381,9 @@ abstract class HTML_Item extends HTML_Object {
 			</colgroup>
 			<tbody>
 				<tr>
-					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old->flag!=$new->flag) ? 'class="diff-deletedline"' : '' ?>><input type="checkbox" <?php if ($old->flag == 1) echo 'checked' ?> onclick="return false;" /></div><div <?php echo ($old->note!=$new->note) ? 'class="diff-deletedline"' : '' ?>><?php echo htmlentities ($old->note, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></td>
+					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old->getFlag()!=$new->getFlag()) ? 'class="diff-deletedline"' : '' ?>><input type="checkbox" <?php if ($old->getFlag() == 1) echo 'checked' ?> onclick="return false;" /></div><div <?php echo ($old->getNote()!=$new->getNote()) ? 'class="diff-deletedline"' : '' ?>><?php echo htmlentities ($old->getNote(), ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></td>
 					<td></td>
-					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old->flag!=$new->flag) ? 'class="diff-addedline"' : '' ?>><input type="checkbox" <?php if ($new->flag == 1) echo 'checked' ?> onclick="return false;" /></div><div <?php echo ($old->note!=$new->note) ? 'class="diff-addedline"' : '' ?>><?php echo htmlentities ($new->note, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></td>
+					<td style="width:98%; padding:0; padding-left:10px" align="left"><div <?php echo ($old->getFlag()!=$new->getFlag()) ? 'class="diff-addedline"' : '' ?>><input type="checkbox" <?php if ($new->getFlag() == 1) echo 'checked' ?> onclick="return false;" /></div><div <?php echo ($old->getNote()!=$new->getNote()) ? 'class="diff-addedline"' : '' ?>><?php echo htmlentities ($new->getNote(), ENT_COMPAT | ENT_HTML401, 'UTF-8') ?></div></td>
 				</tr>
 			</tbody>
 		</table>

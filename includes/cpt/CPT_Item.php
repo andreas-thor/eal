@@ -265,7 +265,7 @@ class CPT_Item extends CPT_Object{
 				case $this->table_columns['item_type']: 	$orderby_statement = 'I.type'; break;
 				case $this->table_columns['item_author']: 	$orderby_statement = 'U.user_login'; break;
 				case $this->table_columns['item_points']: 	$orderby_statement = 'I.points'; break;
-				case $this->table_columns['level_FW']: 		$orderby_statement = 'I.level'; break;
+				case $this->table_columns['level_FW']: 		$orderby_statement = 'I.level_FW'; break;
 				case $this->table_columns['level_PW']: 		$orderby_statement = 'I.level_PW'; break;
 				case $this->table_columns['level_KW']: 		$orderby_statement = 'I.level_KW'; break;
 				case $this->table_columns['no_of_reviews']:	$orderby_statement = 'no_of_reviews'; break;

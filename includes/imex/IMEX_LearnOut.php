@@ -20,7 +20,7 @@ class IMEX_LearnOut extends IMEX_Object {
 			
 			
 			$learnout = new EAL_LearnOut($learnoutid);
-			$learnout->level = $learnout_post->level;			
+			$learnout->copyMetadata($learnout_post);			
 			
 			$terms = $_POST[$prefix."taxonomy"];
 			
