@@ -79,7 +79,9 @@ class IMEX_Ilias extends IMEX_Item {
 			// load item
 			$post = get_post($item_id);
 			if ($post == null) continue;	// item (post) does not exist
+			
 			$item = EAL_Item::load($post->post_type, $item_id);
+			assert( ($item instanceof EAL_ItemSC) || ($item instanceof EAL_ItemMC) );
 			
 			if ($item->getType() == 'itemsc') {
 				$item_data = array (
@@ -95,6 +97,7 @@ class IMEX_Ilias extends IMEX_Item {
 						"rcardinality" => "Multiple"
 				);
 			}
+			
 				
 			$xml_IT = $dom->createElement("item");
 			$xml_IT->setAttribute("ident", "il_0_qst_{$item_id}");
@@ -146,10 +149,10 @@ class IMEX_Ilias extends IMEX_Item {
 			}			
 			
 			
-			foreach ($item->answers as $number => $answer) {
+			for ($index=0; $index<$item->getNumberOfAnswers(); $index++) {
 				$xml_LAB = $dom->createElement("response_label");
 				$xml_LAB->setAttribute("ident", $number);
-				$xml_LAB->appendChild ($this->createMaterialElement($dom, "text/html", $answer["answer"]));
+				$xml_LAB->appendChild ($this->createMaterialElement($dom, "text/html", $item->getAnswer ($index)));
 				$xml_RC->appendChild ($xml_LAB);
 			}
 				
@@ -165,7 +168,7 @@ class IMEX_Ilias extends IMEX_Item {
 			$xml_OC->appendChild ($xml_DV);
 			$xml_RP->appendChild ($xml_OC);
 	
-			foreach ($item->answers as $number => $answer) {
+			for ($index=0; $index<$item->getNumberOfAnswers(); $index++) {
 				foreach (array (1, 0) as $checked) {
 						
 					$xml_RC = $dom->createElement("respcondition");
@@ -184,12 +187,16 @@ class IMEX_Ilias extends IMEX_Item {
 					}
 					$xml_RC->appendChild ($xml_CV);
 						
-					if ($item->getType() == "itemsc") $xml_SV = $dom->createElement("setvar", ($checked==1) ? $answer['points'] : 0);
-					if ($item->getType() == "itemmc") $xml_SV = $dom->createElement("setvar", ($checked==1) ? $answer['positive'] : $answer['negative']);
-	
+					
+					if ($item instanceof EAL_ItemSC) {
+						$xml_SV = $dom->createElement("setvar", ($checked==1) ? $item->getPointsChecked($index) : 0);
+					}
+					if ($item instanceof EAL_ItemMC) {
+						$xml_SV = $dom->createElement("setvar", ($checked==1) ? $item->getPointsPos($index) : $item->getPointsNeg($index));
+					}
+					
 					$xml_SV->setAttribute ("action", "Add");
 					$xml_RC->appendChild ($xml_SV);
-						
 					$xml_RP->appendChild ($xml_RC);
 						
 				}
@@ -354,6 +361,9 @@ class IMEX_Ilias extends IMEX_Item {
 	
 			// initialize item
 			$item = EAL_Item::load($item_type, intval($item_id));
+			
+			assert (($item instanceof EAL_ItemSC) || ($item instanceof EAL_ItemMC));
+			
 			$countItems++;
 			if ($item->getId() < 0) $item->setId (-$countItems);
 				
@@ -416,17 +426,21 @@ class IMEX_Ilias extends IMEX_Item {
 			}
 	
 			// set answer data for items
-			$item->answers = array();
-			foreach ($answers as $k => $v) {
-				if ($item->getType() == "itemsc") array_push ($item->answers, array ("answer" => $v["text"], "points" => $v["positive"]));
-				if ($item->getType() == "itemmc") array_push ($item->answers, array ("answer" => $v["text"], "positive" => $v["positive"], "negative" => $v["negative"]));
+			$item->clearAnswers();
+			if ($item instanceof EAL_ItemSC) {
+				foreach ($answers as $k => $v) {
+					$item->addAnswer($v["text"], $v["positive"]);
+				}
 			}
-	
-			if ($item->getType() == "itemmc") {
+			if ($item instanceof EAL_ItemMC) {
+				foreach ($answers as $k => $v) {
+					$item->addAnswer($v["text"], $v["positive"], $v["negative"]);
+				}
+				
 				$min = $xpath->evaluate ("./presentation/flow/response_lid/render_choice/@minnumber", $itemXML);
 				$item->minnumber = ($min->length==0) ? 0 : $min[0]->nodeValue;
 				$max = $xpath->evaluate ("./presentation/flow/response_lid/render_choice/@maxnumber", $itemXML);
-				$item->maxnumber = ($max->length==0) ? count($item->answers) : $max[0]->nodeValue;
+				$item->maxnumber = ($max->length==0) ? $item->getNumberOfAnswers() : $max[0]->nodeValue;
 			}
 			
 			// update Item id (for newly created items)

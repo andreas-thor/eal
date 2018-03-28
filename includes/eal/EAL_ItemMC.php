@@ -9,8 +9,11 @@ class EAL_ItemMC extends EAL_Item {
 	
 	
 	
-	
-	public $answers = array();
+	/**
+	 * 
+	 * @var array
+	 */
+	private $answers = array();
 
 	
 	function __construct(int $item_id = -1, string $prefix="") {

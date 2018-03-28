@@ -103,7 +103,7 @@ class HTML_ItemMC extends HTML_Item  {
 		<table style="font-size:100%">
 			<?php 
 				for ($index=0; $index<$this->getItem()->getNumberOfAnswers(); $index++) {
-					$this->printAnswerLine($prefix, $this->getItem()->getAnswer($index), $this->getItem()->getPointsPos($index), $this->getItem()->getPointsNeg($index), $this->getItem()->getPointsPos($index)>$this->getItem()->getPointsNeg($index) ? 'bold' : 'normal', TRUE, $isImport);
+					$this->printAnswerLine($prefix, $this->getItem()->getAnswer($index), $this->getItem()->getPointsPos($index), $this->getItem()->getPointsNeg($index), FALSE, $this->getItem()->getPointsPos($index)>$this->getItem()->getPointsNeg($index) ? 'bold' : 'normal', TRUE, $isImport);
 				}
 			?>
 		</table>

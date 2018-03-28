@@ -4,7 +4,11 @@ require_once ("EAL_Item.php");
 
 class EAL_ItemSC extends EAL_Item {
 	
-	public $answers;
+	/**
+	 * 
+	 * @var array
+	 */
+	private $answers;
 	 
 	
 	function __construct(int $item_id = -1, string $prefix="") {
