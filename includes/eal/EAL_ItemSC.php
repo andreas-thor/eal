@@ -13,13 +13,16 @@ class EAL_ItemSC extends EAL_Item {
 	
 	function __construct(int $item_id = -1, string $prefix="") {
 		
+		parent::__construct();
+		
 		$this->clearAnswers();
 		$this->addAnswer('', 1);
 		$this->addAnswer('', 0);
 		$this->addAnswer('', 0);
 		$this->addAnswer('', 0);
 		
-		parent::__construct($item_id, $prefix);
+		$this->minnumber = 1;
+		$this->maxnumber = 1;
 	}
 	
 	public function clearAnswers() {
@@ -60,18 +63,7 @@ class EAL_ItemSC extends EAL_Item {
 		
 	}
 	
-	
-	protected function loadFromPOSTRequest (string $prefix="") {
-		
-		parent::loadFromPOSTRequest($prefix);
-		
-		$this->clearAnswers();
-		if (isset($_POST[$prefix.'answer'])) {
-			foreach ($_POST[$prefix.'answer'] as $k => $v) {
-				$this->addAnswer(html_entity_decode (stripslashes($v)), $_POST[$prefix.'points'][$k]);
-			}
-		}
-	}
+
 	
 	
 	/**
@@ -100,6 +92,20 @@ class EAL_ItemSC extends EAL_Item {
 	
 
 /*	
+  
+ 	
+	protected function loadFromPOSTRequest (string $prefix="") {
+		
+		parent::loadFromPOSTRequest($prefix);
+		
+		$this->clearAnswers();
+		if (isset($_POST[$prefix.'answer'])) {
+			foreach ($_POST[$prefix.'answer'] as $k => $v) {
+				$this->addAnswer(html_entity_decode (stripslashes($v)), $_POST[$prefix.'points'][$k]);
+			}
+		}
+	}
+  
 	protected function loadFromDB (int $item_id) {
 		
 		parent::loadFromDB($item_id);

@@ -51,7 +51,7 @@ class DB_ItemMC extends DB_Item {
 	}
 	
 	
-	public static function loadFromDB (EAL_ItemMC &$item): EAL_ItemMC {
+	public static function loadFromDB (EAL_ItemMC &$item) {
 		
 		parent::loadFromDB($item);
 		global $wpdb;

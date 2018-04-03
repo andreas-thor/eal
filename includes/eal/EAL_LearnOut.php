@@ -1,7 +1,7 @@
 <?php
 
 require_once 'EAL_Object.php';
-
+require_once __DIR__ . '/../HTML_LearnOut';
 
 class EAL_LearnOut extends EAL_Object  {
 
@@ -26,6 +26,24 @@ class EAL_LearnOut extends EAL_Object  {
 	}
 	
 	
+	function __construct() {
+		parent::__construct();
+		$this->title = '';
+		$this->description = 'Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage ...';
+	}
+	
+	public function copyMetadata (EAL_LearnOut $sourceLO) {
+		$this->level = $sourceLO->level;
+	}
+	
+	
+	
+	public function getHTMLPrinter (): HTML_LearnOut {
+		return new HTML_LearnOut($this);
+	}
+	
+		
+/*	
 	function __construct(int $learnout_id=-1, string $prefix="") {
 
 		parent::__construct();
@@ -51,21 +69,14 @@ class EAL_LearnOut extends EAL_Object  {
 			}
 		}	
 	}
+*/	
 	
-	
-	public function copyMetadata (EAL_LearnOut $sourceLO) {
-		$this->level = $sourceLO->level;
-	}
-	
-	
-	
-	public function getHTMLPrinter (): HTML_Learnout {
-		return new HTML_Learnout($this);
-	}
+
 	
 	/**
 	 * Initialize learning outcome from _POST Request data
 	 */
+/*	
 	protected function loadFromPOSTRequest (string $prefix="") {
 	
 		$this->setId ($_POST[$prefix."post_ID"]);
@@ -83,7 +94,7 @@ class EAL_LearnOut extends EAL_Object  {
 		
 	}
 	
-
+*/
 	
 	
 
@@ -113,7 +124,7 @@ class EAL_LearnOut extends EAL_Object  {
 	
 	public static function save ($post_id, $post) {
 	
-		$lo = new EAL_LearnOut();
+		$lo = EAL_Factory::createNewLearnOut();
 		if ($_POST["post_type"] != $lo->getType()) return;
 		$lo->saveToDB();
 	}
@@ -133,7 +144,7 @@ class EAL_LearnOut extends EAL_Object  {
 				", ARRAY_A);
 	}
 	
-	
+	/*
 	protected function loadFromDB ($item_id) {
 		
 		global $wpdb;
@@ -183,6 +194,8 @@ class EAL_LearnOut extends EAL_Object  {
 			) {$wpdb->get_charset_collate()};"
 		);
 	}
+	
+	*/
 	
 }
 

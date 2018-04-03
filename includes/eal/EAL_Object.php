@@ -1,6 +1,6 @@
 <?php 
 
-require_once (__DIR__ . "/../class.CLA_RoleTaxonomy.php");
+require_once __DIR__ . '/../class.CLA_RoleTaxonomy.php';
 require_once 'EAL_Level.php';
 
 abstract class EAL_Object {
@@ -21,12 +21,10 @@ abstract class EAL_Object {
 		if ($this instanceof EAL_ItemMC) 	$this->type = "itemmc";
 		if ($this instanceof EAL_LearnOut) 	$this->type = "learnout";
 		if ($this instanceof EAL_Review) 	$this->type = "review";
-		
+
+		$this->setId(-1);
 		$this->setDomain(RoleTaxonomy::getCurrentRoleDomain()["name"]);
-		
 		$this->level = new EAL_Level();
-		
-		
 	}
 	
 	public function getId (): int {
@@ -34,7 +32,7 @@ abstract class EAL_Object {
 	}
 	
 	/*
-	 * Id must be an integer
+	 * Id must be an integer, != 0
 	 */
 	
 	public function setId ($id) {

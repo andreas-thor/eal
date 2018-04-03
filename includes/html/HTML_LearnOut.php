@@ -3,7 +3,7 @@
 require_once (__DIR__ . "/../eal/EAL_LearnOut.php");
 
 
-class HTML_Learnout extends HTML_Object {
+class HTML_LearnOut extends HTML_Object {
 	
 	protected $learnout;
 	protected $buttons_verb;

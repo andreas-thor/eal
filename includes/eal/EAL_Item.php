@@ -41,13 +41,8 @@ abstract class EAL_Item extends EAL_Object {
 	
 	
 	
-	public function setFlag(string $flag) {
-		$this->flag = $flag;
-	}
 
-	public function setNote(string $note) {
-		$this->note = $note;
-	}
+
 
 	public function getTitle (): string {
 		return $this->title;
@@ -77,16 +72,24 @@ abstract class EAL_Item extends EAL_Object {
 		return $this->note;
 	}
 	
+	public function setNote(string $note) {
+		$this->note = $note;
+	}
 	
 	public function getFlag(): int {
 		return $this->flag ?? 0;
 	}
 	
+	public function setFlag(int $flag) {
+		$this->flag = $flag;
+	}
+	
+	
 	public function getDifficulty (): float {
 		return $this->difficulty ?? -1;
 	}
 	
-	public function setDifficulty (string $difficulty) {
+	public function setDifficulty (float $difficulty) {
 		$this->difficulty = $difficulty;
 	}
 	
@@ -103,40 +106,22 @@ abstract class EAL_Item extends EAL_Object {
 	public abstract function getHTMLPrinter (): HTML_Item;
 	
 	
-	function __construct(int $item_id = -1, string $prefix="") {
-		
+	function __construct() {
 		parent::__construct();
 		
-		if ($item_id > 0) {
-			$this->loadFromDB($item_id);
-			return;
-		} 
+		$this->setTitle('');
+		$this->setDescription('');
+		$this->setQuestion('');
+		$this->setLearnOutId(-1);
+		$this->setDifficulty(-1);
+		$this->setNote('');
+		$this->setFlag(0);
+		$this->minnumber = -1;
+		$this->maxnumber = -1;
 		
-		if ($_POST[$prefix."post_type"] == $this->getType()) {
-			$this->loadFromPOSTRequest($prefix);
-			return;
-		} 
-
-		$this->setId ($item_id);
-		$this->init('', '', '');
-
-		$this->learnout_id = $_POST['learnout_id'] ?? $_GET['learnout_id'] ?? null;
-		$this->learnout = null;
-		
-		$this->difficulty = null;
-		$this->note = "";
-		$this->flag = 0;
-			
-		
-		global $post;
-		if ($post->post_type != $this->getType()) return;
-
-		if (get_post_status($post->ID)=='auto-draft') {
-			$this->setId($post->ID);
-		} else {
-			$this->loadFromDB($post->ID);
-		}
 	}
+	
+
 	
 	
 	public function init (string $title, string $description, string $question, string $domain = NULL) {
@@ -165,40 +150,6 @@ abstract class EAL_Item extends EAL_Object {
 	
 	
 	/**
-	 * Initialize item from _POST Request data
-	 */
-	protected function loadFromPOSTRequest (string $prefix="") {
-	
-		$this->setId ($_POST[$prefix."post_ID"]);
-		$this->title = stripslashes($_POST[$prefix."post_title"]);
-		$this->description = isset($_POST[$prefix.'item_description']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_description'])) : null;
-		$this->question = isset ($_POST[$prefix.'item_question']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_question'])) : null;
-		$this->level = new EAL_Level($_POST, $prefix.'item_level_');
-		
-		
-		$this->learnout_id = $_GET[$prefix.'learnout_id'] ?? $_POST[$prefix.'learnout_id'] ?? null;
-		$this->learnout = null;		// lazy loading
-		
-		$this->difficulty = null;
-		$this->note = isset ($_POST[$prefix.'item_note']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_note'])) : null;
-		$this->flag = $_POST[$prefix.'item_flag'] ?? null;
-		
-		$this->minnumber = null;
-		$this->maxnumber = null;
-		
-		// 	$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
-		$this->setDomain($_POST[$prefix."domain"]); 
-		if (($this->getDomain() == "") && (isset($_POST[$prefix.'tax_input']))) {
-			foreach ($_POST[$prefix.'tax_input'] as $key => $value) {
-				$this->setDomain($key);
-				break;
-			}
-		}
-	}
-	
-	
-	
-	/**
 	 * Implements lazy loading of learning outcome 
 	 */
 	public function getLearnOut () {
@@ -208,7 +159,7 @@ abstract class EAL_Item extends EAL_Object {
 		}
 		
 		if (is_null ($this->learnout)) {
-			$this->learnout = new EAL_LearnOut($this->learnout_id);
+			$this->learnout = EAL_Factory::createNewLearnOut($this->learnout_id);
 		}
 		
 		return $this->learnout;
@@ -270,8 +221,83 @@ abstract class EAL_Item extends EAL_Object {
 		}
 		return 'Unknown';
 	}
+
 	
+	
+	
+	/**
+	 * Initialize item from _POST Request data
+	 */
 /*	
+	protected function loadFromPOSTRequest (string $prefix="") {
+		
+		$this->setId ($_POST[$prefix."post_ID"]);
+		$this->title = stripslashes($_POST[$prefix."post_title"]);
+		$this->description = isset($_POST[$prefix.'item_description']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_description'])) : null;
+		$this->question = isset ($_POST[$prefix.'item_question']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_question'])) : null;
+		$this->level = new EAL_Level($_POST, $prefix.'item_level_');
+		
+		
+		$this->learnout_id = $_GET[$prefix.'learnout_id'] ?? $_POST[$prefix.'learnout_id'] ?? null;
+		$this->learnout = null;		// lazy loading
+		
+		$this->difficulty = null;
+		$this->note = isset ($_POST[$prefix.'item_note']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_note'])) : null;
+		$this->flag = $_POST[$prefix.'item_flag'] ?? null;
+		
+		$this->minnumber = null;
+		$this->maxnumber = null;
+		
+		// 	$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
+		$this->setDomain($_POST[$prefix."domain"]);
+		if (($this->getDomain() == "") && (isset($_POST[$prefix.'tax_input']))) {
+			foreach ($_POST[$prefix.'tax_input'] as $key => $value) {
+				$this->setDomain($key);
+				break;
+			}
+		}
+	}
+	
+	
+	
+	
+
+	function __construct(int $item_id = -1, string $prefix="") {
+		
+		parent::__construct();
+		
+		if ($item_id > 0) {
+			$this->loadFromDB($item_id);
+			return;
+		}
+		
+		if ($_POST[$prefix."post_type"] == $this->getType()) {
+			$this->loadFromPOSTRequest($prefix);
+			return;
+		}
+		
+		$this->setId ($item_id);
+		$this->init('', '', '');
+		
+		$this->learnout_id = $_POST['learnout_id'] ?? $_GET['learnout_id'] ?? null;
+		$this->learnout = null;
+		
+		$this->difficulty = null;
+		$this->note = "";
+		$this->flag = 0;
+		
+		
+		global $post;
+		if ($post->post_type != $this->getType()) return;
+		
+		if (get_post_status($post->ID)=='auto-draft') {
+			$this->setId($post->ID);
+		} else {
+			$this->loadFromDB($post->ID);
+		}
+	}
+	
+
 	
 	protected function loadFromDB (int $item_id) {
 		

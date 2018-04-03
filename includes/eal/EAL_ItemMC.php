@@ -16,7 +16,9 @@ class EAL_ItemMC extends EAL_Item {
 	private $answers = array();
 
 	
-	function __construct(int $item_id = -1, string $prefix="") {
+	function __construct() {
+
+		parent::__construct();
 		
 		$this->clearAnswers();
 		$this->addAnswer('', 1, 0);
@@ -26,7 +28,6 @@ class EAL_ItemMC extends EAL_Item {
 		
 		$this->minnumber=0;
 		$this->maxnumber=$this->getNumberOfAnswers();
-		parent::__construct($item_id, $prefix);
 	}
 	
 	
@@ -73,25 +74,7 @@ class EAL_ItemMC extends EAL_Item {
 	
 	
 	
-	/**
-	 * Create new item from _POST
-	 * @param string $prefix
-	 */
-	protected function loadFromPOSTRequest (string $prefix="") {
-	
-		parent::loadFromPOSTRequest($prefix);
-		
-		$this->clearAnswers();
-		if (isset($_POST[$prefix.'answer'])) {
-			foreach ($_POST[$prefix.'answer'] as $k => $v) {
-				$this->addAnswer(html_entity_decode (stripslashes($v)), $_POST[$prefix.'positive'][$k], $_POST[$prefix.'negative'][$k]);
-			}
-		}
-		
-		$this->minnumber = $_POST[$prefix.'item_minnumber'] ?? 0;
-		$this->maxnumber = $_POST[$prefix.'item_maxnumber'] ?? $this->getNumberOfAnswers();
-		
-	}
+
 	
 	public static function save (int $post_id, WP_Post $post) {
 		
@@ -110,6 +93,25 @@ class EAL_ItemMC extends EAL_Item {
 	
 	
 /*	
+ 
+	 * Create new item from _POST
+	 * @param string $prefix
+	protected function loadFromPOSTRequest (string $prefix="") {
+	
+		parent::loadFromPOSTRequest($prefix);
+		
+		$this->clearAnswers();
+		if (isset($_POST[$prefix.'answer'])) {
+			foreach ($_POST[$prefix.'answer'] as $k => $v) {
+				$this->addAnswer(html_entity_decode (stripslashes($v)), $_POST[$prefix.'positive'][$k], $_POST[$prefix.'negative'][$k]);
+			}
+		}
+		
+		$this->minnumber = $_POST[$prefix.'item_minnumber'] ?? 0;
+		$this->maxnumber = $_POST[$prefix.'item_maxnumber'] ?? $this->getNumberOfAnswers();
+		
+	} 
+ 
 	protected function loadFromDB (int $item_id) {
 	
 		parent::loadFromDB($item_id);

@@ -41,8 +41,8 @@ class DB_Learnout {
 	
 	
 	/**
-	 * Call-by-reference; $item properties are loaded into given instance
-	 * @param EAL_Item $item
+	 * Call-by-reference; $learnout properties are loaded into given instance
+	 * @param EAL_LearnOut $learnout
 	 */
 	public static function loadFromDB (EAL_LearnOut &$learnout) {
 		

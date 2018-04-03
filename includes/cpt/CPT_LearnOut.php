@@ -1,8 +1,8 @@
 <?php
 
-require_once("CPT_Object.php");
-require_once(__DIR__ . "/../eal/EAL_LearnOut.php");
-require_once(__DIR__ . "/../html/HTML_LearnOut.php");
+require_once 'CPT_Object.php';
+require_once __DIR__ . '/../eal/EAL_LearnOut.php';
+require_once __DIR__ . '/../html/HTML_LearnOut.php';
 
 
 class CPT_LearnOut extends CPT_Object {
@@ -52,7 +52,7 @@ class CPT_LearnOut extends CPT_Object {
 		parent::WPCB_register_meta_box_cb();
 		
 		global $learnout;
-		$learnout = new EAL_LearnOut(-1);	// -1 == load from post
+		$learnout = EAL_Factory::createNewLearnOut();
 		
 		$domain = RoleTaxonomy::getCurrentRoleDomain();
 		if (($domain["name"] != "") && ($learnout->getDomain() != $domain["name"])) {
@@ -192,7 +192,7 @@ class CPT_LearnOut extends CPT_Object {
 			if (!is_array($postids)) $postids = [$postids];
 			$itemids = array();
 			foreach ($postids as $learnout_id) {
-				$itemids = array_merge ($itemids, (new EAL_LearnOut ($learnout_id))->getItemIds());
+				$itemids = array_merge ($itemids, (EAL_Factory::createNewLearnOut($learnout_id))->getItemIds());
 			}
 			
 			// Add Items to Basket

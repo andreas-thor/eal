@@ -1,6 +1,7 @@
 <?php
 
 require_once 'EAL_Object.php';
+require_once __DIR__ . '/../html/HTML_Review.php';
 
 class EAL_Review extends EAL_Object {
 
@@ -86,7 +87,6 @@ class EAL_Review extends EAL_Object {
 	function __construct(int $review_id = -1) {
 	
 		parent::__construct();
-		$this->setId (-1);
 		$this->setItemId(-1);
 			
 		$this->score = array();
@@ -99,25 +99,6 @@ class EAL_Review extends EAL_Object {
 		
 		$this->setFeedback('');
 		$this->setOverall(0);
-		
-		if ($review_id != -1) {
-			$this->loadFromDB($review_id);
-		} else {
-			if ($_POST["post_type"] == $this->getType()) {
-				$this->loadFromPOSTRequest();
-			} else {
-				global $post;
-					
-				if ($post->post_type != $this->getType()) return;
-				if (get_post_status($post->ID)=='auto-draft') {
-					$this->setId ($post->ID);
-					$this->setItemId($_POST['item_id'] ?? $_GET['item_id'] ?? -1);
-				} else {
-					$this->loadFromDB($post->ID);
-				}
-		
-			}
-		}
 	}
 	
 	
@@ -125,25 +106,7 @@ class EAL_Review extends EAL_Object {
 		return new HTML_Review($this);
 	}
 	
-	/**
-	 * Initialize learning outcome from _POST Request data
-	 */
-	protected function loadFromPOSTRequest () {
-	
-		$this->setId ($_POST["post_ID"]);
-		$this->setItemId($_GET['item_id'] ?? $_POST['item_id'] ?? -1);
-		
-		foreach (self::$dimension1 as $dim1 => $v1) {
-			foreach (self::$dimension2 as $dim2 => $v2) {
-				$this->setScore($dim1, $dim2, $_POST["review_{$dim1}_{$dim2}"] ?? 0);
-			}
-		}
-		
-		$this->setLevel(new EAL_Level($_POST, 'review_level_'));
-		$this->setFeedback(isset ($_POST['review_feedback']) ? html_entity_decode (stripslashes($_POST['review_feedback'])) : '');
-		$this->setOverall($_POST['review_overall'] ?? '');
-	}
-	
+
 	
 
 	
@@ -180,6 +143,22 @@ class EAL_Review extends EAL_Object {
 	
 
 /*	
+	protected function loadFromPOSTRequest () {
+	
+		$this->setId ($_POST["post_ID"]);
+		$this->setItemId($_GET['item_id'] ?? $_POST['item_id'] ?? -1);
+		
+		foreach (self::$dimension1 as $dim1 => $v1) {
+			foreach (self::$dimension2 as $dim2 => $v2) {
+				$this->setScore($dim1, $dim2, $_POST["review_{$dim1}_{$dim2}"] ?? 0);
+			}
+		}
+		
+		$this->setLevel(new EAL_Level($_POST, 'review_level_'));
+		$this->setFeedback(isset ($_POST['review_feedback']) ? html_entity_decode (stripslashes($_POST['review_feedback'])) : '');
+		$this->setOverall($_POST['review_overall'] ?? '');
+	}
+	
 	public static function delete ($post_id) {
 		
 		global $wpdb;

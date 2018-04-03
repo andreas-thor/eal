@@ -54,7 +54,7 @@ class DB_ItemSC extends DB_Item {
 	}
 	
 	
-	public static function loadFromDB (EAL_ItemSC &$item): EAL_ItemSC {
+	public static function loadFromDB (EAL_ItemSC &$item) {
 		
 		parent::loadFromDB($item);
 		
