@@ -79,6 +79,24 @@ class DB_Item {
 		
 	}
 	
+	
+	public static function loadAllItemIdsForLearnOut (EAL_LearnOut $learnout): array {
+		
+		global $wpdb;
+		
+		$sql ="
+			SELECT DISTINCT P.id
+			FROM " . self::getTableName() . " 
+			JOIN {$wpdb->prefix}posts P ON (P.ID = I.ID)
+			WHERE P.post_parent = 0
+			AND P.post_status IN ('publish', 'pending', 'draft')
+			AND I.learnout_id = {$learnout->getId()}";
+		
+		return $wpdb->get_col ($sql);
+	}
+	
+	
+	
 	public static function createTables() {
 		
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );

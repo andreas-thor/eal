@@ -139,8 +139,6 @@ abstract class CPT_Object {
 	
 	public function WPCB_register_meta_box_cb () {
 		remove_meta_box( 'slugdiv', $this->type, 'normal' );
-		
-
 	}
 	
 	

@@ -1,7 +1,8 @@
 <?php
 
 require_once("CPT_Item.php");
-require_once(__DIR__ . "/../eal/EAL_ItemSC.php");
+require_once __DIR__ . '/../eal/EAL_ItemSC.php';
+require_once __DIR__ . '/../eal/EAL_Factory.php';
 
 
 
@@ -13,12 +14,12 @@ class CPT_ItemSC extends CPT_Item {
 	
 		parent::__construct();
 	
-		$this->type = "itemsc";
-		$this->label = "Single Choice";
+		$this->type = 'itemsc';
+		$this->label = 'Single Choice';
 		$this->menu_pos = 0;
-		$this->dashicon = "dashicons-marker";
+		$this->dashicon = 'dashicons-marker';
 		
-		unset($this->table_columns["item_type"]);
+		unset($this->table_columns['item_type']);
 	}
 	
 
@@ -26,11 +27,38 @@ class CPT_ItemSC extends CPT_Item {
 
 		parent::addHooks();
 		
-		add_action ("save_post_{$this->type}", array ('EAL_ItemSC', save), 10, 2);
-		add_action ("save_post_revision", array ('EAL_ItemSC', 'save'), 10, 2);
+		add_action ("save_post_{$this->type}", array ('CPT_ItemSC', 'save_post'), 10, 2);
+		add_action ("save_post_revision", array ('CPT_ItemSC', 'save_post'), 10, 2);
 	}
 	
-	public function WPCB_wp_get_revision_ui_diff ($diff, $compare_from, $compare_to) {
+	
+	/**
+	 * $item to store might already be loaed (e.g., during import); otherwise loaded from $_POST data
+	 * save is called twice per update
+	 * 1) for the revision --> $revision will contain the id of the parent post
+	 * 2) for the current version --> $revision will be FALSE
+	 * @param int $post_id
+	 * @param WP_Post $post
+	 */
+	
+	public static function save_post (int $post_id, WP_Post $post) {
+		
+		global $item;
+		if ($item === NULL) {
+			$item = EAL_Factory::createNewItemSC();	// load item from $_POST data
+		}
+		
+		$revision = wp_is_post_revision ($post_id);
+		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
+		if ($type != $item->getType()) return;
+		
+		$item->setId($post_id);		// set the correct id
+		DB_ItemSC::saveToDB($item);
+	}
+		
+	
+	
+	public function filter_wp_get_revision_ui_diff (array $diff, WP_Post $compare_from, WP_Post $compare_to) {
 	
 		
 		if (get_post ($compare_from->post_parent)->post_type != $this->type) return $diff;

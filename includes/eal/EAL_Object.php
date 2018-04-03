@@ -12,7 +12,7 @@ abstract class EAL_Object {
 	/**
 	 * @var EAL_Level 
 	 */
-	protected $level;			
+	private $level;			
 	
 	
 	function __construct () {
@@ -26,6 +26,13 @@ abstract class EAL_Object {
 		$this->setDomain(RoleTaxonomy::getCurrentRoleDomain()["name"]);
 		$this->level = new EAL_Level();
 	}
+	
+	
+	public function copyMetadata (EAL_Object $sourceObject) {
+		
+		$this->level = $sourceObject->level;
+	}
+	
 	
 	public function getId (): int {
 		return $this->id;
@@ -52,7 +59,7 @@ abstract class EAL_Object {
 		return $this->domain;
 	}
 	
-	public function setDomain ($domain)  {
+	public function setDomain (string $domain)  {
 		$this->domain = $domain ?? "";
 	}
 	

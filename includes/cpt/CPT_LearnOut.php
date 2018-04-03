@@ -41,11 +41,18 @@ class CPT_LearnOut extends CPT_Object {
 	
 	public function addHooks() {
 		parent::addHooks();
-		add_action ("save_post_{$this->type}", array ('EAL_LearnOut', save), 10, 2);
+		add_action ("save_post_{$this->type}", array ('CPT_LearnOut', 'save_post'), 10, 2);
 	}
 	
 
-
+	public static function save_post (int $post_id, WP_Post $post) {
+		
+		$learnout = EAL_Factory::createNewLearnOut();
+		if ($post->post_type != $learnout->getType()) return;
+		DB_Learnout::saveToDB($learnout);	
+	}
+	
+	
 	
 	public function WPCB_register_meta_box_cb () {
 	
@@ -192,7 +199,7 @@ class CPT_LearnOut extends CPT_Object {
 			if (!is_array($postids)) $postids = [$postids];
 			$itemids = array();
 			foreach ($postids as $learnout_id) {
-				$itemids = array_merge ($itemids, (EAL_Factory::createNewLearnOut($learnout_id))->getItemIds());
+				$itemids = array_merge ($itemids, EAL_Factory::loadAllItemIdsForLearnOut((EAL_Factory::createNewLearnOut($learnout_id))));
 			}
 			
 			// Add Items to Basket

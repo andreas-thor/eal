@@ -33,7 +33,7 @@ class EAL_LearnOut extends EAL_Object  {
 	}
 	
 	public function copyMetadata (EAL_LearnOut $sourceLO) {
-		$this->level = $sourceLO->level;
+		parent::copyMetadata($sourceLO);
 	}
 	
 	
@@ -42,8 +42,17 @@ class EAL_LearnOut extends EAL_Object  {
 		return new HTML_LearnOut($this);
 	}
 	
+	
+	/*	
+	public static function save ($post_id, $post) {
 		
-/*	
+		$lo = EAL_Factory::createNewLearnOut();
+		if ($_POST["post_type"] != $lo->getType()) return;
+		$lo->saveToDB();
+	}
+	
+		
+
 	function __construct(int $learnout_id=-1, string $prefix="") {
 
 		parent::__construct();
@@ -94,13 +103,8 @@ class EAL_LearnOut extends EAL_Object  {
 		
 	}
 	
-*/
 	
-	
-
-	
-	
-	public function getItemIds (): array {
+		public function getItemIds (): array {
 	
 		global $wpdb;
 		
@@ -114,6 +118,13 @@ class EAL_LearnOut extends EAL_Object  {
 		
 		return $wpdb->get_col ($sql);
 	}	
+*/
+	
+	
+
+	
+	
+
 	
 	
 
@@ -121,15 +132,11 @@ class EAL_LearnOut extends EAL_Object  {
 	
 	
 
-	
-	public static function save ($post_id, $post) {
-	
-		$lo = EAL_Factory::createNewLearnOut();
-		if ($_POST["post_type"] != $lo->getType()) return;
-		$lo->saveToDB();
-	}
+
 	
 	
+	
+	/*
 	public static function getListOfLearningOutcomes () {
 		
 		global $wpdb;
@@ -144,7 +151,7 @@ class EAL_LearnOut extends EAL_Object  {
 				", ARRAY_A);
 	}
 	
-	/*
+	
 	protected function loadFromDB ($item_id) {
 		
 		global $wpdb;

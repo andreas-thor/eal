@@ -74,6 +74,7 @@ class EAL_ItemSC extends EAL_Item {
 	 * @param int $post_id
 	 * @param WP_Post $post
 	 */
+/*	
 	public static function save (int $post_id, WP_Post $post) {
 		
 		global $item;
@@ -89,7 +90,7 @@ class EAL_ItemSC extends EAL_Item {
 		$item->saveToDB();
 	}
 	
-	
+*/	
 
 /*	
   

@@ -63,13 +63,9 @@ class CPT_Item extends CPT_Object{
 		add_action('contextual_help', array ($this, 'WPCB_contextual_help' ), 10, 3);
 		
 
-		add_filter ('wp_get_revision_ui_diff', array ($this, 'WPCB_wp_get_revision_ui_diff'), 10, 3 );
+		add_filter ('wp_get_revision_ui_diff', array ($this, 'filter_wp_get_revision_ui_diff'), 10, 3 );
 		
-		add_filter ('wp_ajax_get_revision_diffs', array ($this, 'X'), 10, 3 );
-		
-		add_filter( 'revision_text_diff_options', array ($this, 'Y'), 10, 3);
-		
-		add_filter( 'wp_prepare_revision_for_js', array ($this, 'filter_function_name_4025'), 10, 3 );
+
 	
 		
 		add_filter('posts_search', array ($this ,'WPCB_post_search'), 10, 2);
@@ -78,39 +74,39 @@ class CPT_Item extends CPT_Object{
 		add_filter('get_sample_permalink_html', '__return_empty_string', 10, 5);
 		add_filter('pre_get_shortlink', '__return_empty_string' );
 		
-		add_action ('post_updated', array ($this, 'qwe'), 10, 3);
+		
+		
+// 		add_filter ('wp_ajax_get_revision_diffs', array ($this, 'X'), 10, 3 );
+// 		add_filter( 'revision_text_diff_options', array ($this, 'Y'), 10, 3);
+// 		add_filter( 'wp_prepare_revision_for_js', array ($this, 'filter_function_name_4025'), 10, 3 );
+// 		add_action ('post_updated', array ($this, 'qwe'), 10, 3);
+		
 		
 	}
 
-	public function X () {
-		$a = 7;
-	}
-	
-	public function Y ($a, $b, $c) {
-		$a = 7;
-	}
 
-	public function qwe (int $post_ID, WP_Post $post_after, WP_Post $post_before) {
-		
-		$a = 7;
-	}
-	
-	public function filter_function_name_4025( $revisions_data, $revision, $post ){
-		
-		
-		return $revisions_data;
-	}
 
+	/**
+	 * 
+	 * @param array $actions An array of row action links. Defaults are 'Edit', 'Quick Edit', 'Restore, 'Trash', 'Delete Permanently', 'Preview', and 'View'.
+	 * @param WP_Post $post The post object.
+	 */
 	
 
-	public function WPCB_post_row_actions($actions, $post){
+	public function WPCB_post_row_actions(array $actions, WP_Post $post){
 	
-		if ($post->post_type != $this->type) return $actions;
+		if ($post->post_type != $this->type) {
+			return $actions;
+		}
 	
-		unset ($actions['inline hide-if-no-js']);			// remove "Quick Edit"
-		$actions['view'] = "<a href='admin.php?page=view_item&itemid={$post->ID}'>View</a>"; // add "View"
+		// remove "Quick Edit"
+		unset ($actions['inline hide-if-no-js']);			
+		
+		// add "View" to view item
+		$actions['view'] = "<a href='admin.php?page=view_item&itemid={$post->ID}'>View</a>"; 
 	
-		if (!RoleTaxonomy::canEditItemPost($post)) {		// "Edit" & "Trash" only if editable by user
+		// "Edit" & "Trash" only if editable by user
+		if (!RoleTaxonomy::canEditItemPost($post)) {		
 			unset ($actions['edit']);
 			unset ($actions['trash']);
 		}

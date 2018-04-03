@@ -102,7 +102,9 @@ abstract class HTML_Item extends HTML_Object {
 		// first LO is '[NONE]'
 		$allLO = [['id'=>-1, 'title'=>'[None]', 'description'=>'']];
 		if ($isEditable) {	// add all learning outcomes 
-			$allLO = array_merge($allLO, EAL_LearnOut::getListOfLearningOutcomes());
+			foreach (EAL_Factory::loadAllLearningOutcomes($this->item->getDomain()) as $lo) {
+				$allLO[] = ['id' => $lo->getId(), 'title' => $lo->getTitle(), 'description' => $lo->getDescription()];
+			}
 		} else {
 			if (!($learnout === NULL)) {	// add item's learnout if available
 				$allLO[] = ['id'=>$learnout->getId(), 'title'=>$learnout->getTitle(), 'description'=>$learnout->getDescription()];

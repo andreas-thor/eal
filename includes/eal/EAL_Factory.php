@@ -112,6 +112,15 @@ class EAL_Factory {
 	}
 	
 	
+	public static function loadAllItemIdsForLearnOut (EAL_LearnOut $learnout): array {
+		return DB_Item::loadAllItemIdsForLearnOut($learnout);
+	}
+	
+	
+	public static function loadAllLearningOutcomes (string $domain): array {
+		return DB_Learnout::loadAllLearningOutcomes($domain);	
+	}
+	
 	public static function loadAllReviewsForItem (EAL_Item $item): array {
 		
 		$res = array();

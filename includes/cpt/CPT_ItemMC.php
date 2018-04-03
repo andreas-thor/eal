@@ -11,29 +11,42 @@ class CPT_ItemMC extends CPT_Item {
 	
 		parent::__construct();
 	
-		$this->type = "itemmc";
-		$this->label = "Multiple Choice";
+		$this->type = 'itemmc';
+		$this->label = 'Multiple Choice';
 		$this->menu_pos = 0;
-		$this->dashicon = "dashicons-forms";
+		$this->dashicon = 'dashicons-forms';
 		
-		unset($this->table_columns["item_type"]);
+		unset($this->table_columns['item_type']);
 	}
 	
 	
 	public function addHooks() {
 		
 		parent::addHooks();
-		add_action ("save_post_{$this->type}", array ('EAL_ItemMC', save), 10, 2);
-		add_action ("save_post_revision", array ('EAL_ItemMC', 'save'), 10, 2);
+		add_action ("save_post_{$this->type}", array ('CPT_ItemMC', 'save_post'), 10, 2);
+		add_action ("save_post_revision", array ('CPT_ItemMC', 'save_post'), 10, 2);
 	}
 	
 	
-	
+	public static function save_post (int $post_id, WP_Post $post) {
+		
+		global $item;
+		if ($item === NULL) {
+			$item = EAL_Factory::createNewItemMC();	// load item from $_POST data
+		}
+		
+		$revision = wp_is_post_revision ($post_id);
+		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
+		if ($type != $item->getType()) return;
+		
+		$item->setId($post_id);		// set the correct id
+		DB_ItemMC::saveToDB($item);
+	}
 	
 	
 
-	public function WPCB_wp_get_revision_ui_diff ($diff, $compare_from, $compare_to) {
-	
+	public function filter_wp_get_revision_ui_diff (array $diff, WP_Post $compare_from, WP_Post $compare_to) {
+			
 		if (get_post ($compare_from->post_parent)->post_type != $this->type) return $diff;
 		
 		$eal_From = EAL_Factory::createNewItemMC($compare_from->ID);

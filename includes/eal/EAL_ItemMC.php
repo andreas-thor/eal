@@ -10,7 +10,6 @@ class EAL_ItemMC extends EAL_Item {
 	
 	
 	/**
-	 * 
 	 * @var array
 	 */
 	private $answers = array();
@@ -76,24 +75,26 @@ class EAL_ItemMC extends EAL_Item {
 	
 
 	
-	public static function save (int $post_id, WP_Post $post) {
-		
-		global $item;
-		if ($item === NULL) {
-			$item = EAL_Factory::createNewItemMC();	// load item from $_POST data
-		}
-		
-		$revision = wp_is_post_revision ($post_id);
-		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
-		if ($type != $item->getType()) return;
-		
-		$item->setId($post_id);		// set the correct id
-		$item->saveToDB();
-	}
+
 	
 	
 /*	
  
+public static function save (int $post_id, WP_Post $post) {
+
+global $item;
+if ($item === NULL) {
+$item = EAL_Factory::createNewItemMC();	// load item from $_POST data
+}
+
+$revision = wp_is_post_revision ($post_id);
+$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
+if ($type != $item->getType()) return;
+
+$item->setId($post_id);		// set the correct id
+$item->saveToDB();
+}
+	
 	 * Create new item from _POST
 	 * @param string $prefix
 	protected function loadFromPOSTRequest (string $prefix="") {

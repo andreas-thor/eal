@@ -61,6 +61,39 @@ class DB_Learnout {
 	
 	
 	
+	public static function loadAllLearningOutcomes (string $domain = NULL): array {
+		
+		global $wpdb;
+		
+		if ($domain == NULL) {
+			$domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
+		}
+			
+		$queryResult = $wpdb->get_results( "
+				SELECT L.*
+				FROM " . self::getTableName() . " L
+				JOIN {$wpdb->prefix}posts P
+				ON (L.id = P.id)
+				WHERE P.post_status = 'publish'
+				AND L.domain = '{$domain}'
+				ORDER BY L.title
+				", ARRAY_A);
+		
+		$result = [];
+		foreach ($queryResult as $sqlres) {
+			$learnout = new EAL_LearnOut();
+			$learnout->setId ($sqlres['id']);
+			$learnout->setTitle($sqlres['title'] ?? '');
+			$learnout->setDescription($sqlres['description'] ?? '');
+			$learnout->setLevel (new EAL_Level($sqlres));
+			$learnout->setDomain($sqlres['domain'] ?? '');
+			$result[] = $learnout;
+		}
+		
+		return $result;
+		
+	}
+	
 	public static function createTables() {
 		
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );

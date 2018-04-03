@@ -23,12 +23,8 @@ class EAL_Level {
 		
 		$this->level = [];
 		
-		if ($object == NULL) {
-			return;
-		}
-		
 		foreach (EAL_Level::TYPE as $type) {
-			$this->level[$type] = $object[$prefix . $type] ?? 0;
+			$this->level[$type] = ($object == NULL) ? 0 : ($object[$prefix . $type] ?? 0);
 		}
 	}
 	
@@ -52,10 +48,10 @@ class EAL_Level {
 	}
 	
 	
-	function hasLevel (int $l): bool {
+	function hasLevel (int $value): bool {
 		
 		foreach (EAL_Level::TYPE as $type) {
-			if ($this->level[$type] == $l) {
+			if ($this->level[$type] == $value) {
 				return TRUE;
 			}
 		}

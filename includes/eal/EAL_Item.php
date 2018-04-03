@@ -13,7 +13,7 @@ abstract class EAL_Item extends EAL_Object {
 	private $learnout;
 	private $learnout_id;
 	
-	public $difficulty;
+	private $difficulty;
 	
 	private $note;
 	private $flag;
@@ -135,11 +135,10 @@ abstract class EAL_Item extends EAL_Object {
 	
 	public function copyMetadata (EAL_Item $sourceItem) {
 		
-		$this->level = $sourceItem->level;
-		$this->learnout_id = $sourceItem->learnout_id;
-		$this->leanout = NULL;
-		$this->note = $sourceItem->getNote();
-		$this->flag = $sourceItem->getFlag();
+		parent::copyMetadata($sourceItem);
+		$this->setLearnOutId($sourceItem->getLearnOutId());
+		$this->setNote($sourceItem->getNote());
+		$this->setFlag($sourceItem->getFlag());
 	}
 	
 
