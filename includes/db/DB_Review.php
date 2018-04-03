@@ -84,6 +84,18 @@ class DB_Review {
 	
 	
 	
+	public static function loadAllReviewIdsForItemFromDB (EAL_Item $item): array {
+			
+		global $wpdb;
+		return $wpdb->get_col ("
+			SELECT R.id
+			FROM " . self::getTableName() . " R
+			JOIN {$wpdb->prefix}posts RP ON (R.id = RP.id)
+			WHERE RP.post_parent=0 AND R.item_id = {$item->getId()} AND RP.post_status IN ('publish', 'pending', 'draft')");
+			
+	}
+	
+	
 	public static function createTables () {
 		
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );

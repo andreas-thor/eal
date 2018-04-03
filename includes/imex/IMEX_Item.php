@@ -76,10 +76,10 @@ abstract class IMEX_Item extends IMEX_Object {
 			if ($status == NULL) continue;	// must have status
 			
 			
-			$item = EAL_Item::load($_REQUEST[$prefix."post_type"], -1, $prefix);	// load item from POST data (because tempid<0)
+			$item = EAL_Factory::createNewItem($_REQUEST[$prefix."post_type"], -1, $prefix);	// load item from POST data (because tempid<0)
 			if ($updateMetadataOnly) {
 				$item_post = $item;
-				$item = EAL_Item::load($_REQUEST[$prefix."post_type"], $itemid);
+				$item = EAL_Factory::createNewItem($_REQUEST[$prefix."post_type"], $itemid);
 				$item->copyMetadata($item_post);
 			}
 			/**

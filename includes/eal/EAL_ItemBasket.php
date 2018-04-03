@@ -72,7 +72,7 @@ class EAL_ItemBasket {
 			if ($post == null) continue;
 			if ($post->post_status == 'trash') continue;
 				
-			$item = EAL_Item::load($post->post_type, $item_id);
+			$item = EAL_Factory::createNewItem($post->post_type, $item_id);
 			if ($item->getId() < 0) continue;
 			$items[$item_id] = $item;
 		}

@@ -78,7 +78,7 @@ class EAL_ItemSC extends EAL_Item {
 		
 		global $item;
 		if ($item === NULL) {
-			$item = new EAL_ItemSC();	// load item from $_POST data
+			$item = EAL_Factory::createNewItemSC();	// load item from $_POST data
 		}
 		
 		$revision = wp_is_post_revision ($post_id);

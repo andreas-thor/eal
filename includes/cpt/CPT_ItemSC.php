@@ -35,8 +35,8 @@ class CPT_ItemSC extends CPT_Item {
 		
 		if (get_post ($compare_from->post_parent)->post_type != $this->type) return $diff;
 		
-		$eal_From = new EAL_ItemSC($compare_from->ID);
-		$eal_To = new EAL_ItemSC($compare_to->ID);
+		$eal_From = EAL_Factory::createNewItemSC($compare_from->ID);
+		$eal_To = EAL_Factory::createNewItemSC($compare_to->ID);
 	
 		$diff[0] = HTML_Item::compareTitle($eal_From, $eal_To);
 		$diff[1] = HTML_Item::compareDescription($eal_From, $eal_To);
@@ -54,7 +54,7 @@ class CPT_ItemSC extends CPT_Item {
 	public function WPCB_register_meta_box_cb () {
 		
 		global $item;
-		$item = new EAL_ItemSC();
+		$item = EAL_Factory::createNewItemSC();
 		parent::WPCB_register_meta_box_cb();
 	}
 	

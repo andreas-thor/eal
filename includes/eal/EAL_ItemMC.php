@@ -80,7 +80,7 @@ class EAL_ItemMC extends EAL_Item {
 		
 		global $item;
 		if ($item === NULL) {
-			$item = new EAL_ItemMC();	// load item from $_POST data
+			$item = EAL_Factory::createNewItemMC();	// load item from $_POST data
 		}
 		
 		$revision = wp_is_post_revision ($post_id);

@@ -142,19 +142,14 @@ abstract class EAL_Item extends EAL_Object {
 		$this->flag = $sourceItem->getFlag();
 	}
 	
-	
-	public static function load (string $item_type, int $item_id, string $prefix=""): EAL_Item {
-		if ($item_type == 'itemsc') return new EAL_ItemSC($item_id, $prefix);
-		if ($item_type == 'itemmc') return new EAL_ItemMC($item_id, $prefix);
-	}
-	
+
 	
 	/**
 	 * Implements lazy loading of learning outcome 
 	 */
 	public function getLearnOut () {
 		
-		if (is_null ($this->learnout_id )) {
+		if (($this->learnout_id ?? -1) < 0) {
 			return null;
 		}
 		
@@ -181,31 +176,8 @@ abstract class EAL_Item extends EAL_Object {
 		}
 	}
 	
-	/**
-	 * 
-	 * @return array of EAL_Review
-	 */
-	public function getReviews (): array {
-		
-		$res = array();
-		foreach ($this->getReviewIds() as $review_id) {
-			array_push($res, new EAL_Review($review_id));
-		}
-		
-		return $res;
-	}
-	
-	
-	public function getReviewIds (): array {
-	
-		global $wpdb;
-		return $wpdb->get_col ("
-			SELECT R.id
-			FROM {$wpdb->prefix}eal_review R
-			JOIN {$wpdb->prefix}posts RP ON (R.id = RP.id)
-			WHERE RP.post_parent=0 AND R.item_id = {$this->getId()} AND RP.post_status IN ('publish', 'pending', 'draft')");
-		
-	}
+
+
 	
 	
 	
@@ -229,6 +201,24 @@ abstract class EAL_Item extends EAL_Object {
 	 * Initialize item from _POST Request data
 	 */
 /*	
+ 
+ 
+	public function getReviews (): array {
+		
+		$res = array();
+		foreach ($this->getReviewIds() as $review_id) {
+			array_push($res, new EAL_Review($review_id));
+		}
+		
+		return $res;
+	}
+	
+	
+	public static function load (string $item_type, int $item_id, string $prefix=""): EAL_Item {
+		if ($item_type == 'itemsc') return new EAL_ItemSC($item_id, $prefix);
+		if ($item_type == 'itemmc') return new EAL_ItemMC($item_id, $prefix);
+	}
+	
 	protected function loadFromPOSTRequest (string $prefix="") {
 		
 		$this->setId ($_POST[$prefix."post_ID"]);

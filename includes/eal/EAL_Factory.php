@@ -112,6 +112,16 @@ class EAL_Factory {
 	}
 	
 	
+	public static function loadAllReviewsForItem (EAL_Item $item): array {
+		
+		$res = array();
+		foreach (DB_Review::loadAllReviewIdsForItemFromDB($item) as $review_id) {
+			array_push($res, self::createNewReview($review_id));
+		}
+		
+		return $res;
+	}
+	
 
 	public static function createNewReview (int $review_id=-1): EAL_Review {
 		
