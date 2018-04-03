@@ -61,6 +61,18 @@ class EAL_ItemMC extends EAL_Item {
 	}
 	
 	
+	public function getPoints(): int {
+		
+		$result = 0;
+		for ($index=0; $index<$this->getNumberOfAnswers(); $index++) {
+			$result += max ($this->getPointsPos($index), $this->getPointsNeg($index));
+		}
+		return $result;
+		
+	}
+	
+	
+	
 	/**
 	 * Create new item from _POST
 	 * @param string $prefix
@@ -81,7 +93,23 @@ class EAL_ItemMC extends EAL_Item {
 		
 	}
 	
+	public static function save (int $post_id, WP_Post $post) {
+		
+		global $item;
+		if ($item === NULL) {
+			$item = new EAL_ItemMC();	// load item from $_POST data
+		}
+		
+		$revision = wp_is_post_revision ($post_id);
+		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
+		if ($type != $item->getType()) return;
+		
+		$item->setId($post_id);		// set the correct id
+		$item->saveToDB();
+	}
 	
+	
+/*	
 	protected function loadFromDB (int $item_id) {
 	
 		parent::loadFromDB($item_id);
@@ -98,29 +126,12 @@ class EAL_ItemMC extends EAL_Item {
 	}
 	
 	
-	public static function save (int $post_id, WP_Post $post) {
-	
-		global $item;
-		if ($item === NULL) {
-			$item = new EAL_ItemMC();	// load item from $_POST data
-		}
-		
-		$revision = wp_is_post_revision ($post_id);
-		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
-		if ($type != $item->getType()) return;
-		
-		$item->setId($post_id);		// set the correct id 
-		$item->saveToDB();
-	}
-	
 	
 	public function saveToDB() {
 	
 		parent::saveToDB();
 		
 		global $wpdb;
-		
-		/** TODO: Sanitize all values */
 		
 		if ($this->getNumberOfAnswers()>0) {
 			
@@ -152,49 +163,7 @@ class EAL_ItemMC extends EAL_Item {
 		$wpdb->delete( '{$wpdb->prefix}eal_itemmc', array( 'item_id' => $post_id ), array( '%d' ) );
 	}
 	
-	
-	public function getPoints(): int { 
-		
-		$result = 0;
-		for ($index=0; $index<$this->getNumberOfAnswers(); $index++) {
-			$result += max ($this->getPointsPos($index), $this->getPointsNeg($index));
-		}
-		return $result;
-	
-	}
-	
-	
-	
-
-
-	
-	
-	
-	
-	
-	
-	public static function createTables () {
-	
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		global $wpdb;
-		
-		dbDelta (
-				"CREATE TABLE {$wpdb->prefix}eal_itemmc (
-				item_id bigint(20) unsigned NOT NULL,
-				id smallint unsigned NOT NULL,
-				answer text,
-				positive smallint,
-				negative smallint,
-				KEY index_item_id (item_id),
-				PRIMARY KEY  (item_id, id)
-			) {$wpdb->get_charset_collate()};"
-		);
-		
-		
-	
-	}
-
-
+*/	
 	
 	
 	

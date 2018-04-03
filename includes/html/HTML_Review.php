@@ -33,7 +33,7 @@ class HTML_Review extends HTML_Object {
 	 * ****************************************************************************/	
 	
 	public function metaboxFeedback () {
-		$this->printEditor('review_feedback', $this->review->feedback);
+		$this->printEditor('review_feedback', $this->review->getFeedback());
 	}
 	
 	public function printFeedback (bool $isImport, string $prefix="") {
@@ -43,9 +43,9 @@ class HTML_Review extends HTML_Object {
 				<input 
 					type="hidden" 
 					name="<?php echo $prefix ?>review_feedback" 
-					value="<?php echo htmlentities($this->review->feedback, ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" />			
+					value="<?php echo htmlentities($this->review->getFeedback(), ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" />			
 			<?php } ?> 
-			<?php echo wpautop($this->review->feedback) ?>
+			<?php echo wpautop($this->review->getFeedback()) ?>
 		</div>
 	<?php
 	}
@@ -76,7 +76,7 @@ class HTML_Review extends HTML_Object {
 					}
 				}
 			</script>
-			<input type="hidden" id="item_id" name="<?php echo $prefix ?>item_id"  value="<?php echo $this->review->item_id ?>">
+			<input type="hidden" id="item_id" name="<?php echo $prefix ?>item_id"  value="<?php echo $this->review->getItemId() ?>">
 		<?php } ?>
 		
 		<select style="width:100%" name="<?php echo $prefix ?>review_overall" onchange="setAccept(this.value);" align="right">
@@ -85,7 +85,7 @@ class HTML_Review extends HTML_Object {
 				<option
 					value="<?php echo $i ?>" 
 					<?php if (!$isEditable) echo 'style="display:none"' ?>
-					<?php if ($i == $this->review->overall) echo ' selected ' ?>
+					<?php if ($i == $this->review->getOverall()) echo ' selected ' ?>
 				>
 					<?php echo $status ?>
 				</option>
@@ -139,7 +139,7 @@ class HTML_Review extends HTML_Object {
 					<?php foreach (EAL_Review::$dimension2 as $k2 => $v2) { ?>
 					<td style="padding:0.5em; border-style:solid; border-width:1px;">
 						<?php foreach ($values as $k3 => $v3) { 
-							$checked = ($this->review->score[$k1][$k2]==$k3+1);
+							$checked = ($this->review->getScore($k1, $k2)==$k3+1);
 							$name = $prefix . 'review_' . $k1 . '_' . $k2;
 							// previos id was k1.k2.k3
 						?>

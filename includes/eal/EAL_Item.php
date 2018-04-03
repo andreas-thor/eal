@@ -41,25 +41,64 @@ abstract class EAL_Item extends EAL_Object {
 	
 	
 	
+	public function setFlag(string $flag) {
+		$this->flag = $flag;
+	}
+
+	public function setNote(string $note) {
+		$this->note = $note;
+	}
+
 	public function getTitle (): string {
 		return $this->title;
+	}
+	
+	public function setTitle (string $title) {
+		$this->title = $title;
 	}
 	
 	public function getDescription (): string {
 		return $this->description;
 	}
 	
+	public function setDescription (string $description) {
+		$this->description = $description;
+	}
+	
 	public function getQuestion (): string {
 		return $this->question;
+	}
+	
+	public function setQuestion (string $question) {
+		$this->question = $question;
 	}
 	
 	public function getNote(): string {
 		return $this->note;
 	}
 	
+	
 	public function getFlag(): int {
 		return $this->flag ?? 0;
 	}
+	
+	public function getDifficulty (): float {
+		return $this->difficulty ?? -1;
+	}
+	
+	public function setDifficulty (string $difficulty) {
+		$this->difficulty = $difficulty;
+	}
+	
+	
+	public function getMinNumber(): int {
+		return $this->minnumber ?? -1;
+	}
+	
+	public function getMaxNumber(): int {
+		return $this->maxnumber ?? -1;
+	}
+	
 	
 	public abstract function getHTMLPrinter (): HTML_Item;
 	
@@ -134,7 +173,7 @@ abstract class EAL_Item extends EAL_Object {
 		$this->title = stripslashes($_POST[$prefix."post_title"]);
 		$this->description = isset($_POST[$prefix.'item_description']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_description'])) : null;
 		$this->question = isset ($_POST[$prefix.'item_question']) ? html_entity_decode (stripslashes($_POST[$prefix.'item_question'])) : null;
-		$this->level = new EAL_Level($_POST, $prefix.'item_level');
+		$this->level = new EAL_Level($_POST, $prefix.'item_level_');
 		
 		
 		$this->learnout_id = $_GET[$prefix.'learnout_id'] ?? $_POST[$prefix.'learnout_id'] ?? null;
@@ -157,69 +196,6 @@ abstract class EAL_Item extends EAL_Object {
 		}
 	}
 	
-	
-	protected function loadFromDB (int $item_id) {
-	
-		global $wpdb;
-		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_item WHERE id = {$item_id} AND type ='{$this->getType()}'", ARRAY_A);
-	
-		$this->setId ($sqlres['id']);
-		$this->title = $sqlres['title'];
-		$this->description = $sqlres['description'];
-		$this->question = $sqlres['question'];
-		$this->level = new EAL_Level($sqlres);
-	
-		$this->learnout_id = $sqlres['learnout_id'];
-		$this->learnout = null; // lazy loading
-		
-		$this->minnumber = ($this->getType() == "itemmc") && (isset($sqlres['minnumber'])) ? $sqlres['minnumber'] : null;
-		$this->maxnumber = ($this->getType() == "itemmc") && (isset($sqlres['maxnumber'])) ? $sqlres['maxnumber'] : null;
-		
-		$this->difficulty = $sqlres['difficulty'];
-		$this->note = $sqlres['note'];
-		$this->flag = $sqlres['flag'];
-		
-		$this->setDomain($sqlres['domain']);
-	}
-	
-	
-	
-	
-	
-	public function saveToDB () {
-		
-		global $wpdb;
-		
-		$wpdb->replace(
-			"{$wpdb->prefix}eal_item",
-			array(
-					'id' => $this->getId(),
-					'title' => $this->title,
-					'description' => $this->description,
-					'question' => $this->question,
-					'level_FW' => $this->level->get('FW'),
-					'level_KW' => $this->level->get('KW'),
-					'level_PW' => $this->level->get('PW'),
-					'points'   => $this->getPoints(),
-					'difficulty' => $this->difficulty,
-					'learnout_id' => $this->learnout_id,
-					'type' => $this->getType(),
-					'domain' => $this->getDomain(),
-					'note' => $this->getNote(),
-					'flag' => $this->getFlag(),
-					'minnumber' => $this->minnumber,
-					'maxnumber' => $this->maxnumber
-			),
-			array('%d','%s','%s','%s','%d','%d','%d','%d','%f','%d','%s','%s','%s','%d','%d','%d')
-			);
-	}
-	
-	
-	public static function delete ($post_id) {
-		global $wpdb;
-		$wpdb->delete( '{$wpdb->prefix}eal_item', array( 'id' => $post_id ), array( '%d' ) );
-		$wpdb->delete( '{$wpdb->prefix}eal_review', array( 'item_id' => $post_id ), array( '%d' ) );
-	}
 	
 	
 	/**
@@ -245,6 +221,13 @@ abstract class EAL_Item extends EAL_Object {
 	 */
 	public function getLearnOutId(): int {
 		return $this->learnout_id ?? -1;
+	}
+	
+	public function setLearnOutId (int $learnout_id) {
+		if (($this->learnout_id != $learnout_id) || ($learnout_id<0)) {
+			$this->learnout_id = $learnout_id;
+			$this->learnout = NULL;
+		}
 	}
 	
 	/**
@@ -288,20 +271,77 @@ abstract class EAL_Item extends EAL_Object {
 		return 'Unknown';
 	}
 	
+/*	
 	
-	/**
-	 * Create database tables when plugin is activated 
-	 */
+	protected function loadFromDB (int $item_id) {
+		
+		global $wpdb;
+		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_item WHERE id = {$item_id} AND type ='{$this->getType()}'", ARRAY_A);
+		
+		$this->setId ($sqlres['id']);
+		$this->title = $sqlres['title'];
+		$this->description = $sqlres['description'];
+		$this->question = $sqlres['question'];
+		$this->level = new EAL_Level($sqlres);
+		
+		$this->learnout_id = $sqlres['learnout_id'];
+		$this->learnout = null; // lazy loading
+		
+		$this->minnumber = ($this->getType() == "itemmc") && (isset($sqlres['minnumber'])) ? $sqlres['minnumber'] : null;
+		$this->maxnumber = ($this->getType() == "itemmc") && (isset($sqlres['maxnumber'])) ? $sqlres['maxnumber'] : null;
+		
+		$this->difficulty = $sqlres['difficulty'];
+		$this->note = $sqlres['note'];
+		$this->flag = $sqlres['flag'];
+		
+		$this->setDomain($sqlres['domain']);
+	}
+	
+	
+	
+	
+	
+	public function saveToDB () {
+		
+		global $wpdb;
+		
+		$wpdb->replace(
+			"{$wpdb->prefix}eal_item",
+			array(
+				'id' => $this->getId(),
+				'title' => $this->title,
+				'description' => $this->description,
+				'question' => $this->question,
+				'level_FW' => $this->level->get('FW'),
+				'level_KW' => $this->level->get('KW'),
+				'level_PW' => $this->level->get('PW'),
+				'points'   => $this->getPoints(),
+				'difficulty' => $this->difficulty,
+				'learnout_id' => $this->learnout_id,
+				'type' => $this->getType(),
+				'domain' => $this->getDomain(),
+				'note' => $this->getNote(),
+				'flag' => $this->getFlag(),
+				'minnumber' => $this->minnumber,
+				'maxnumber' => $this->maxnumber
+			),
+			array('%d','%s','%s','%s','%d','%d','%d','%d','%f','%d','%s','%s','%s','%d','%d','%d')
+			);
+	}
+	
+	
+	public static function delete ($post_id) {
+		global $wpdb;
+		$wpdb->delete( '{$wpdb->prefix}eal_item', array( 'id' => $post_id ), array( '%d' ) );
+		$wpdb->delete( '{$wpdb->prefix}eal_review', array( 'item_id' => $post_id ), array( '%d' ) );
+	}
+	
 	
 	public static function createTables() {
 		
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		global $wpdb;
 
-		/**
-		 * minnumber/maxnumber: range of correct answers (relevant for MC only)
-		 */
-		
 		dbDelta (
 			"CREATE TABLE {$wpdb->prefix}eal_item (
 			id bigint(20) unsigned NOT NULL,
@@ -338,7 +378,7 @@ abstract class EAL_Item extends EAL_Object {
 		
 
 	}
-		
+		*/
 
 }
 

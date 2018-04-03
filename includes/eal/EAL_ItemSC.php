@@ -50,6 +50,16 @@ class EAL_ItemSC extends EAL_Item {
 	}
 	
 	
+	public function getPoints(): int {
+		
+		$result = 0;
+		for ($index=0; $index<$this->getNumberOfAnswers(); $index++) {
+			$result = max ($result, $this->getPointsChecked($index));
+		}
+		return $result;
+		
+	}
+	
 	
 	protected function loadFromPOSTRequest (string $prefix="") {
 		
@@ -62,55 +72,9 @@ class EAL_ItemSC extends EAL_Item {
 			}
 		}
 	}
-
-	
-	protected function loadFromDB (int $item_id) {
-		
-		parent::loadFromDB($item_id);
-	
-		global $wpdb;
-		
-		$this->clearAnswers();
-		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_{$this->getType()} WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
-		foreach ($sqlres as $a) {
-			$this->addAnswer($a['answer'], $a['points']);
-		}
-		
-	}
 	
 	
-	
-	public function saveToDB() {
-		
-		parent::saveToDB();
-		
-		global $wpdb;
-		
-		/** TODO: Sanitize all values */
-		
-		if ($this->getNumberOfAnswers()>0) {
-		
-			$values = array();
-			$insert = array();
-			
-			for ($index=0; $index<$this->getNumberOfAnswers(); $index++) {
-				array_push($values, $this->getId(), $index+1, $this->getAnswer($index), $this->getPointsChecked($index));
-				array_push($insert, "(%d, %d, %s, %d)");
-			}
-		
-			// replace answers
-			$query = "REPLACE INTO {$wpdb->prefix}eal_{$this->getType()} (item_id, id, answer, points) VALUES ";
-			$query .= implode(', ', $insert);
-			$wpdb->query( $wpdb->prepare("$query ", $values));
-		}
-		
-		// delete remaining answers
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$this->getType()} WHERE item_id=%d AND id>%d", array ($this->getId(), $this->getNumberOfAnswers())));
-		
-	}
-	
-
-	/** 
+	/**
 	 * $item to store might already be loaed (e.g., during import); otherwise loaded from $_POST data
 	 * save is called twice per update
 	 * 1) for the revision --> $revision will contain the id of the parent post
@@ -135,6 +99,52 @@ class EAL_ItemSC extends EAL_Item {
 	
 	
 
+/*	
+	protected function loadFromDB (int $item_id) {
+		
+		parent::loadFromDB($item_id);
+	
+		global $wpdb;
+		
+		$this->clearAnswers();
+		$sqlres = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}eal_{$this->getType()} WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
+		foreach ($sqlres as $a) {
+			$this->addAnswer($a['answer'], $a['points']);
+		}
+		
+	}
+	
+	
+	
+	public function saveToDB() {
+		
+		parent::saveToDB();
+		
+		global $wpdb;
+		
+		
+		if ($this->getNumberOfAnswers()>0) {
+		
+			$values = array();
+			$insert = array();
+			
+			for ($index=0; $index<$this->getNumberOfAnswers(); $index++) {
+				array_push($values, $this->getId(), $index+1, $this->getAnswer($index), $this->getPointsChecked($index));
+				array_push($insert, "(%d, %d, %s, %d)");
+			}
+		
+			// replace answers
+			$query = "REPLACE INTO {$wpdb->prefix}eal_{$this->getType()} (item_id, id, answer, points) VALUES ";
+			$query .= implode(', ', $insert);
+			$wpdb->query( $wpdb->prepare("$query ", $values));
+		}
+		
+		// delete remaining answers
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->prefix}eal_{$this->getType()} WHERE item_id=%d AND id>%d", array ($this->getId(), $this->getNumberOfAnswers())));
+		
+	}
+	
+
 	
 	public static function delete ($post_id) {
 	
@@ -144,15 +154,7 @@ class EAL_ItemSC extends EAL_Item {
 	}
 	
 	
-	public function getPoints(): int {
-	
-		$result = 0;
-		for ($index=0; $index<$this->getNumberOfAnswers(); $index++) {
-			$result = max ($result, $this->getPointsChecked($index));
-		}
-		return $result;
-	
-	}
+
 	
 	
 	
@@ -175,7 +177,7 @@ class EAL_ItemSC extends EAL_Item {
 		);
 	
 	}
-	
+	*/
 
 	
 }

@@ -9,6 +9,14 @@ class EAL_LearnOut extends EAL_Object  {
 	private $description;
 	
 	
+	public function setTitle(string $title) {
+		$this->title = $title;
+	}
+
+	public function setDescription(string $description) {
+		$this->description = $description;
+	}
+
 	public function getTitle (): string {
 		return $this->title;
 	}
@@ -63,7 +71,7 @@ class EAL_LearnOut extends EAL_Object  {
 		$this->setId ($_POST[$prefix."post_ID"]);
 		$this->title = stripslashes($_POST[$prefix."post_title"]);
 		$this->description = isset ($_POST[$prefix.'learnout_description']) ? html_entity_decode (stripslashes($_POST[$prefix.'learnout_description'])) : null;
-		$this->level = new EAL_Level($_POST, $prefix.'learnout_level');
+		$this->level = new EAL_Level($_POST, $prefix.'learnout_level_');
 
 		$this->setDomain($_POST[$prefix."domain"]);
 		if (($this->getDomain() == "") && (isset($_POST[$prefix.'tax_input']))) {
@@ -78,16 +86,7 @@ class EAL_LearnOut extends EAL_Object  {
 
 	
 	
-	protected function loadFromDB ($item_id) {
-		
-		global $wpdb;
-		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->getType()} WHERE id = {$item_id}", ARRAY_A);
-		$this->setId ($sqlres['id']);
-		$this->title = $sqlres['title'];
-		$this->description = $sqlres['description'];
-		$this->level = new EAL_Level($sqlres);
-		$this->setDomain($sqlres['domain']);
-	}
+
 	
 	
 	public function getItemIds (): array {
@@ -106,44 +105,11 @@ class EAL_LearnOut extends EAL_Object  {
 	}	
 	
 	
-	public static function createTables() {
-	
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		global $wpdb;
-		dbDelta (
-			"CREATE TABLE {$wpdb->prefix}eal_learnout (
-				id bigint(20) unsigned NOT NULL,
-				title mediumtext,
-				description mediumtext,
-				level_FW tinyint unsigned,
-				level_KW tinyint unsigned,
-				level_PW tinyint unsigned,
-				domain varchar(50) NOT NULL,
-				PRIMARY KEY  (id),
-				KEY index_domain (domain)
-			) {$wpdb->get_charset_collate()};"
-		);
-	}
+
 	
 	
 	
-	public function saveToDB() {
-		
-		global $wpdb;
-		$wpdb->replace(
-			"{$wpdb->prefix}eal_{$this->getType()}",
-			array(
-				'id' => $this->getId(),
-				'title' => $this->title,
-				'description' => $this->description,
-				'level_FW' => $this->level->get('FW'),
-				'level_KW' => $this->level->get('KW'),
-				'level_PW' => $this->level->get('PW'),
-				'domain' => $this->getDomain()
-		),
-		array('%d','%s','%s','%d','%d','%d','%s')
-		);
-	}
+
 	
 	public static function save ($post_id, $post) {
 	
@@ -167,6 +133,56 @@ class EAL_LearnOut extends EAL_Object  {
 				", ARRAY_A);
 	}
 	
+	
+	protected function loadFromDB ($item_id) {
+		
+		global $wpdb;
+		$sqlres = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}eal_{$this->getType()} WHERE id = {$item_id}", ARRAY_A);
+		$this->setId ($sqlres['id']);
+		$this->title = $sqlres['title'];
+		$this->description = $sqlres['description'];
+		$this->level = new EAL_Level($sqlres);
+		$this->setDomain($sqlres['domain']);
+	}
+	
+	
+	
+	public function saveToDB() {
+		
+		global $wpdb;
+		$wpdb->replace(
+			"{$wpdb->prefix}eal_{$this->getType()}",
+			array(
+				'id' => $this->getId(),
+				'title' => $this->title,
+				'description' => $this->description,
+				'level_FW' => $this->level->get('FW'),
+				'level_KW' => $this->level->get('KW'),
+				'level_PW' => $this->level->get('PW'),
+				'domain' => $this->getDomain()
+			),
+			array('%d','%s','%s','%d','%d','%d','%s')
+			);
+	}
+	
+	public static function createTables() {
+		
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		global $wpdb;
+		dbDelta (
+			"CREATE TABLE {$wpdb->prefix}eal_learnout (
+				id bigint(20) unsigned NOT NULL,
+				title mediumtext,
+				description mediumtext,
+				level_FW tinyint unsigned,
+				level_KW tinyint unsigned,
+				level_PW tinyint unsigned,
+				domain varchar(50) NOT NULL,
+				PRIMARY KEY  (id),
+				KEY index_domain (domain)
+			) {$wpdb->get_charset_collate()};"
+		);
+	}
 	
 }
 

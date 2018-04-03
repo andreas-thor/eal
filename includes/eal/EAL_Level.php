@@ -19,12 +19,16 @@ class EAL_Level {
 	private $level;
 
 		
-	function __construct(array $object = NULL, string $prefix = 'level') {
+	function __construct(array $object = NULL, string $prefix = 'level_') {
 		
 		$this->level = [];
 		
+		if ($object == NULL) {
+			return;
+		}
+		
 		foreach (EAL_Level::TYPE as $type) {
-			$this->level[$type] = ($object === NULL) ? 0 : ($object[$prefix . '_' . $type] ?? 0);
+			$this->level[$type] = $object[$prefix . $type] ?? 0;
 		}
 	}
 	
@@ -33,6 +37,16 @@ class EAL_Level {
 		$type = strtoupper ($type);
 		if (in_array($type, EAL_Level::TYPE)) {
 			return $this->level[$type];
+		}
+		throw new Exception('Unknown level type: ' . $type);
+	}
+	
+	function set (string $type, int $value) {
+		
+		$type = strtoupper ($type);
+		if (in_array($type, EAL_Level::TYPE)) {
+			$this->level[$type] = $value;
+			return;
 		}
 		throw new Exception('Unknown level type: ' . $type);
 	}

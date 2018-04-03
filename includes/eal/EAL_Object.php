@@ -62,5 +62,9 @@ abstract class EAL_Object {
 		return $this->level;
 	}
 	
+	public function setLevel (EAL_Level $level) {
+		$this->level = $level;
+	}
+	
 }
 ?>
