@@ -38,11 +38,11 @@ class EAL_ItemSC extends EAL_Item {
 	}
 	
 	public function getAnswer (int $index): string {
-		return $this->answers[$index]['answer'];
+		return $this->answers[$index]['answer'] ?? '';
 	}
 	
 	public function getPointsChecked (int $index): int {
-		return $this->answers[$index]['points'];
+		return $this->answers[$index]['points'] ?? 0;
 	}
 	
 	

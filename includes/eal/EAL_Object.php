@@ -28,11 +28,6 @@ abstract class EAL_Object {
 	}
 	
 	
-	public function copyMetadata (EAL_Object $sourceObject) {
-		
-		$this->level = $sourceObject->level;
-	}
-	
 	
 	public function getId (): int {
 		return $this->id;

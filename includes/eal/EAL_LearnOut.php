@@ -1,7 +1,7 @@
 <?php
 
 require_once 'EAL_Object.php';
-require_once __DIR__ . '/../HTML_LearnOut';
+require_once __DIR__ . '/../html/HTML_LearnOut.php';
 
 class EAL_LearnOut extends EAL_Object  {
 
@@ -33,7 +33,7 @@ class EAL_LearnOut extends EAL_Object  {
 	}
 	
 	public function copyMetadata (EAL_LearnOut $sourceLO) {
-		parent::copyMetadata($sourceLO);
+		$this->setLevel($sourceLO->getLevel());
 	}
 	
 	

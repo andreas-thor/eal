@@ -1,8 +1,10 @@
 <?php
 
 
+require_once 'DB_Item.php';
 
-class DB_ItemSC extends DB_Item {
+
+class DB_ItemSC {
 	
 	
 	
@@ -15,7 +17,7 @@ class DB_ItemSC extends DB_Item {
 	
 	public static function saveToDB (EAL_ItemSC $item) {
 		
-		parent::saveToDB($item);
+		DB_Item::saveToDB($item);
 		
 		global $wpdb;
 		
@@ -46,7 +48,7 @@ class DB_ItemSC extends DB_Item {
 	
 	public static function deleteFromDB (int $item_id) {
 		
-		parent::deleteFromDB($item_id);
+		DB_Item::deleteFromDB($item_id);
 		
 		global $wpdb;
 		$wpdb->delete( self::getTableName(), array( 'item_id' => $item_id ), array( '%d' ) );
@@ -56,7 +58,7 @@ class DB_ItemSC extends DB_Item {
 	
 	public static function loadFromDB (EAL_ItemSC &$item) {
 		
-		parent::loadFromDB($item);
+		DB_Item::loadFromDB($item);
 		
 		global $wpdb;
 		

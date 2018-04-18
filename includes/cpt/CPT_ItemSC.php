@@ -58,13 +58,18 @@ class CPT_ItemSC extends CPT_Item {
 		
 	
 	
-	public function filter_wp_get_revision_ui_diff (array $diff, WP_Post $compare_from, WP_Post $compare_to) {
-	
+	public function filter_wp_get_revision_ui_diff (array $diff, $compare_from, $compare_to) {
+			
 		
-		if (get_post ($compare_from->post_parent)->post_type != $this->type) return $diff;
+		if ($compare_from instanceof  WP_Post) {
+			if (get_post ($compare_from->post_parent)->post_type != $this->type) return $diff;
+		}
+		if ($compare_to instanceof  WP_Post) {
+			if (get_post ($compare_to->post_parent)->post_type != $this->type) return $diff;
+		}
 		
-		$eal_From = EAL_Factory::createNewItemSC($compare_from->ID);
-		$eal_To = EAL_Factory::createNewItemSC($compare_to->ID);
+		$eal_From = ($compare_from instanceof  WP_Post) ? EAL_Factory::createNewItemSC($compare_from->ID) : new EAL_ItemSC();
+		$eal_To = ($compare_to instanceof  WP_Post) ? EAL_Factory::createNewItemSC($compare_to->ID) : new EAL_ItemSC();
 	
 		$diff[0] = HTML_Item::compareTitle($eal_From, $eal_To);
 		$diff[1] = HTML_Item::compareDescription($eal_From, $eal_To);

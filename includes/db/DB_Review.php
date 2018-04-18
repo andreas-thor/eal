@@ -57,8 +57,8 @@ class DB_Review {
 	
 	
 	/**
-	 * Call-by-reference; $item properties are loaded into given instance
-	 * @param EAL_Item $item
+	 * Call-by-reference; $review properties are loaded into given instance
+	 * @param EAL_Review $review
 	 */
 	public static function loadFromDB (EAL_Review &$review) {
 		

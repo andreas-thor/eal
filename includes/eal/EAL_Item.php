@@ -18,7 +18,7 @@ abstract class EAL_Item extends EAL_Object {
 	private $note;
 	private $flag;
 	
-	public $minnumber = null;	// minnumber/maxnumber: range of correct answers (relevant for MC only)
+	public $minnumber = null;	// FIXME minnumber/maxnumber: range of correct answers (relevant for MC only)
 	public $maxnumber = null;
 	
 	public static $level_type = ["FW", "KW", "PW"];
@@ -135,7 +135,7 @@ abstract class EAL_Item extends EAL_Object {
 	
 	public function copyMetadata (EAL_Item $sourceItem) {
 		
-		parent::copyMetadata($sourceItem);
+		$this->setLevel($sourceItem->getLevel());
 		$this->setLearnOutId($sourceItem->getLearnOutId());
 		$this->setNote($sourceItem->getNote());
 		$this->setFlag($sourceItem->getFlag());
@@ -148,7 +148,7 @@ abstract class EAL_Item extends EAL_Object {
 	 */
 	public function getLearnOut () {
 		
-		if (($this->learnout_id ?? -1) < 0) {
+		if (($this->learnout_id ?? -1) <= 0) {
 			return null;
 		}
 		

@@ -1,5 +1,11 @@
 <?php
 
+require_once __DIR__ . '/../db/DB_Item.php';
+require_once __DIR__ . '/../db/DB_ItemMC.php';
+require_once __DIR__ . '/../db/DB_ItemSC.php';
+require_once __DIR__ . '/../db/DB_Learnout.php';
+require_once __DIR__ . '/../db/DB_Review.php';
+
 class EAL_Factory {
 	
 	
@@ -11,7 +17,7 @@ class EAL_Factory {
 		throw new Exception('Unknown item type ' . $item_type);
 	}
 	
-	public static function createNewItemMC (int $item_id, string $prefix=''): EAL_ItemMC {
+	public static function createNewItemMC (int $item_id=0, string $prefix=''): EAL_ItemMC {
 		
 		$item = new EAL_ItemMC();
 		
@@ -63,7 +69,7 @@ class EAL_Factory {
 		
 	}
 
-	public static function createNewItemSC (int $item_id, string $prefix=''): EAL_ItemSC {
+	public static function createNewItemSC (int $item_id=0, string $prefix=''): EAL_ItemSC {
 		
 		$item = new EAL_ItemSC();
 		

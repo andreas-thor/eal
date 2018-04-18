@@ -62,11 +62,11 @@ add_action('wp_ajax_getItemPools', array(
 
 /* Plugin Activation --> Create Database Tables for all data types */
 register_activation_hook(__FILE__, function () {
-	EAL_Item::createTables();
-	EAL_ItemSC::createTables();
-	EAL_ItemMC::createTables();
-	EAL_Review::createTables();
-	EAL_LearnOut::createTables();
+	DB_Item::createTables();
+	DB_ItemSC::createTables();
+	DB_ItemMC::createTables();
+	DB_Review::createTables();
+	DB_LearnOut::createTables();
 });
 
 

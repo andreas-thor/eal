@@ -73,7 +73,7 @@ class DB_Item {
 		
 		$item->setDifficulty($sqlres['difficulty'] ?? 0);
 		$item->setNote($sqlres['note'] ?? '');
-		$item->setFlag($sqlres['flag'] ?? '');
+		$item->setFlag($sqlres['flag'] ?? 0);
 		
 		$item->setDomain($sqlres['domain'] ?? '');
 		
