@@ -2,7 +2,7 @@
 
 require_once ("EAL_Item.php");
 
-
+ 
 
 
 class EAL_ItemMC extends EAL_Item {
@@ -30,6 +30,9 @@ class EAL_ItemMC extends EAL_Item {
 	}
 	
 	
+	public static function getType(): string {
+		return 'itemmc';
+	}
 	
 	public function clearAnswers() {
 		$this->answers = array();
@@ -70,6 +73,8 @@ class EAL_ItemMC extends EAL_Item {
 		return $result;
 		
 	}
+	
+
 	
 }
 

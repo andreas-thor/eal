@@ -25,6 +25,11 @@ class EAL_ItemSC extends EAL_Item {
 		$this->maxnumber = 1;
 	}
 	
+	public static function getType(): string {
+		return 'itemsc';
+	}
+	
+	
 	public function clearAnswers() {
 		$this->answers = array();
 	}

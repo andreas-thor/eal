@@ -6,7 +6,6 @@ require_once 'EAL_Level.php';
 abstract class EAL_Object {
 	
 	private $id;		// set/get make sure that integer values are stored only
-	private $type;		// read-only; will be set during constructor based on concrete class type (EAL_ItemMC, EAL_ItemSC, ...)
 	private $domain;	// each item belongs to a domain (when newly created: domain = current user's role domain)
 	
 	/**
@@ -15,16 +14,29 @@ abstract class EAL_Object {
 	private $level;			
 	
 	
-	function __construct () {
+	function __construct (int $id = -1, array $object = NULL, string $prefix = '', string $level_prefix = '') {
 		
-		if ($this instanceof EAL_ItemSC) 	$this->type = "itemsc";
-		if ($this instanceof EAL_ItemMC) 	$this->type = "itemmc";
-		if ($this instanceof EAL_LearnOut) 	$this->type = "learnout";
-		if ($this instanceof EAL_Review) 	$this->type = "review";
-
-		$this->setId(-1);
+		$this->setId($id);
 		$this->setDomain(RoleTaxonomy::getCurrentRoleDomain()["name"]);
-		$this->level = new EAL_Level();
+		
+		
+		$this->level = new EAL_Level($object, $prefix . $level_prefix);
+	}
+	
+	
+	public function initFromPOSTRequest (string $prefix, string $levelPrefix) {
+		
+		$this->id = intval ($_POST[$prefix . 'post_ID'] ?? 0);
+		$this->level = new EAL_Level($_POST, $prefix . $levelPrefix);
+		$this->domain = $_POST[$prefix . 'domain'] ?? '';
+		
+		// adjust domain if necessary ... FIXME: WHY and WHEN
+		if (($this->domain === '') && (isset($_POST[$prefix . 'tax_input']))) {
+			foreach ($_POST[$prefix . 'tax_input'] as $key => $value) {
+				$this->domain = $key;
+				break;
+			}
+		}
 	}
 	
 	
@@ -45,9 +57,7 @@ abstract class EAL_Object {
 	}
 	
 	
-	public function getType(): string {
-		return $this->type;
-	}
+	public static abstract function getType(): string; 
 	
 
 	public function getDomain(): string {

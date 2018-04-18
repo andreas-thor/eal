@@ -72,7 +72,7 @@ class HTML_LearnOut extends HTML_Object {
 			<div style="display:<?=($this->getLearnout()->getLevel()->hasLevel($level) ? 'block' : 'none') ?>">
 			<?php 
 				foreach ($terms as $t) { 
-					$tname = htmlentities($t, ENT_SUBSTITUTE, 'ISO-8859-1');
+					$tname = htmlentities($t); 
 			?>
 					<a style="margin:3px" class="button" onclick="tinyMCE.editors['learnout_description'].execCommand( 'mceInsertContent', false, '<?=$tname?>');">
 						<?=$tname?>
@@ -123,7 +123,7 @@ class HTML_LearnOut extends HTML_Object {
 		$callback = ($isEditable) ? "showSuperVerbs" : "";
 		
 		// FIXME: Ist das hier richtig, dass nochmal item an prefix angehangen wird???
-		parent::printLevelObject ($prefix . "learnout", $this->getLearnout()->getLevel(), NULL, !$isEditable, FALSE, $callback);
+		parent::printLevelObject ($prefix . "learnout", $this->getLearnout()->getLevel(), new EAL_Level(), !$isEditable, FALSE, $callback);
 		
 	}
 	

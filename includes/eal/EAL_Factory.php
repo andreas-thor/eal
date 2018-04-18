@@ -221,7 +221,7 @@ class EAL_Factory {
 		global $post;
 		
 		if ($post->post_type != $learnout->getType()) {
-			throw new Exception('Could not load learning outcome due to wrong type. $post->post_type is ' . $post->post_type);
+// 			throw new Exception('Could not load learning outcome due to wrong type. $post->post_type is ' . $post->post_type);
 		}
 		
 		$learnout->setId ($post->ID);

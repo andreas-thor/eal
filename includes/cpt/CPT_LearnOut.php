@@ -47,8 +47,15 @@ class CPT_LearnOut extends CPT_Object {
 
 	public static function save_post (int $post_id, WP_Post $post) {
 		
-		$learnout = EAL_Factory::createNewLearnOut();
-		if ($post->post_type != $learnout->getType()) return;
+		if ($post->post_type != EAL_LearnOut::getType()) return;
+		
+		
+		$learnout = new EAL_LearnOut($post_id);
+		
+		if ($post->post_status != 'auto-draft') {
+			$learnout->initFromPOSTRequest('', 'learnout_level_');
+		}
+		
 		DB_Learnout::saveToDB($learnout);	
 	}
 	
@@ -67,9 +74,8 @@ class CPT_LearnOut extends CPT_Object {
 		}
 		global $post;
 		
-		?>  <style> #minor-publishing { display: none; } </style> <?php
-		
-		
+		// remove visibility and status options
+		print ('<style> #minor-publishing { display: none; } </style>');
 		
 		add_meta_box('mb_description', 'Beschreibung', array ($learnout->getHTMLPrinter(), 'metaboxDescription'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($learnout->getHTMLPrinter(), 'metaboxLevel'), $this->type, 'side', 'default');

@@ -24,7 +24,7 @@ class EAL_Level {
 		$this->level = [];
 		
 		foreach (EAL_Level::TYPE as $type) {
-			$this->level[$type] = ($object == NULL) ? 0 : ($object[$prefix . $type] ?? 0);
+			$this->level[$type] = ($object === NULL) ? 0 : ($object[$prefix . $type] ?? 0);
 		}
 	}
 	

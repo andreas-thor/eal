@@ -8,6 +8,24 @@ class EAL_LearnOut extends EAL_Object  {
 	private $title;
 	private $description;
 	
+	function __construct(int $id = -1, array $object = NULL, string $prefix = '', string $level_prefix = '') {
+		parent::__construct($id, $object, $prefix, $level_prefix);
+		$this->title = '';
+		$this->description = 'Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage ...';
+	}
+	
+	public function initFromPOSTRequest (string $prefix, string $levelPrefix) {
+	
+		parent::initFromPOSTRequest($prefix, $levelPrefix);
+		$this->title = stripslashes($_POST[$prefix . 'post_title'] ?? '');
+		$this->description = html_entity_decode (stripslashes($_POST[$prefix . 'learnout_description'] ?? ''));
+	}
+	
+	public static function getType(): string {
+		return 'learnout';
+	}
+	
+	
 	
 	public function setTitle(string $title) {
 		$this->title = $title;
@@ -26,11 +44,7 @@ class EAL_LearnOut extends EAL_Object  {
 	}
 	
 	
-	function __construct() {
-		parent::__construct();
-		$this->title = '';
-		$this->description = 'Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage ...';
-	}
+
 	
 	public function copyMetadata (EAL_LearnOut $sourceLO) {
 		$this->setLevel($sourceLO->getLevel());

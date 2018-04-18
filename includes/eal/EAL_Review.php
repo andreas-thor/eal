@@ -12,6 +12,8 @@ class EAL_Review extends EAL_Object {
 	private $overall;
 	
 	
+	
+	
 	public static $dimension1 = array (
 		'description' => 'Fall- oder Problemvignette', 
 		'question' => 'Aufgabenstellung', 
@@ -21,6 +23,12 @@ class EAL_Review extends EAL_Object {
 		'correctness' => 'Fachl. Richtigkeit', 
 		'relevance' => 'Relevanz bzgl. LO', 
 		'wording' => 'Formulierung');
+	
+
+	
+	public static function getType(): string {
+		return 'review';
+	}
 	
 	
 	public function getItemId(): int {
