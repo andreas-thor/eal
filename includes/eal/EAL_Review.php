@@ -144,7 +144,7 @@ class EAL_Review extends EAL_Object {
 		if (is_null($this->item)) {
 			$post = get_post($this->item_id);
 			if ($post == null) return null;
-			$this->item = EAL_Factory::createNewItem($post->post_type, $this->item_id);
+			$this->item = DB_Item::loadFromDB($this->item_id, $post->post_type); 
 		}
 		return $this->item;
 	}

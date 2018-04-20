@@ -49,13 +49,7 @@ class CPT_LearnOut extends CPT_Object {
 		
 		if ($post->post_type != EAL_LearnOut::getType()) return;
 		
-		
-		$learnout = new EAL_LearnOut($post_id);
-		
-		if ($post->post_status != 'auto-draft') {
-			$learnout->initFromPOSTRequest('', 'learnout_level_');
-		}
-		
+		$learnout = ($post->post_status === 'auto-draft') ? new EAL_LearnOut($post_id) : EAL_LearnOut::createFromArray($post_id, $_POST);
 		DB_Learnout::saveToDB($learnout);	
 	}
 	
@@ -63,16 +57,15 @@ class CPT_LearnOut extends CPT_Object {
 	
 	public function WPCB_register_meta_box_cb () {
 	
+		global $post;
+		
 		parent::WPCB_register_meta_box_cb();
 		
-		global $learnout;
-		$learnout = EAL_Factory::createNewLearnOut();
-		
+		$learnout = DB_Learnout::loadFromDB($post->ID); 
 		$domain = RoleTaxonomy::getCurrentRoleDomain();
 		if (($domain["name"] != "") && ($learnout->getDomain() != $domain["name"])) {
 			wp_die ("Learning outcome  does not belong to your current domain!");
 		}
-		global $post;
 		
 		// remove visibility and status options
 		print ('<style> #minor-publishing { display: none; } </style>');
@@ -205,7 +198,7 @@ class CPT_LearnOut extends CPT_Object {
 			if (!is_array($postids)) $postids = [$postids];
 			$itemids = array();
 			foreach ($postids as $learnout_id) {
-				$itemids = array_merge ($itemids, EAL_Factory::loadAllItemIdsForLearnOut((EAL_Factory::createNewLearnOut($learnout_id))));
+				$itemids = array_merge ($itemids, DB_Item::loadAllItemIdsForLearnOut($learnout_id));
 			}
 			
 			// Add Items to Basket

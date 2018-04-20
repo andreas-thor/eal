@@ -56,17 +56,25 @@ class DB_ItemSC {
 	}
 	
 	
-	public static function loadFromDB (EAL_ItemSC &$item) {
+	public static function loadFromDB (int $item_id): EAL_ItemSC {
 		
-		DB_Item::loadFromDB($item);
+		$object = DB_Item::loadItemData ($item_id);
+		
+		if (empty ($object)) {
+			throw new Exception ('Could not find itemSC with id=' . $item_id);
+		}
+		
+		$object['answer'] = [];
+		$object['points'] = [];
 		
 		global $wpdb;
-		
-		$item->clearAnswers();
-		$sqlres = $wpdb->get_results( "SELECT * FROM " . self::getTableName() . " WHERE item_id = {$item->getId()} ORDER BY id", ARRAY_A);
+		$sqlres = $wpdb->get_results( "SELECT * FROM " . self::getTableName() . " WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
 		foreach ($sqlres as $a) {
-			$item->addAnswer($a['answer'] ?? '', $a['points'] ?? 0);
+			$object['answer'][] = $a['answer'] ?? '';
+			$object['points'][] = $a['points'] ?? 0;
 		}
+		
+		return EAL_ItemSC::createFromArray($item_id, $object);
 		
 	}
 	

@@ -16,10 +16,10 @@ class IMEX_LearnOut extends IMEX_Object {
 			$prefix = "lo_" . $learnoutid . "_";
 			
 			
-			$learnout_post = EAL_Factory::createNewLearnOut(-1, $prefix);	// learnoutid = -1 --> LOAD from post request
+			$learnout_post = EAL_LearnOut::createFromArray($learnoutid, $_POST, $prefix);	// learnoutid = -1 --> LOAD from post request
 			
 			
-			$learnout = EAL_Factory::createNewLearnOut($learnoutid);
+			$learnout = DB_Learnout::loadFromDB($learnoutid);
 			$learnout->copyMetadata($learnout_post);			
 			
 			$terms = $_POST[$prefix."taxonomy"];

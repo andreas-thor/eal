@@ -23,9 +23,7 @@ class EAL_Factory {
 		
 		// Load from Database if valid Id
 		if ($item_id > 0) {
-			$item->setId($item_id);
-			DB_ItemMC::loadFromDB($item);
-			return $item;
+			return DB_ItemMC::loadFromDB($item_id);
 		} 
 		
 		// load from POST request
@@ -118,9 +116,7 @@ class EAL_Factory {
 	}
 	
 	
-	public static function loadAllItemIdsForLearnOut (EAL_LearnOut $learnout): array {
-		return DB_Item::loadAllItemIdsForLearnOut($learnout);
-	}
+
 	
 	
 	public static function loadAllLearningOutcomes (string $domain): array {

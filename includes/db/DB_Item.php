@@ -48,49 +48,61 @@ class DB_Item {
 	}
 	
 	
+	
+	public static function loadFromDB (int $item_id, string $item_type): EAL_Item {
+		
+		if ($item_type == 'itemsc') return DB_ItemSC::loadFromDB($item_id);
+		if ($item_type == 'itemmc') return DB_ItemMC::loadFromDB($item_id);
+		throw new Exception('Could not load item. Unknown item type ' . $item_type);
+	}
+		
+	
 	/**
-	 * Call-by-reference; $item properties are loaded into given instance
-	 * @param EAL_Item $item
 	 */
-	public static function loadFromDB (EAL_Item &$item) {
+	public static function loadItemData (int $item_id): array {
 		
-			
+		$object = [];
+		
 		global $wpdb;
-		$sqlres = $wpdb->get_row( "SELECT * FROM " . self::getTableName() . " WHERE id = {$item->getId()} AND type ='{$item->getType()}'", ARRAY_A);
-		
-		$item->setId ($sqlres['id']);
-		$item->setTitle ($sqlres['title'] ?? '');
-		$item->setDescription($sqlres['description'] ?? '');
-		$item->setQuestion($sqlres['question'] ?? '');
-		
-		
-		$item->setLevel (new EAL_Level($sqlres));
-		$item->setLearnOutId($sqlres['learnout_id'] ?? -1);
+		$sqlres = $wpdb->get_row( "SELECT * FROM " . self::getTableName() . " WHERE id = {$item_id}", ARRAY_A);
 
-//		FIXME: min/Max Number in ItemMC only		
-// 		$this->minnumber = ($this->getType() == "itemmc") && (isset($sqlres['minnumber'])) ? $sqlres['minnumber'] : null;
-// 		$this->maxnumber = ($this->getType() == "itemmc") && (isset($sqlres['maxnumber'])) ? $sqlres['maxnumber'] : null;
+		// could not find item
+		if (empty ($sqlres)) {
+			return $object;
+		}
 		
-		$item->setDifficulty($sqlres['difficulty'] ?? 0);
-		$item->setNote($sqlres['note'] ?? '');
-		$item->setFlag($sqlres['flag'] ?? 0);
+		// consumed by EAL_Item
+		$object['post_title'] = $sqlres['title'] ?? '';
+		$object['item_description'] = $sqlres['description'] ?? '';
+		$object['item_question'] = $sqlres['question'] ?? '';
+		$object['learnout_id'] = $sqlres['learnout_id'] ?? -1;
+		$object['item_note'] = $sqlres['note'] ?? '';
+		$object['item_flag'] = $sqlres['flag'] ?? 0;
 		
-		$item->setDomain($sqlres['domain'] ?? '');
+		// consumed by EAL_Object
+		$object['item_level_FW'] = $sqlres['level_FW'] ?? 0;
+		$object['item_level_PW'] = $sqlres['level_PW'] ?? 0;
+		$object['item_level_KW'] = $sqlres['level_KW'] ?? 0;
+		$object['domain'] = $sqlres['domain'] ?? 0;
 		
+		// FIXME: when is this used
+		$object['difficulty'] = $sqlres['difficulty'] ?? 0;
+		
+		return $object;
 	}
 	
 	
-	public static function loadAllItemIdsForLearnOut (EAL_LearnOut $learnout): array {
+	public static function loadAllItemIdsForLearnOut (int $learnout_id): array {
 		
 		global $wpdb;
 		
 		$sql ="
 			SELECT DISTINCT P.id
-			FROM " . self::getTableName() . " 
+			FROM " . self::getTableName() . " I 
 			JOIN {$wpdb->prefix}posts P ON (P.ID = I.ID)
 			WHERE P.post_parent = 0
 			AND P.post_status IN ('publish', 'pending', 'draft')
-			AND I.learnout_id = {$learnout->getId()}";
+			AND I.learnout_id = {$learnout_id}";
 		
 		return $wpdb->get_col ($sql);
 	}

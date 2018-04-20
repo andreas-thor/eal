@@ -41,22 +41,23 @@ class DB_Learnout {
 	
 	
 	/**
-	 * Call-by-reference; $learnout properties are loaded into given instance
-	 * @param EAL_LearnOut $learnout
 	 */
-	public static function loadFromDB (EAL_LearnOut &$learnout) {
+	public static function loadFromDB (int $learnout_id) {
 		
 			
 		global $wpdb;
 		
-		$sqlres = $wpdb->get_row( "SELECT * FROM " . self::getTableName() . " WHERE id = {$learnout->getId()}", ARRAY_A);
-		$learnout->setId ($sqlres['id']);
-		$learnout->setTitle($sqlres['title'] ?? '');
-		$learnout->setDescription($sqlres['description'] ?? '');
+		$sqlres = $wpdb->get_row( "SELECT * FROM " . self::getTableName() . " WHERE id = {$learnout_id}", ARRAY_A);
 		
-		$learnout->setLevel (new EAL_Level($sqlres));
-		$learnout->setDomain($sqlres['domain'] ?? '');
+		$object = [];
+		$object['post_title'] = $sqlres['title'] ?? '';
+		$object['learnout_description'] = $sqlres['description'] ?? '';
+		$object['learnout_level_FW'] = $sqlres['level_FW'] ?? 0;
+		$object['learnout_level_KW'] = $sqlres['level_KW'] ?? 0;
+		$object['learnout_level_PW'] = $sqlres['level_PW'] ?? 0;
+		$object['domain'] = $sqlres['domain'] ?? '';
 		
+		return EAL_LearnOut::createFromArray($learnout_id, $object);
 	}
 	
 	
@@ -81,13 +82,15 @@ class DB_Learnout {
 		
 		$result = [];
 		foreach ($queryResult as $sqlres) {
-			$learnout = new EAL_LearnOut();
-			$learnout->setId ($sqlres['id']);
-			$learnout->setTitle($sqlres['title'] ?? '');
-			$learnout->setDescription($sqlres['description'] ?? '');
-			$learnout->setLevel (new EAL_Level($sqlres));
-			$learnout->setDomain($sqlres['domain'] ?? '');
-			$result[] = $learnout;
+			
+			$object = [];
+			$object['post_title'] = $sqlres['title'] ?? '';
+			$object['learnout_description'] = $sqlres['description'] ?? '';
+			$object['learnout_level_FW'] = $sqlres['level_FW'] ?? 0;
+			$object['learnout_level_KW'] = $sqlres['level_KW'] ?? 0;
+			$object['learnout_level_PW'] = $sqlres['level_PW'] ?? 0;
+			$object['domain'] = $sqlres['domain'] ?? '';
+			$result[] =  EAL_LearnOut::createFromArray(intval ($sqlres['id']), $object);
 		}
 		
 		return $result;

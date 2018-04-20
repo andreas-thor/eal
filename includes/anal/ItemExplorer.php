@@ -174,7 +174,7 @@ class ItemExplorer {
 
 		if ($cat == "lo") {
 			$labels = [];
-			foreach (EAL_Factory::loadAllLearningOutcomes() as $pos => $lo) {
+			foreach (DB_Learnout::loadAllLearningOutcomes() as $pos => $lo) {
 				if (in_array($lo->getId(), $keys)) {
 					$labels[$lo->getId()] = $lo->getTitle();
 				}

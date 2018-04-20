@@ -41,7 +41,57 @@ abstract class EAL_Item extends EAL_Object {
 	
 	
 	
+	function __construct(int $id) {
+		parent::__construct($id);
+		
+		$this->title = '';
+		$this->description = '';
+		$this->question = '';
+		$this->setLearnOutId(-1);
+		$this->difficulty = -1;
+		$this->note = '';
+		$this->flag = 0;
+		$this->minnumber = -1;
+		$this->maxnumber = -1;
+	}
+	
+	
+	/**
+	 * 
+	 * {@inheritDoc}
+	 * @see EAL_Object::initFromArray()
+	 * @param array $object = ['post_title' => ..., 'item_description' => ..., 'item_question' => ..., 'learnout_id' => ..., 'item_note' => ..., 'item_flag' => ...
+	 */
+	protected function initFromArray (array $object, string $prefix, string $levelPrefix) {
+		
+		parent::initFromArray($object, $prefix, $levelPrefix);
+		
+		$this->title = stripslashes($object[$prefix . 'post_title'] ?? '');
+		$this->description = html_entity_decode (stripslashes($object[$prefix . 'item_description'] ?? ''));
+		$this->question = html_entity_decode (stripslashes($object[$prefix . 'item_question'] ?? ''));
+		$this->setLearnOutId($object[$prefix . 'learnout_id'] ?? -1); //FIXME Learnoutid auch from get?
+		$this->note = html_entity_decode (stripslashes($object[$prefix . 'item_note'] ?? ''));
+		$this->flag = intval ($object[$prefix . 'item_flag'] ?? 0);
+	}
 
+	
+	public function init (string $title, string $description, string $question, string $domain = NULL) {
+		$this->title = $title;
+		$this->description = $description;
+		$this->question = $question;
+		$this->setDomain($domain ?? RoleTaxonomy::getCurrentRoleDomain()["name"]);
+	}
+	
+	
+	
+	public function copyMetadata (EAL_Item $sourceItem) {
+		
+		$this->setLevel($sourceItem->getLevel());
+		$this->setLearnOutId($sourceItem->getLearnOutId());
+		$this->setNote($sourceItem->getNote());
+		$this->setFlag($sourceItem->getFlag());
+	}
+	
 
 
 	public function getTitle (): string {
@@ -105,42 +155,9 @@ abstract class EAL_Item extends EAL_Object {
 	
 	public abstract function getHTMLPrinter (): HTML_Item;
 	
-	
-	function __construct() {
-		parent::__construct();
-		
-		$this->setTitle('');
-		$this->setDescription('');
-		$this->setQuestion('');
-		$this->setLearnOutId(-1);
-		$this->setDifficulty(-1);
-		$this->setNote('');
-		$this->setFlag(0);
-		$this->minnumber = -1;
-		$this->maxnumber = -1;
-		
-	}
-	
 
 	
-	
-	public function init (string $title, string $description, string $question, string $domain = NULL) {
-		$this->title = $title;
-		$this->description = $description;
-		$this->question = $question;
-		$this->setDomain($domain ?? RoleTaxonomy::getCurrentRoleDomain()["name"]);
-	}
-	
-	
-	
-	public function copyMetadata (EAL_Item $sourceItem) {
-		
-		$this->setLevel($sourceItem->getLevel());
-		$this->setLearnOutId($sourceItem->getLearnOutId());
-		$this->setNote($sourceItem->getNote());
-		$this->setFlag($sourceItem->getFlag());
-	}
-	
+
 
 	
 	/**
@@ -153,7 +170,7 @@ abstract class EAL_Item extends EAL_Object {
 		}
 		
 		if (is_null ($this->learnout)) {
-			$this->learnout = EAL_Factory::createNewLearnOut($this->learnout_id);
+			$this->learnout = DB_Learnout::loadFromDB($this->learnout_id);
 		}
 		
 		return $this->learnout;
@@ -169,7 +186,7 @@ abstract class EAL_Item extends EAL_Object {
 	}
 	
 	public function setLearnOutId (int $learnout_id) {
-		if (($this->learnout_id != $learnout_id) || ($learnout_id<0)) {
+		if (($this->learnout_id != $learnout_id) || ($learnout_id<=0)) {
 			$this->learnout_id = $learnout_id;
 			$this->learnout = NULL;
 		}

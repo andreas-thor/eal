@@ -19,12 +19,26 @@ class EAL_Level {
 	private $level;
 
 		
-	function __construct(array $object = NULL, string $prefix = 'level_') {
+	function __construct() {
 		
 		$this->level = [];
-		
 		foreach (EAL_Level::TYPE as $type) {
-			$this->level[$type] = ($object === NULL) ? 0 : ($object[$prefix . $type] ?? 0);
+			$this->level[$type] = 0;
+		}
+	}
+	
+	public static function createFromArray (array $object = NULL, string $prefix): EAL_Level {
+		
+		$l = new EAL_Level();
+		$l->initFromArray ($object, $prefix);
+		return $l;
+	}
+	
+	
+	protected function initFromArray (array $object = NULL, string $prefix) {
+
+		foreach (EAL_Level::TYPE as $type) {
+			$this->level[$type] = intval (($object === NULL) ? 0 : ($object[$prefix . $type] ?? 0));
 		}
 	}
 	
@@ -37,21 +51,11 @@ class EAL_Level {
 		throw new Exception('Unknown level type: ' . $type);
 	}
 	
-	function set (string $type, int $value) {
-		
-		$type = strtoupper ($type);
-		if (in_array($type, EAL_Level::TYPE)) {
-			$this->level[$type] = $value;
-			return;
-		}
-		throw new Exception('Unknown level type: ' . $type);
-	}
-	
 	
 	function hasLevel (int $value): bool {
 		
 		foreach (EAL_Level::TYPE as $type) {
-			if ($this->level[$type] == $value) {
+			if ($this->level[$type] === $value) {
 				return TRUE;
 			}
 		}

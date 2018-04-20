@@ -123,7 +123,7 @@ class HTML_LearnOut extends HTML_Object {
 		$callback = ($isEditable) ? "showSuperVerbs" : "";
 		
 		// FIXME: Ist das hier richtig, dass nochmal item an prefix angehangen wird???
-		parent::printLevelObject ($prefix . "learnout", $this->getLearnout()->getLevel(), new EAL_Level(), !$isEditable, FALSE, $callback);
+		parent::printLevelObject ($prefix . 'learnout_level_', $this->getLearnout()->getLevel(), new EAL_Level(), !$isEditable, FALSE, $callback);
 		
 	}
 	

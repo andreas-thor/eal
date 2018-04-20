@@ -111,7 +111,7 @@ class HTML_ItemBasket  {
 		foreach ($itemids as $item_id) {
 			$post = get_post($item_id);
 			if ($post == null) continue;	// item (post) does not exist
-			$items[$item_id] = EAL_Factory::createNewItem($post->post_type, $item_id);
+			$items[$item_id] = DB_Item::loadFromDB($item_id, $post->post_type);
 		}
 		
 		

@@ -102,7 +102,7 @@ abstract class HTML_Item extends HTML_Object {
 		// first LO is '[NONE]'
 		$allLO = [['id'=>-1, 'title'=>'[None]', 'description'=>'']];
 		if ($isEditable) {	// add all learning outcomes 
-			foreach (EAL_Factory::loadAllLearningOutcomes($this->item->getDomain()) as $lo) {
+			foreach (DB_Learnout::loadAllLearningOutcomes($this->item->getDomain()) as $lo) {
 				$allLO[] = ['id' => $lo->getId(), 'title' => $lo->getTitle(), 'description' => $lo->getDescription()];
 			}
 		} else {
@@ -272,7 +272,7 @@ abstract class HTML_Item extends HTML_Object {
 		$callback = (($isEditable) && ($hasLO)) ? "checkLOLevel" : "";
 		
 		// FIXME: Ist das hier richtig, dass nochmal item an prefix angehangen wird???
-		parent::printLevelObject ($prefix . "item", $this->item->getLevel(), $hasLO ? $this->item->getLearnOut()->getLevel(): new EAL_Level(), !$isEditable, $hasLO, $callback);
+		parent::printLevelObject ($prefix . 'item_level_', $this->item->getLevel(), $hasLO ? $this->item->getLearnOut()->getLevel(): new EAL_Level(), !$isEditable, $hasLO, $callback);
 	}
 	
 

@@ -36,7 +36,7 @@ class PAG_Learnout_Bulkviewer {
 		$learnouts = [];
 		foreach ($learnoutids as $learnout_id) {
 			if (array_key_exists($learnout_id, $learnouts)) continue;	// item already loaded
-			$learnouts[$learnout_id] = EAL_Factory::createNewLearnOut($learnout_id);
+			$learnouts[$learnout_id] = DB_Learnout::loadFromDB($learnout_id);
 		}
 		
 		$editable = $_REQUEST['action'] === 'edit';

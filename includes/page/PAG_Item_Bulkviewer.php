@@ -35,7 +35,7 @@ class PAG_Item_Bulkviewer {
 			if (array_key_exists($item_id, $items)) continue;	// item already loaded
 			$post = get_post($item_id);
 			if ($post === NULL) continue;	// item (post) does not exist
-			$items[$item_id] = EAL_Factory::createNewItem($post->post_type, $item_id);
+			$items[$item_id] = DB_Item::loadFromDB($item_id, $post->post_type);
 		}
 		
 		$reviews = [];

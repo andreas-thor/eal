@@ -15,9 +15,9 @@ class EAL_ItemMC extends EAL_Item {
 	private $answers = array();
 
 	
-	function __construct() {
+	function __construct(int $id = -1) {
 
-		parent::__construct();
+		parent::__construct($id);
 		
 		$this->clearAnswers();
 		$this->addAnswer('', 1, 0);
@@ -27,6 +27,31 @@ class EAL_ItemMC extends EAL_Item {
 		
 		$this->minnumber=0;
 		$this->maxnumber=$this->getNumberOfAnswers();
+	}
+	
+	
+	
+	public static function createFromArray (int $id, array $object = NULL, string $prefix = ''): EAL_ItemMC {
+		
+		$item = new EAL_ItemMC($id);
+		$item->initFromArray($object, $prefix, 'item_level_');
+		return $item;
+	}
+	
+	
+	
+	protected function initFromArray (array $object, string $prefix, string $levelPrefix) {
+		
+		parent::initFromArray($object, $prefix, $levelPrefix);
+		$this->clearAnswers();
+		if (isset($object[$prefix . 'answer'])) {
+			foreach ($object[$prefix . 'answer'] as $k => $v) {
+				$this->addAnswer(html_entity_decode (stripslashes($v)), intval ($object[$prefix . 'positive'][$k]), intval ($object[$prefix . 'negative'][$k]));
+			}
+		}
+		
+		$this->minnumber = $object[$prefix . 'item_minnumber'] ?? 0;
+		$this->maxnumber = $object[$prefix . 'item_maxnumber'] ?? $this->getNumberOfAnswers();
 	}
 	
 	

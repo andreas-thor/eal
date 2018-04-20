@@ -51,16 +51,28 @@ class DB_ItemMC {
 	}
 	
 	
-	public static function loadFromDB (EAL_ItemMC &$item) {
+	public static function loadFromDB (int $item_id): EAL_ItemMC {
 		
-		DB_Item::loadFromDB($item);
 		global $wpdb;
 		
-		$item->clearAnswers();
-		$sqlres = $wpdb->get_results( "SELECT * FROM " . self::getTableName() . " WHERE item_id = {$item->getId()} ORDER BY id", ARRAY_A);
-		foreach ($sqlres as $a) {
-			$item->addAnswer($a['answer'] ?? '', $a['positive'] ?? 1, $a['negative'] ?? 0);
+		$object = DB_Item::loadItemData ($item_id);
+		
+		if (empty ($object)) {
+			throw new Exception ('Could not find itemMC with id=' . $item_id);
 		}
+		
+		$object['answer'] = [];
+		$object['positive'] = [];
+		$object['negative'] = [];
+		
+		$sqlres = $wpdb->get_results( "SELECT * FROM " . self::getTableName() . " WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
+		foreach ($sqlres as $a) {
+			$object['answer'][] = $a['answer'] ?? '';
+			$object['positive'][] = $a['positive'] ?? 1;
+			$object['negative'][] = $a['negative'] ?? 0;
+		}
+		
+		return EAL_ItemMC::createFromArray($item_id, $object);
 		
 //		FIXME: Max/Min Numbers		
 // 		if (!isset($this->minnumber)) $this->minnumber = 0;

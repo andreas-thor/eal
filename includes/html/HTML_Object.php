@@ -48,7 +48,7 @@ class HTML_Object {
 				<?php foreach (EAL_Level::TYPE as $type) {	
 					$bgcolor = (($default->get($type)==$n) && ($background==1)) ? '#E0E0E0' : 'transparent';
 					$checkedDisabled = (($level->get($type)==$n) ? 'checked': ($disabled ? 'disabled' : ''));
-					$name = $prefix . '_level_' . $type;
+					$name = $prefix . $type;
 					$onClick = ($callback != '') ? sprintf ("%s (this, %d, '%s', %d, 's');", $callback, $n, $r, $default->get($type), (($default->get($type)>0) ? EAL_Level::LABEL[$default->get($type)] : '')) : '';
 				?>
 					<td valign="bottom" align="left" style="padding:3px; padding-left:5px; background-color:<?php echo $bgcolor ?>">

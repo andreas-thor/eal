@@ -33,7 +33,7 @@ class IMEX_Moodle extends IMEX_Item {
 			// load item
 			$post = get_post($item_id);
 			if ($post == null) continue;	// item (post) does not exist
-			$item = EAL_Factory::createNewItem($post->post_type, $item_id);
+			$item = DB_Item::loadFromDB($item_id, $post->post_type);
 
 			// add question of type 'MultiChoice' for this item
 			if (($item->getType()=='itemsc') || ($item->getType()=='itemmc')) {

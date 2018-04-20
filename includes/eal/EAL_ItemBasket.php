@@ -72,9 +72,11 @@ class EAL_ItemBasket {
 			if ($post == null) continue;
 			if ($post->post_status == 'trash') continue;
 				
-			$item = EAL_Factory::createNewItem($post->post_type, $item_id);
-			if ($item->getId() < 0) continue;
-			$items[$item_id] = $item;
+			try {
+				$items[$item_id] = DB_Item::loadFromDB($item_id, $post->post_type);
+			} catch (Exception $e) {
+				// FIXME: exception handling
+			}
 		}
 		return $items;
 	}

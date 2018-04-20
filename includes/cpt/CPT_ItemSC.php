@@ -43,16 +43,16 @@ class CPT_ItemSC extends CPT_Item {
 	
 	public static function save_post (int $post_id, WP_Post $post) {
 		
-		global $item;
-		if ($item === NULL) {
-			$item = EAL_Factory::createNewItemSC();	// load item from $_POST data
-		}
-		
 		$revision = wp_is_post_revision ($post_id);
 		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
-		if ($type != $item->getType()) return;
+		if ($type != EAL_ItemSC::getType()) return;
 		
-		$item->setId($post_id);		// set the correct id
+		if ($post->post_status === 'auto-draft') {
+			$item = new EAL_ItemSC($post_id);
+			$item->setLearnOutId(intval ($_REQUEST['learnout_id']));
+		} else {
+			$item = EAL_ItemSC::createFromArray($post_id, $_POST);
+		}
 		DB_ItemSC::saveToDB($item);
 	}
 		
@@ -60,17 +60,30 @@ class CPT_ItemSC extends CPT_Item {
 	
 	public function filter_wp_get_revision_ui_diff (array $diff, $compare_from, $compare_to) {
 			
+		// default items to compare
+		$eal_From = new EAL_ItemSC();
+		$eal_To = new EAL_ItemSC();
 		
+		// check type and try to load item revision from database
 		if ($compare_from instanceof  WP_Post) {
 			if (get_post ($compare_from->post_parent)->post_type != $this->type) return $diff;
-		}
+			
+			try {
+				$eal_From = DB_ItemSC::loadFromDB($compare_from->ID);
+			} catch (Exception $e) { 
+				// could not find revision in the database anymore
+			}
+ 		}
 		if ($compare_to instanceof  WP_Post) {
 			if (get_post ($compare_to->post_parent)->post_type != $this->type) return $diff;
+			
+			try {
+				$eal_To = DB_ItemSC::loadFromDB($compare_to->ID);
+			} catch (Exception $e) {
+				// could not find revision in the database anymore
+			}
 		}
 		
-		$eal_From = ($compare_from instanceof  WP_Post) ? EAL_Factory::createNewItemSC($compare_from->ID) : new EAL_ItemSC();
-		$eal_To = ($compare_to instanceof  WP_Post) ? EAL_Factory::createNewItemSC($compare_to->ID) : new EAL_ItemSC();
-	
 		$diff[0] = HTML_Item::compareTitle($eal_From, $eal_To);
 		$diff[1] = HTML_Item::compareDescription($eal_From, $eal_To);
 		$diff[2] = HTML_Item::compareQuestion($eal_From, $eal_To);
@@ -86,8 +99,8 @@ class CPT_ItemSC extends CPT_Item {
 	
 	public function WPCB_register_meta_box_cb () {
 		
-		global $item;
-		$item = EAL_Factory::createNewItemSC();
+		global $post, $item;
+		$item = DB_ItemSC::loadFromDB($post->ID);
 		parent::WPCB_register_meta_box_cb();
 	}
 	

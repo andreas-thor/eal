@@ -14,25 +14,33 @@ abstract class EAL_Object {
 	private $level;			
 	
 	
-	function __construct (int $id = -1, array $object = NULL, string $prefix = '', string $level_prefix = '') {
+	function __construct (int $id) {
 		
-		$this->setId($id);
-		$this->setDomain(RoleTaxonomy::getCurrentRoleDomain()["name"]);
-		
-		
-		$this->level = new EAL_Level($object, $prefix . $level_prefix);
+		$this->id = $id;
+		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"] ?? '';
+		$this->level = new EAL_Level();
 	}
 	
 	
-	public function initFromPOSTRequest (string $prefix, string $levelPrefix) {
+	/**
+	 * 
+	 * @param array $object = ['post_ID' => ..., 'domain' => ...
+	 * @param string $prefix
+	 * @param string $levelPrefix
+	 */
+	protected function initFromArray (array $object, string $prefix, string $levelPrefix) {
 		
-		$this->id = intval ($_POST[$prefix . 'post_ID'] ?? 0);
-		$this->level = new EAL_Level($_POST, $prefix . $levelPrefix);
-		$this->domain = $_POST[$prefix . 'domain'] ?? '';
+		// FIXME: do not overwrite ID
+		if (isset($object[$prefix . 'post_ID'])) {
+			$this->id = intval ($object[$prefix . 'post_ID']);
+		}
+		
+		$this->level = EAL_Level::createFromArray($object, $prefix . $levelPrefix);
+		$this->domain = $object[$prefix . 'domain'] ?? '';
 		
 		// adjust domain if necessary ... FIXME: WHY and WHEN
-		if (($this->domain === '') && (isset($_POST[$prefix . 'tax_input']))) {
-			foreach ($_POST[$prefix . 'tax_input'] as $key => $value) {
+		if (($this->domain === '') && (isset($object[$prefix . 'tax_input']))) {
+			foreach ($object[$prefix . 'tax_input'] as $key => $value) {
 				$this->domain = $key;
 				break;
 			}

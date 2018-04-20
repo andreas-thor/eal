@@ -14,17 +14,29 @@ class EAL_LearnOut extends EAL_Object  {
 		$this->description = 'Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage ...';
 	}
 	
-	public function initFromPOSTRequest (string $prefix, string $levelPrefix) {
-	
-		parent::initFromPOSTRequest($prefix, $levelPrefix);
-		$this->title = stripslashes($_POST[$prefix . 'post_title'] ?? '');
-		$this->description = html_entity_decode (stripslashes($_POST[$prefix . 'learnout_description'] ?? ''));
+	public static function createFromArray (int $id, array $object, string $prefix = ''): EAL_LearnOut {
+		$learnout = new EAL_LearnOut($id);
+		$learnout->initFromArray($object, $prefix);
+		return $learnout;
 	}
+	
+	/**
+	 * 
+	 * @param array $object = ['post_title' => ..., 'learnout_description' => ...
+	 * @param string $prefix
+	 * @param string $levelPrefix
+	 */
+	protected function initFromArray (array $object, string $prefix, string $levelPrefix='learnout_level_') {
+
+		parent::initFromArray($object, $prefix, $levelPrefix);
+		$this->title = stripslashes($object[$prefix . 'post_title'] ?? '');
+		$this->description = html_entity_decode (stripslashes($object[$prefix . 'learnout_description'] ?? ''));
+	}
+	
 	
 	public static function getType(): string {
 		return 'learnout';
 	}
-	
 	
 	
 	public function setTitle(string $title) {
