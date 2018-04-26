@@ -411,6 +411,13 @@ abstract class HTML_Item extends HTML_Object {
 	 **********************************************************************************************/
 	
 	public function metaboxDescription () {
+?> 		
+		<script type="text/javascript">
+			// remove title and title-action buttons
+		 	document.getElementsByTagName("H1")[0].remove();
+		 	document.getElementsByClassName("page-title-action")[0].remove();
+		</script> 
+<?php
 		$this->printEditor ('item_description', $this->item->getDescription());
 	}
 	

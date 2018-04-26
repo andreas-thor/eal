@@ -28,15 +28,18 @@ abstract class EAL_Object {
 	 * @param string $prefix
 	 * @param string $levelPrefix
 	 */
-	protected function initFromArray (array $object, string $prefix, string $levelPrefix) {
+	public function initFromArray (array $object, string $prefix, string $levelPrefix) {
 		
 		// FIXME: do not overwrite ID
 		if (isset($object[$prefix . 'post_ID'])) {
 			$this->id = intval ($object[$prefix . 'post_ID']);
 		}
 		
-		$this->level = EAL_Level::createFromArray($object, $prefix . $levelPrefix);
-		$this->domain = $object[$prefix . 'domain'] ?? '';
+		$this->level->initFromArray($object, $prefix . $levelPrefix);
+		
+		if (isset($object[$prefix . 'domain'])) {
+			$this->domain = $object[$prefix . 'domain'];
+		}
 		
 		// adjust domain if necessary ... FIXME: WHY and WHEN
 		if (($this->domain === '') && (isset($object[$prefix . 'tax_input']))) {

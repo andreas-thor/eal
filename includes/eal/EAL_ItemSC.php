@@ -36,11 +36,12 @@ class EAL_ItemSC extends EAL_Item {
 	}
 	
 	
-	protected function initFromArray (array $object, string $prefix, string $levelPrefix) {
+	public function initFromArray (array $object, string $prefix, string $levelPrefix) {
 		
 		parent::initFromArray($object, $prefix, $levelPrefix);
-		$this->clearAnswers();
+		
 		if (isset($object[$prefix . 'answer'])) {
+			$this->clearAnswers();
 			foreach ($object[$prefix . 'answer'] as $k => $v) {
 				$this->addAnswer(html_entity_decode (stripslashes($v)), intval ($object[$prefix . 'points'][$k]));
 			}

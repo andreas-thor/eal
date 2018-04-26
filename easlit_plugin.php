@@ -29,8 +29,11 @@ require_once 'includes/class.CLA_RoleTaxonomy.php';
 
 require_once 'includes/imex/IMEX_Easlit.php';
 require_once 'includes/imex/IMEX_Moodle.php';
-require_once 'includes/imex/IMEX_Ilias.php'; 
+require_once 'includes/imex/IMEX_Item_Ilias.php'; 
 require_once 'includes/imex/IMEX_Term.php';
+
+require_once 'includes/exp/EXP_Item_Ilias.php';
+
 
 
 require_once(__DIR__ . "/../../../wp-admin/includes/screen.php");
@@ -138,7 +141,7 @@ add_action('init', function () {
 			
 			switch ($_REQUEST['format']) {
 				case 'moodle': (new IMEX_Moodle())->downloadItems($itemids); break;
-				case 'ilias': (new IMEX_Ilias())->downloadItems($itemids); break;
+				case 'ilias': (new EXP_Item_Ilias())->downloadItems($itemids); break;
 			}
 			
 			exit();
@@ -513,6 +516,19 @@ function setMainHeader() {
 			printf ('</script>');
 		}
 		
+		
+		// remove header on post-pages (where we edit an individiual item / learning outcome / review) 
+		if (($php_page == 'post.php') && (!isset ($_REQUEST['page']))) {
+			/*
+			printf ('<script type="text/javascript">');
+			printf ('	jQuery(document).ready( function($) { ');
+			printf ('		jQuery(jQuery(".wrap a.page-title-action")[0]).remove();');
+			// 			printf ('		jQuery(jQuery(".wrap h1")[0]).replaceWith(\'<h1>%s</h1>\');', $title);
+			printf ('		jQuery(".wrap h1")[0].remove();', $title);
+			printf ('	});');
+			printf ('</script>');
+			*/
+		}
 	});
 	
 	

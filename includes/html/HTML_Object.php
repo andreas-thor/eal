@@ -17,6 +17,8 @@ class HTML_Object {
 		// TODO: HTML Layout geht verloren!!! mit oder ohne???
 		// 		echo (wp_editor($vars['args']['value'] , $vars['args']['name'], $editor_settings ));
 		echo (wp_editor(wpautop(stripslashes($content)) , $id, $editor_settings ));
+		
+		 
 	}
 	
 	

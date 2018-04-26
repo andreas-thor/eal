@@ -26,8 +26,15 @@ class CPT_ItemMC extends CPT_Item {
 		parent::addHooks();
 		add_action ("save_post_{$this->type}", array ('CPT_ItemMC', 'save_post'), 10, 2);
 		add_action ("save_post_revision", array ('CPT_ItemMC', 'save_post'), 10, 2);
+		
+		add_filter ('document_title_parts', array ('CPT_ItemMC', 'document_title_parts'), 99, 1);
+		
 	}
 	
+	public static function document_title_parts (array $title) {
+		$a=7;
+	}
+		
 	
 	public static function save_post (int $post_id, WP_Post $post) {
 		

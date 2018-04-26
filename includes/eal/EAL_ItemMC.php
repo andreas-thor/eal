@@ -40,18 +40,26 @@ class EAL_ItemMC extends EAL_Item {
 	
 	
 	
-	protected function initFromArray (array $object, string $prefix, string $levelPrefix) {
+	public function initFromArray (array $object, string $prefix, string $levelPrefix) {
 		
 		parent::initFromArray($object, $prefix, $levelPrefix);
-		$this->clearAnswers();
+		
 		if (isset($object[$prefix . 'answer'])) {
+			$this->clearAnswers();
 			foreach ($object[$prefix . 'answer'] as $k => $v) {
 				$this->addAnswer(html_entity_decode (stripslashes($v)), intval ($object[$prefix . 'positive'][$k]), intval ($object[$prefix . 'negative'][$k]));
 			}
+			$this->minnumber = 0;
+			$this->maxnumber = $this->getNumberOfAnswers();
+		}
+
+		if (isset ($object[$prefix . 'item_minnumber'])) {
+			$this->minnumber = intval ($object[$prefix . 'item_minnumber']);
 		}
 		
-		$this->minnumber = $object[$prefix . 'item_minnumber'] ?? 0;
-		$this->maxnumber = $object[$prefix . 'item_maxnumber'] ?? $this->getNumberOfAnswers();
+		if (isset ($object[$prefix . 'item_maxnumber'])) {
+			$this->maxnumber = intval ($object[$prefix . 'item_maxnumber']);
+		}
 	}
 	
 	

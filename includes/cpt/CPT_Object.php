@@ -45,7 +45,7 @@ abstract class CPT_Object {
 					'add_new' => 'Add ' . $this->label,
 					'add_new_item' => 'Add New ' . $this->label,
 					'edit' => 'Edit',
-					'edit_item' => 'Edit ' . $this->label,
+					'edit_item' => 'EditX ' . $this->label,
 					'new_item' => 'New ' . $this->label,
 					'view' => 'View',
 					'view_item' => 'View ' . $this->label,

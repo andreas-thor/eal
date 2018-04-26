@@ -1,6 +1,6 @@
 <?php
 
-require_once (__DIR__ . "/../imex/IMEX_Ilias.php");
+require_once __DIR__ . '/../imp/IMP_Item_Ilias.php';
 
 class Importer {
 
@@ -32,7 +32,7 @@ class Importer {
 				
 				$formatImporter = NULL;
 				switch ($_REQUEST['format']) {
-					case 'ilias': $formatImporter = new IMEX_Ilias(); break;
+					case 'ilias': $formatImporter = new IMP_Item_Ilias(); break;
 					case 'moodle': $formatImporter = new IMEX_Moodle(); break;
 				}
 				

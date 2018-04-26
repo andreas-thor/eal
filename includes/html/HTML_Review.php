@@ -183,6 +183,13 @@ class HTML_Review extends HTML_Object {
 	 * ****************************************************************************/
 	
 	public function metaboxItem () {
+?>
+		<script type="text/javascript">
+			// remove title and title-action buttons
+		 	document.getElementsByTagName("H1")[0].remove();
+		 	document.getElementsByClassName("page-title-action")[0].remove();
+		</script> 
+<?php 
 		$htmlPrinter = $this->review->getItem()->getHTMLPrinter();
 		$htmlPrinter->printDescription(FALSE);
 		$htmlPrinter->printQuestion(FALSE);

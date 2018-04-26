@@ -1,7 +1,7 @@
 <?php
 
 
-abstract class IMEX_Object {
+abstract class EXP_Object {
 	
 	private $downloaddir;			// directory where the export file is stored
 	protected $downloadfilename;	// name of the export file (will be set in sub class)
@@ -10,12 +10,14 @@ abstract class IMEX_Object {
 	
 	public function __construct(string $downloadfilename, string $downloadextension) {
 		
-		$this->downloaddir = __DIR__ . '/../../download/';
+		
 		$this->downloadfilename = $downloadfilename;
 		$this->downloadextension = $downloadextension;
 		
+		// FIXME: make download directory part of the configuration
+		$this->downloaddir = __DIR__ . '/../../download/';
 		
-		/* create download directory if it does not exist */
+		// create download directory if it does not exist 
 		if (!file_exists($this->downloaddir)) {
 			mkdir($this->downloaddir, 0777, true);
 		}
@@ -28,7 +30,6 @@ abstract class IMEX_Object {
 	protected function getDownloadFileExtension (): string {
 		return $this->$downloadextension;
 	}
-	
 	
 	protected function getDownloadFullname (): string {
 		return $this->downloaddir . $this->downloadfilename . "." . $this->downloadextension;

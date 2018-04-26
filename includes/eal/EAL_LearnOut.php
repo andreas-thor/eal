@@ -26,11 +26,17 @@ class EAL_LearnOut extends EAL_Object  {
 	 * @param string $prefix
 	 * @param string $levelPrefix
 	 */
-	protected function initFromArray (array $object, string $prefix, string $levelPrefix='learnout_level_') {
+	public function initFromArray (array $object, string $prefix, string $levelPrefix='learnout_level_') {
 
 		parent::initFromArray($object, $prefix, $levelPrefix);
-		$this->title = stripslashes($object[$prefix . 'post_title'] ?? '');
-		$this->description = html_entity_decode (stripslashes($object[$prefix . 'learnout_description'] ?? ''));
+		
+		if (isset ($object[$prefix . 'post_title'])) {
+			$this->title = stripslashes($object[$prefix . 'post_title']);
+		}
+		
+		if (isset ($object[$prefix . 'learnout_description'])) {
+			$this->description = html_entity_decode (stripslashes($object[$prefix . 'learnout_description']));
+		}
 	}
 	
 	

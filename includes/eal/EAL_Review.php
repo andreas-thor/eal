@@ -52,24 +52,30 @@ class EAL_Review extends EAL_Object {
 	}
 		
 	
-	protected function initFromArray (array $object, string $prefix, string $levelPrefix) {
+	public function initFromArray (array $object, string $prefix, string $levelPrefix) {
 		
 		parent::initFromArray($object, $prefix, $levelPrefix);
 		
-		if ($this->item_id <= 0) {
+		if (isset ($object[$prefix . 'item_id'])) {
 			$this->item_id = intval ($object[$prefix . 'item_id']);
 			$this->item = NULL;
 		}
 		
 		foreach (self::$dimension1 as $k1 => $v1) {
-			$this->score[$k1] = array ();
 			foreach (self::$dimension2 as $k2 => $v2) {
-				$this->score[$k1][$k2] = $object['review_' . $prefix . $k1 . '_' . $k2] ?? 0;
+				if (isset ($object['review_' . $prefix . $k1 . '_' . $k2])) {
+					$this->score[$k1][$k2] = intval ($object['review_' . $prefix . $k1 . '_' . $k2]);
+				}
 			}
 		}
 		
-		$this->feedback = html_entity_decode (stripslashes($object[$prefix . 'review_feedback'] ?? ''));
-		$this->overall = $object[$prefix . 'review_overall'] ?? 0;
+		if (isset ($object[$prefix . 'review_feedback'])) {
+			$this->feedback = html_entity_decode (stripslashes($object[$prefix . 'review_feedback']));
+		}
+		
+		if (isset ($object[$prefix . 'review_overall'])) {
+			$this->overall = intval ($object[$prefix . 'review_overall']);
+		}
 		
 	}
 	

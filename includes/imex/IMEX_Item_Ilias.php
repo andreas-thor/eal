@@ -2,28 +2,28 @@
 
 require_once ('IMEX_Item.php');
 
-class IMEX_Ilias extends IMEX_Item {
+class IMEX_Item_Ilias extends IMEX_Item {
 	
 	private $media = array ();
 	private $xml_MTImages = array();
 	
 	
-	
+	public function __construct() {
+		parent::__construct (time() . '__0__qpl_1', 'zip' );
+	}
 	
 	protected function generateExportFile (array $itemids) {
 	
-		$this->downloadfilename = time() . "__0__qpl_1";
-		$this->downloadextension = "zip";
 		
 		$zip = new ZipArchive();
 		$zip->open($this->getDownloadFullname(), ZipArchive::CREATE);
-		$zip->addFromString("{$this->downloadfilename}/{$this->downloadfilename}.xml", $this->createQPL($itemids)->saveXML());
-		$zip->addFromString("{$this->downloadfilename}/" . str_replace('_qpl_', '_qti_', $this->downloadfilename) . ".xml", $this->createQTI($itemids)->saveXML());
+		$zip->addFromString("{$this->getDownloadFileName()}/{$this->getDownloadFileName()}.xml", $this->createQPL($itemids)->saveXML());
+		$zip->addFromString("{$this->getDownloadFileName()}/" . str_replace('_qpl_', '_qti_', $this->getDownloadFileName()) . ".xml", $this->createQTI($itemids)->saveXML());
 		 
 		// copy media files (e.g., images) -- array is filled during createQPL/QTI /*
 		foreach ($this->media as $key => $file) {
 			$fileshort = array_pop(explode ("/", $file));
-			$zip->addFromString("{$this->downloadfilename}/objects/{$key}/{$fileshort}", file_get_contents($file));
+			$zip->addFromString("{$this->getDownloadFileName()}/objects/{$key}/{$fileshort}", file_get_contents($file));
 		}
 		
 		$zip->close();
@@ -151,7 +151,7 @@ class IMEX_Ilias extends IMEX_Item {
 			
 			for ($index=0; $index<$item->getNumberOfAnswers(); $index++) {
 				$xml_LAB = $dom->createElement("response_label");
-				$xml_LAB->setAttribute("ident", $number);
+				$xml_LAB->setAttribute("ident", $index);
 				$xml_LAB->appendChild ($this->createMaterialElement($dom, "text/html", $item->getAnswer ($index)));
 				$xml_RC->appendChild ($xml_LAB);
 			}
@@ -176,7 +176,7 @@ class IMEX_Ilias extends IMEX_Item {
 						
 					$xml_CV = $dom->createElement("conditionvar");
 					$xml_NO = $dom->createElement("not");
-					$xml_VE = $dom->createElement("varequal", $number);
+					$xml_VE = $dom->createElement("varequal", $index);
 					$xml_VE->setAttribute ("respident", $item_data["ident"]);
 						
 					if ($checked==1) {

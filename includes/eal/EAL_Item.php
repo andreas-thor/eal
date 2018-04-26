@@ -13,11 +13,10 @@ abstract class EAL_Item extends EAL_Object {
 	private $learnout;
 	private $learnout_id;
 	
-	private $difficulty;
-	
 	private $note;
 	private $flag;
 	
+	private $difficulty;
 	public $minnumber;	// FIXME minnumber/maxnumber: range of correct answers (relevant for MC only)
 	public $maxnumber;
 	
@@ -49,9 +48,10 @@ abstract class EAL_Item extends EAL_Object {
 		$this->question = '';
 		$this->learnout_id = $learnout_id;
 		$this->learnout = NULL;
-		$this->difficulty = -1;
 		$this->note = '';
 		$this->flag = 0;
+		
+		$this->difficulty = -1;
 		$this->minnumber = -1;
 		$this->maxnumber = -1;
 	}
@@ -71,23 +71,34 @@ abstract class EAL_Item extends EAL_Object {
 	 * @see EAL_Object::initFromArray()
 	 * @param array $object = ['post_title' => ..., 'item_description' => ..., 'item_question' => ..., 'learnout_id' => ..., 'item_note' => ..., 'item_flag' => ...
 	 */
-	protected function initFromArray (array $object, string $prefix, string $levelPrefix) {
+	public function initFromArray (array $object, string $prefix, string $levelPrefix) {
 		
 		parent::initFromArray($object, $prefix, $levelPrefix);
 		
-		$this->title = stripslashes($object[$prefix . 'post_title'] ?? '');
-		$this->description = html_entity_decode (stripslashes($object[$prefix . 'item_description'] ?? ''));
-		$this->question = html_entity_decode (stripslashes($object[$prefix . 'item_question'] ?? ''));
-		$this->note = html_entity_decode (stripslashes($object[$prefix . 'item_note'] ?? ''));
-		$this->flag = intval ($object[$prefix . 'item_flag'] ?? 0);
+		if (isset($object[$prefix . 'post_title'])) {
+			$this->title = stripslashes($object[$prefix . 'post_title']);
+		}
 		
-		// update learnout id only if not yet available
-		if ($this->learnout_id <= 0) {
-			$this->learnout_id = intval($object[$prefix . 'learnout_id'] ?? -1);
+		if (isset($object[$prefix . 'item_description'])) {
+			$this->description = html_entity_decode (stripslashes($object[$prefix . 'item_description']));
+		}
+		
+		if (isset($object[$prefix . 'item_question'])) {
+			$this->question = html_entity_decode (stripslashes($object[$prefix . 'item_question']));
+		}
+		
+		if (isset ($object[$prefix . 'learnout_id'])) {
+			$this->learnout_id = intval($object[$prefix . 'learnout_id']);
 			$this->learnout = NULL;
 		}
 		
+		if (isset ($object[$prefix . 'item_note'])) {
+			$this->note = html_entity_decode (stripslashes($object[$prefix . 'item_note']));
+		}
 		
+		if (isset ($object[$prefix . 'item_flag'])) {
+			$this->flag = intval ($object[$prefix . 'item_flag']);
+		}
 	}
 
 	

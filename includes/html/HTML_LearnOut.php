@@ -42,7 +42,12 @@ class HTML_LearnOut extends HTML_Object {
 		
 		$this->printEditor('learnout_description', $this->getLearnout()->getDescription());
 ?>
-
+		<script type="text/javascript">
+			// remove title and title-action buttons
+		 	document.getElementsByTagName("H1")[0].remove();
+		 	document.getElementsByClassName("page-title-action")[0].remove();
+		</script> 
+		
 		<script>
 			function showTermButtons (j) {
 				j("#eal_topicterms").empty()		

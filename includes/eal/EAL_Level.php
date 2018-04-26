@@ -27,18 +27,13 @@ class EAL_Level {
 		}
 	}
 	
-	public static function createFromArray (array $object = NULL, string $prefix): EAL_Level {
-		
-		$l = new EAL_Level();
-		$l->initFromArray ($object, $prefix);
-		return $l;
-	}
 	
-	
-	protected function initFromArray (array $object = NULL, string $prefix) {
+	public function initFromArray (array $object, string $prefix) {
 
 		foreach (EAL_Level::TYPE as $type) {
-			$this->level[$type] = intval (($object === NULL) ? 0 : ($object[$prefix . $type] ?? 0));
+			if (isset ($object[$prefix . $type])) {
+				$this->level[$type] = intval ($object[$prefix . $type]);
+			}
 		}
 	}
 	
