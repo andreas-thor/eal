@@ -42,7 +42,7 @@ class DB_Learnout {
 	
 	/**
 	 */
-	public static function loadFromDB (int $learnout_id) {
+	public static function loadFromDB (int $learnout_id): EAL_LearnOut {
 		
 			
 		global $wpdb;

@@ -359,13 +359,20 @@ class IMEX_Ilias extends IMEX_Item {
 				continue;
 			}
 	
-			// initialize item
-			$item = EAL_Factory::createNewItem($item_type, intval($item_id));
-			
-			assert (($item instanceof EAL_ItemSC) || ($item instanceof EAL_ItemMC));
-			
 			$countItems++;
-			if ($item->getId() < 0) $item->setId (-$countItems);
+			
+			try {
+				// try to load item from db
+				$item = DB_Item::loadFromDB(intval($item_id), $item_type);
+			} catch (Exception $e) {
+				// initialize new item
+				switch ($item_type) {
+					case 'itemsc': $item = new EAL_ItemSC(-$countItems); break;
+					case 'itemmc': $item = new EAL_ItemMC(-$countItems); break;
+					default: continue;
+				}
+			}
+			
 				
 			// get title and description + question
 //			$item->setDomain(RoleTaxonomy::getCurrentRoleDomain()["name"]);	// necessary, if we import item from different domain and want to store it in current domain

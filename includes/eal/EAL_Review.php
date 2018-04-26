@@ -25,9 +25,64 @@ class EAL_Review extends EAL_Object {
 		'wording' => 'Formulierung');
 	
 
+	function __construct(int $review_id=-1, int $item_id=-1) {
+		
+		parent::__construct($review_id);
+		
+		$this->item_id = $item_id;
+		$this->item = NULL;
+		
+		$this->score = array();
+		foreach (self::$dimension1 as $k1 => $v1) {
+			$this->score[$k1] = array ();
+			foreach (self::$dimension2 as $k2 => $v2) {
+				$this->score[$k1][$k2] = 0;
+			}
+		}
+		
+		$this->feedback = '';
+		$this->overall = 0;
+	}
+	
+	
+	public static function createFromArray (int $id, array $object = NULL, string $prefix = ''): EAL_Review {
+		$review = new EAL_Review($id);
+		$review->initFromArray($object, $prefix, 'review_level_');
+		return $review;
+	}
+		
+	
+	protected function initFromArray (array $object, string $prefix, string $levelPrefix) {
+		
+		parent::initFromArray($object, $prefix, $levelPrefix);
+		
+		$this->item_id = $object[$prefix . 'item_id'];
+		foreach (self::$dimension1 as $k1 => $v1) {
+			$this->score[$k1] = array ();
+			foreach (self::$dimension2 as $k2 => $v2) {
+				$this->score[$k1][$k2] = $object['review_' . $prefix . $k1 . '_' . $k2] ?? 0;
+			}
+		}
+		
+		$this->feedback = html_entity_decode (stripslashes($object[$prefix . 'review_feedback'] ?? ''));
+		$this->overall = $object[$prefix . 'review_overall'] ?? 0;
+		
+	}
 	
 	public static function getType(): string {
 		return 'review';
+	}
+	
+	
+	/**
+	 * Domain of the review is the domain of the assigned item
+	 * {@inheritDoc}
+	 * @see EAL_Object::getDomain()
+	 */
+	public function getDomain(): string {
+		
+		if ($this->getItem() === NULL) return '';
+		return $this->getItem()->getDomain();
 	}
 	
 	
@@ -92,22 +147,7 @@ class EAL_Review extends EAL_Object {
 
 	
 	
-	function __construct(int $review_id = -1) {
-	
-		parent::__construct();
-		$this->setItemId(-1);
-			
-		$this->score = array();
-		foreach (self::$dimension1 as $k1 => $v1) {
-			$this->score[$k1] = array ();
-			foreach (self::$dimension2 as $k2 => $v2) {
-				$this->score[$k1][$k2] = 0;
-			}
-		}
-		
-		$this->setFeedback('');
-		$this->setOverall(0);
-	}
+
 	
 	
 	public function getHTMLPrinter (): HTML_Review {
@@ -116,30 +156,12 @@ class EAL_Review extends EAL_Object {
 	
 
 	
-
-	
-	
-
-	
-	
-
-
-	
-	public static function save ($post_id, $post) {
-	
-		$review = new EAL_Review();
-		if ($_POST["post_type"] != $review->getType()) return;
-		$review->saveToDB();
-	}
-	
-	
-	
-
-	
 	
 	public function getItem () {
 	
 		if (is_null($this->item_id)) return null;
+		
+		if ($this->item_id < 0) return null;
 	
 		if (is_null($this->item)) {
 			$post = get_post($this->item_id);

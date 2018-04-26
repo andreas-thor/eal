@@ -56,42 +56,41 @@ class DB_Review {
 	}
 	
 	
-	/**
-	 * Call-by-reference; $review properties are loaded into given instance
-	 * @param EAL_Review $review
-	 */
-	public static function loadFromDB (EAL_Review &$review) {
+	public static function loadFromDB (int $review_id): EAL_Review {
 		
 			
 		global $wpdb;
 		
-		$sqlres = $wpdb->get_row( "SELECT * FROM " . self::getTableName() . " WHERE id = {$review->getId()}", ARRAY_A);
+		$sqlres = $wpdb->get_row( "SELECT * FROM " . self::getTableName() . " WHERE id = {$review_id}", ARRAY_A);
 		
-		$review->setId ($sqlres['id']);
-		$review->setItemId($sqlres['item_id'] ?? -1);
+		$object = [];
+		$object['item_id'] = $sqlres['item_id'] ?? -1;
 		
 		foreach (EAL_Review::$dimension1 as $dim1 => $v1) {
 			foreach (EAL_Review::$dimension2 as $dim2 => $v2) {
-				$review->setScore($dim1, $dim2, $sqlres[$dim1 . "_" . $dim2] ?? 0);
+				$object['review_' . $dim1 . '_' . $dim2] = $sqlres[$dim1 . "_" . $dim2] ?? 0;
 			}
 		}
+		$object['review_level_FW'] = $sqlres['level_FW'] ?? 0;
+		$object['review_level_KW'] = $sqlres['level_KW'] ?? 0;
+		$object['review_level_PW'] = $sqlres['level_PW'] ?? 0;
+		$object['review_feedback'] = $sqlres['feedback'] ?? '';
+		$object['review_overall'] = $sqlres['overall'] ?? 0;
 		
-		$review->setLevel (new EAL_Level($sqlres));
-		$review->setFeedback ($sqlres['feedback']);
-		$review->setOverall ($sqlres['overall']);
-		
+		return EAL_Review::createFromArray($review_id, $object);
+
 	}
 	
 	
 	
-	public static function loadAllReviewIdsForItemFromDB (EAL_Item $item): array {
+	public static function loadAllReviewIdsForItemFromDB (int $item_id): array {
 			
 		global $wpdb;
 		return $wpdb->get_col ("
 			SELECT R.id
 			FROM " . self::getTableName() . " R
 			JOIN {$wpdb->prefix}posts RP ON (R.id = RP.id)
-			WHERE RP.post_parent=0 AND R.item_id = {$item->getId()} AND RP.post_status IN ('publish', 'pending', 'draft')");
+			WHERE RP.post_parent=0 AND R.item_id = {$item_id} AND RP.post_status IN ('publish', 'pending', 'draft')");
 			
 	}
 	

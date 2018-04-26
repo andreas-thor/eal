@@ -41,9 +41,13 @@ class PAG_Item_Bulkviewer {
 		$reviews = [];
 		if ($withReviews) {
 			foreach ($items as $item_id => $item) {
-				$reviews[$item_id] = EAL_Factory::loadAllReviewsForItem($item);
+				$reviews[$item_id] = []; 
+				foreach (DB_Review::loadAllReviewIdsForItemFromDB($item_id) as $review_id) {
+					$reviews[$item_id][] = DB_Review::loadFromDB($review_id);
+				}
 			}
 		}
+		
 		
 		
 		$editable = $_REQUEST['action'] === 'edit';

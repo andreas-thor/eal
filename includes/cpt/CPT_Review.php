@@ -39,7 +39,16 @@ class CPT_Review extends CPT_Object {
 	
 	public function addHooks() {
 		parent::addHooks();
-		add_action ("save_post_{$this->type}", array ('EAL_Review', save), 10, 2);
+		add_action ("save_post_{$this->type}", array ('CPT_Review', 'save_post'), 10, 2);
+	}
+	
+	public static function save_post (int $post_id, WP_Post $post) {
+		
+		if ($post->post_type != EAL_Review::getType()) return;
+		
+		$item_id = intval ($_REQUEST['item_id'] ?? -1);
+		$review = ($post->post_status === 'auto-draft') ? new EAL_Review($post_id, $item_id) : EAL_Review::createFromArray($post_id, $_REQUEST);
+		DB_Review::saveToDB($review);
 	}
 	
 	
@@ -65,11 +74,10 @@ class CPT_Review extends CPT_Object {
 	
 	function WPCB_process_bulk_action() {
 	
-		if ($_REQUEST["post_type"] != $this->type) return;
+		if ($_REQUEST['post_type'] != $this->type) return;
 		$wp_list_table = _get_list_table('WP_Posts_List_Table');
 	
-		$a = $wp_list_table->current_action();
-		
+		// View Reviews
 		if ($wp_list_table->current_action() == 'view') {
 			$sendback = add_query_arg( 'reviewids', $_REQUEST['post'], 'admin.php?page=view_review' );
 			wp_redirect($sendback);
@@ -85,10 +93,10 @@ class CPT_Review extends CPT_Object {
 		global $review, $post, $item;
 		parent::WPCB_register_meta_box_cb();
 		
-		$review = new EAL_Review();
+		$review = DB_Review::loadFromDB($post->ID);
 		
 		$domain = RoleTaxonomy::getCurrentRoleDomain();
-		if (($domain["name"] != "") && ($review->getItem()->getDomain() != $domain["name"])) {
+		if (($domain["name"] != "") && ($review->getDomain() != $domain["name"])) {
 			wp_die ("Reviewed item does not belong to your current domain!");
 		}
 		

@@ -180,7 +180,7 @@ class CPT_LearnOut extends CPT_Object {
 	function WPCB_process_bulk_action() {
 	
 	
-		if ($_REQUEST["post_type"] != $this->type) return;
+		if ($_REQUEST['post_type'] != $this->type) return;
 		$wp_list_table = _get_list_table('WP_Posts_List_Table');
 
 		// View Learning Outcomes

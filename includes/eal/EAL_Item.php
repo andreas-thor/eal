@@ -56,6 +56,14 @@ abstract class EAL_Item extends EAL_Object {
 	}
 	
 	
+	
+	public static function createFromArray (int $id, string $item_type, array $object = NULL, string $prefix = ''): EAL_Item {
+			
+		if ($item_type == 'itemsc') return EAL_ItemSC::createFromArray($id, $object, $prefix);
+		if ($item_type == 'itemmc') return EAL_ItemMC::createFromArray($id, $object, $prefix);
+		throw new Exception('Could not create item. Unknown item type ' . $item_type);
+	}
+	
 	/**
 	 * 
 	 * {@inheritDoc}
