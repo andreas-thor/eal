@@ -56,7 +56,11 @@ class EAL_Review extends EAL_Object {
 		
 		parent::initFromArray($object, $prefix, $levelPrefix);
 		
-		$this->item_id = $object[$prefix . 'item_id'];
+		if ($this->item_id <= 0) {
+			$this->item_id = intval ($object[$prefix . 'item_id']);
+			$this->item = NULL;
+		}
+		
 		foreach (self::$dimension1 as $k1 => $v1) {
 			$this->score[$k1] = array ();
 			foreach (self::$dimension2 as $k2 => $v2) {
@@ -74,28 +78,28 @@ class EAL_Review extends EAL_Object {
 	}
 	
 	
-	/**
-	 * Domain of the review is the domain of the assigned item
-	 * {@inheritDoc}
-	 * @see EAL_Object::getDomain()
-	 */
-	public function getDomain(): string {
-		
-		if ($this->getItem() === NULL) return '';
-		return $this->getItem()->getDomain();
-	}
 	
 	
 	public function getItemId(): int {
 		return $this->item_id;
 	}
 	
-	public function setItemId(int $item_id) {
+	
+	public function getItem (): EAL_Item {
 		
-		if (($this->item_id != $item_id) || ($item_id < 0)) {
-			$this->item_id = $item_id;
-			$this->item = NULL;
+		if ($this->item_id <= 0) {		// no item assigned
+			throw new Exception('Review with id ' . $this->getId() . ' does not have an assigned item!');
 		}
+		
+		if (is_null($this->item)) {
+			$post = get_post($this->item_id);
+			if ($post == null) {
+				throw new Exception ('Could not find item with id=' . $this->item_id);
+			}
+			
+			$this->item = DB_Item::loadFromDB($this->item_id, $post->post_type);
+		}
+		return $this->item;
 	}
 	
 
@@ -113,37 +117,15 @@ class EAL_Review extends EAL_Object {
 	}
 	
 	
-	public function setScore(string $dim1, string $dim2, int $value) {
-		
-		if (!array_key_exists($dim1, self::$dimension1)) {
-			throw new Exception('Unknown review dimension 1: ' . $dim1);
-		}
-		
-		if (!array_key_exists($dim2, self::$dimension2)) {
-			throw new Exception('Unknown review dimension 2: ' . $dim2);
-		}
-		
-		$this->score[$dim1][$dim2] = $value;
-	}
-	
-
 	public function getFeedback(): string {
 		return $this->feedback;
 	}
-	
-	public function setFeedback(string $feedback) {
-		$this->feedback = $feedback;
-	}
-	
 	
 
 	public function getOverall(): int {
 		return $this->overall;
 	}
 
-	public function setOverall(int $overall) {
-		$this->overall = $overall;
-	}
 
 	
 	
@@ -157,19 +139,7 @@ class EAL_Review extends EAL_Object {
 
 	
 	
-	public function getItem () {
-	
-		if (is_null($this->item_id)) return null;
-		
-		if ($this->item_id < 0) return null;
-	
-		if (is_null($this->item)) {
-			$post = get_post($this->item_id);
-			if ($post == null) return null;
-			$this->item = DB_Item::loadFromDB($this->item_id, $post->post_type); 
-		}
-		return $this->item;
-	}
+
 	
 
 

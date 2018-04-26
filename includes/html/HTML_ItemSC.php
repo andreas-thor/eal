@@ -1,8 +1,7 @@
 <?php
 
-require_once ("HTML_Object.php");
-
-require_once (__DIR__ . "/../eal/EAL_ItemSC.php");
+require_once 'HTML_Item.php';
+require_once __DIR__ . '/../eal/EAL_ItemSC.php';
 
 class HTML_ItemSC extends HTML_Item {
 	

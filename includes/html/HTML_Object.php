@@ -1,7 +1,5 @@
 <?php
 
-require_once (__DIR__ . "/../eal/EAL_Item.php");
-
 
 class HTML_Object {
 	

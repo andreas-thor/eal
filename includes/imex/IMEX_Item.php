@@ -76,7 +76,7 @@ abstract class IMEX_Item extends IMEX_Object {
 			if ($status == NULL) continue;	// must have status
 			
 			
-			$item = EAL_Item::createFromArray($itemid, $_REQUEST[$prefix."post_type"], $_POST, $prefix);
+			$item = EAL_Item::createByTypeFromArray($itemid, $_REQUEST[$prefix."post_type"], $_POST, $prefix);
 // 			$item = EAL_Factory::createNewItem($_REQUEST[$prefix."post_type"], -1, $prefix);	// load item from POST data (because tempid<0)
 			if ($updateMetadataOnly) {
 				$item_post = $item;

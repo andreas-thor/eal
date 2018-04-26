@@ -1,6 +1,8 @@
 <?php
 
-require_once ("EAL_Item.php");
+require_once 'EAL_Item.php';
+require_once __DIR__ . '/../html/HTML_ItemSC.php';
+
 
 class EAL_ItemSC extends EAL_Item {
 	
@@ -10,10 +12,10 @@ class EAL_ItemSC extends EAL_Item {
 	 */
 	private $answers;
 	 
-	
-	function __construct(int $id = -1) {
+	 
+	function __construct(int $id = -1, int $learnout_id=-1) {
 		
-		parent::__construct($id);
+		parent::__construct($id, $learnout_id);
 		
 		$this->clearAnswers();
 		$this->addAnswer('', 1);

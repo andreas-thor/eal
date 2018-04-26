@@ -1,9 +1,8 @@
 <?php
 
-require_once ("HTML_Object.php");
-require_once ("HTML_ItemMC.php");
-require_once ("HTML_ItemSC.php");
-require_once (__DIR__ . "/../eal/EAL_Item.php");
+require_once 'HTML_Object.php';
+require_once __DIR__ . '/../eal/EAL_Item.php';
+require_once __DIR__ . '/../db/DB_Learnout.php';
 
 
 abstract class HTML_Item extends HTML_Object {

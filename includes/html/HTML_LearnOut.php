@@ -1,6 +1,7 @@
 <?php
 
-require_once (__DIR__ . "/../eal/EAL_LearnOut.php");
+require_once 'HTML_Object.php';
+require_once __DIR__ . '/../eal/EAL_LearnOut.php';
 
 
 class HTML_LearnOut extends HTML_Object {

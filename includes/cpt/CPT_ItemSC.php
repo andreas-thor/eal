@@ -2,6 +2,7 @@
 
 require_once 'CPT_Item.php';
 require_once __DIR__ . '/../eal/EAL_ItemSC.php';
+require_once __DIR__ . '/../db/DB_ItemSC.php';
 
 
 
@@ -46,12 +47,7 @@ class CPT_ItemSC extends CPT_Item {
 		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
 		if ($type != EAL_ItemSC::getType()) return;
 		
-		if ($post->post_status === 'auto-draft') {
-			$item = new EAL_ItemSC($post_id);
-			$item->setLearnOutId(intval ($_REQUEST['learnout_id']));
-		} else {
-			$item = EAL_ItemSC::createFromArray($post_id, $_POST);
-		}
+		$item = ($post->post_status === 'auto-draft') ? new EAL_ItemSC($post_id, intval ($_REQUEST['learnout_id'])) : EAL_ItemSC::createFromArray($post_id, $_REQUEST);
 		DB_ItemSC::saveToDB($item);
 	}
 		

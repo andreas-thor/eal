@@ -1,7 +1,8 @@
 <?php
 
-require_once("CPT_Item.php");
-require_once(__DIR__ . "/../eal/EAL_ItemMC.php");
+require_once 'CPT_Item.php';
+require_once __DIR__ . '/../eal/EAL_ItemMC.php';
+require_once __DIR__ . '/../db/DB_ItemMC.php';
 
 class CPT_ItemMC extends CPT_Item {
 	
@@ -34,13 +35,7 @@ class CPT_ItemMC extends CPT_Item {
 		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
 		if ($type != EAL_ItemMC::getType()) return;
 		
-		if ($post->post_status === 'auto-draft') {
-			$item = new EAL_ItemMC($post_id);
-			$item->setLearnOutId(intval ($_REQUEST['learnout_id']));
-		} else {
-			$item = EAL_ItemMC::createFromArray($post_id, $_POST);
-		}
-		
+		$item = ($post->post_status === 'auto-draft') ? new EAL_ItemMC($post_id, intval ($_REQUEST['learnout_id'])) : EAL_ItemMC::createFromArray($post_id, $_REQUEST);
 		DB_ItemMC::saveToDB($item);
 	}
 	

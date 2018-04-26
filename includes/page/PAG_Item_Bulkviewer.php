@@ -81,9 +81,8 @@ class PAG_Item_Bulkviewer {
 		$reviews = [];
 		foreach ($reviewids as $review_id) {
 			
-			$review = new EAL_Review($review_id);
+			$review = DB_Review::loadFromDB($review_id);
 			$item = $review->getItem();
-			if ($item === NULL) continue;
 			
 			if (!array_key_exists($item->getId(), $items)) {
 				$items[$item->getId()] = $item;

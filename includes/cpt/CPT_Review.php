@@ -96,7 +96,7 @@ class CPT_Review extends CPT_Object {
 		$review = DB_Review::loadFromDB($post->ID);
 		
 		$domain = RoleTaxonomy::getCurrentRoleDomain();
-		if (($domain["name"] != "") && ($review->getDomain() != $domain["name"])) {
+		if (($domain["name"] != "") && ($review->getItem()->getDomain() != $domain["name"])) {
 			wp_die ("Reviewed item does not belong to your current domain!");
 		}
 		

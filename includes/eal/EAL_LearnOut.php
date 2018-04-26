@@ -39,14 +39,6 @@ class EAL_LearnOut extends EAL_Object  {
 	}
 	
 	
-	public function setTitle(string $title) {
-		$this->title = $title;
-	}
-
-	public function setDescription(string $description) {
-		$this->description = $description;
-	}
-
 	public function getTitle (): string {
 		return $this->title;
 	}
