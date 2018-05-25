@@ -70,7 +70,7 @@ abstract class IMP_Term {
 			foreach ($existingTerms as $exTerm) {
 				if ($term['name'] == $exTerm->name) {
 					$termId = $exTerm->term_id;
-					$x = wp_update_term($termId, $this->taxonomy, ['description' => $term['description']]);
+					wp_update_term($termId, $this->taxonomy, ['description' => $term['description']]);
 				}
 			}
 			
