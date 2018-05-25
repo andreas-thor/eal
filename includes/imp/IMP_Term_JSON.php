@@ -16,7 +16,7 @@ class IMP_Term_JSON extends IMP_Term {
 		
 		$content = file_get_contents($file['tmp_name']);
 		if ($content === FALSE) {
-			
+			return [];	// FIXME: error while reading file
 		} 
 		
 		return json_decode($content, TRUE);

@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../imp/IMP_Item_Ilias.php';
 require_once __DIR__ . '/../imp/IMP_Term_JSON.php';
+require_once __DIR__ . '/../imp/IMP_Term_TXT.php';
 
 class Importer {
 
@@ -28,7 +29,7 @@ class Importer {
 				
 				$formatImporter = NULL;
 				switch ($_REQUEST['format']) {
-					case 'txt': break;
+					case 'txt': $formatImporter = new IMP_Term_TXT(); break;
 					case 'json': $formatImporter = new IMP_Term_JSON(); break;
 				}
 				
