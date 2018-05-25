@@ -33,6 +33,9 @@ require_once 'includes/imex/IMEX_Item_Ilias.php';
 require_once 'includes/imex/IMEX_Term.php';
 
 require_once 'includes/exp/EXP_Item_Ilias.php';
+require_once 'includes/exp/EXP_Term_TXT.php';
+require_once 'includes/exp/EXP_Term_JSON.php';
+
 
 
 
@@ -147,8 +150,12 @@ add_action('init', function () {
 			exit();
 		}
 		
-		if ($_REQUEST["type"] == "term") {
-			(new IMEX_Term())->downloadTerms ($_REQUEST["taxonomy"], $_REQUEST["termid"], $_REQUEST['format']);
+		if ($_REQUEST['type'] == 'term') {
+			
+			switch ($_REQUEST['format']) {
+				case 'txt': (new EXP_Term_TXT($_REQUEST["taxonomy"]))->downloadTerms ($_REQUEST["termid"]); break;
+				case 'json': (new EXP_Term_JSON($_REQUEST["taxonomy"]))->downloadTerms ($_REQUEST["termid"]); break;
+			}
 			exit();
 		}
 		
@@ -401,7 +408,12 @@ function setAdminMenu_Download_and_Upload_Topic($wp_admin_bar) {
 		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s&taxonomy=%s&termid=%d', 'import', 'term', 'txt', $_REQUEST['taxonomy'], $termid)
 	));
 	
-	
+	$wp_admin_bar->add_menu( array(
+		'id' => 'eal_upload_term_json',
+		'parent' => 'eal_upload_term',
+		'title' => 'JSON',
+		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s&taxonomy=%s&termid=%d', 'import', 'term', 'json', $_REQUEST['taxonomy'], $termid)
+	));
 	
 	
 	

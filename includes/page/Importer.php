@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../imp/IMP_Item_Ilias.php';
+require_once __DIR__ . '/../imp/IMP_Term_JSON.php';
 
 class Importer {
 
@@ -24,8 +25,19 @@ class Importer {
 			
 			
 			if ($_REQUEST['post_type']=='term') {
-				(new IMEX_Term())->uploadTerms($file, $_REQUEST['taxonomy'], $_REQUEST['termid']);
-				return;
+				
+				$formatImporter = NULL;
+				switch ($_REQUEST['format']) {
+					case 'txt': break;
+					case 'json': $formatImporter = new IMP_Term_JSON(); break;
+				}
+				
+				if ($formatImporter === NULL) {
+					self::showError(sprintf ('Unknown import format: %s', $_REQUEST['format']));
+					return;
+				}
+				
+				$formatImporter->importTerms($file, $_REQUEST['taxonomy'], $_REQUEST['termid']);
 			}
 
 			if ($_REQUEST['post_type']=='item') {
@@ -82,6 +94,10 @@ class Importer {
 		}
 		if (($_REQUEST['post_type']=='term') && ($_REQUEST['format']=='txt')) {
 			$title = "Taxonomy Terms (from TXT file)";
+			$action .= sprintf('&taxonomy=%s&termid=%d', $_REQUEST['taxonomy'], $_REQUEST['termid']);
+		}		
+		if (($_REQUEST['post_type']=='term') && ($_REQUEST['format']=='json')) {
+			$title = "Taxonomy Terms (from JSON file)";
 			$action .= sprintf('&taxonomy=%s&termid=%d', $_REQUEST['taxonomy'], $_REQUEST['termid']);
 		}
 		
