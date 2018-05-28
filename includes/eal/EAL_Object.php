@@ -51,6 +51,13 @@ abstract class EAL_Object {
 	}
 	
 	
+	public function convertToArray (string $prefix, string $levelPrefix): array {
+		$object = [];
+		$object[$prefix . 'post_ID'] = $this->id;
+		$object[$prefix . 'domain'] = $this->domain;
+		return array_merge ($object, $this->level->convertToArray($prefix . $levelPrefix));
+	}
+	
 	
 	public function getId (): int {
 		return $this->id;

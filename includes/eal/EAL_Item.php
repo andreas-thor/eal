@@ -102,6 +102,19 @@ abstract class EAL_Item extends EAL_Object {
 	}
 
 	
+	public function convertToArray (string $prefix, string $levelPrefix): array {
+		$object = parent::convertToArray($prefix, $levelPrefix);
+		$object[$prefix . 'post_title'] = $this->title;
+		$object[$prefix . 'item_description'] = $this->description;
+		$object[$prefix . 'item_question'] = $this->question;
+		$object[$prefix . 'learnout_id'] = $this->learnout_id;
+		$object[$prefix . 'item_note'] = $this->note;
+		$object[$prefix . 'item_flag'] = $this->flag;
+		return $object;
+	}
+	
+	
+	
 	public function init (string $title, string $description, string $question, string $domain = NULL) {
 		$this->title = $title;
 		$this->description = $description;

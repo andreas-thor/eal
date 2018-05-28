@@ -16,17 +16,7 @@ class PAG_Item_Bulkviewer {
 	
 	public static function page_view_item ($withReviews = FALSE) {
 
-		if ($itemids == NULL) {
-			$itemids = ItemExplorer::getItemIdsByRequest();
-		}
-
-		if ($_REQUEST['action']=='import') {
-			$itemids = IMEX_Item::importItems($itemids, FALSE);
-		}
-			
-		if ($_REQUEST['action']=='update') {
-			$itemids = IMEX_Item::importItems($itemids, TRUE);
-		}
+		$itemids = ItemExplorer::getItemIdsByRequest();
 		
 		
 		// load all items

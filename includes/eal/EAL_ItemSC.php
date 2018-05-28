@@ -50,6 +50,21 @@ class EAL_ItemSC extends EAL_Item {
 	}
 	
 	
+	public function convertToArray (string $prefix, string $levelPrefix): array {
+		
+		$object = parent::convertToArray($prefix, $levelPrefix);
+		$object[$prefix . 'answer'] = [];
+		$object[$prefix . 'points'] = [];
+		for ($index=0; $index<$this->getNumberOfAnswers(); $index++) {
+			$object[$prefix . 'answer'][$index] =  $this->getAnswer($index);
+			$object[$prefix . 'points'][$index] = $this->getPointsChecked($index);
+		}
+
+		$object[$prefix . 'post_type'] = 'itemsc';
+		return $object;
+	}
+	
+	
 	public static function getType(): string {
 		return 'itemsc';
 	}

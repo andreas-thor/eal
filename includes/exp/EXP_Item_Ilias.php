@@ -133,7 +133,7 @@ class EXP_Item_Ilias extends EXP_Item {
 			$xml_PR->setAttribute("label", $item->getTitle());
 			$xml_FL = $dom->createElement("flow");
 
-			$xml_FL->appendChild ($this->createMaterialElement($dom, "text/html", wpautop($item->getDescription()) . self::DESCRIPTION_QUESTION_SEPARATOR . wpautop($item->getQuestion())));
+			$xml_FL->appendChild ($this->createMaterialElement($dom, "text/html", wpautop($item->getDescription()) . EXP_Item::DESCRIPTION_QUESTION_SEPARATOR . wpautop($item->getQuestion())));
 				
 			$xml_RL = $dom->createElement("response_lid");
 			$xml_RL->setAttribute("ident", $item_data["ident"]);
@@ -236,10 +236,11 @@ class EXP_Item_Ilias extends EXP_Item {
 	}
 	
 	
+	
 	/**
 	 * Images are replaced by new name (il_0_mob_[count]) and added to xml_MITImages (=> will later be added to the zip file9
 	 * {@inheritDoc}
-	 * @see IMEX_Item::processImage()
+	 * @see EXP_Item::processImage()
 	 */
 	protected function processImage(string $src): string {
 		

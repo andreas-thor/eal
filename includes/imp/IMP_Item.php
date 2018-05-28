@@ -1,6 +1,6 @@
 <?php
 
-
+require_once __DIR__ . '/../exp/EXP_Item.php';
 
 abstract class IMP_Item {
 	

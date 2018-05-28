@@ -9,6 +9,7 @@
  * EMail: dr.andreas.thor@googlemail.com
  */
 
+require_once 'includes/db/DB_Term.php';
 
 require_once 'includes/cpt/CPT_Item.php';
 require_once 'includes/cpt/CPT_ItemBasket.php';
@@ -27,12 +28,9 @@ require_once 'includes/page/PAG_Learnout_Bulkviewer.php';
 
 require_once 'includes/class.CLA_RoleTaxonomy.php';
 
-require_once 'includes/imex/IMEX_Easlit.php';
-require_once 'includes/imex/IMEX_Moodle.php';
-require_once 'includes/imex/IMEX_Item_Ilias.php'; 
-require_once 'includes/imex/IMEX_Term.php';
-
 require_once 'includes/exp/EXP_Item_Ilias.php';
+require_once 'includes/exp/EXP_Item_Moodle.php';
+require_once 'includes/exp/EXP_Item_JSON.php';
 require_once 'includes/exp/EXP_Term_TXT.php';
 require_once 'includes/exp/EXP_Term_JSON.php';
 
@@ -73,6 +71,7 @@ register_activation_hook(__FILE__, function () {
 	DB_ItemMC::createTables();
 	DB_Review::createTables();
 	DB_LearnOut::createTables();
+	DB_Term::createTables();
 });
 
 
@@ -136,6 +135,9 @@ add_action('init', function () {
 		(new CPT_ItemMC())->addHooks(); 
 	}
 	
+	
+	
+	
 	if ($_REQUEST["page"] == "download") {
 		
 		if ($_REQUEST["type"] == "item") {
@@ -143,8 +145,10 @@ add_action('init', function () {
 			$itemids = explode(",", $_REQUEST["itemids"]);
 			
 			switch ($_REQUEST['format']) {
-				case 'moodle': (new IMEX_Moodle())->downloadItems($itemids); break;
+				case 'moodle': (new EXP_Item_Moodle())->downloadItems($itemids); break;
 				case 'ilias': (new EXP_Item_Ilias())->downloadItems($itemids); break;
+				case 'json': (new EXP_Item_JSON())->downloadItems($itemids); break;
+				
 			}
 			
 			exit();
@@ -160,6 +164,13 @@ add_action('init', function () {
 		}
 		
 		
+	}
+	
+	if ($_REQUEST["page"] == "index") {
+	
+		DB_Term::buildIndex($_REQUEST["taxonomy"]);
+		
+		exit();
 	}
 	
 	
@@ -337,6 +348,13 @@ function setAdminMenu_Download_Item($wp_admin_bar) {
 		'title' => 'Moodle',
 		'href' => sprintf('%s/admin.php?page=%s&type=%s&format=%s&itemids=%s', site_url(), 'download', 'item', 'moodle', $param_itemids)
 	));
+	
+	$wp_admin_bar->add_menu( array(
+		'parent' => 'eal_download_item',
+		'title' => 'JSON',
+		'href' => sprintf('%s/admin.php?page=%s&type=%s&format=%s&itemids=%s', site_url(), 'download', 'item', 'json', $param_itemids)
+	));
+	
 }
 
 
@@ -362,6 +380,14 @@ function setAdminMenu_Upload_Item($wp_admin_bar) {
 		'title' => 'Moodle',
 		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s', 'import', 'item', 'moodle')
 	));
+	
+	$wp_admin_bar->add_menu( array(
+		'parent' => 'eal_upload_item',
+		'title' => 'JSON',
+		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s', 'import', 'item', 'json')
+	));
+	
+	
 	
 }
 
@@ -415,7 +441,11 @@ function setAdminMenu_Download_and_Upload_Topic($wp_admin_bar) {
 		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s&taxonomy=%s&termid=%d', 'import', 'term', 'json', $_REQUEST['taxonomy'], $termid)
 	));
 	
-	
+	$wp_admin_bar->add_menu( array(
+		'id' => 'eal_buildindex_term',
+		'title' => sprintf("<div class='wp-menu-image dashicons-before dashicons-update'>&nbsp;%s</div>", 'Build Index'),
+		'href' => sprintf('admin.php?page=%s&post_type=%s&taxonomy=%s', 'index', 'term', $_REQUEST['taxonomy'])
+	));
 	
 	
 	

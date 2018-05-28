@@ -1,6 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../imp/IMP_Item_Ilias.php';
+require_once __DIR__ . '/../imp/IMP_Item_Moodle.php';
+require_once __DIR__ . '/../imp/IMP_Item_JSON.php';
 require_once __DIR__ . '/../imp/IMP_Term_JSON.php';
 require_once __DIR__ . '/../imp/IMP_Term_TXT.php';
 
@@ -46,7 +48,8 @@ class Importer {
 				$formatImporter = NULL;
 				switch ($_REQUEST['format']) {
 					case 'ilias': $formatImporter = new IMP_Item_Ilias(); break;
-					case 'moodle': $formatImporter = new IMEX_Moodle(); break;
+					case 'moodle': $formatImporter = new IMP_Item_Moodle(); break;
+					case 'json': $formatImporter = new IMP_Item_JSON(); break;
 				}
 				
 				if ($formatImporter === NULL) {
@@ -92,6 +95,9 @@ class Importer {
 		}
 		if (($_REQUEST['post_type']=='item') && ($_REQUEST['format']=='moodle')) {
 			$title = "Items (from Moodle)";
+		}
+		if (($_REQUEST['post_type']=='item') && ($_REQUEST['format']=='json')) {
+			$title = "Items (from JSON file)";
 		}
 		if (($_REQUEST['post_type']=='term') && ($_REQUEST['format']=='txt')) {
 			$title = "Taxonomy Terms (from TXT file)";

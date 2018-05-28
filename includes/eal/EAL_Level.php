@@ -37,6 +37,15 @@ class EAL_Level {
 		}
 	}
 	
+	public function convertToArray (string $prefix): array {
+
+		$object = [];
+		foreach (EAL_Level::TYPE as $type) {
+			$object[$prefix . $type] = $this->level[$type];
+		}
+		return $object;
+	}
+	
 	function get (string $type): int {
 		
 		$type = strtoupper ($type);

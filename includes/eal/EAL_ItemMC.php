@@ -63,6 +63,24 @@ class EAL_ItemMC extends EAL_Item {
 	}
 	
 	
+	public function convertToArray (string $prefix, string $levelPrefix): array {
+		
+		$object = parent::convertToArray($prefix, $levelPrefix);
+		$object[$prefix . 'answer'] = [];
+		$object[$prefix . 'positive'] = [];
+		$object[$prefix . 'negative'] = [];
+		for ($index=0; $index<$this->getNumberOfAnswers(); $index++) {
+			$object[$prefix . 'answer'][$index] =  $this->getAnswer($index);
+			$object[$prefix . 'positive'][$index] = $this->getPointsPos($index);
+			$object[$prefix . 'negative'][$index] = $this->getPointsNeg($index);
+		}
+		$object[$prefix . 'item_minnumber'] = $this->minnumber;
+		$object[$prefix . 'item_maxnumber'] = $this->maxnumber;
+		$object[$prefix . 'post_type'] = 'itemmc';
+		return $object;
+	}
+	
+	
 	public static function getType(): string {
 		return 'itemmc';
 	}
