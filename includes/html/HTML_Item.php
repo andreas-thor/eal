@@ -3,7 +3,7 @@
 require_once 'HTML_Object.php';
 require_once __DIR__ . '/../eal/EAL_Item.php';
 require_once __DIR__ . '/../db/DB_Learnout.php';
-
+require_once __DIR__ . '/../db/DB_Term.php';
 
 abstract class HTML_Item extends HTML_Object {
 	
@@ -187,13 +187,16 @@ abstract class HTML_Item extends HTML_Object {
 			<div class="tabs-panel" style="display: block;">
 				<ul class="categorychecklist form-no-clear">
 				<?php 
-					$a = get_terms(array ('taxonomy' => $this->item->getDomain(), 'orderby' => 'count', 'order' => 'DESC', 'number' => 3));
-					foreach ($a as $term) {	
+				
+					$simTerms = DB_Term::getMostSimilarTerms('gut so', $this->item->getDomain(), 3);
+// 					$simTerms = [3 => 'as'];
+// 					$a = get_terms(array ('taxonomy' => $this->item->getDomain(), 'orderby' => 'count', 'order' => 'DESC', 'number' => 3));
+					foreach ($simTerms as $id => $name) {	
 				?>
 						<li class="popular-category">
 							<label class="selectit">
-								<input id="in-popular-paedagogik-<?= $term->term_id?>" type="checkbox" value="<?=$term->term_id?>">
-								<?=$term->name?>
+								<input id="in-popular-paedagogik-<?=$id?>" type="checkbox" value="<?=$id?>">
+								<?=$name?>
 							</label>
 						</li>
 				<?php 
