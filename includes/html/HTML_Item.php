@@ -10,6 +10,8 @@ abstract class HTML_Item extends HTML_Object {
 	protected $item;
 	protected $buttons_question;
 	
+	const NUMBER_OF_AUTO_ITEMS = 5;
+	
 	function __construct(EAL_Item $item) {
 		$this->item = $item;
 	}
@@ -182,7 +184,7 @@ abstract class HTML_Item extends HTML_Object {
 	public static function getMostSimilarTerms_callback () {
 		
 		$text = strip_tags ($_REQUEST['description']) . ' ' . strip_tags ($_REQUEST['question']);
-		$simTerms = DB_Term::getMostSimilarTerms($text, $_REQUEST['domain'], 3);
+		$simTerms = DB_Term::getMostSimilarTerms($text, $_REQUEST['domain'], self::NUMBER_OF_AUTO_ITEMS);
 		
 		$termIds = [];
 		$termNames = [];
@@ -190,7 +192,6 @@ abstract class HTML_Item extends HTML_Object {
 			$termIds[] = $id;
 			$termNames[] = $name;
 		}
-		
 		
 		wp_send_json (
 			array (
@@ -206,7 +207,7 @@ abstract class HTML_Item extends HTML_Object {
 			<div class="tabs-panel" style="display: block;">
 				<ul class="categorychecklist form-no-clear">
 				<?php 
-					for ($i=0; $i<3; $i++) {
+				for ($i=0; $i<self::NUMBER_OF_AUTO_ITEMS; $i++) {
 				?>
 						<li class="popular-category">
 							<label class="selectit">
@@ -237,7 +238,7 @@ abstract class HTML_Item extends HTML_Object {
 				    }  ],
 				    open: function( event, ui ) {
 
-						// editor is encapsulated in iframe
+						// editor is encapsulated in iframe --> we have to get the document in the iframe first
 				    	docQuestion = jQuery("div#wp-item_question-editor-container div.mce-edit-area iframe").first().contents()[0];
 				    	docDescription = jQuery("div#wp-item_description-editor-container div.mce-edit-area iframe").first().contents()[0];
 				    	
@@ -250,16 +251,16 @@ abstract class HTML_Item extends HTML_Object {
 			
 						// since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
 						jQuery.post(ajaxurl, data, function(response) {
-						
-
-							for (i=0; i<3; i++) {
-								jQuery("input#autoannotate-"+i).attr("value", response['termIds'][i]);
-								jQuery("input#autoannotate-"+i).next().html(response['termNames'][i]);
+							// update term ids and names in the modal dialog
+							for (i=0; i<<?=self::NUMBER_OF_AUTO_ITEMS?>; i++) {
+								jQuery("input#autoannotate-"+i).attr("value", (i<response['termIds'].length)   ? response['termIds'][i]   : -1);
+								jQuery("input#autoannotate-"+i).next().html  ((i<response['termNames'].length) ? response['termNames'][i] : "");
 		 					}
 						});
 					},
 					close: function( event, ui ) {
-						for (i=0; i<3; i++) {
+						// copy the auto annotate checked terms to the taxonomy box
+						for (i=0; i<<?=self::NUMBER_OF_AUTO_ITEMS?>; i++) {
 							id = "#in-<?=$this->item->getDomain()?>-" + jQuery("#autoannotate-"+i).attr("value");
 							if (jQuery("#autoannotate-"+i).attr("checked") == "checked") {
 								jQuery(id).attr ("checked", "checked");

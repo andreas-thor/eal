@@ -12,6 +12,9 @@ require_once __DIR__ . '/../external/GermanStemmer.php';
 require_once __DIR__ . '/../external/NlpTools/Tokenizers/WhitespaceTokenizer.php';
 require_once __DIR__ . '/../external/NlpTools/Tokenizers/TokenizerInterface.php';
 require_once __DIR__ . '/../external/NlpTools/Similarity/JaccardIndex.php';
+require_once __DIR__ . '/../external/NlpTools/Similarity/CosineSimilarity.php';
+require_once __DIR__ . '/../external/NlpTools/Similarity/Simhash.php';
+
 
 
 
@@ -117,59 +120,27 @@ class DB_Term {
 		$searchTerms = explode (' ', self::splitAndStem($text));	// array of strings
 		
 
-		$J = new JaccardIndex();
-// 		$cos = new CosineSimilarity();
-// 		$simhash = new Simhash(16); // 16 bits hash
+		// we currently use SimHash, other sim functions are JaccardIndex and CosineSimilarity
+		$simHash = new Simhash(16); // 16 bits hash
 		
 		$tok = new WhitespaceTokenizer();
 		$setA = $tok->tokenize($text);
 		
-		
-		
 		$documentDistance = [];
 		$documentTermName = [];
-		foreach ($documents as $document) {
-			
-			
-			$setB = $tok->tokenize($document['document']);
-			
-			$simJ = $J->similarity(
-				$setA,
-				$setB
-				);
-			
-			
 		
-			
-			$documentDistance[$document['id']] = $simJ;
-			$documentTermName[$document['id']] = $document['name'];
-		}
 		
-			
-/*		
-		$documentDistance = [];
-		$documentTermName = [];
-		foreach ($documents as $document) {
-			
-			// sum the distance for each doc term
-			$docTerms = explode (' ', $document['document']);	// array of strings
-			$sumDistance = 0;
-			foreach ($docTerms as $s) {
+		if (count ($setA)>0) {
+			foreach ($documents as $document) {
+				$setB = $tok->tokenize($document['document']);
+				if (count ($setB)==0) continue;
 				
-				// get the search term with the minimal distance to the document term
-				$minDistance = 1;
-				foreach ($searchTerms as $t) {
-					$minDistance = min($minDistance, levenshtein($s, $t)/(strlen($s)+strlen($t)));
-				}
-				$sumDistance += $minDistance;
+				$sim = $simHash->similarity($setA, $setB);
+				$documentDistance[$document['id']] = $sim;
+				$documentTermName[$document['id']] = $document['name'];
 			}
-			
-			
-			$documentDistance[$document['id']] = $sumDistance/count($docTerms);
-			$documentTermName[$document['id']] = $document['name'];
-			
 		}
-*/
+		
 		// sort by distance; 
 		arsort ($documentDistance);
 		
