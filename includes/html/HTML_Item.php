@@ -179,7 +179,26 @@ abstract class HTML_Item extends HTML_Object {
 	 * TOPIC
 	 **********************************************************************************************/
 	
-
+	public static function getMostSimilarTerms_callback () {
+		
+		$text = strip_tags ($_REQUEST['description']) . ' ' . strip_tags ($_REQUEST['question']);
+		$simTerms = DB_Term::getMostSimilarTerms($text, $_REQUEST['domain'], 3);
+		
+		$termIds = [];
+		$termNames = [];
+		foreach ($simTerms as $id => $name) {
+			$termIds[] = $id;
+			$termNames[] = $name;
+		}
+		
+		
+		wp_send_json (
+			array (
+				'termIds' => $termIds,
+				'termNames' => $termNames
+			));
+	}
+	
 	public function metaboxTopic () {
 ?>
 		
@@ -187,16 +206,12 @@ abstract class HTML_Item extends HTML_Object {
 			<div class="tabs-panel" style="display: block;">
 				<ul class="categorychecklist form-no-clear">
 				<?php 
-				
-					$simTerms = DB_Term::getMostSimilarTerms('gut so', $this->item->getDomain(), 3);
-// 					$simTerms = [3 => 'as'];
-// 					$a = get_terms(array ('taxonomy' => $this->item->getDomain(), 'orderby' => 'count', 'order' => 'DESC', 'number' => 3));
-					foreach ($simTerms as $id => $name) {	
+					for ($i=0; $i<3; $i++) {
 				?>
 						<li class="popular-category">
 							<label class="selectit">
-								<input id="in-popular-paedagogik-<?=$id?>" type="checkbox" value="<?=$id?>">
-								<?=$name?>
+								<input id="autoannotate-<?=$i?>" type="checkbox" value="-1">
+								<span>...please wait...</span>
 							</label>
 						</li>
 				<?php 
@@ -219,7 +234,41 @@ abstract class HTML_Item extends HTML_Object {
 				      	click: function() {
 				        	$( this ).dialog( "close" );
 				      	}
-				    }  ]
+				    }  ],
+				    open: function( event, ui ) {
+
+						// editor is encapsulated in iframe
+				    	docQuestion = jQuery("div#wp-item_question-editor-container div.mce-edit-area iframe").first().contents()[0];
+				    	docDescription = jQuery("div#wp-item_description-editor-container div.mce-edit-area iframe").first().contents()[0];
+				    	
+				    	var data = {
+								'action': 'getMostSimilarTerms',
+								'domain': '<?=$this->item->getDomain()?>',
+								'description': jQuery("body", docDescription).text(),
+								'question': jQuery("body", docQuestion).text()
+							};
+			
+						// since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
+						jQuery.post(ajaxurl, data, function(response) {
+						
+
+							for (i=0; i<3; i++) {
+								jQuery("input#autoannotate-"+i).attr("value", response['termIds'][i]);
+								jQuery("input#autoannotate-"+i).next().html(response['termNames'][i]);
+		 					}
+						});
+					},
+					close: function( event, ui ) {
+						for (i=0; i<3; i++) {
+							id = "#in-<?=$this->item->getDomain()?>-" + jQuery("#autoannotate-"+i).attr("value");
+							if (jQuery("#autoannotate-"+i).attr("checked") == "checked") {
+								jQuery(id).attr ("checked", "checked");
+							} else {
+								jQuery(id).removeAttr ("checked");
+							}
+	 					}
+
+					}
 				});
 
 

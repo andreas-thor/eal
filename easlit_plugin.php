@@ -62,6 +62,10 @@ add_action('wp_ajax_getItemPools', array(
 	'Blueprint',
 	'getItemPools_callback'
 ));
+add_action('wp_ajax_getMostSimilarTerms', array(
+	'HTML_Item',
+	'getMostSimilarTerms_callback'
+));
 
 
 /* Plugin Activation --> Create Database Tables for all data types */

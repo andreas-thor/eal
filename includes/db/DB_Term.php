@@ -2,7 +2,18 @@
 
 use paslandau\GermanStemmer\GermanStemmer;
 
+use \NlpTools\Tokenizers\WhitespaceTokenizer;
+use \NlpTools\Similarity\JaccardIndex;
+use \NlpTools\Similarity\CosineSimilarity;
+use \NlpTools\Similarity\Simhash;
+
+
 require_once __DIR__ . '/../external/GermanStemmer.php';
+require_once __DIR__ . '/../external/NlpTools/Tokenizers/WhitespaceTokenizer.php';
+require_once __DIR__ . '/../external/NlpTools/Tokenizers/TokenizerInterface.php';
+require_once __DIR__ . '/../external/NlpTools/Similarity/JaccardIndex.php';
+
+
 
 
 class DB_Term {
@@ -105,7 +116,37 @@ class DB_Term {
 		
 		$searchTerms = explode (' ', self::splitAndStem($text));	// array of strings
 		
+
+		$J = new JaccardIndex();
+// 		$cos = new CosineSimilarity();
+// 		$simhash = new Simhash(16); // 16 bits hash
 		
+		$tok = new WhitespaceTokenizer();
+		$setA = $tok->tokenize($text);
+		
+		
+		
+		$documentDistance = [];
+		$documentTermName = [];
+		foreach ($documents as $document) {
+			
+			
+			$setB = $tok->tokenize($document['document']);
+			
+			$simJ = $J->similarity(
+				$setA,
+				$setB
+				);
+			
+			
+		
+			
+			$documentDistance[$document['id']] = $simJ;
+			$documentTermName[$document['id']] = $document['name'];
+		}
+		
+			
+/*		
 		$documentDistance = [];
 		$documentTermName = [];
 		foreach ($documents as $document) {
@@ -128,9 +169,9 @@ class DB_Term {
 			$documentTermName[$document['id']] = $document['name'];
 			
 		}
-
+*/
 		// sort by distance; 
-		asort ($documentDistance);
+		arsort ($documentDistance);
 		
 		// get the top ($numberOfTerms) term ids
 		$result = [];
