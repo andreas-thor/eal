@@ -47,11 +47,19 @@ class CPT_ItemSC extends CPT_Item {
 		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
 		if ($type != EAL_ItemSC::getType()) return;
 		
-		global $item;
+		global $itemToImport;	// indicates save_post execution during bulk import/update
 		
-		if (!isset($item)) {
-			$item = ($post->post_status === 'auto-draft') ? new EAL_ItemSC($post_id, intval ($_REQUEST['learnout_id'])) : EAL_ItemSC::createFromArray($post_id, $_REQUEST);
+		if (isset($itemToImport)) {
+			$item = $itemToImport;
+		} else {
+			if ($post->post_status === 'auto-draft') {
+				$item = new EAL_ItemSC($post_id, intval ($_REQUEST['learnout_id']));
+			} else {
+				$item = EAL_ItemSC::createFromArray($post_id, $_REQUEST);
+			}
 		}
+			
+		$item->setId($post_id);
 		DB_ItemSC::saveToDB($item);
 	}
 		

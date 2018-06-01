@@ -22,7 +22,7 @@ abstract class IMP_Item {
 	 */
 	public static function importItems (array $itemids, bool $updateMetadataOnly = FALSE ): array {
 		
-		global $item; 
+		global $itemToImport; 
 		
 		$result = array();
 		foreach ($itemids as $item_id) {
@@ -40,11 +40,11 @@ abstract class IMP_Item {
 			
 			
 			
-			$item = EAL_Item::createByTypeFromArray($item_id, $_REQUEST[$prefix."post_type"], $_POST, $prefix);
+			$itemToImport = EAL_Item::createByTypeFromArray($item_id, $_REQUEST[$prefix."post_type"], $_POST, $prefix);
 			if ($updateMetadataOnly) {
-				$item_post = $item;
-				$item = DB_Item::loadFromDB($item_id, $_REQUEST[$prefix."post_type"]);
-				$item->copyMetadata($item_post);
+				$item_post = $itemToImport;
+				$itemToImport = DB_Item::loadFromDB($item_id, $_REQUEST[$prefix."post_type"]);
+				$itemToImport->copyMetadata($item_post);
 			}
 			/**
 			 *  In the mean time, a workaround worth trying would be:
@@ -61,21 +61,21 @@ abstract class IMP_Item {
 				// import post/item
 				$postarr = array ();
 				$postarr['ID'] = 0;	// no EAL-ID
-				$postarr['post_title'] = $item->getTitle();
+				$postarr['post_title'] = $itemToImport->getTitle();
 				$postarr['post_status'] = $status;
-				$postarr['post_type'] = $item->getType();
+				$postarr['post_type'] = $itemToImport->getType();
 				$postarr['post_content'] = microtime();
-				$postarr['tax_input'] = array ($item->getDomain() => $terms);
+				$postarr['tax_input'] = array ($itemToImport->getDomain() => $terms);
 				$item_id = wp_insert_post ($postarr);
 			}
 			
 			// update post (also necessary for initial import to have first revision version)
-			$item->setId($item_id);
+			$itemToImport->setId($item_id);
 			$post = get_post ($item_id);
-			$post->post_title = $item->getTitle();
+			$post->post_title = $itemToImport->getTitle();
 			$post->post_status = $status;
 			$post->post_content = microtime();	// ensures revision
-			wp_set_post_terms($item_id, $terms, $item->getDomain(), FALSE );
+			wp_set_post_terms($item_id, $terms, $itemToImport->getDomain(), FALSE );
 			wp_update_post ($post);
 			
 			

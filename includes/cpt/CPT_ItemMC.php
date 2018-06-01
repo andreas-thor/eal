@@ -42,11 +42,19 @@ class CPT_ItemMC extends CPT_Item {
 		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
 		if ($type != EAL_ItemMC::getType()) return;
 		
-		global $item;
+		global $itemToImport;	// indicates save_post execution during bulk import/update
 		
-		if (!isset($item)) {
-			$item = ($post->post_status === 'auto-draft') ? new EAL_ItemMC($post_id, intval ($_REQUEST['learnout_id'])) : EAL_ItemMC::createFromArray($post_id, $_REQUEST);
+		if (isset($itemToImport)) {
+			$item = $itemToImport;
+		} else {
+			if ($post->post_status === 'auto-draft') {
+				$item = new EAL_ItemMC($post_id, intval ($_REQUEST['learnout_id']));
+			} else {
+				$item = EAL_ItemMC::createFromArray($post_id, $_REQUEST);
+			}
 		}
+		
+		$item->setId($post_id);
 		DB_ItemMC::saveToDB($item);
 	}
 	
@@ -60,6 +68,8 @@ class CPT_ItemMC extends CPT_Item {
 		
 		// check type and try to load item revision from database
 		if ($compare_from instanceof  WP_Post) {
+			
+			$q1 = get_post ($compare_from->post_parent)->post_type;
 			if (get_post ($compare_from->post_parent)->post_type != $this->type) return $diff;
 			
 			try {
@@ -69,6 +79,7 @@ class CPT_ItemMC extends CPT_Item {
 			}
 		}
 		if ($compare_to instanceof  WP_Post) {
+			$q2 = get_post ($compare_to->post_parent)->post_type;
 			if (get_post ($compare_to->post_parent)->post_type != $this->type) return $diff;
 			
 			try {
