@@ -4,7 +4,7 @@
  * Plugin Name: EAs.LiT (E-Assessment Literacy Tool)
  * Plugin URI: https://github.com/andreas-thor/eal
  * Description: Kollaborative, qualit&auml;tsgesicherte Erstellung von Items f&uuml;r E-Assessments.
- * Version: 2018-01-24
+ * Version: 2018-06-01
  * Author: Andreas Thor
  * EMail: dr.andreas.thor@googlemail.com
  */
@@ -326,6 +326,10 @@ function setAdminMenu() {
 
 function setAdminMenu_Download_Item($wp_admin_bar) {
 	
+	?><script type="text/javascript">
+		console.log("<?= site_url() ?>");
+	</script><?php 
+	
 	$itemids = NULL;
 	
 	switch ($_REQUEST["page"]) {
@@ -344,19 +348,19 @@ function setAdminMenu_Download_Item($wp_admin_bar) {
 	$wp_admin_bar->add_menu( array(
 		'parent' => 'eal_download_item',
 		'title' => 'Ilias',
-		'href' => sprintf('%s/admin.php?page=%s&type=%s&format=%s&itemids=%s', site_url(), 'download', 'item', 'ilias', $param_itemids)
+		'href' => sprintf('admin.php?page=%s&type=%s&format=%s&itemids=%s', 'download', 'item', 'ilias', $param_itemids)
 	));
 	
 	$wp_admin_bar->add_menu( array(
 		'parent' => 'eal_download_item',
 		'title' => 'Moodle',
-		'href' => sprintf('%s/admin.php?page=%s&type=%s&format=%s&itemids=%s', site_url(), 'download', 'item', 'moodle', $param_itemids)
+		'href' => sprintf('admin.php?page=%s&type=%s&format=%s&itemids=%s', 'download', 'item', 'moodle', $param_itemids)
 	));
 	
 	$wp_admin_bar->add_menu( array(
 		'parent' => 'eal_download_item',
 		'title' => 'JSON',
-		'href' => sprintf('%s/admin.php?page=%s&type=%s&format=%s&itemids=%s', site_url(), 'download', 'item', 'json', $param_itemids)
+		'href' => sprintf('admin.php?page=%s&type=%s&format=%s&itemids=%s', 'download', 'item', 'json', $param_itemids)
 	));
 	
 }
@@ -364,7 +368,9 @@ function setAdminMenu_Download_Item($wp_admin_bar) {
 
 function setAdminMenu_Upload_Item($wp_admin_bar) {
 	
-	if ($_SERVER['PHP_SELF']!='/wordpress/wp-admin/edit.php') return;
+	$url = '/wp-admin/edit.php';
+	if (substr ($_SERVER['PHP_SELF'], -strlen ($url)) != $url) return;
+	
 	
 	if (($_REQUEST['post_type'] != 'item') && ($_REQUEST['post_type'] != 'itemsc') && ($_REQUEST['post_type'] != 'itemmc')) return;
 	
@@ -398,10 +404,14 @@ function setAdminMenu_Upload_Item($wp_admin_bar) {
 
 function setAdminMenu_Download_and_Upload_Topic($wp_admin_bar) {
 	
-	if (($_SERVER['PHP_SELF']!='/wordpress/wp-admin/edit-tags.php') && ($_SERVER['PHP_SELF']!='/wordpress/wp-admin/term.php')) return;
+	
+	$urlEdit = '/wp-admin/edit-tags.php';
+	$urlTerm = '/wp-admin/term.php';
+	
+	if ((substr ($_SERVER['PHP_SELF'], -strlen ($urlEdit)) != $urlEdit) && (substr ($_SERVER['PHP_SELF'], -strlen ($urlTerm)) != $urlTerm)) return;
 	
 	$termid = -1;
-	if ($_SERVER['PHP_SELF']=='/wordpress/wp-admin/term.php') {
+	if (substr ($_SERVER['PHP_SELF'], -strlen ($urlTerm)) == $urlTerm) {
 		$termid = intval($_REQUEST['tag_ID']);
 	}
 	

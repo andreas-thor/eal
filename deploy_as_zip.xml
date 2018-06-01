@@ -3,7 +3,7 @@
 <!-- excludes="docs/**, download/**, misc/**, **/*.xml" -->
 	<target name="all">
 	
-		<zip destfile="./docs/easlit.zip" basedir="."
+		<zip destfile="./easlit_wp_plugin.zip" basedir="."
 			includes="includes/**, easlit_plugin.php, easlit_taxonomies.php, Logo_EAs.LiT.png"
 			/>
   		

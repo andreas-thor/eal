@@ -2,7 +2,7 @@
 
 require_once 'HTML_Object.php';
 require_once __DIR__ . '/../eal/EAL_Item.php';
-require_once __DIR__ . '/../db/DB_Learnout.php';
+require_once __DIR__ . '/../db/DB_LearnOut.php';
 require_once __DIR__ . '/../db/DB_Term.php';
 
 abstract class HTML_Item extends HTML_Object {
@@ -402,17 +402,17 @@ abstract class HTML_Item extends HTML_Object {
 					<td style="width:1em">
 						<input 
 							type="checkbox" value="1"
-							name="<?php echo $prefix?>item_flag" 
+							name="<?= $prefix ?>item_flag" 
 							<?php if ($this->item->getFlag() == 1) echo " checked " ?>
 							<?php if (!$isEditable) echo " onclick='return false;' " ?> 
 						/>
 					</td>
 					<td style="width:100%-1em">
 						<input 
-							name="<?php echo $prefix ?>item_note" 
-							value="<?php echo htmlentities ($this->item->getNote(), ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" 
+							name="<?= $prefix ?>item_note" 
+							value="<?= htmlentities ($this->item->getNote(), ENT_COMPAT | ENT_HTML401, 'UTF-8') ?>" 
 							style="width:100%" size="255" aria-required="true" 
-							<?php if (!$isEditable) echo " readonly " ?> 
+							<?= $isEditable ? '' : ' readonly ' ?> 
 						/>
 					</td>
 				</tr>
