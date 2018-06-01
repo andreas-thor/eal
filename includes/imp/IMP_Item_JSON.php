@@ -25,7 +25,7 @@ class IMP_Item_JSON extends IMP_Item {
 	
 		$result = [];
 		foreach ($itemsObject as $id => $object) {
-			$result[] = EAL_Item::createByTypeFromArray($id, $object['post_type'], $object);
+			$result[$id] = EAL_Item::createByTypeFromArray($id, $object['post_type'], $object);
 		}
 		
 		return $result;

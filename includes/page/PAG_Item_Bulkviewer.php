@@ -8,6 +8,9 @@ require_once(__DIR__ . "/../html/HTML_Review.php");
 class PAG_Item_Bulkviewer {
 
 	
+	private static function getItemPrefix (int $item_id): string {
+		return sprintf ('item_%s_', $item_id);
+	}
 
 	
 	/**
@@ -16,18 +19,26 @@ class PAG_Item_Bulkviewer {
 	
 	public static function page_view_item ($withReviews = FALSE) {
 
+		$editable = $_REQUEST['action'] === 'edit';		// User clicked on "Edit All" button
+		$isImport = $_REQUEST['action'] === 'import';	// User clicked on "Import All" button
+		$isUpdate = $_REQUEST['action'] === 'update';	// User clicked on "Update All" button
+		
 		$itemids = ItemExplorer::getItemIdsByRequest();
 		
+		// import / update items from REQUEST data
+		if ($isUpdate || $isImport)  {
+			$itemids = IMP_Item::importItems($itemids, $isUpdate);
+		}
 		
-		// load all items
+		// Load all Items from DB
 		$items = [];
 		foreach ($itemids as $item_id) {
-			if (array_key_exists($item_id, $items)) continue;	// item already loaded
 			$post = get_post($item_id);
 			if ($post === NULL) continue;	// item (post) does not exist
 			$items[$item_id] = DB_Item::loadFromDB($item_id, $post->post_type);
 		}
 		
+		// add reviews if requested
 		$reviews = [];
 		if ($withReviews) {
 			foreach ($items as $item_id => $item) {
@@ -37,16 +48,8 @@ class PAG_Item_Bulkviewer {
 				}
 			}
 		}
-		
-		
-		
-		$editable = $_REQUEST['action'] === 'edit';
-		
-		self::printItemList($items, $reviews, $editable, FALSE);
-		
- 		
- 		
-// 		self::viewItems($itemids, NULL, $_REQUEST['edit']=='1', $_REQUEST["page"]);
+			
+		self::printItemList($items, $reviews, $editable, $isImport);
 	}
 	
 	
@@ -141,7 +144,8 @@ class PAG_Item_Bulkviewer {
 		
 		$htmlPrinter = $item->getHTMLPrinter();
 		
- 		$prefix = "item_{$item->getId()}_";
+ 		$prefix = self::getItemPrefix($item->getId());
+ 		
 
 ?>		
 		
@@ -215,7 +219,7 @@ class PAG_Item_Bulkviewer {
 						<div class="inside">
 							<?php $htmlPrinter->printDescription($isImport, $prefix) ?>
 							<?php $htmlPrinter->printQuestion($isImport, $prefix) ?>
-							<?php $htmlPrinter->printAnswers(!$isEditable, FALSE, $isImport) ?>
+							<?php $htmlPrinter->printAnswers(!$isEditable, FALSE, $isImport, $prefix) ?>
 						</div>
 					</div>
 				

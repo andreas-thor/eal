@@ -89,7 +89,7 @@ class HTML_Object {
 				<input 
 					type="hidden"  
 					id="<?php echo $prefix ?>domain" 
-					name="<?php echo $prefix ?>%sdomain" 
+					name="<?php echo $prefix ?>domain" 
 					value="<?php echo $domain ?>"
 				>
 				<div id="topic-all" class="tabs-panel">

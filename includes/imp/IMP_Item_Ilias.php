@@ -74,11 +74,11 @@ class IMP_Item_Ilias extends IMP_Item {
 	 *
 	 * @param DOMDocument $doc
 	 * @param $itemids: array (qref -> item_id) ... if item_id is available
-	 * @return array (qref -> item) return the item object for each qref (if the item is already in the database, it has been loaded and updated with the values)
+	 * @return array (item_id -> item) 
 	 */
 	private static function parseQTI (DOMDocument $doc, string $dir, string $name, array $itemids):array {
 	
-		$items = array ();
+		$items = [];
 		$root = $doc->documentElement;
 		$xpath = new DOMXPath($doc);
 		$countItems = 0;
@@ -203,9 +203,9 @@ class IMP_Item_Ilias extends IMP_Item {
 				
 			}
 			
-			// update Item id (for newly created items)
+			// update from parsed data
 			$item->initFromArray($object, '', '');
-			$items[$itemXML->getAttribute("ident")] = $item;
+			$items[$item->getId()] = $item;
 		}
 	
 		return $items;

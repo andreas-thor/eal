@@ -65,7 +65,7 @@ class EAL_ItemBasket {
 	public static function getItems (): array {
 	
 		// load all items from basket
-		$items = array();
+		$items = [];
 		foreach (self::get() as $item_id) {
 				
 			$post = get_post($item_id);

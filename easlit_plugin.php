@@ -173,7 +173,7 @@ add_action('init', function () {
 	if ($_REQUEST["page"] == "index") {
 	
 		DB_Term::buildIndex($_REQUEST["taxonomy"]);
-		
+		wp_redirect(home_url('/wp-admin/edit-tags.php?taxonomy=' . $_REQUEST["taxonomy"]));
 		exit();
 	}
 	

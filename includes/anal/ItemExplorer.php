@@ -218,11 +218,11 @@ class ItemExplorer {
 		}
 		
 		if (is_array($_REQUEST['itemids'])) {
-			return $_REQUEST['itemids'];
+			return array_unique ($_REQUEST['itemids']);
 		}
 		
 		if (is_string($_REQUEST['itemids'])) {
-			return explode (",", $_REQUEST["itemids"]);
+			return array_unique  (explode (",", $_REQUEST["itemids"]));
 		}
 		
 	}

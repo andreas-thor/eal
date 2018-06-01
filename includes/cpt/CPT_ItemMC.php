@@ -42,7 +42,11 @@ class CPT_ItemMC extends CPT_Item {
 		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
 		if ($type != EAL_ItemMC::getType()) return;
 		
-		$item = ($post->post_status === 'auto-draft') ? new EAL_ItemMC($post_id, intval ($_REQUEST['learnout_id'])) : EAL_ItemMC::createFromArray($post_id, $_REQUEST);
+		global $item;
+		
+		if (!isset($item)) {
+			$item = ($post->post_status === 'auto-draft') ? new EAL_ItemMC($post_id, intval ($_REQUEST['learnout_id'])) : EAL_ItemMC::createFromArray($post_id, $_REQUEST);
+		}
 		DB_ItemMC::saveToDB($item);
 	}
 	

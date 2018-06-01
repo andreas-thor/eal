@@ -33,7 +33,7 @@ class IMEX_Easlit extends IMEX_Item {
 			
 			$post = get_post($item_id);
 			if ($post == null) continue;	// item (post) does not exist
-			$item = EDB_Item::loadFromDB($item_id, $post->post_type);
+			$item = DB_Item::loadFromDB($item_id, $post->post_type);
 			
 			array_push ($result, $item);
 			

@@ -70,6 +70,7 @@ abstract class IMP_Item {
 			}
 			
 			// update post (also necessary for initial import to have first revision version)
+			$item->setId($item_id);
 			$post = get_post ($item_id);
 			$post->post_title = $item->getTitle();
 			$post->post_status = $status;

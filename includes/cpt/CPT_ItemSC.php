@@ -47,7 +47,11 @@ class CPT_ItemSC extends CPT_Item {
 		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
 		if ($type != EAL_ItemSC::getType()) return;
 		
-		$item = ($post->post_status === 'auto-draft') ? new EAL_ItemSC($post_id, intval ($_REQUEST['learnout_id'])) : EAL_ItemSC::createFromArray($post_id, $_REQUEST);
+		global $item;
+		
+		if (!isset($item)) {
+			$item = ($post->post_status === 'auto-draft') ? new EAL_ItemSC($post_id, intval ($_REQUEST['learnout_id'])) : EAL_ItemSC::createFromArray($post_id, $_REQUEST);
+		}
 		DB_ItemSC::saveToDB($item);
 	}
 		
