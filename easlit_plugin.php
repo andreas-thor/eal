@@ -100,7 +100,7 @@ add_action('init', function () {
 	
 	
 	
-	$php_page = array_pop (explode ('/', $_SERVER['SCRIPT_NAME']));
+	$php_page = getCurrentPHPFile();
 
 	
 	// standard page
@@ -173,7 +173,7 @@ add_action('init', function () {
 	if ($_REQUEST["page"] == "index") {
 	
 		DB_Term::buildIndex($_REQUEST["taxonomy"]);
-		wp_redirect(home_url('/wp-admin/edit-tags.php?taxonomy=' . $_REQUEST["taxonomy"]));
+		wp_redirect('edit-tags.php?taxonomy=' . $_REQUEST["taxonomy"]);
 		exit();
 	}
 	
@@ -368,9 +368,13 @@ function setAdminMenu_Download_Item($wp_admin_bar) {
 
 function setAdminMenu_Upload_Item($wp_admin_bar) {
 	
-	$url = '/wp-admin/edit.php';
-	if (substr ($_SERVER['PHP_SELF'], -strlen ($url)) != $url) return;
+	?>
+		<script type="text/javascript">
+			console.log("<?= getCurrentPHPFile() ?>");
+		</script>
+	<?php 
 	
+ 	if (getCurrentPHPFile() != 'edit.php') return;
 	
 	if (($_REQUEST['post_type'] != 'item') && ($_REQUEST['post_type'] != 'itemsc') && ($_REQUEST['post_type'] != 'itemmc')) return;
 	
@@ -405,15 +409,10 @@ function setAdminMenu_Upload_Item($wp_admin_bar) {
 function setAdminMenu_Download_and_Upload_Topic($wp_admin_bar) {
 	
 	
-	$urlEdit = '/wp-admin/edit-tags.php';
-	$urlTerm = '/wp-admin/term.php';
+	if ((getCurrentPHPFile() != 'edit-tags.php') && (getCurrentPHPFile() != 'term.php')) return;
 	
-	if ((substr ($_SERVER['PHP_SELF'], -strlen ($urlEdit)) != $urlEdit) && (substr ($_SERVER['PHP_SELF'], -strlen ($urlTerm)) != $urlTerm)) return;
-	
-	$termid = -1;
-	if (substr ($_SERVER['PHP_SELF'], -strlen ($urlTerm)) == $urlTerm) {
-		$termid = intval($_REQUEST['tag_ID']);
-	}
+	$taxonomy = $_REQUEST['taxonomy'];
+	$termid = (getCurrentPHPFile() == 'term.php') ? intval($_REQUEST['tag_ID']) : -1;
 	
 	$wp_admin_bar->add_menu( array(
 		'id' => 'eal_download_term',
@@ -425,14 +424,14 @@ function setAdminMenu_Download_and_Upload_Topic($wp_admin_bar) {
 		'id' => 'eal_download_term_txt',
 		'parent' => 'eal_download_term',
 		'title' => 'TXT',
-		'href' => sprintf('admin.php?page=%s&type=%s&format=%s&taxonomy=%s&termid=%d', 'download', 'term', 'txt', $_REQUEST['taxonomy'], $termid)
+		'href' => sprintf('admin.php?page=%s&type=%s&format=%s&taxonomy=%s&termid=%d', 'download', 'term', 'txt', $taxonomy, $termid)
 	));
 	
 	$wp_admin_bar->add_menu( array(
 		'id' => 'eal_download_term_json',
 		'parent' => 'eal_download_term',
 		'title' => 'JSON',
-		'href' => sprintf('admin.php?page=%s&type=%s&format=%s&taxonomy=%s&termid=%d', 'download', 'term', 'json', $_REQUEST['taxonomy'], $termid)
+		'href' => sprintf('admin.php?page=%s&type=%s&format=%s&taxonomy=%s&termid=%d', 'download', 'term', 'json', $taxonomy, $termid)
 	));
 	
 	$wp_admin_bar->add_menu( array(
@@ -445,20 +444,20 @@ function setAdminMenu_Download_and_Upload_Topic($wp_admin_bar) {
 		'id' => 'eal_upload_term_txt',
 		'parent' => 'eal_upload_term',
 		'title' => 'TXT',
-		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s&taxonomy=%s&termid=%d', 'import', 'term', 'txt', $_REQUEST['taxonomy'], $termid)
+		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s&taxonomy=%s&termid=%d', 'import', 'term', 'txt', $taxonomy, $termid)
 	));
 	
 	$wp_admin_bar->add_menu( array(
 		'id' => 'eal_upload_term_json',
 		'parent' => 'eal_upload_term',
 		'title' => 'JSON',
-		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s&taxonomy=%s&termid=%d', 'import', 'term', 'json', $_REQUEST['taxonomy'], $termid)
+		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s&taxonomy=%s&termid=%d', 'import', 'term', 'json', $taxonomy, $termid)
 	));
 	
 	$wp_admin_bar->add_menu( array(
 		'id' => 'eal_buildindex_term',
 		'title' => sprintf("<div class='wp-menu-image dashicons-before dashicons-update'>&nbsp;%s</div>", 'Build Index'),
-		'href' => sprintf('admin.php?page=%s&post_type=%s&taxonomy=%s', 'index', 'term', $_REQUEST['taxonomy'])
+		'href' => sprintf('admin.php?page=%s&post_type=%s&taxonomy=%s', 'index', 'term', $taxonomy)
 	));
 	
 	
@@ -549,32 +548,32 @@ function setMainHeader() {
 	
 	add_action ('admin_head', function () {
 		
-		$php_page = array_pop (explode ('/', $_SERVER['SCRIPT_NAME']));
-
 		// standard page
-		if (($php_page == 'edit.php') && (!isset ($_REQUEST['page']))) {
+		if ((getCurrentPHPFile() == 'edit.php') && (!isset ($_REQUEST['page']))) {
 			
 			$title = '';
 			switch ($_REQUEST['post_type']) {
-				case 'item': 		$title = sprintf ('All Items <a href="%1$s/wp-admin/post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a><a href="%1$s/wp-admin/post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a>', site_url()); break;
-				case 'itemsc': 		$title = sprintf ('All Single Choice Items <a href="%1$s/wp-admin/post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a>', site_url()); break;
-				case 'itemmc': 		$title = sprintf ('All Multiple Choice Items <a href="%1$s/wp-admin/post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a>', site_url()); break;
-				case 'itembasket': 	$title = sprintf ('All Items in Basket'); break;
-				case 'review': 		$title = sprintf ('All Reviews'); break;
-				case 'learnout': 	$title = sprintf ('All Learning Outcomes <a href="%1$s/wp-admin/post-new.php?post_type=learnout" class="page-title-action">Add Learning Outcome</a>', site_url()); break;
+				case 'item': 		$title = 'All Items <a href="post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a><a href="post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a>'; break;
+				case 'itemsc': 		$title = 'All Single Choice Items <a href="post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a>'; break;
+				case 'itemmc': 		$title = 'All Multiple Choice Items <a href="post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a>'; break;
+				case 'itembasket': 	$title = 'All Items in Basket'; break;
+				case 'review': 		$title = 'All Reviews'; break;
+				case 'learnout': 	$title = 'All Learning Outcomes <a href="post-new.php?post_type=learnout" class="page-title-action">Add Learning Outcome</a>'; break;
 			}
 		
-			printf ('<script type="text/javascript">');
-			printf ('	jQuery(document).ready( function($) { ');
-			printf ('		jQuery(jQuery(".wrap a.page-title-action")[0]).remove();');
-			printf ('		jQuery(jQuery(".wrap h1")[0]).replaceWith(\'<h1>%s</h1>\');', $title);
-			printf ('	});');
-			printf ('</script>');
+			?>
+			<script type="text/javascript">
+				jQuery(document).ready( function($) { 
+					jQuery(jQuery(".wrap a.page-title-action")[0]).remove();
+					jQuery(jQuery(".wrap h1")[0]).replaceWith("<h1><?= addslashes($title) ?></h1>");
+				});
+			</script>
+			<?php 
 		}
 		
 		
 		// remove header on post-pages (where we edit an individiual item / learning outcome / review) 
-		if (($php_page == 'post.php') && (!isset ($_REQUEST['page']))) {
+		if ((getCurrentPHPFile() == 'post.php') && (!isset ($_REQUEST['page']))) {
 			/*
 			printf ('<script type="text/javascript">');
 			printf ('	jQuery(document).ready( function($) { ');
@@ -597,7 +596,7 @@ function setScreenSettings () {
 	add_filter( 'screen_settings', function( $settings, WP_Screen $screen )
 	{
 		
-		$php_page = array_pop (explode ('/', $_SERVER['SCRIPT_NAME']));
+		$php_page = getCurrentPHPFile();
 		
 		if    ((($php_page == 'admin.php') && (in_array($_REQUEST['page'], ['view_item', 'view_item_with_reviews', 'view_review']))) 
 			|| (($php_page == 'edit.php')  && ($_REQUEST['page']=='view_basket')) 
@@ -703,5 +702,11 @@ function setScreenSettings () {
 	}, 1, 2);
 		
 }
+
+
+function getCurrentPHPFile () {
+	return array_pop (explode ('/', $_SERVER['PHP_SELF']));
+}
+
 
 ?>
