@@ -90,23 +90,36 @@ class Importer {
 		
 		$action = sprintf ('admin.php?page=%s&post_type=%s&format=%s', $_REQUEST['page'], $_REQUEST['post_type'], $_REQUEST['format']);
 		$title = "";
-		if (($_REQUEST['post_type']=='item') && ($_REQUEST['format']=='ilias')) {
-			$title = "Items (from Ilias)";
+		
+		
+		
+		if ($_REQUEST['post_type']=='item') { 
+			switch ($_REQUEST['format']) {
+				case 'ilias': 	$title = "Items (from Ilias; zip file)"; break;
+				case 'moodle': 	$title = "Items (from Moodle; xml file)"; break;
+				case 'json': 	$title = "Items (from EAsLiT; json file)"; break;
+			}
 		}
-		if (($_REQUEST['post_type']=='item') && ($_REQUEST['format']=='moodle')) {
-			$title = "Items (from Moodle)";
+			
+		if ($_REQUEST['post_type']=='term') {
+			switch ($_REQUEST['format']) {
+				case 'txt': 
+					$title = "Taxonomy Terms (from txt file)";
+					$action .= sprintf('&taxonomy=%s&termid=%d', $_REQUEST['taxonomy'], $_REQUEST['termid']);
+					break;
+				case 'json': 
+					$title = "Taxonomy Terms (from EAsLiT; json file)";
+					$action .= sprintf('&taxonomy=%s&termid=%d', $_REQUEST['taxonomy'], $_REQUEST['termid']);
+					break;
+			}
 		}
-		if (($_REQUEST['post_type']=='item') && ($_REQUEST['format']=='json')) {
-			$title = "Items (from JSON file)";
+		
+		if ($_REQUEST['post_type']=='testresult') {
+			switch ($_REQUEST['format']) {
+				case 'ilias': 	$title = "Test Results (from Ilias; zip file)"; break;
+			}
 		}
-		if (($_REQUEST['post_type']=='term') && ($_REQUEST['format']=='txt')) {
-			$title = "Taxonomy Terms (from TXT file)";
-			$action .= sprintf('&taxonomy=%s&termid=%d', $_REQUEST['taxonomy'], $_REQUEST['termid']);
-		}		
-		if (($_REQUEST['post_type']=='term') && ($_REQUEST['format']=='json')) {
-			$title = "Taxonomy Terms (from JSON file)";
-			$action .= sprintf('&taxonomy=%s&termid=%d', $_REQUEST['taxonomy'], $_REQUEST['termid']);
-		}
+			
 		
 		
 		?>

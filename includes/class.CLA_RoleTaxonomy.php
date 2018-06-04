@@ -144,9 +144,21 @@ class RoleTaxonomy {
 					"read_private_reviews" => TRUE,
 					"edit_review" => TRUE,
 					"delete_review" => TRUE,
-					"read_review" => TRUE				
+					"read_review" => TRUE, 			
 					
-
+				"edit_testresults" => TRUE,
+				"edit_others_testresults" => TRUE,
+				"edit_published_testresults" => TRUE,
+				"edit_private_testresults" => TRUE,
+				"publish_testresults" => TRUE,
+				"delete_testresults" => TRUE,
+				"delete_others_testresults" => TRUE,
+				"delete_published_testresults" => TRUE,
+				"delete_private_testresults" => TRUE,
+				"read_private_testresults" => TRUE,
+				"edit_testresult" => TRUE,
+				"delete_testresult" => TRUE,
+				"read_testresult" => TRUE	
 						
 			));
 			

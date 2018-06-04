@@ -4,7 +4,7 @@
  * Plugin Name: EAs.LiT (E-Assessment Literacy Tool)
  * Plugin URI: https://github.com/andreas-thor/eal
  * Description: Kollaborative, qualit&auml;tsgesicherte Erstellung von Items f&uuml;r E-Assessments.
- * Version: 2018-06-01
+ * Version: 2018-06-04
  * Author: Andreas Thor
  * EMail: dr.andreas.thor@googlemail.com
  */
@@ -17,6 +17,8 @@ require_once 'includes/cpt/CPT_ItemSC.php';
 require_once 'includes/cpt/CPT_ItemMC.php';
 require_once 'includes/cpt/CPT_LearnOut.php';
 require_once 'includes/cpt/CPT_Review.php';
+require_once 'includes/cpt/CPT_TestResult.php';
+
 
 require_once 'includes/page/Importer.php';
 require_once 'includes/page/Explorer.php';
@@ -76,6 +78,7 @@ register_activation_hook(__FILE__, function () {
 	DB_Review::createTables();
 	DB_LearnOut::createTables();
 	DB_Term::createTables();
+	DB_TestResult::createTables();
 });
 
 
@@ -96,6 +99,7 @@ add_action('init', function () {
 	(new CPT_ItemSC())->registerType();
 	(new CPT_Review())->registerType();
 	(new CPT_LearnOut())->registerType();
+	(new CPT_TestResult())->registerType();
 	
 	
 	
@@ -120,6 +124,9 @@ add_action('init', function () {
 				break;
 			case 'itembasket': 
 				(new CPT_ItemBasket())->addHooks(); 
+				break;
+			case 'testresult':
+				(new CPT_TestResult())->addHooks();
 				break;
 			default: 
 				(new CPT_Item())->addHooks(); 
@@ -232,14 +239,22 @@ function setMainMenu() {
 		add_submenu_page($menuslug, 'Viewer',     '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',    'edit_posts', 'view_basket',    ['PAG_Item_Bulkviewer', 'page_view_basket']);
 		add_submenu_page($menuslug, 'Generator2', '<div class="dashicons-before dashicons-admin-generic" style="display:inline">&nbsp;</div> Generator', 'edit_posts', 'test_generator', ['Blueprint',  'page_blueprint']);
 		
+	
+		
 		/* the following are not visible in the menu but must be registered */
 		add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', 'view_item',     ['PAG_Item_Bulkviewer', 'page_view_item']);
 		add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', 'view_item_with_reviews',     ['PAG_Item_Bulkviewer', 'page_view_item_with_reviews']);
 		add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', 'view_review',   ['PAG_Item_Bulkviewer', 'page_view_review']);
 		add_submenu_page('view', 'Viewer',    '<div class="dashicons-before dashicons-exerpt-view"   style="display:inline">&nbsp;</div> Viewer',     'edit_posts', 'view_learnout', ['PAG_Learnout_Bulkviewer', 'page_view_learnout']);
-		
-		
 		add_submenu_page('view', 'Viewer', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', ['Importer', 'createPage']);
+		
+		
+		// Menu: Analytics
+		$menuslug = 'edit.php?post_type=testresult';
+		add_menu_page('eal_page_analytics', 'Analytics', 'edit_posts', $menuslug, '', 'dashicons-analytics', 35);
+		add_submenu_page($menuslug, 'Results',      '<div class="dashicons-before dashicons-feedback"  style="display:inline">&nbsp;</div> Results',     'edit_posts', 'edit.php?post_type=testresult');
+		add_submenu_page($menuslug, 'Results2',      '<div class="dashicons-before dashicons-feedback"  style="display:inline">&nbsp;</div> Results',     'edit_posts', 'edit.php?post_type=learnout');
+		
 		
 	});
 	
@@ -302,6 +317,7 @@ function setAdminMenu() {
 		
 		setAdminMenu_Download_Item ($wp_admin_bar);
 		setAdminMenu_Upload_Item ($wp_admin_bar);
+		setAdminMenu_Upload_TestResult( $wp_admin_bar);
 		setAdminMenu_Download_and_Upload_Topic ($wp_admin_bar);
 
 		$wp_admin_bar->remove_menu('view');
@@ -403,6 +419,24 @@ function setAdminMenu_Upload_Item($wp_admin_bar) {
 	
 	
 	
+}
+
+function setAdminMenu_Upload_TestResult($wp_admin_bar) {
+	
+	if (getCurrentPHPFile() != 'edit.php') return;
+	
+	if ($_REQUEST['post_type'] != 'testresult') return;
+	
+	$wp_admin_bar->add_menu( array(
+		'id' => 'eal_upload_testresult',
+		'title' => sprintf("<div class='wp-menu-image dashicons-before dashicons-upload'>&nbsp;%s</div>", 'Upload'),
+		'href' => FALSE ) );
+	
+	$wp_admin_bar->add_menu( array(
+		'parent' => 'eal_upload_testresult',
+		'title' => 'Ilias',
+		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s', 'import', 'testresult', 'ilias')
+	));
 }
 
 
