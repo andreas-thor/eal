@@ -4,7 +4,7 @@ abstract class IMP_TestResult {
 	
 	
 	
-	abstract public function parseTestResultFromTestData (array $testdata): array;
+	abstract public function parseTestResultFromTestData (array $testdata, array $mapItemIds): array;
 	
 	
 		
@@ -15,7 +15,7 @@ abstract class IMP_TestResult {
 	 * @param bool $updateMetadataOnly
 	 * @return array map of itemids that have been imported / updated; [new Item Id => old Item Id]
 	 */
-	public function importTestResult (array $testdata) {
+	public function importTestResult (array $testdata, array $mapItemIds) {
 		
 		global $testresultToImport;
 
@@ -30,8 +30,8 @@ abstract class IMP_TestResult {
 		$postarr['post_content'] = microtime();
 		$id = wp_insert_post ($postarr);
 		
-		$user_item_result = $this->parseTestResultFromTestData($testdata);
-		DB_TestResult::saveUserItemToDB($id, $user_item_result);
+		$user_item_result = $this->parseTestResultFromTestData($testdata, $mapItemIds);
+		TRES_UserItem::saveToDB($id, $user_item_result);
 		
 
 		

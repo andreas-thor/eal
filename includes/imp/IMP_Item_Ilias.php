@@ -227,7 +227,9 @@ class IMP_Item_Ilias extends IMP_Item {
 			// update from parsed data
 			$item->initFromArray($object, '', '');
 			$items[$item->getId()] = $item;
-			$this->mapItemId2XMLId[$item->getId()] = $itemXML->getAttribute("ident");
+			
+			// result xml only has numeric id for question; qti has prefix such as il_0_qti_
+			$this->mapItemId2XMLId[$item->getId()] = array_pop (explode('_', $itemXML->getAttribute("ident")));
 		}
 	
 		return $items;

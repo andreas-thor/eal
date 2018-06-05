@@ -27,26 +27,11 @@ class DB_TestResult {
 	}
 	
 	
-	public static function saveUserItemToDB (int $testresult_id, array $user_item_result) {
-		
-		global $wpdb;
-		
-		$values = array();
-		$insert = array();
-		
-		foreach ($user_item_result as $user_item) {
-			array_push($values, $testresult_id, $user_item['user_id'], $user_item['item_id'], $user_item['points']);
-			array_push($insert, "(%d, %d, %d, %d)");
-		}
-		
-		// replace answers
-		$query = "REPLACE INTO " . self::getTableName() . "_useritem (test_id, user_id, item_id, points) VALUES ";
-		$query .= implode(', ', $insert);
-		$wpdb->query( $wpdb->prepare("$query ", $values));
-		
-		
-		
-	}
+
+	
+
+
+	
 	
 	public static function deleteFromDB (int $testresult_id) {
 		

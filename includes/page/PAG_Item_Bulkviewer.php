@@ -49,7 +49,7 @@ class PAG_Item_Bulkviewer {
 				}
 				
 				if ($testResultImporter != NULL) {
-					$testResultImporter->importTestResult($testData);
+					$testResultImporter->importTestResult($testData, $mapItemids);
 				}
 				
 				
