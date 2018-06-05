@@ -41,7 +41,11 @@ class CPT_TestResult extends CPT_Object {
 		
 		if ($post->post_type != EAL_TestResult::getType()) return;
 		
-		$testresult = ($post->post_status === 'auto-draft') ? new EAL_TestResult($post_id) : EAL_TestResult::createFromArray($post_id, $_POST);
+		global $testresultToImport;
+		
+		$testresult = isset ($testresultToImport) ? $testresultToImport : EAL_TestResult::createFromArray($post_id, $_POST);
+		
+		$testresult->setId($post_id);
 		DB_TestResult::saveToDB($testresult);	
 	}
 	

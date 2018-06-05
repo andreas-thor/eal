@@ -15,23 +15,25 @@ abstract class IMP_TestResult {
 	 * @param bool $updateMetadataOnly
 	 * @return array map of itemids that have been imported / updated; [new Item Id => old Item Id]
 	 */
-	public static function importTestResult (array $testdata) {
+	public function importTestResult (array $testdata) {
 		
-		$t = microtime();
+		global $testresultToImport;
+
+		date_default_timezone_set(get_option('timezone_string'));
+		$testresultToImport = EAL_TestResult::createFromArray(0, ['post_title'=>'Import from ' . date('Y-m-d H:i:s')]);
+		
 		$postarr = array ();
 		$postarr['ID'] = 0;	
-		$postarr['post_title'] = 'Import from ' . $t;
+		$postarr['post_title'] = $testresultToImport->getTitle();
 		$postarr['post_status'] = 'publish';
 		$postarr['post_type'] = 'testresult';
-		$postarr['post_content'] = $t;
+		$postarr['post_content'] = microtime();
 		$id = wp_insert_post ($postarr);
 		
+		$user_item_result = $this->parseTestResultFromTestData($testdata);
+		DB_TestResult::saveUserItemToDB($id, $user_item_result);
 		
-		$post = get_post ($id);
-		$post->post_title = 'Import from ' . $t;
-		$post->post_status = 'publish';
-		$post->post_content = microtime();	// ensures revision
-		wp_update_post ($post);
+
 		
 	}
 	
