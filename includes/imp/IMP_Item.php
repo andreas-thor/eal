@@ -14,11 +14,14 @@ abstract class IMP_Item {
 	abstract public function parseItemsFromImportFile (array $file): array;
 	
 	
+	abstract public function getTestData (): string;
+		
+	
 	/**
 	 * 
 	 * @param array $itemids
 	 * @param bool $updateMetadataOnly
-	 * @return array of itemids that have been imported / updated
+	 * @return array map of itemids that have been imported / updated; [new Item Id => old Item Id]
 	 */
 	public static function importItems (array $itemids, bool $updateMetadataOnly = FALSE ): array {
 		
@@ -27,6 +30,7 @@ abstract class IMP_Item {
 		$result = array();
 		foreach ($itemids as $item_id) {
 			
+			$old_itemid = $item_id;
 			if ($updateMetadataOnly && ($item_id<0)) continue;	// must have itemid if "updateMetadataOnly"
 			
 			$prefix = "item_" . $item_id . "_";
@@ -35,9 +39,9 @@ abstract class IMP_Item {
 				case  1: $status = 'publish'; break;
 				case  2: $status = 'pending'; break;
 				case  3: $status = 'draft'; break;
-				default: continue; // must have status
 			}
 			
+			if ($status == NULL) continue; // must have status
 			
 			
 			$itemToImport = EAL_Item::createByTypeFromArray($item_id, $_REQUEST[$prefix."post_type"], $_POST, $prefix);
@@ -79,7 +83,7 @@ abstract class IMP_Item {
 			wp_update_post ($post);
 			
 			
-			array_push ($result, $item_id);
+			$result[$item_id] = $old_itemid;
 		}
 		return $result;
 		

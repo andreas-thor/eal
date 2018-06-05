@@ -66,8 +66,21 @@ abstract class HTML_Item extends HTML_Object {
 			$allStatus[-3] = 'Draft';
 			$allStatus[0]  = 'Do not import';
 		}
+		
+		$onChange = '';
+		if ($isEditable) {
+			$onChange = 'onchange="updateNumberOfItemsToImport()"';
+		
 ?>
-		<select class="importstatus" style="width:100%" name="<?php echo $prefix ?>item_status" align="right">
+
+			<span style="float: right; font-weight:normal" >
+				<a style="vertical-align:middle" onclick="setStatusForAllItems('<?php echo $prefix ?>item_status')">(Set this status for all items)</a>
+			</span>
+
+
+<?php 	} ?>
+		
+		<select class="importstatus" <?=$onChange?> style="width:100%" name="<?php echo $prefix ?>item_status" align="right">
 		
 		<?php foreach ($allStatus as $i => $status) { ?>
 			<option 

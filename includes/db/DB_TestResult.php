@@ -22,7 +22,7 @@ class DB_TestResult {
 				'description' => $testresult->getDescription(),
 				'domain' => $testresult->getDomain()
 			),
-			array('%d','%s','%s')
+			array('%d','%s','%s', '%s')
 			);
 	}
 	

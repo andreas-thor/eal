@@ -31,6 +31,11 @@ class IMP_Item_JSON extends IMP_Item {
 		return $result;
 	}
 	
+	public function getTestData(): string { 
+		return '';
+	}
+
+	
 
 	
 	

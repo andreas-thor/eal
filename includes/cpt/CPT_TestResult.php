@@ -79,13 +79,9 @@ class CPT_TestResult extends CPT_Object {
 	public function WPCB_posts_fields ( $array ) {
 		global $wp_query, $wpdb;
 		if ($wp_query->query["post_type"] == $this->type) {
-			$array .= ", L.title AS learnout_title";
-			$array .= ", {$wpdb->posts}.post_author AS learnout_author_id";
-			$array .= ", U.user_login AS learnout_author";
-			$array .= ", L.level_FW AS level_FW";
-			$array .= ", L.level_PW AS level_PW";
-			$array .= ", L.level_KW AS level_KW";			
-			$array .= ", (SELECT COUNT(*) FROM {$wpdb->prefix}eal_item AS X JOIN {$wpdb->posts} AS Y ON (X.id = Y.ID) WHERE Y.post_parent=0 AND X.learnout_id = L.id AND Y.post_status IN ('publish', 'pending', 'draft')) AS no_of_items";
+			$array .= ", R.title AS result_title";
+			$array .= ", {$wpdb->posts}.post_author AS result_author_id";
+			$array .= ", U.user_login AS result_author";
 		}
 		return $array;
 	}
@@ -96,7 +92,7 @@ class CPT_TestResult extends CPT_Object {
 		
 		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
 			$domain = RoleTaxonomy::getCurrentRoleDomain();
-			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} L ON (L.id = {$wpdb->posts}.ID " . (($domain["name"]!="") ? "AND L.domain = '" . $domain["name"] . "')" : ")");
+			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} R ON (R.id = {$wpdb->posts}.ID " . (($domain["name"]!="") ? "AND R.domain = '" . $domain["name"] . "')" : ")");
 			$join .= " JOIN {$wpdb->users} U ON (U.id = {$wpdb->posts}.post_author) ";
 		}
 		return $join;

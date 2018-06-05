@@ -7,6 +7,22 @@ class IMP_Item_Ilias extends IMP_Item {
 	
 	
 	
+	protected $mapItemId2XMLId;
+	protected $testXML = NULL;
+	
+	
+	public function getTestData (): string {
+		
+		if ($this->testXML == NULL) return '';
+		return json_encode([
+			'format'=>'ilias',
+			'testxml'=>$this->testXML,
+			'mapitemid2xml'=>$this->mapItemId2XMLId
+			]
+		);
+	}
+	
+	
 	/**
 	 * 
 	 * @param array $file
@@ -46,6 +62,10 @@ class IMP_Item_Ilias extends IMP_Item {
 		$doc_qti->loadXML($file_qti);
 		$items = $this->parseQTI($doc_qti, $dir, $name, $itemids);		// XML-ID => EAL-ID (all Items have an Id here)
 			
+		if (!$isQPL) {	// same XML file name for test result
+			$this->testXML = "{$dir}/{$name}/"  . str_replace( '_tst_', '_results_', $name) . ".xml"; 
+		}
+		
 		return $items;
 		
 	}
@@ -58,7 +78,7 @@ class IMP_Item_Ilias extends IMP_Item {
 	 * PCID is the external id (written by EAL) to match between ILAS and EAL; PCID can be an empty string if not available
 	 * @param DOMDocument $doc
 	 */
-	private static function parseQPL_TST (DOMDocument $doc): array {
+	private function parseQPL_TST (DOMDocument $doc): array {
 	
 		$res = array ();
 		$xpath = new DOMXPath($doc);
@@ -76,9 +96,10 @@ class IMP_Item_Ilias extends IMP_Item {
 	 * @param $itemids: array (qref -> item_id) ... if item_id is available
 	 * @return array (item_id -> item) 
 	 */
-	private static function parseQTI (DOMDocument $doc, string $dir, string $name, array $itemids):array {
+	private function parseQTI (DOMDocument $doc, string $dir, string $name, array $itemids):array {
 	
 		$items = [];
+		$this->mapItemId2XMLId = [];
 		$root = $doc->documentElement;
 		$xpath = new DOMXPath($doc);
 		$countItems = 0;
@@ -206,6 +227,7 @@ class IMP_Item_Ilias extends IMP_Item {
 			// update from parsed data
 			$item->initFromArray($object, '', '');
 			$items[$item->getId()] = $item;
+			$this->mapItemId2XMLId[$item->getId()] = $itemXML->getAttribute("ident");
 		}
 	
 		return $items;

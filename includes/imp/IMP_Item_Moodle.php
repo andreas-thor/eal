@@ -130,6 +130,11 @@ class IMP_Item_Moodle extends IMP_Item {
 		
 	}
 	
+	public function getTestData(): string {
+		return '';
+	}
+
+	
 
 	
 	

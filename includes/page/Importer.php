@@ -43,7 +43,7 @@ class Importer {
 				$formatImporter->importTerms($file, $_REQUEST['taxonomy'], $_REQUEST['termid']);
 			}
 
-			if ($_REQUEST['post_type']=='item') {
+			if (($_REQUEST['post_type']=='item') || ($_REQUEST['post_type']=='testresult')) {
 				
 				$formatImporter = NULL;
 				switch ($_REQUEST['format']) {
@@ -58,6 +58,10 @@ class Importer {
 				}
 				
 				$items = $formatImporter->parseItemsFromImportFile($file);
+				$testData = '';
+				if ($_REQUEST['post_type']=='testresult') {
+					$testData = $formatImporter->getTestData();
+				}
 				
 				if (is_string($items)) {
 					self::showError(sprintf ('Import Error: %s', $items));
@@ -69,7 +73,8 @@ class Importer {
 					return;
 				}
 				
-				PAG_Item_Bulkviewer::printItemList($items, [], TRUE, TRUE);
+				
+				PAG_Item_Bulkviewer::printItemList($items, [], $testData, TRUE, TRUE);
 			}
 			
 			
@@ -90,8 +95,6 @@ class Importer {
 		
 		$action = sprintf ('admin.php?page=%s&post_type=%s&format=%s', $_REQUEST['page'], $_REQUEST['post_type'], $_REQUEST['format']);
 		$title = "";
-		
-		
 		
 		if ($_REQUEST['post_type']=='item') { 
 			switch ($_REQUEST['format']) {
@@ -124,19 +127,18 @@ class Importer {
 		
 		?>
 		
-		
 		<div class="wrap">
-			<h1>Upload <?php print ($title); ?></h1>
-			<form  enctype="multipart/form-data" action="<?php print ($action); ?>" method="post">
+			<h1>Upload <?=$title?></h1>
+			<form  enctype="multipart/form-data" action="<?=$action?>" method="post">
 				<div>
 					<label class="screen-reader-text" for="async-upload">Upload</label>
 					<input name="uploadedfile" id="async-upload" type="file">
 					<input name="action" class="button button-primary" value="Upload" type="submit">
 				</div>
 			</form>
-		</div>	
-		<?php 		
+		</div>
 		
+		<?php 		
 	}
 	
 }

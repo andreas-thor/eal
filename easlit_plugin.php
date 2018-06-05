@@ -138,6 +138,7 @@ add_action('init', function () {
 	if ((in_array ($_POST['action'], ['import', 'update'])) && ($php_page == 'admin.php')) {
 		(new CPT_ItemSC())->addHooks();
 		(new CPT_ItemMC())->addHooks();
+		(new CPT_TestResult())->addHooks();
 	}
 	
 	

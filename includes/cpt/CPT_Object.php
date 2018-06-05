@@ -235,7 +235,12 @@ abstract class CPT_Object {
 // 				printf ('<span class="edit"> | <a href="post.php?post_type=learnout&post=%1$d&action=edit" title="Edit">Edit</a></span>', $post->ID);
 // 				printf (' | <span class="inline hide-if-no-js"></span></div>');
 				break;
-			
+
+				
+			case 'result_title':
+				printf ($post->result_title);
+				break;
+				
 			case 'item_type':
 				printf ('<a href="%1$s"><div class="dashicons-before %2$s" style="display:inline">&nbsp;</div></a>', add_query_arg ('item_type', $post->item_type, $basic_url), $this->getDashIcon());
 				break;

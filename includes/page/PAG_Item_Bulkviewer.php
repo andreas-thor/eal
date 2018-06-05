@@ -5,6 +5,9 @@ require_once(__DIR__ . "/../html/HTML_Item.php");
 require_once(__DIR__ . "/../html/HTML_ItemBasket.php");
 require_once(__DIR__ . "/../html/HTML_Review.php");
 
+require_once(__DIR__ . "/../imp/IMP_TestResult.php");
+require_once(__DIR__ . "/../imp/IMP_TestResult_Ilias.php");
+
 class PAG_Item_Bulkviewer {
 
 	
@@ -24,10 +27,37 @@ class PAG_Item_Bulkviewer {
 		$isUpdate = $_REQUEST['action'] === 'update';	// User clicked on "Update All" button
 		
 		$itemids = ItemExplorer::getItemIdsByRequest();
+		 
+		
 		
 		// import / update items from REQUEST data
 		if ($isUpdate || $isImport)  {
-			$itemids = IMP_Item::importItems($itemids, $isUpdate);
+			
+			$mapItemids = IMP_Item::importItems($itemids, $isUpdate);
+			$itemids = array_keys ($mapItemids);
+			
+			if (isset ($_REQUEST['testdata'])) {
+				
+				$dec = html_entity_decode($_REQUEST['testdata'], ENT_COMPAT | ENT_HTML401, 'UTF-8');
+				$dec = stripcslashes($dec);
+				$testData = json_decode($dec, TRUE);
+				
+				
+				$testResultImporter = NULL;
+				switch ($testData['format']) {
+					case 'ilias': $testResultImporter = new IMP_TestResult_Ilias(); break;
+				}
+				
+				if ($testResultImporter != NULL) {
+					$testResultImporter->importTestResult($testData);
+				}
+				
+				
+			}
+			
+			
+			
+			
 		}
 		
 		// Load all Items from DB
@@ -49,12 +79,12 @@ class PAG_Item_Bulkviewer {
 			}
 		}
 			
-		self::printItemList($items, $reviews, $editable, $isImport);
+		self::printItemList($items, $reviews, '', $editable, $isImport);
 	}
 	
 	
 	public static function page_view_basket () {
-		self::printItemList(EAL_ItemBasket::getItems(), [], FALSE, FALSE);
+		self::printItemList(EAL_ItemBasket::getItems(), [], '', FALSE, FALSE);
 	}
 	
 	public static function page_view_item_with_reviews () {
@@ -84,7 +114,7 @@ class PAG_Item_Bulkviewer {
 			$reviews[$item->getId()][] = $review;
 		}
 		
-		self::printItemList($items, $reviews, FALSE, FALSE);
+		self::printItemList($items, $reviews, '', FALSE, FALSE);
 	}
 	
 	/**
@@ -94,7 +124,7 @@ class PAG_Item_Bulkviewer {
 	 * @param bool $editable
 	 * @param bool $isImport
 	 */
-	public static function printItemList (array $items, array $reviews, bool $editable, bool $isImport) {
+	public static function printItemList (array $items, array $reviews, string $testData, bool $editable, bool $isImport) {
 		
 		$listOfItemIds = implode(',', array_keys ($items));
 		
@@ -106,6 +136,8 @@ class PAG_Item_Bulkviewer {
 					$pos = 0;
 					foreach ($items as $item) { printf ('<option value=\"%d\">%s</option>', $pos++, htmlentities ($item->getTitle(), ENT_COMPAT | ENT_HTML401, 'UTF-8')); } 
 				?>");
+
+				updateNumberOfItemsToImport();
 			});
 			// ");
 		</script>
@@ -118,15 +150,72 @@ class PAG_Item_Bulkviewer {
 				<h1>Item Viewer 
 				
 				<?php if ($editable) { ?>
-					<input type="submit" name="publish" id="publish" class="button button-primary button-large" value="<?php echo ($isImport ? 'Import ' : 'Update All '); echo count($items); ?> Items">
+					<input type="submit" name="publish" id="publish" class="button button-primary button-large" value="">
 					<input type="hidden" id="itemids" name="itemids" value="<?php echo $listOfItemIds ?>">
 					<input type="hidden" name="action" value="<?php echo ($isImport ? 'import' : 'update') ?>">
+					
+					<?php if (strlen($testData)>0) { 
+						$enc = htmlentities($testData, ENT_COMPAT | ENT_HTML401, 'UTF-8');
+// 						$enc = addcslashes($testData, '"');
+						
+						?>
+						<input type="hidden" name="testdata" value="<?= $enc ?>">
+					<?php } ?>
 				<?php } else { ?>
 					<a href="admin.php?page=view_item&itemids=<?php echo $listOfItemIds ?>&action=edit" class="page-title-action">Edit All <?php echo count($items) ?> Items</a>
 				<?php } ?>
 				
 				
 				</h1>
+				
+				<script type="text/javascript">
+					function setStatusForAllItems (name) {
+						newValue = jQuery ("select[name='" + name + "']").val();
+
+						// we only look for <select> that have this option; other <select>s remain unchanged
+						jQuery("select.importstatus option[value='" + newValue + "']").each (
+							function () { 
+								jQuery(this).attr('selected','selected'); 
+							}
+						);
+
+						// trigger onChange event
+						jQuery ("select[name='" + name + "']").val(newValue).change();
+					}
+
+
+					function updateNumberOfItemsToImport () {
+						noUpdate = jQuery ("select.importstatus").filter(function(){return jQuery(this).val()>0}).size();
+						noImport = jQuery ("select.importstatus").filter(function(){return jQuery(this).val()<0}).size();
+						noIgnore = jQuery ("select.importstatus").filter(function(){return jQuery(this).val()==0}).size();
+
+						buttonText = "";
+						if (noImport > 0) {
+							buttonText += "Import " + noImport + " Item";
+							if (noImport > 1) buttonText += "s";
+						}
+						if (noUpdate > 0) {
+							if (buttonText.length > 0) buttonText += " & ";
+							buttonText += "Update " + noUpdate + " Item";
+							if (noUpdate > 1) buttonText += "s";
+						}
+						if ((noImport==0) && (noUpdate==0)) {
+							buttonText = "Do not import all " + noIgnore + " Item";
+							if (noIgnore > 1) buttonText += "s";
+						} else {
+							if (noIgnore>0) {
+								buttonText += " (ignore " + noIgnore + " Item";
+								if (noIgnore > 1) buttonText += "s";
+								buttonText += ")";
+							}
+						}
+						
+						jQuery("input#publish").val(buttonText);
+						jQuery("input#publish").prop('disabled', (noImport==0) && (noUpdate==0));
+					}
+					
+				</script>
+				
 				<hr class="wp-header-end">
 				<div id="itemcontainer">
 					<?php foreach ($items as $item) { 
@@ -181,12 +270,7 @@ class PAG_Item_Bulkviewer {
 						</h2>
 
 						<div class="inside">
-							<?php 
-								if ($isEditable) { 
-									printf ('<span style="float: right; font-weight:normal" ><a style="vertical-align:middle" >(Set this status for all items)</a></span>');
-								}
-								$htmlPrinter->printStatus ($isEditable, $isImport, $prefix);
-							?>
+							<?php $htmlPrinter->printStatus ($isEditable, $isImport, $prefix); ?>
 						</div>
 					</div>
 		
