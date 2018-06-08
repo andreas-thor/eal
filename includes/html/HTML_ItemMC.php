@@ -22,8 +22,39 @@ class HTML_ItemMC extends HTML_Item  {
 		return $this->item;
 	}
 	
+
+	public function printItem (bool $isPreview, bool $isEditable, bool $isImport, string $prefix="") {
+		$this->printDescription($isImport, $prefix);
+		$this->printQuestion($isImport, $prefix);
+		$this->printAnswers($isPreview, $isEditable, $isImport, $prefix);
+	}
 	
- 
+	/**********************************************************************************************
+	 * ANSWERS
+	 **********************************************************************************************/
+	
+	
+	
+	public function metaboxAnswers () {
+		$this->printAnswers(FALSE, TRUE, FALSE);
+	}
+	
+	
+	private function printAnswers (bool $isPreview, bool $isEditable, bool $isImport, string $prefix="") {
+		
+		if ($isPreview) {
+			return $this->printAnswers_Preview();
+		}
+		
+		if ($isEditable) {
+			return $this->printAnswers_Editor($prefix);
+		}
+		
+		return $this->printAnswers_ForReview($isImport, $prefix);
+	}
+	
+	
+	
 	private function printAnswerLine (string $prefix, string $answer, int $pointsPositive, int $pointsNegative, bool $showButtons, string $fontWeight, bool $isReadOnly, bool $includeFormValue) {
 ?>
 		<tr>
@@ -57,7 +88,7 @@ class HTML_ItemMC extends HTML_Item  {
 	} 
 	 
 	
-	protected function printAnswers_Editor(string $prefix) {
+	private function printAnswers_Editor(string $prefix) {
 ?>
 		<script> 
 			// Javascript for + / - button interaction
@@ -95,7 +126,7 @@ class HTML_ItemMC extends HTML_Item  {
 <?php	
 	}
 	
-	protected function printAnswers_ForReview(bool $isImport, string $prefix) {
+	private function printAnswers_ForReview(bool $isImport, string $prefix) {
 ?>
 		Minimum: <input type="text" name="<?php echo $prefix ?>item_minnumber" value="<?php echo $this->getItem()->minnumber ?>" size="1" readonly /> 
 		&nbsp;&nbsp;&nbsp;
@@ -112,7 +143,7 @@ class HTML_ItemMC extends HTML_Item  {
 		
 	}
 	
-	protected function printAnswers_Preview() {
+	private function printAnswers_Preview() {
 ?>
 		<div style="margin-top:1em">
 			<div style="margin-top:1em">
@@ -175,6 +206,9 @@ class HTML_ItemMC extends HTML_Item  {
 		</table>
 <?php 		
 	}
+	
+		
+
 	
 
 	

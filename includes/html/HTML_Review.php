@@ -190,13 +190,8 @@ class HTML_Review extends HTML_Object {
 		 	document.getElementsByClassName("page-title-action")[0].remove();
 		</script> 
 <?php 
-		$htmlPrinter = $this->review->getItem()->getHTMLPrinter();
-		$htmlPrinter->printDescription(FALSE);
-		$htmlPrinter->printQuestion(FALSE);
-		$htmlPrinter->printAnswers(FALSE, FALSE, FALSE);
+		$this->review->getItem()->getHTMLPrinter()->printItem(FALSE, FALSE, FALSE);
 	}
-	
-	
 	
 }
 ?>

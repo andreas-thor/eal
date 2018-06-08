@@ -301,9 +301,7 @@ class PAG_Item_Bulkviewer {
 
 					<div class="postbox" style="background-color:transparent; border:none">
 						<div class="inside">
-							<?php $htmlPrinter->printDescription($isImport, $prefix) ?>
-							<?php $htmlPrinter->printQuestion($isImport, $prefix) ?>
-							<?php $htmlPrinter->printAnswers(!$isEditable, FALSE, $isImport, $prefix) ?>
+							<?php $htmlPrinter->printItem(!$isEditable, FALSE, $isImport, $prefix) ?>
 						</div>
 					</div>
 				

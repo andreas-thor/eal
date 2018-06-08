@@ -24,17 +24,10 @@ class CPT_ItemMC extends CPT_Item {
 	public function addHooks() {
 		
 		parent::addHooks();
-		add_action ("save_post_{$this->type}", array ('CPT_ItemMC', 'save_post'), 10, 2);
-		add_action ("save_post_revision", array ('CPT_ItemMC', 'save_post'), 10, 2);
-		
-		add_filter ('document_title_parts', array ('CPT_ItemMC', 'document_title_parts'), 99, 1);
-		
+		add_action ("save_post_{$this->type}", 'CPT_ItemMC::save_post', 10, 2);
+		add_action ("save_post_revision", 'CPT_ItemMC::save_post', 10, 2);
 	}
 	
-	public static function document_title_parts (array $title) {
-		$a=7;
-	}
-		
 	
 	public static function save_post (int $post_id, WP_Post $post) {
 		
@@ -106,6 +99,8 @@ class CPT_ItemMC extends CPT_Item {
 		global $post, $item;
 		$item = DB_ItemMC::loadFromDB($post->ID);
 		parent::WPCB_register_meta_box_cb();
+		add_meta_box("mb_answers", "Antwortoptionen",	array ($item->getHTMLPrinter(), metaboxAnswers), $this->type, 'normal', 'default');
+		
 		
 	}
 

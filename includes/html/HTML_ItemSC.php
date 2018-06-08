@@ -22,6 +22,39 @@ class HTML_ItemSC extends HTML_Item {
 	}
 	
 	
+	public function printItem (bool $isPreview, bool $isEditable, bool $isImport, string $prefix="") {
+		$this->printDescription($isImport, $prefix);
+		$this->printQuestion($isImport, $prefix);
+		$this->printAnswers($isPreview, $isEditable, $isImport, $prefix);
+	}
+	
+	
+	
+	/**********************************************************************************************
+	 * ANSWERS
+	 **********************************************************************************************/
+	
+	
+	
+	public function metaboxAnswers () {
+		$this->printAnswers(FALSE, TRUE, FALSE);
+	}
+	
+	
+	private function printAnswers (bool $isPreview, bool $isEditable, bool $isImport, string $prefix="") {
+		
+		if ($isPreview) {
+			return $this->printAnswers_Preview();
+		}
+		
+		if ($isEditable) {
+			return $this->printAnswers_Editor($prefix);
+		}
+		
+		return $this->printAnswers_ForReview($isImport, $prefix);
+	}
+	
+	
 	private function printAnswerLine (string $prefix, string $answer, int $points, bool $showButtons, string $fontWeight, bool $isReadOnly, bool $includeFormValue) {
 ?>
 		<tr>
@@ -56,21 +89,10 @@ class HTML_ItemSC extends HTML_Item {
 
 	
 	
-	protected function printAnswers_Preview () {
-?> 
-		<div style="margin-top:1em">
-			<?php for ($index=0; $index<$this->getItem()->getNumberOfAnswers(); $index++) { ?> 
-				<div style="margin-top:1em">
-					<input type="radio" name="<?php echo $this->getItem()->getId() ?>" />
-					<?php echo $this->getItem()->getAnswer($index) ?>
-				</div>
-			<?php } ?>
-		</div>
-<?php 
-	}
+
 	
 	
-	protected function printAnswers_Editor (string $prefix) {
+	private function printAnswers_Editor (string $prefix) {
 ?>
 		<script>
 			// Javascript for + / - button interaction
@@ -105,7 +127,7 @@ class HTML_ItemSC extends HTML_Item {
 	}
 	
 	
-	protected function printAnswers_ForReview (bool $isImport, string $prefix) {
+	private function printAnswers_ForReview (bool $isImport, string $prefix) {
 ?>
 		<table style="font-size: 100%">
 			<?php 
@@ -117,7 +139,18 @@ class HTML_ItemSC extends HTML_Item {
 <?php 		
 	}
 	
-	
+	private function printAnswers_Preview () {
+		?>
+		<div style="margin-top:1em">
+			<?php for ($index=0; $index<$this->getItem()->getNumberOfAnswers(); $index++) { ?> 
+				<div style="margin-top:1em">
+					<input type="radio" name="<?php echo $this->getItem()->getId() ?>" />
+					<?php echo $this->getItem()->getAnswer($index) ?>
+				</div>
+			<?php } ?>
+		</div>
+<?php 
+	}
 	
 	public static function compareAnswers (EAL_ItemSC $old, EAL_ItemSC $new): array {
 

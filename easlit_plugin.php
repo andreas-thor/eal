@@ -254,7 +254,8 @@ function setMainMenu() {
 		$menuslug = 'edit.php?post_type=testresult';
 		add_menu_page('eal_page_analytics', 'Analytics', 'edit_posts', $menuslug, '', 'dashicons-analytics', 35);
 		add_submenu_page($menuslug, 'Results',      '<div class="dashicons-before dashicons-feedback"  style="display:inline">&nbsp;</div> Results',     'edit_posts', 'edit.php?post_type=testresult');
-		add_submenu_page($menuslug, 'Results2',      '<div class="dashicons-before dashicons-feedback"  style="display:inline">&nbsp;</div> Results',     'edit_posts', 'edit.php?post_type=learnout');
+		add_submenu_page($menuslug, 'Results2',      '<div class="dashicons-before dashicons-feedback"  style="display:inline">&nbsp;</div> Item-Analyse',     'edit_posts', 'edit.php?post_type=learnout');
+		add_submenu_page($menuslug, 'Results3',      '<div class="dashicons-before dashicons-feedback"  style="display:inline">&nbsp;</div> User-Analyse',     'edit_posts', 'edit.php?post_type=learnout');
 		
 		
 	});

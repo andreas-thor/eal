@@ -192,8 +192,6 @@ class CPT_Item extends CPT_Object{
 		
 		add_meta_box('mb_description', 'Fall- oder Problemvignette', array ($item->getHTMLPrinter(), metaboxDescription), $this->type, 'normal', 'default' );
 		add_meta_box('mb_question', 'Aufgabenstellung', array ($item->getHTMLPrinter(), metaboxQuestion), $this->type, 'normal', 'default');
-		add_meta_box("mb_{$this->type}_answers", "Antwortoptionen",	array ($item->getHTMLPrinter(), metaboxAnswers), $this->type, 'normal', 'default');
-		
 		
 		add_meta_box('mb_learnout', 'Learning Outcome', array ($item->getHTMLPrinter(), metaboxLearningOutcome), $this->type, 'side', 'default');
 		add_meta_box('mb_item_level', 'Anforderungsstufe', array ($item->getHTMLPrinter(), metaboxLevel), $this->type, 'side', 'default');

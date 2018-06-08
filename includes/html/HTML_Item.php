@@ -17,35 +17,8 @@ abstract class HTML_Item extends HTML_Object {
 	}
 	
 	
-	/**********************************************************************************************
-	 * ANSWERS
-	 **********************************************************************************************/
-	
-	public function metaboxAnswers () {
-		$this->printAnswers(FALSE, TRUE, FALSE);
-	}
-	
-	public function printAnswers (bool $isPreview, bool $isEditable, bool $isImport, string $prefix="") {
-		
-		if ($isPreview) {
-			return $this->printAnswers_Preview();
-		}
-		
-		if ($isEditable) {
-			return $this->printAnswers_Editor($prefix);
-		}
-		
-		return $this->printAnswers_ForReview($isImport, $prefix);
-	}
-	
-	
-	protected abstract function printAnswers_Preview (); 
-	
-	protected abstract function printAnswers_Editor (string $prefix);
+	abstract public function printItem (bool $isPreview, bool $isEditable, bool $isImport, string $prefix="");
 
-	protected abstract function printAnswers_ForReview (bool $isImport, string $prefix);
-	
-	
 	
 	/**********************************************************************************************
 	 * STATUS

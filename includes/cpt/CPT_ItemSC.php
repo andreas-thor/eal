@@ -27,8 +27,8 @@ class CPT_ItemSC extends CPT_Item {
 
 		parent::addHooks();
 		
-		add_action ("save_post_{$this->type}", array ('CPT_ItemSC', 'save_post'), 10, 2);
-		add_action ("save_post_revision", array ('CPT_ItemSC', 'save_post'), 10, 2);
+		add_action ("save_post_{$this->type}", 'CPT_ItemSC::save_post', 10, 2);
+		add_action ("save_post_revision", 'CPT_ItemSC::save_post', 10, 2);
 	}
 	
 	
@@ -109,15 +109,11 @@ class CPT_ItemSC extends CPT_Item {
 		global $post, $item;
 		$item = DB_ItemSC::loadFromDB($post->ID);
 		parent::WPCB_register_meta_box_cb();
+		
+		add_meta_box("mb_answers", "Antwortoptionen",	array ($item->getHTMLPrinter(), metaboxAnswers), $this->type, 'normal', 'default');
+		
 	}
 	
-
-	
-
-		
-	
-
-
 }
 
 	
