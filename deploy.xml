@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<project default="zip" name="Deploy EAsLit">
+
+
+	<property name="build.dir" value="./build/eal" />
+
+	
+	<target name="zip">
+	
+		<zip destfile="./docs/easlit_wp_plugin_development_version.zip" basedir="."
+			includes="includes/**, easlit_plugin.php, easlit_taxonomies.php, Logo_EAs.LiT.png"
+			/>
+  		
+	</target>
+				
+	<target name="ftp">
+
+		<input message="Please enter subdomain:" addproperty="subdomain"></input>
+
+		<delete dir="${build.dir}/.." />
+
+		<copy todir="${build.dir}/includes">
+			<fileset dir="./includes">
+			</fileset>
+		</copy>
+		<copy file="easlit_plugin.php" todir="${build.dir}" />
+		<copy file="Logo_EAs.LiT.png" todir="${build.dir}" />
+
+		<!-- We usually do *not* copy the taxonomies.php file since it is sub-domain specific -->
+		<!-- <copy file="easlit_taxonomies.php" todir="${build.dir}" /> -->   
+
+		<!-- Delete all files in eal/includes directory -->
+		<ftp action="delete" server="ftp.strato.com" remotedir="wp-content/plugins/eal/includes" userid="${user}@${subdomain}.easlit.de" password="${ftpPW}" depends="yes">
+			<fileset>
+				<include name="**"/>
+			</fileset>
+		</ftp>
+		
+		<ftp action="rmdir" server="ftp.strato.com" remotedir="wp-content/plugins/eal/includes" userid="${user}@${subdomain}.easlit.de" password="${ftpPW}" depends="yes">
+			<fileset>
+				<include name="**"/>
+			</fileset>
+		</ftp>
+
+			
+		<!-- Copy eal build directory -->
+		<ftp passive="yes" server="ftp.strato.com" remotedir="wp-content/plugins/" userid="${user}@${subdomain}.easlit.de" password="${ftpPW}" depends="yes">
+			<fileset dir="${build.dir}/.." />
+		</ftp>
+
+		<!-- Delete local build directory -->
+		<delete dir="${build.dir}/.." />
+
+
+	</target>
+
+
+
+
+</project>
