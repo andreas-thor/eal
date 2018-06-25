@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../imp/IMP_Item_Ilias.php';
 require_once __DIR__ . '/../imp/IMP_Item_Moodle.php';
 require_once __DIR__ . '/../imp/IMP_Item_JSON.php';
+require_once __DIR__ . '/../imp/IMP_Item_ONYX.php';
 require_once __DIR__ . '/../imp/IMP_Term_JSON.php';
 require_once __DIR__ . '/../imp/IMP_Term_TXT.php';
 
@@ -50,6 +51,7 @@ class Importer {
 					case 'ilias': $formatImporter = new IMP_Item_Ilias(); break;
 					case 'moodle': $formatImporter = new IMP_Item_Moodle(); break;
 					case 'json': $formatImporter = new IMP_Item_JSON(); break;
+					case 'onyx': $formatImporter = new IMP_Item_ONYX(); break;
 				}
 				
 				if ($formatImporter === NULL) {
@@ -100,6 +102,7 @@ class Importer {
 			switch ($_REQUEST['format']) {
 				case 'ilias': 	$title = "Items (from Ilias; zip file)"; break;
 				case 'moodle': 	$title = "Items (from Moodle; xml file)"; break;
+				case 'onyx': 	$title = "Items (from ONYX; zip file)"; break;
 				case 'json': 	$title = "Items (from EAsLiT; json file)"; break;
 			}
 		}

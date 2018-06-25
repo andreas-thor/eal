@@ -375,6 +375,7 @@ function setAdminMenu_Download_Item($wp_admin_bar) {
 		'href' => sprintf('admin.php?page=%s&type=%s&format=%s&itemids=%s', 'download', 'item', 'moodle', $param_itemids)
 	));
 	
+
 	$wp_admin_bar->add_menu( array(
 		'parent' => 'eal_download_item',
 		'title' => 'JSON',
@@ -411,6 +412,12 @@ function setAdminMenu_Upload_Item($wp_admin_bar) {
 		'parent' => 'eal_upload_item',
 		'title' => 'Moodle',
 		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s', 'import', 'item', 'moodle')
+	));
+	
+	$wp_admin_bar->add_menu( array(
+		'parent' => 'eal_upload_item',
+		'title' => 'ONYX',
+		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s', 'import', 'item', 'onyx')
 	));
 	
 	$wp_admin_bar->add_menu( array(
