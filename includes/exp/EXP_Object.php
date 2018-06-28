@@ -14,8 +14,7 @@ abstract class EXP_Object {
 		$this->downloadfilename = $downloadfilename;
 		$this->downloadextension = $downloadextension;
 		
-		// FIXME: make download directory part of the configuration
-		$this->downloaddir = __DIR__ . '/../../download/';
+		$this->downloaddir = sys_get_temp_dir() . "/eal" . microtime(TRUE);	// ensures a unique directory name
 		
 		// create download directory if it does not exist 
 		if (!file_exists($this->downloaddir)) {
@@ -32,7 +31,7 @@ abstract class EXP_Object {
 	}
 	
 	protected function getDownloadFullname (): string {
-		return $this->downloaddir . $this->downloadfilename . "." . $this->downloadextension;
+		return $this->downloaddir . '/' . $this->downloadfilename . '.' . $this->downloadextension;
 	}
 	
 	

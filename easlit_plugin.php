@@ -32,6 +32,7 @@ require_once 'includes/class.CLA_RoleTaxonomy.php';
 
 require_once 'includes/exp/EXP_Item_Ilias.php';
 require_once 'includes/exp/EXP_Item_Moodle.php';
+require_once 'includes/exp/EXP_Item_ONYX.php';
 require_once 'includes/exp/EXP_Item_JSON.php';
 require_once 'includes/exp/EXP_Term_TXT.php';
 require_once 'includes/exp/EXP_Term_JSON.php';
@@ -157,10 +158,10 @@ add_action('init', function () {
 			$itemids = explode(",", $_REQUEST["itemids"]);
 			
 			switch ($_REQUEST['format']) {
-				case 'moodle': (new EXP_Item_Moodle())->downloadItems($itemids); break;
 				case 'ilias': (new EXP_Item_Ilias())->downloadItems($itemids); break;
+				case 'moodle': (new EXP_Item_Moodle())->downloadItems($itemids); break;
+				case 'onyx': (new EXP_Item_ONYX())->downloadItems($itemids); break;
 				case 'json': (new EXP_Item_JSON())->downloadItems($itemids); break;
-				
 			}
 			
 			exit();
@@ -374,8 +375,13 @@ function setAdminMenu_Download_Item($wp_admin_bar) {
 		'title' => 'Moodle',
 		'href' => sprintf('admin.php?page=%s&type=%s&format=%s&itemids=%s', 'download', 'item', 'moodle', $param_itemids)
 	));
-	
 
+	$wp_admin_bar->add_menu( array(
+		'parent' => 'eal_download_item',
+		'title' => 'ONYX',
+		'href' => sprintf('admin.php?page=%s&type=%s&format=%s&itemids=%s', 'download', 'item', 'onyx', $param_itemids)
+	));
+	
 	$wp_admin_bar->add_menu( array(
 		'parent' => 'eal_download_item',
 		'title' => 'JSON',
