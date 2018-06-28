@@ -194,22 +194,23 @@ class IMP_Item_ONYX extends IMP_Item {
 		$rootNamespace = $dom->lookupNamespaceUri($dom->namespaceURI);
 		$xpath->registerNamespace('x', $rootNamespace);
 		
-		/* get the correct answer */
-		$correctAnswerIdentifier = $xpath->evaluate('/x:assessmentItem/x:responseDeclaration/x:correctResponse/x:value')[0]->nodeValue;
-
-		/* get the max score */
-		$maxscore = $xpath->evaluate('/x:assessmentItem/x:outcomeDeclaration[@identifier="MAXSCORE"]/x:defaultValue/x:value')[0]->nodeValue;
+		$correctAnswerIdentifiers = $this->getCorrectAnswerIdentifiers($xpath);	
+		$answersToPoints = $this->getAnswersToPoints($xpath);
+		$maxscore = $this->getMaxScore($xpath);
 		
 		/* get all answer options */
 		$object['answer'] = [];
 		$object['points'] = [];
-		$choiceInteraction = $xpath->evaluate('/x:assessmentItem/x:itemBody/x:choiceInteraction')[0];
-		if ($choiceInteraction instanceof DOMElement) {
-			foreach ($choiceInteraction->getElementsByTagName('simpleChoice') as $simpleChoice) {
-				if ($simpleChoice instanceof DOMElement) {
-					$object['answer'][] = $this->DOMinnerHTML($simpleChoice);
-					$object['points'][] = $simpleChoice->getAttribute('identifier') == $correctAnswerIdentifier ? $maxscore : 0;
-				}
+		foreach ($xpath->evaluate('/x:assessmentItem/x:itemBody/x:choiceInteraction/x:simpleChoice') as $simpleChoice) {
+			assert ($simpleChoice instanceof DOMElement);
+			$identifier = $simpleChoice->getAttribute('identifier');
+			$object['answer'][] = $this->DOMinnerHTML($simpleChoice);
+			
+			if (array_key_exists ($identifier, $answersToPoints)) {
+				// we have an explicit mapping answer-checked -> points
+				$object['points'][] = $answersToPoints[$identifier];
+			} else {
+				$object['points'][] = (in_array($identifier, $correctAnswerIdentifiers)) ? $maxscore : 0;
 			}
 		}
 		
@@ -218,31 +219,18 @@ class IMP_Item_ONYX extends IMP_Item {
 		
 	}
 	
+	
+	
+	
 	private function parseItemMC(DOMDocument $dom, EAL_ItemMC $item, array $object): EAL_ItemMC {
 		
 		$xpath = new DOMXPath($dom);
 		$rootNamespace = $dom->lookupNamespaceUri($dom->namespaceURI);
 		$xpath->registerNamespace('x', $rootNamespace);
 		
-		/* get the correct answers */
-		$correctAnswerIdentifiers = [];
-		foreach ($xpath->evaluate('/x:assessmentItem/x:responseDeclaration/x:correctResponse/x:value') as $value) {
-			if ($value instanceof DOMElement) {
-				$correctAnswerIdentifiers[] = $value->nodeValue;
-			}
-		}
-
-		/* get the max score */
-		$maxscore = $xpath->evaluate('/x:assessmentItem/x:outcomeDeclaration[@identifier="MAXSCORE"]/x:defaultValue/x:value')[0]->nodeValue;
-		
-		/* get the points mappings for all answers (if available) */
-		$mapEntry = $xpath->evaluate('/x:assessmentItem/x:responseDeclaration/x:mapping/x:mapEntry');
-		$answersToPoints = [];
-		foreach ($mapEntry as $map) {
-			if ($map instanceof DOMElement) {
-				$answersToPoints[$map->getAttribute('mapKey')] = intval ($map->getAttribute('mappedValue'));
-			}
-		}
+		$correctAnswerIdentifiers = $this->getCorrectAnswerIdentifiers($xpath);	
+		$answersToPoints = $this->getAnswersToPoints($xpath);	// empty, if no mapping is given
+		$maxscore = $this->getMaxScore($xpath);
 		
 		/* get the score per choice (if available) */
 		$isScorePerChoice = FALSE;
@@ -269,58 +257,73 @@ class IMP_Item_ONYX extends IMP_Item {
 		$object['positive'] = [];
 		$object['negative'] = [];
 
-		$choiceInteraction = $xpath->evaluate('/x:assessmentItem/x:itemBody/x:choiceInteraction')[0];
-		if ($choiceInteraction instanceof DOMElement) {
-			
-			$simpleChoiceList = $choiceInteraction->getElementsByTagName('simpleChoice');
-			
-			foreach ($simpleChoiceList as $simpleChoice) {
-				if ($simpleChoice instanceof DOMElement) {
+		foreach ($xpath->evaluate('/x:assessmentItem/x:itemBody/x:choiceInteraction/x:simpleChoice') as $simpleChoice) {
+			assert ($simpleChoice instanceof DOMElement);
 					
-					$object['answer'][] = $this->DOMinnerHTML($simpleChoice);
-					$identifier = $simpleChoice->getAttribute('identifier');
-					
-					if (array_key_exists ($identifier, $answersToPoints)) {
-						// we have an explicit mapping answer-checked -> points
-						$object['positive'][] = $answersToPoints[$identifier];
+			$object['answer'][] = $this->DOMinnerHTML($simpleChoice);
+			$identifier = $simpleChoice->getAttribute('identifier');
+			
+			if (array_key_exists ($identifier, $answersToPoints)) {
+				// we have an explicit mapping answer-checked -> points
+				$object['positive'][] = $answersToPoints[$identifier];
+				$object['negative'][] = 0;
+			} else {
+				if ($isScorePerChoice) {
+					// each answer get the score per choice
+					if (in_array($identifier, $correctAnswerIdentifiers)) {
+						// correct answer
+						$object['positive'][] = $scorePerChoice;
+						$object['negative'][] = $isScoreReduction ? -$scorePerChoice : 0;
+					} else {
+						// wrong answer (points for not clicking)
+						$object['positive'][] = $isScoreReduction ? -$scorePerChoice : 0;
+						$object['negative'][] = $scorePerChoice;
+					}
+				} else {
+					/* we simulate "only completely correct answers get the maxscore"; 
+					 * we might have rounding errors; we can not fully simulate this case; learner wil get points for each correct answers (when not clicking wrong answers)
+					 * Example: maxscore=7; 2 out of 4 answers are correct; correct->+3; wrong->-6 */ 
+					if (in_array($identifier, $correctAnswerIdentifiers)) {
+						// correct answer (if clicked -> get the fraction of maxscore w.r.t. the number of correct answers) 
+						$object['positive'][] = intval ($maxscore / count($correctAnswerIdentifiers));
 						$object['negative'][] = 0;
 					} else {
-						if ($isScorePerChoice) {
-							// each answer get the score per choice
-							if (in_array($identifier, $correctAnswerIdentifiers)) {
-								// correct answer
-								$object['positive'][] = $scorePerChoice;
-								$object['negative'][] = $isScoreReduction ? -$scorePerChoice : 0;
-							} else {
-								// wrong answer (points for not clicking)
-								$object['positive'][] = $isScoreReduction ? -$scorePerChoice : 0;
-								$object['negative'][] = $scorePerChoice;
-							}
-						} else {
-							/* we simulate "only completely correct answers get the maxscore"; 
-							 * we might have rounding errors; we can not fully simulate this case; learner wil get points for each correct answers (when not clicking wrong answers)
-							 * Example: maxscore=7; 2 out of 4 answers are correct; correct->+3; wrong->-6 */ 
-							if (in_array($identifier, $correctAnswerIdentifiers)) {
-								// correct answer (if clicked -> get the fraction of maxscore w.r.t. the number of correct answers) 
-								$object['positive'][] = intval ($maxscore / count($correctAnswerIdentifiers));
-								$object['negative'][] = 0;
-							} else {
-								// wrong answer (if clicked --> - "~maxscore", i.e., you cannot get an overall > 0 for this item)
-								$object['positive'][] = -count($correctAnswerIdentifiers)*intval($maxscore/count($correctAnswerIdentifiers));	 
-								$object['negative'][] = 0;
-							}
-						}
+						// wrong answer (if clicked --> - "~maxscore", i.e., you cannot get an overall > 0 for this item)
+						$object['positive'][] = -count($correctAnswerIdentifiers)*intval($maxscore/count($correctAnswerIdentifiers));	 
+						$object['negative'][] = 0;
 					}
 				}
 			}
 		}
 		
 		$item->initFromArray($object, '', '');
-		$item->maxnumber = intval($choiceInteraction->getAttribute('maxChoices'));
 		return $item;
 	}
 	
 
+	private function getCorrectAnswerIdentifiers (DOMXPath $xpath): array {
+		$result = [];
+		foreach ($xpath->evaluate('/x:assessmentItem/x:responseDeclaration/x:correctResponse/x:value') as $value) {
+			if ($value instanceof DOMElement) {
+				$result[] = $value->nodeValue;
+			}
+		}
+		return $result;
+	}
+	
+	private function getAnswersToPoints (DOMXPath $xpath): array {
+		$result = [];
+		foreach ($xpath->evaluate('/x:assessmentItem/x:responseDeclaration/x:mapping/x:mapEntry') as $map) {
+			if ($map instanceof DOMElement) {
+				$result[$map->getAttribute('mapKey')] = intval ($map->getAttribute('mappedValue'));
+			}
+		}
+		return $result;
+	}
+	
+	private function getMaxScore (DOMXPath $xpath): int{
+		return intval ($xpath->evaluate('/x:assessmentItem/x:outcomeDeclaration[@identifier="MAXSCORE"]/x:defaultValue/x:value')[0]->nodeValue);
+	}
 	
 
 	private function DOMinnerHTML(DOMNode $element) {

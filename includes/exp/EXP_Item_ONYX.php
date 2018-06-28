@@ -78,8 +78,9 @@ class EXP_Item_ONYX extends EXP_Item {
 			<assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_v2p1p1.xsd http://www.w3.org/1998/Math/MathML http://www.w3.org/Math/XMLSchema/mathml2/mathml2.xsd">
 				<responseDeclaration identifier="RESPONSE_1" cardinality="single" baseType="identifier">
 					<correctResponse>
-						<value></value>
 					</correctResponse>
+					<mapping defaultValue="0">
+					</mapping>
 				</responseDeclaration>
 				<outcomeDeclaration identifier="MAXSCORE" cardinality="single" baseType="float">
 					<defaultValue>
@@ -99,25 +100,70 @@ class EXP_Item_ONYX extends EXP_Item {
 		
 		// set id and title
 		$dom->documentElement->setAttribute('identifier', 'easlit_' . $item->getId());
-		$dom->documentElement->setAttribute('title', 'easlit_' . $item->getTitle());
+		$dom->documentElement->setAttribute('title', $item->getTitle());
 			
 		// set points
 		$maxScore = $xpath->evaluate('/x:assessmentItem/x:outcomeDeclaration[@identifier="MAXSCORE"]/x:defaultValue/x:value')[0];
 		assert ($maxScore instanceof DOMElement);
 		$maxScore->nodeValue = $item->getPoints();
 		
-		$choiceInteraction = $xpath->evaluate('/x:assessmentItem/x:itemBody/x:choiceInteraction')[0];
-		assert ($choiceInteraction instanceof DOMElement);
-		
-		for ($i=0; $i<$item->getNumberOfAnswers(); $i++) {
-			
-			$item->getPointsChecked($index)
-			
+		$correctAnswerIdentifiers = [];	// [id]
+		$answersToPoints = [];	// [id => points]
+		$answers = [];	// [id => label]
+		for ($index=0; $index<$item->getNumberOfAnswers(); $index++) {
+			$answers['id' . $index] = $item->getAnswer($index);
+			$answersToPoints['id' . $index] = $item->getPointsChecked($index);
+			if ($item->getPointsChecked($index) == $item->getPoints()) {
+				$correctAnswerIdentifiers[] = 'id' . $index;
+			}
 		}
-		
+		$this->addCorrectAnswerIdentifiers($dom, $xpath, $correctAnswerIdentifiers);
+		$this->addAnswersToPoints($dom, $xpath, $answersToPoints);
+		$this->addQuestionAndAnswers ($dom, $xpath, $item->getDescription() . '<br/>' . $item->getQuestion(), $answers);
 		
 		return $dom;
 	}
+	
+	private function addCorrectAnswerIdentifiers (DOMDocument $dom, DOMXPath $xpath, array $correctAnswerIdentifiers) {
+		
+		$correctResponse = $xpath->evaluate('/x:assessmentItem/x:responseDeclaration/x:correctResponse')[0];
+		assert ($correctResponse instanceof DOMElement);
+		foreach ($correctAnswerIdentifiers as $id) {
+			$correctResponse->appendChild  ($dom->createElement('value', $id));
+		}
+			
+	}
+	
+	private function addAnswersToPoints (DOMDocument $dom, DOMXPath $xpath, array $answersToPoints) {
+		
+		$mapping = $xpath->evaluate('/x:assessmentItem/x:responseDeclaration/x:mapping')[0];
+		assert ($mapping instanceof DOMElement);
+		foreach ($answersToPoints as $id => $points) {
+			$mapEntry = $dom->createElement('mapEntry');
+			$mapEntry->setAttribute('mapKey', $id);
+			$mapEntry->setAttribute('mappedValue', $points);
+			$mapping->appendChild($mapEntry);
+		}
+	}
+	
+	private function addQuestionAndAnswers (DOMDocument $dom, DOMXPath $xpath, string $question, array $answers) {
+		
+		$itemBody = $xpath->evaluate('/x:assessmentItem/x:itemBody')[0];
+		assert ($itemBody instanceof DOMElement);
+		
+		$choiceInteraction = $xpath->evaluate('/x:assessmentItem/x:itemBody/x:choiceInteraction')[0];
+		assert ($choiceInteraction instanceof DOMElement);
+		
+		$itemBody->insertBefore($dom->createTextNode($question), $choiceInteraction);
+		
+		foreach ($answers as $id => $label) {
+			$simpleChoice = $dom->createElement("simpleChoice");
+			$simpleChoice->setAttribute('identifier', $id);
+			$simpleChoice->appendChild ($dom->createTextNode ($label));
+			$choiceInteraction->appendChild($simpleChoice);
+		}
+	}
+		
 	
 	private function createItemFileMC (EAL_ItemMC $item): DOMDocument {
 		
