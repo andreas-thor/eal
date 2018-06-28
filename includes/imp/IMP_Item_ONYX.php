@@ -226,12 +226,15 @@ class IMP_Item_ONYX extends IMP_Item {
 		
 		/* get the correct answers */
 		$correctAnswerIdentifiers = [];
-		foreach ($dom->documentElement->getElementsByTagName('responseDeclaration')[0]->getElementsByTagName('correctResponse')[0]->getElementsByTagName('value') as $value) {
-			if ($value instanceof DOMNode) {
+		foreach ($xpath->evaluate('/x:assessmentItem/x:responseDeclaration/x:correctResponse/x:value') as $value) {
+			if ($value instanceof DOMElement) {
 				$correctAnswerIdentifiers[] = $value->nodeValue;
 			}
 		}
 
+		/* get the max score */
+		$maxscore = $xpath->evaluate('/x:assessmentItem/x:outcomeDeclaration[@identifier="MAXSCORE"]/x:defaultValue/x:value')[0]->nodeValue;
+		
 		/* get the points mappings for all answers (if available) */
 		$mapEntry = $xpath->evaluate('/x:assessmentItem/x:responseDeclaration/x:mapping/x:mapEntry');
 		$answersToPoints = [];
@@ -241,23 +244,72 @@ class IMP_Item_ONYX extends IMP_Item {
 			}
 		}
 		
+		/* get the score per choice (if available) */
+		$isScorePerChoice = FALSE;
+		$spc = $xpath->evaluate('/x:assessmentItem/x:outcomeDeclaration[@identifier="SCORE_PER_CHOICE"]/x:defaultValue/x:value');
+		if ($spc instanceof DOMNodeList) {
+			if ($spc->length>0) {
+				$isScorePerChoice = TRUE;
+				$scorePerChoice = intval ($spc->item(0)->nodeValue);
+			}
+		}
+		
+		/* check if score reduction for wrong answer; default: false */
+		$isScoreReduction = FALSE;
+		$spcr = $xpath->evaluate('/x:assessmentItem/x:outcomeDeclaration[@identifier="SCORE_PER_CHOICE_REDUCTION"]/x:defaultValue/x:value');
+		if ($spcr instanceof DOMNodeList) {
+			if ($spcr->length>0) {
+				if ($spcr->item(0)->nodeValue == 'true') {
+					$isScoreReduction = TRUE;
+				}
+			}
+		}
 		
 		$object['answer'] = [];
 		$object['positive'] = [];
 		$object['negative'] = [];
+
 		$choiceInteraction = $xpath->evaluate('/x:assessmentItem/x:itemBody/x:choiceInteraction')[0];
 		if ($choiceInteraction instanceof DOMElement) {
-			foreach ($choiceInteraction->getElementsByTagName('simpleChoice') as $simpleChoice) {
+			
+			$simpleChoiceList = $choiceInteraction->getElementsByTagName('simpleChoice');
+			
+			foreach ($simpleChoiceList as $simpleChoice) {
 				if ($simpleChoice instanceof DOMElement) {
+					
 					$object['answer'][] = $this->DOMinnerHTML($simpleChoice);
-
 					$identifier = $simpleChoice->getAttribute('identifier');
-					if (in_array($identifier, $correctAnswerIdentifiers)) {
-						$object['positive'][] = array_key_exists ($identifier, $answersToPoints) ? $answersToPoints[$identifier] : 1;
+					
+					if (array_key_exists ($identifier, $answersToPoints)) {
+						// we have an explicit mapping answer-checked -> points
+						$object['positive'][] = $answersToPoints[$identifier];
 						$object['negative'][] = 0;
 					} else {
-						$object['positive'][] = array_key_exists ($identifier, $answersToPoints) ? $answersToPoints[$identifier] : -1;
-						$object['negative'][] = 0;
+						if ($isScorePerChoice) {
+							// each answer get the score per choice
+							if (in_array($identifier, $correctAnswerIdentifiers)) {
+								// correct answer
+								$object['positive'][] = $scorePerChoice;
+								$object['negative'][] = $isScoreReduction ? -$scorePerChoice : 0;
+							} else {
+								// wrong answer (points for not clicking)
+								$object['positive'][] = $isScoreReduction ? -$scorePerChoice : 0;
+								$object['negative'][] = $scorePerChoice;
+							}
+						} else {
+							/* we simulate "only completely correct answers get the maxscore"; 
+							 * we might have rounding errors; we can not fully simulate this case; learner wil get points for each correct answers (when not clicking wrong answers)
+							 * Example: maxscore=7; 2 out of 4 answers are correct; correct->+3; wrong->-6 */ 
+							if (in_array($identifier, $correctAnswerIdentifiers)) {
+								// correct answer (if clicked -> get the fraction of maxscore w.r.t. the number of correct answers) 
+								$object['positive'][] = intval ($maxscore / count($correctAnswerIdentifiers));
+								$object['negative'][] = 0;
+							} else {
+								// wrong answer (if clicked --> - "~maxscore", i.e., you cannot get an overall > 0 for this item)
+								$object['positive'][] = -count($correctAnswerIdentifiers)*intval($maxscore/count($correctAnswerIdentifiers));	 
+								$object['negative'][] = 0;
+							}
+						}
 					}
 				}
 			}
