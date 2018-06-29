@@ -4,8 +4,7 @@ require_once 'EXP_Item.php';
 
 class EXP_Item_ONYX extends EXP_Item {
 	
-	private $media = array ();
-	private $xml_MTImages = array();
+	private $images = array ();
 	
 	
 	public function __construct() {
@@ -20,6 +19,8 @@ class EXP_Item_ONYX extends EXP_Item {
 		
 		foreach ($itemids as $item_id) {
 
+			$this->images = [];
+			
 			/* load item */
 			$post = get_post($item_id);
 			if ($post == null) continue;	// item (post) does not exist
@@ -31,6 +32,12 @@ class EXP_Item_ONYX extends EXP_Item {
 			$zipItem->open($zipItemFilename, ZipArchive::CREATE);
 			$zipItem->addFromString('imsmanifest.xml', $this->createManifestFile($item->getId())->saveXML());
 			$zipItem->addFromString('easlit_' . $item_id . '.xml', $this->createItemFile($item)->saveXML());
+
+			/* add images to zip file */
+			foreach ($this->images as $from => $to) {
+				$zipItem->addFromString($to, file_get_contents($from));
+			}
+			
 			$zipItem->close();
 			
 			/* ... and zip all item-zip-files into a single download zip */
@@ -119,7 +126,9 @@ class EXP_Item_ONYX extends EXP_Item {
 		}
 		$this->addCorrectAnswerIdentifiers($dom, $xpath, $correctAnswerIdentifiers);
 		$this->addAnswersToPoints($dom, $xpath, $answersToPoints);
-		$this->addQuestionAndAnswers ($dom, $xpath, $item->getDescription() . '<br/>' . $item->getQuestion(), $answers);
+		
+		$descQuestion = $this->processAllImages($item->getDescription() . '<br/>' . $item->getQuestion());
+		$this->addQuestionAndAnswers ($dom, $xpath, $descQuestion, $answers);
 		
 		return $dom;
 	}
@@ -154,7 +163,9 @@ class EXP_Item_ONYX extends EXP_Item {
 		$choiceInteraction = $xpath->evaluate('/x:assessmentItem/x:itemBody/x:choiceInteraction')[0];
 		assert ($choiceInteraction instanceof DOMElement);
 		
-		$itemBody->insertBefore($dom->createTextNode($question), $choiceInteraction);
+		$fragment = $dom->createDocumentFragment();
+		$fragment->appendXML($question);
+		$itemBody->insertBefore($fragment, $choiceInteraction);
 		
 		foreach ($answers as $id => $label) {
 			$simpleChoice = $dom->createElement("simpleChoice");
@@ -172,18 +183,15 @@ class EXP_Item_ONYX extends EXP_Item {
 	
 	
 	/**
-	 * Images are replaced by new name (il_0_mob_[count]) and added to xml_MITImages (=> will later be added to the zip file9
+	 * Images are replaced by new name and added to images (=> will later be added to the zip file)
 	 * {@inheritDoc}
 	 * @see EXP_Item::processImage()
 	 */
 	protected function processImage(string $src): string {
 		
-		$key = "il_0_mob_" . count($this->media);
-		$this->media[$key] = $src;
-		$fileshort = array_pop(explode ("/", $src));
-		
-		$this->xml_MTImages[] = ['label' => $key, 'uri' => ('objects/' . $key . '/' . $fileshort)];
-		return $key;
+		$href = 'media/' . array_pop(explode ("/", $src));
+		$this->images[$src] = $href;
+		return urlencode($href);
 	}
 
 	

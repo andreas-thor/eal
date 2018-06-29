@@ -19,7 +19,7 @@ abstract class EXP_Item extends EXP_Object {
 	protected function processAllImages (string $html): string {
 		
 		return preg_replace_callback(
-			'|(<img[^>]+)src="([^"]*)"|',	// find all <img> elements
+			'|(<img[^>]+)src=["\']([^"\']*)["\']|',	// find all <img> elements
 			function ($match) {
 				
 				// if img is stored inline (src="data:image/png;base64,iVBOR....") --> do nothing; otherwise call callback function
