@@ -43,6 +43,7 @@ require_once 'includes/exp/EXP_Term_JSON.php';
 require_once(__DIR__ . "/../../../wp-admin/includes/screen.php");
 
 
+
 /* add JQuery */
 add_action("admin_enqueue_scripts", function () {
 	wp_enqueue_script("jquery");
@@ -80,6 +81,9 @@ register_activation_hook(__FILE__, function () {
 	DB_LearnOut::createTables();
 	DB_Term::createTables();
 	DB_TestResult::createTables();
+	
+	RoleTaxonomy::init();
+	
 });
 
 
@@ -90,8 +94,6 @@ add_action('init', function () {
 		session_start();
 	}
 	
-
-	RoleTaxonomy::init();
 	
 	// register custom post types
 	(new CPT_Item())->registerType();
@@ -104,9 +106,16 @@ add_action('init', function () {
 	
 	
 	
+// 	RoleTaxonomy::init();
+	
 	
 	$php_page = getCurrentPHPFile();
 
+	
+	// set domain
+	if (isset ($_REQUEST["domain"])) {
+		RoleTaxonomy::set_current_domain($_REQUEST["domain"]);
+	}
 	
 	// standard page
 	if ((in_array ($php_page, ['edit.php', 'post.php', 'post-new.php'])) && (!isset ($_REQUEST["page"]))) {
@@ -317,7 +326,7 @@ function setAdminMenu() {
 			"href" => sprintf('%s/wp-admin/profile.php#roleman', site_url())
 		));
 		
-		
+		setAdminMenu_Domain($wp_admin_bar);
 		setAdminMenu_Download_Item ($wp_admin_bar);
 		setAdminMenu_Upload_Item ($wp_admin_bar);
 		setAdminMenu_Upload_TestResult( $wp_admin_bar);
@@ -332,22 +341,49 @@ function setAdminMenu() {
 	}, 999);
 	
 	add_action('show_user_profile', function ($user) {
-		RoleTaxonomy::showCurrentRole($user);
+		// RoleTaxonomy::showCurrentRole($user);
 	});
 	add_action('edit_user_profile', function ($user) {
-		RoleTaxonomy::showCurrentRole($user);
+		// RoleTaxonomy::showCurrentRole($user);
 	});
-	add_action('profile_update', function ($user_id, $old_user_data) {
-		RoleTaxonomy::setCurrentRole($user_id, $old_user_data);
+	add_action('profile_update', function (int $user_id) {
+		// RoleTaxonomy::setCurrentRole($user_id, $_REQUEST['userroles']);
 	});
 }
 
 
-function setAdminMenu_Download_Item($wp_admin_bar) {
+
+function setAdminMenu_Domain($wp_admin_bar) {
+
 	
-	?><script type="text/javascript">
-		console.log("<?= site_url() ?>");
-	</script><?php 
+	$roleIcon = '';
+	switch (RoleTaxonomy::get_current_user_role()) {
+		case 'author': $roleIcon = 'dashicons-admin-users'; break;
+		case 'editor': $roleIcon = 'dashicons-groups'; break;
+		default: $roleIcon = '';
+	}
+	
+	// "title" => sprintf("<div class='wp-menu-image dashicons-before %s'>&nbsp;%s</div>", (RoleTaxonomy::getCurrentRoleType() == "author") ? "dashicons-admin-users" : "dashicons-groups", RoleTaxonomy::getCurrentRoleDomain()["label"]),
+	
+	
+	$wp_admin_bar->add_menu( array(
+		'id' => 'eal_domain',
+		'title' => sprintf("<div class='wp-menu-image dashicons-before %s'>&nbsp;%s</div>", $roleIcon, RoleTaxonomy::getDomains()[RoleTaxonomy::get_current_domain()]),
+		'href' => FALSE ) );
+	
+	
+	foreach (RoleTaxonomy::getDomains() as $name => $label) {
+		$wp_admin_bar->add_menu( array(
+			'parent' => 'eal_domain',
+			'title' => $label,
+			'href' => sprintf('%s%sdomain=%s', $_SERVER['REQUEST_URI'], $_SERVER['QUERY_STRING']=='' ? '?' : '&', $name)
+		));
+		
+	}
+	
+}
+
+function setAdminMenu_Download_Item($wp_admin_bar) {
 	
 	$itemids = NULL;
 	

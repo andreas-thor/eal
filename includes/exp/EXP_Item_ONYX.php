@@ -155,7 +155,7 @@ class EXP_Item_ONYX extends EXP_Item {
 		}
 	}
 	
-	private function addQuestionAndAnswers (DOMDocument $dom, DOMXPath $xpath, string $question, array $answers) {
+	private function addQuestionAndAnswers (DOMDocument $dom, DOMXPath $xpath, string $descQuestion, array $answers) {
 		
 		$itemBody = $xpath->evaluate('/x:assessmentItem/x:itemBody')[0];
 		assert ($itemBody instanceof DOMElement);
@@ -163,8 +163,17 @@ class EXP_Item_ONYX extends EXP_Item {
 		$choiceInteraction = $xpath->evaluate('/x:assessmentItem/x:itemBody/x:choiceInteraction')[0];
 		assert ($choiceInteraction instanceof DOMElement);
 		
+
 		$fragment = $dom->createDocumentFragment();
-		$fragment->appendXML($question);
+		
+		libxml_use_internal_errors(true);
+		$isXML = simplexml_load_string("<?xml version='1.0'>" . $descQuestion);
+		if ($isXML === FALSE) {
+			$fragment->appendChild($dom->createCDATASection($descQuestion));
+		} else {
+			$fragment->appendXML($descQuestion);
+		}
+		
 		$itemBody->insertBefore($fragment, $choiceInteraction);
 		
 		foreach ($answers as $id => $label) {
