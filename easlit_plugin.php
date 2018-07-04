@@ -231,12 +231,13 @@ function setMainMenu() {
 
 		// Menu: Metadata
 		$menuslug = 'edit.php?post_type=learnout';
-		$domain = RoleTaxonomy::getCurrentRoleDomain();
+		$domain = RoleTaxonomy::getCurrentDomain();
+		$domainLabel = RoleTaxonomy::getDomainLabel($domain);
 		
 		add_menu_page('eal_page_metadata', 'Metadata', 'edit_posts', $menuslug, '', 'dashicons-tag', 32);
 		add_submenu_page($menuslug, 'Learning Outcomes', '<div class="dashicons-before dashicons-welcome-learn-more" style="display:inline">&nbsp;</div> Learn. Outcomes', 'edit_posts', 'edit.php?post_type=learnout');
-		if ($domain["name"] != "") {
-			add_submenu_page($menuslug, $domain["label"], '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> ' . $domain["label"], 'edit_posts', 'edit-tags.php?taxonomy=' . $domain["name"]);
+		if ($domain != "") {
+			add_submenu_page($menuslug, $domainLabel, '<div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> ' . $domainLabel, 'edit_posts', 'edit-tags.php?taxonomy=' . $domain);
 		}
 		// add_submenu_page($menuslug, 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import-taxonomy', ['PAG_Taxonomy_Import', 'createPage']);
 		
@@ -320,12 +321,6 @@ function setAdminMenu() {
 			'title' => '<div style="width:10em"><a href="' . site_url() . '/wp-admin/"><img style="display:block; margin-top:1em; margin-left:-1em; width:11em"  src="' . plugin_dir_url(__FILE__) . 'Logo_EAs.LiT.png"></a></div>'
 		));
 		
-		$wp_admin_bar->add_menu(array(
-			"id" => "eal_currentRole",
-			"title" => sprintf("<div class='wp-menu-image dashicons-before %s'>&nbsp;%s</div>", (RoleTaxonomy::getCurrentRoleType() == "author") ? "dashicons-admin-users" : "dashicons-groups", RoleTaxonomy::getCurrentRoleDomain()["label"]),
-			"href" => sprintf('%s/wp-admin/profile.php#roleman', site_url())
-		));
-		
 		setAdminMenu_Domain($wp_admin_bar);
 		setAdminMenu_Download_Item ($wp_admin_bar);
 		setAdminMenu_Upload_Item ($wp_admin_bar);
@@ -363,12 +358,9 @@ function setAdminMenu_Domain($wp_admin_bar) {
 		default: $roleIcon = '';
 	}
 	
-	// "title" => sprintf("<div class='wp-menu-image dashicons-before %s'>&nbsp;%s</div>", (RoleTaxonomy::getCurrentRoleType() == "author") ? "dashicons-admin-users" : "dashicons-groups", RoleTaxonomy::getCurrentRoleDomain()["label"]),
-	
-	
 	$wp_admin_bar->add_menu( array(
 		'id' => 'eal_domain',
-		'title' => sprintf("<div class='wp-menu-image dashicons-before %s'>&nbsp;%s</div>", $roleIcon, RoleTaxonomy::getDomains()[RoleTaxonomy::get_current_domain()]),
+		'title' => sprintf("<div class='wp-menu-image dashicons-before %s'>&nbsp;%s</div>", $roleIcon, RoleTaxonomy::getDomainLabel(RoleTaxonomy::getCurrentDomain())),
 		'href' => FALSE ) );
 	
 	
@@ -376,7 +368,7 @@ function setAdminMenu_Domain($wp_admin_bar) {
 		$wp_admin_bar->add_menu( array(
 			'parent' => 'eal_domain',
 			'title' => $label,
-			'href' => sprintf('%s%sdomain=%s', $_SERVER['REQUEST_URI'], $_SERVER['QUERY_STRING']=='' ? '?' : '&', $name)
+			'href' => sprintf('%s%sdomain=%s', $_SERVER['REQUEST_URI'], ($_SERVER['QUERY_STRING']=='') ? '?' : '&', $name)
 		));
 		
 	}
@@ -603,16 +595,16 @@ function setDashboard() {
 				
 				/* number of terms of current domain */
 				printf('<table border="0">');
-				$domain = RoleTaxonomy::getCurrentRoleDomain();
-				if ($domain["name"] != "") {
-					$term_count = wp_count_terms($domain["name"], array(
+				$domain = RoleTaxonomy::getCurrentDomain();
+				if ($domain != "") {
+					$term_count = wp_count_terms($domain, array(
 						'hide_empty' => false
 					));
 					printf('
 				<tr>
 					<td style="width:11em"><div class="dashicons-before dashicons-networking" style="display:inline">&nbsp;</div> %1$s</td>
 					<td align="right" style="width:4em"><a href="edit-tags.php?taxonomy=%2$s">%3$d</a></td>
-				</tr>', $domain["label"], $domain["name"], $term_count);
+				</tr>', RoleTaxonomy::getDomainLabel($domain), $domain, $term_count);
 				}
 				
 				/* number of learning outcomes */

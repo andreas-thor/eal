@@ -246,7 +246,7 @@ abstract class CPT_Object {
 				break;
 	
 			case 'taxonomy':
-				foreach (wp_get_post_terms($post->ID, RoleTaxonomy::getCurrentRoleDomain()["name"]) as $term) {
+				foreach (wp_get_post_terms($post->ID, RoleTaxonomy::getCurrentDomain()) as $term) {
 					printf ('<a href="%1$s">%2$s</a><br/>', add_query_arg ('taxonomy', $term->term_id , $basic_url), $term->name);
 				}
 				break;
@@ -431,7 +431,7 @@ abstract class CPT_Object {
 		global $typenow, $wp_query;
 	
 		// an array of all the taxonomyies you want to display. Use the taxonomy name or slug
-		$taxonomies = array(RoleTaxonomy::getCurrentRoleDomain()["name"]);
+		$taxonomies = array(RoleTaxonomy::getCurrentDomain());
 	
 		// must set this to the post type you want the filter(s) displayed on
 		if( $typenow == $this->type ){
@@ -455,7 +455,7 @@ abstract class CPT_Object {
 			
 			wp_dropdown_categories(array(
 					'show_option_all' =>  __("Show All Topics"),
-					'taxonomy'        =>  RoleTaxonomy::getCurrentRoleDomain()["name"],
+					'taxonomy'        =>  RoleTaxonomy::getCurrentDomain(),
 					'name'            =>  'taxonomy',
 					'orderby'         =>  'name',
 					'selected'        =>  $wp_query->query['taxonomy'] ?? '',

@@ -1,6 +1,6 @@
 <?php
 
-// TODO: Delete Review (in POst Tabelle) --> löschen in Review-Tabelle
+// TODO: Delete Review (in POst Tabelle) --> lï¿½schen in Review-Tabelle
 
 require_once 'CPT_Object.php';
 require_once __DIR__ . '/../eal/EAL_Review.php';
@@ -96,8 +96,8 @@ class CPT_Review extends CPT_Object {
 		
 		$review = DB_Review::loadFromDB($post->ID);
 		
-		$domain = RoleTaxonomy::getCurrentRoleDomain();
-		if (($domain["name"] != "") && ($review->getItem()->getDomain() != $domain["name"])) {
+		$domain = RoleTaxonomy::getCurrentDomain();
+		if (($domain != "") && ($review->getItem()->getDomain() != $domain)) {
 			wp_die ("Reviewed item does not belong to your current domain!");
 		}
 		
@@ -195,10 +195,10 @@ class CPT_Review extends CPT_Object {
 	public function WPCB_posts_join ($join, $checktype = TRUE) {
 		global $wp_query, $wpdb;
 		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) { 
-			$domain = RoleTaxonomy::getCurrentRoleDomain();
+			$domain = RoleTaxonomy::getCurrentDomain();
 				
 			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} AS R ON (R.id = {$wpdb->posts}.ID) ";
-			$join .= " JOIN {$wpdb->prefix}eal_item AS I ON (I.id = R.item_id " . ( ($domain["name"]!="") ? "AND I.domain = '" . $domain["name"] . "')" : ")");
+			$join .= " JOIN {$wpdb->prefix}eal_item AS I ON (I.id = R.item_id " . ( ($domain!="") ? "AND I.domain = '" . $domain . "')" : ")");
 			$join .= " JOIN {$wpdb->posts} AS postitem ON (I.id = postitem.id) ";
 			$join .= " JOIN {$wpdb->users} UI ON (UI.id = postitem.post_author) ";
 			$join .= " JOIN {$wpdb->users} UR ON (UR.id = {$wpdb->posts}.post_author) ";

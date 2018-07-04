@@ -16,7 +16,7 @@ class CPT_Item extends CPT_Object{
 		$this->cap_type = 'item';
 		$this->dashicon = 'dashicons-format-aside';
 		$this->supports = array('title', 'revisions');
-		$this->taxonomies = array(RoleTaxonomy::getCurrentRoleDomain()["name"]);
+		$this->taxonomies = array(RoleTaxonomy::getCurrentDomain());
 		
 		
 		$this->table_columns = array (
@@ -163,9 +163,9 @@ class CPT_Item extends CPT_Object{
 		parent::WPCB_register_meta_box_cb();
 		
 		// check for correct domain 
-		$domain = RoleTaxonomy::getCurrentRoleDomain();
-		if (($domain["name"] != "") && ($item->getDomain() != $domain["name"])) {
-			wp_die ("Item does not belong to your current domain!");
+		$domain = RoleTaxonomy::getCurrentDomain();
+		if (($domain != '') && ($item->getDomain() != $domain)) {
+			wp_die ('Item does not belong to your current domain!');
 		}
 		
 		// check for edit capabilities
@@ -217,8 +217,8 @@ class CPT_Item extends CPT_Object{
 		global $wp_query, $wpdb;
 	
 		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
-			$domain = RoleTaxonomy::getCurrentRoleDomain();
-			$join .= " JOIN {$wpdb->prefix}eal_item I ON (I.id = {$wpdb->posts}.ID " . (($domain["name"] != "") ? "AND I.domain = '" . $domain["name"] . "')" : ")"); 
+			$domain = RoleTaxonomy::getCurrentDomain();
+			$join .= " JOIN {$wpdb->prefix}eal_item I ON (I.id = {$wpdb->posts}.ID " . (($domain != "") ? "AND I.domain = '" . $domain . "')" : ")"); 
 			$join .= " JOIN {$wpdb->users} U ON (U.id = {$wpdb->posts}.post_author) ";
 			$join .= " LEFT OUTER JOIN {$wpdb->prefix}eal_learnout L ON (L.id = I.learnout_id)";
 		}
@@ -317,7 +317,7 @@ class CPT_Item extends CPT_Object{
 			
 			if (isset ($_REQUEST['taxonomy']) && ($_REQUEST['taxonomy']>0))	{
 				
-				$children = get_term_children( $_REQUEST['taxonomy'], RoleTaxonomy::getCurrentRoleDomain()["name"] );
+				$children = get_term_children( $_REQUEST['taxonomy'], RoleTaxonomy::getCurrentDomain());
 				array_push($children, $_REQUEST['taxonomy']);
 				$where .= sprintf (' AND %1$s.ID IN (SELECT TR.object_id FROM %2$s TT JOIN %3$s TR ON (TT.term_taxonomy_id = TR.term_taxonomy_id) WHERE TT.term_id IN ( %4$s ))',
 					$wpdb->posts , $wpdb->term_taxonomy, $wpdb->term_relationships, implode(', ', $children));

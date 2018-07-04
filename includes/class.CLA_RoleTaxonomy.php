@@ -9,13 +9,13 @@ class RoleTaxonomy {
 	
 	
 	public static function getCurrentBasket () {
-		$itemids = get_user_meta(get_current_user_id(), 'itembasket_' . RoleTaxonomy::getCurrentRoleDomain()["name"], true);
+		$itemids = get_user_meta(get_current_user_id(), 'itembasket_' . RoleTaxonomy::getCurrentDomain(), true);
 		if ($itemids == null) $itemids = array ();
 		return $itemids;
 	}
 	
 	public static function setCurrentBasket ($itemids) {
-		update_user_meta (get_current_user_id(), 'itembasket_' . RoleTaxonomy::getCurrentRoleDomain()["name"], $itemids);
+		update_user_meta (get_current_user_id(), 'itembasket_' . RoleTaxonomy::getCurrentDomain(), $itemids);
 	}
 	
 	public static function getDomains() {
@@ -24,17 +24,19 @@ class RoleTaxonomy {
 	
 	
 	public static function get_current_user_role(): string {
+		
+		$result = '';
 		if( is_user_logged_in() ) {
 			$user = wp_get_current_user();
 			$role = (array) $user->roles;
-			return $role[0];
-		} else {
-			return '';
+			if (count($role)>0) $result = reset ($role);	// get the first element
 		}
+		
+		return $result;
 	}
 	
 	
-	public static function get_current_domain(): string {
+	public static function getCurrentDomain(): string {
 
 		$key = 'eal_current_domain';
 		
@@ -56,6 +58,11 @@ class RoleTaxonomy {
 		return $domain;
 		
 	}
+	
+	public static function getDomainLabel ($domain) {
+		return self::getDomains()[$domain];
+	}
+	
 	
 	public static function set_current_domain(string $domain) {
 		
@@ -335,32 +342,10 @@ class RoleTaxonomy {
 	
 	
 	public static function getCurrentRoleType () {
-
-		$current_role = self::getCurrentRole(get_current_user_id());
-		
-		if ($current_role == "administrator") 		return "administrator";
-		if (substr($current_role, 0, 2) == "e_") 	return "editor";
-		if (substr($current_role, 0, 2) == "a_") 	return "author";
-		
-		return "";
+		return self::get_current_user_role();
 	}
 	
 	
-	public static function getCurrentRoleDomain () {
-		
-		$result = array ("name" => "", "label" => "");
-		
-		$current_role = self::getCurrentRole(get_current_user_id());
-		
-		if ((!isset($current_role)) ||  ($current_role== "")) return $result;
-		if ($current_role == "administrator") return $result;
-		
-		$result["name"] = substr($current_role, 2);
-		$result["label"] = RoleTaxonomy::getDomains()[$result["name"]];
-
-		return $result;
-		
-	}
 	
 	
 	/**
@@ -372,13 +357,12 @@ class RoleTaxonomy {
 		if ($post->post_author == get_current_user_id()) return TRUE;	// current user
 		if ($post->post_status == "draft") return FALSE;
 
-		$current_role = self::getCurrentRole(get_current_user_id());
-		
-		if ($current_role == "administrator") 		return TRUE;	// admin
-		if (substr($current_role, 0, 2) == "e_") 	return TRUE;	// editor
-		if (substr($current_role, 0, 2) == "a_") 	return FALSE;	// author
-		
-		return FALSE;
+		switch (self::get_current_user_role()) {
+			case 'author': return FALSE;
+			case 'editor': return TRUE;
+			case 'administrator': return TRUE;
+			default: return FALSE;
+		}
 	}
 	
 	

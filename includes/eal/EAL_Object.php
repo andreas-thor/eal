@@ -17,7 +17,7 @@ abstract class EAL_Object {
 	function __construct (int $id) {
 		
 		$this->id = $id;
-		$this->domain = RoleTaxonomy::getCurrentRoleDomain()["name"] ?? '';
+		$this->domain = RoleTaxonomy::getCurrentDomain() ?? '';
 		$this->level = new EAL_Level();
 	}
 	

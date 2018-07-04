@@ -67,7 +67,7 @@ class DB_Learnout {
 		global $wpdb;
 		
 		if ($domain == NULL) {
-			$domain = RoleTaxonomy::getCurrentRoleDomain()["name"];
+			$domain = RoleTaxonomy::getCurrentDomain();
 		}
 			
 		$queryResult = $wpdb->get_results( "

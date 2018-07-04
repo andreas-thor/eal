@@ -119,7 +119,7 @@ abstract class EAL_Item extends EAL_Object {
 		$this->title = $title;
 		$this->description = $description;
 		$this->question = $question;
-		$this->setDomain($domain ?? RoleTaxonomy::getCurrentRoleDomain()["name"]);
+		$this->setDomain($domain ?? RoleTaxonomy::getCurrentDomain());
 	}
 	
 	

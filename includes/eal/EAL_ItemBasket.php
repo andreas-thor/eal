@@ -9,7 +9,7 @@ class EAL_ItemBasket {
 	 * @return array of item ids
 	 */
 	public static function get (): array {
-		$itemids = get_user_meta(get_current_user_id(), 'itembasket_' . RoleTaxonomy::getCurrentRoleDomain()["name"], true);
+		$itemids = get_user_meta(get_current_user_id(), 'itembasket_' . RoleTaxonomy::getCurrentDomain(), true);
 		if ($itemids == null) $itemids = array ();
 		return self::set($itemids);	// set checks for deleted items
 	}
@@ -26,7 +26,7 @@ class EAL_ItemBasket {
 			$join = join(", ", $itemids);	
 			$sql  = "SELECT DISTINCT P.id FROM {$wpdb->prefix}eal_item I JOIN {$wpdb->prefix}posts P ON (P.ID = I.ID) 
 				WHERE P.post_parent = 0 AND P.post_status IN ('publish', 'pending', 'draft') AND I.id IN ({$join}) 
-				AND I.domain = '" . RoleTaxonomy::getCurrentRoleDomain()["name"] . "'";
+				AND I.domain = '" . RoleTaxonomy::getCurrentDomain() . "'";
 			$itemids = $wpdb->get_col ($sql);
 					
 		}
@@ -37,7 +37,7 @@ class EAL_ItemBasket {
 			$result[] = intval($id);
 		}
 		
-		update_user_meta (get_current_user_id(), 'itembasket_' . RoleTaxonomy::getCurrentRoleDomain()["name"], $result);
+		update_user_meta (get_current_user_id(), 'itembasket_' . RoleTaxonomy::getCurrentDomain(), $result);
 		return $result;
 	}
 

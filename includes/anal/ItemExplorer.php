@@ -165,7 +165,7 @@ class ItemExplorer {
 		
 		if (substr( $cat, 0, 5 ) === "topic") {
 			$labels = [];
-			foreach (get_terms (['taxonomy' => RoleTaxonomy::getCurrentRoleDomain()['name'], 'hide_empty' => false, 'include' => $keys]) as $term) {
+			foreach (get_terms (['taxonomy' => RoleTaxonomy::getCurrentDomain(), 'hide_empty' => false, 'include' => $keys]) as $term) {
 				$labels[$term->term_id] = $term->name;
 			}
 			natcasesort ($labels);

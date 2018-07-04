@@ -15,7 +15,7 @@ class CPT_LearnOut extends CPT_Object {
 		$this->cap_type = $this->type;
 		$this->dashicon = "dashicons-welcome-learn-more";
 		$this->supports = array('title');
-		$this->taxonomies = array(RoleTaxonomy::getCurrentRoleDomain()["name"]);
+		$this->taxonomies = array(RoleTaxonomy::getCurrentDomain());
 		
 		$this->table_columns = array (
 			'cb' => '<input type="checkbox" />',
@@ -62,8 +62,8 @@ class CPT_LearnOut extends CPT_Object {
 		parent::WPCB_register_meta_box_cb();
 		
 		$learnout = DB_Learnout::loadFromDB($post->ID); 
-		$domain = RoleTaxonomy::getCurrentRoleDomain();
-		if (($domain["name"] != "") && ($learnout->getDomain() != $domain["name"])) {
+		$domain = RoleTaxonomy::getCurrentDomain();
+		if (($domain != "") && ($learnout->getDomain() != $domain)) {
 			wp_die ("Learning outcome  does not belong to your current domain!");
 		}
 		
@@ -105,8 +105,8 @@ class CPT_LearnOut extends CPT_Object {
 		global $wp_query, $wpdb;
 		
 		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
-			$domain = RoleTaxonomy::getCurrentRoleDomain();
-			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} L ON (L.id = {$wpdb->posts}.ID " . (($domain["name"]!="") ? "AND L.domain = '" . $domain["name"] . "')" : ")");
+			$domain = RoleTaxonomy::getCurrentDomain();
+			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} L ON (L.id = {$wpdb->posts}.ID " . (($domain!="") ? "AND L.domain = '" . $domain . "')" : ")");
 			$join .= " JOIN {$wpdb->users} U ON (U.id = {$wpdb->posts}.post_author) ";
 		}
 		return $join;
@@ -126,7 +126,7 @@ class CPT_LearnOut extends CPT_Object {
 			
 			if (isset ($_REQUEST['taxonomy']) && ($_REQUEST['taxonomy']>0))	{
 			
-				$children = get_term_children( $_REQUEST['taxonomy'], RoleTaxonomy::getCurrentRoleDomain()["name"] );
+				$children = get_term_children( $_REQUEST['taxonomy'], RoleTaxonomy::getCurrentDomain());
 				array_push($children, $_REQUEST['taxonomy']);
 				$where .= sprintf (' AND %1$s.ID IN (SELECT TR.object_id FROM %2$s TT JOIN %3$s TR ON (TT.term_taxonomy_id = TR.term_taxonomy_id) WHERE TT.term_id IN ( %4$s ))',
 						$wpdb->posts , $wpdb->term_taxonomy, $wpdb->term_relationships, implode(', ', $children));

@@ -15,7 +15,7 @@ class CPT_TestResult extends CPT_Object {
 		$this->cap_type = $this->type;
 		$this->dashicon = "dashicons-feedback";
 		$this->supports = array('title');
-		$this->taxonomies = array(RoleTaxonomy::getCurrentRoleDomain()["name"]);
+		$this->taxonomies = array(RoleTaxonomy::getCurrentDomain());
 		
 		$this->table_columns = array (
 			'cb' => '<input type="checkbox" />',
@@ -58,8 +58,8 @@ class CPT_TestResult extends CPT_Object {
 		parent::WPCB_register_meta_box_cb();
 		
 		$testresult = DB_TestResult::loadFromDB($post->ID); 
-		$domain = RoleTaxonomy::getCurrentRoleDomain();
-		if (($domain["name"] != "") && ($testresult->getDomain() != $domain["name"])) {
+		$domain = RoleTaxonomy::getCurrentDomain();
+		if (($domain != "") && ($testresult->getDomain() != $domain)) {
 			wp_die ("Learning outcome  does not belong to your current domain!");
 		}
 		
@@ -97,8 +97,8 @@ class CPT_TestResult extends CPT_Object {
 		global $wp_query, $wpdb;
 		
 		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
-			$domain = RoleTaxonomy::getCurrentRoleDomain();
-			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} R ON (R.id = {$wpdb->posts}.ID " . (($domain["name"]!="") ? "AND R.domain = '" . $domain["name"] . "')" : ")");
+			$domain = RoleTaxonomy::getCurrentDomain();
+			$join .= " JOIN {$wpdb->prefix}eal_{$this->type} R ON (R.id = {$wpdb->posts}.ID " . (($domain!="") ? "AND R.domain = '" . $domain . "')" : ")");
 			$join .= " JOIN {$wpdb->users} U ON (U.id = {$wpdb->posts}.post_author) ";
 		}
 		return $join;
