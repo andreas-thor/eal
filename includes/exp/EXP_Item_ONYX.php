@@ -35,7 +35,9 @@ class EXP_Item_ONYX extends EXP_Item {
 
 			/* add images to zip file */
 			foreach ($this->images as $from => $to) {
-				$zipItem->addFromString($to, file_get_contents($from));
+				$contents = @file_get_contents($from);
+				if ($contents === FALSE) continue;	// could not read file
+				$zipItem->addFromString($to, $contents);
 			}
 			
 			$zipItem->close();
@@ -81,9 +83,63 @@ class EXP_Item_ONYX extends EXP_Item {
 	
 	private function createItemFileSC (EAL_ItemSC $item): DOMDocument {
 		
-		$dom = DOMDocument::loadXML ('<?xml version="1.0" encoding="UTF-8"?>
+		$correctAnswerIdentifiers = [];	// [id]
+		$answersToPoints = [];	// [id => points]
+		$answers = [];	// [id => label]
+		for ($index=0; $index<$item->getNumberOfAnswers(); $index++) {
+			$answers['id' . $index] = $item->getAnswer($index);
+			$answersToPoints['id' . $index] = $item->getPointsChecked($index);
+			if ($item->getPointsChecked($index) == $item->getPoints()) {
+				$correctAnswerIdentifiers[] = 'id' . $index;
+			}
+		}
+		
+		$dom = $this->createDOM('single', 1);
+		$xpath = $this->createXPath($dom);
+		$this->addIdAndTitle ($dom, $item->getId(), $item->getTitle());
+		$this->addOverallPoints($dom, $xpath, $item->getPoints());
+		$this->addCorrectAnswerIdentifiers($dom, $xpath, $correctAnswerIdentifiers);
+		$this->addAnswersToPoints($dom, $xpath, $answersToPoints);
+		$this->addQuestionAndAnswers ($dom, $xpath, $item->getDescription(), $item->getQuestion(), $answers);
+		
+		return $dom;
+	}
+	
+	
+	private function createItemFileMC (EAL_ItemMC $item): DOMDocument {
+		
+		$points = 0;	// we have to re-calculate the overall points
+		$correctAnswerIdentifiers = [];	// [id]
+		$answersToPoints = [];	// [id => points]
+		$answers = [];	// [id => label]
+		
+		for ($index=0; $index<$item->getNumberOfAnswers(); $index++) {
+
+			$answers['id' . $index] = $item->getAnswer($index);
+			$answersToPoints['id' . $index] = $item->getPointsPos($index) - $item->getPointsNeg($index);	
+			if ($item->getPointsPos($index)>$item->getPointsNeg($index)) {
+				$correctAnswerIdentifiers[] = 'id' . $index;
+				$points += $answersToPoints['id' . $index];	// only correctly checked answer may get points 
+			} 
+		}
+		
+		$dom = $this->createDOM('multiple', 0);
+		$xpath = $this->createXPath($dom);
+		$this->addIdAndTitle ($dom, $item->getId(), $item->getTitle());
+		$this->addOverallPoints($dom, $xpath, $points);
+		$this->addCorrectAnswerIdentifiers($dom, $xpath, $correctAnswerIdentifiers);
+		$this->addAnswersToPoints($dom, $xpath, $answersToPoints);
+		$this->addQuestionAndAnswers ($dom, $xpath, $item->getDescription(), $item->getQuestion(), $answers);
+		
+		return $dom;
+	}
+
+	
+	private function createDOM (string $cardinality, int $maxChoices): DOMDocument {
+		
+		$xml = sprintf('<?xml version="1.0" encoding="UTF-8"?>
 			<assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_v2p1p1.xsd http://www.w3.org/1998/Math/MathML http://www.w3.org/Math/XMLSchema/mathml2/mathml2.xsd">
-				<responseDeclaration identifier="RESPONSE_1" cardinality="single" baseType="identifier">
+				<responseDeclaration identifier="RESPONSE_1" cardinality="%s" baseType="identifier">
 					<correctResponse>
 					</correctResponse>
 					<mapping defaultValue="0">
@@ -95,43 +151,28 @@ class EXP_Item_ONYX extends EXP_Item {
 					</defaultValue>
 				</outcomeDeclaration>
 				<itemBody>
-					<choiceInteraction responseIdentifier="RESPONSE_1" shuffle="true" maxChoices="1">
+					<choiceInteraction responseIdentifier="RESPONSE_1" shuffle="true" maxChoices="%d">
 					</choiceInteraction>
 				</itemBody>
-			</assessmentItem>');
+			</assessmentItem>', $cardinality, $maxChoices);
 		
-		assert ($dom instanceof DOMDocument);
+		return DOMDocument::loadXML ($xml);
+	}
+	
+	private function createXPath (DOMDocument $dom): DOMXPath {
+
 		$xpath = new DOMXPath($dom);
 		$rootNamespace = $dom->lookupNamespaceUri($dom->namespaceURI);
 		$xpath->registerNamespace('x', $rootNamespace);
-		
-		// set id and title
-		$dom->documentElement->setAttribute('identifier', 'easlit_' . $item->getId());
-		$dom->documentElement->setAttribute('title', $item->getTitle());
-			
-		// set points
-		$maxScore = $xpath->evaluate('/x:assessmentItem/x:outcomeDeclaration[@identifier="MAXSCORE"]/x:defaultValue/x:value')[0];
-		assert ($maxScore instanceof DOMElement);
-		$maxScore->nodeValue = $item->getPoints();
-		
-		$correctAnswerIdentifiers = [];	// [id]
-		$answersToPoints = [];	// [id => points]
-		$answers = [];	// [id => label]
-		for ($index=0; $index<$item->getNumberOfAnswers(); $index++) {
-			$answers['id' . $index] = $item->getAnswer($index);
-			$answersToPoints['id' . $index] = $item->getPointsChecked($index);
-			if ($item->getPointsChecked($index) == $item->getPoints()) {
-				$correctAnswerIdentifiers[] = 'id' . $index;
-			}
-		}
-		$this->addCorrectAnswerIdentifiers($dom, $xpath, $correctAnswerIdentifiers);
-		$this->addAnswersToPoints($dom, $xpath, $answersToPoints);
-		
-		$descQuestion = $this->processAllImages($item->getDescription() . '<br/>' . $item->getQuestion());
-		$this->addQuestionAndAnswers ($dom, $xpath, $descQuestion, $answers);
-		
-		return $dom;
+		return $xpath;
 	}
+	
+	private function addIdAndTitle (DOMDocument $dom, int $id, string $title) {
+		// set id and title
+		$dom->documentElement->setAttribute('identifier', 'easlit_' . $id);
+		$dom->documentElement->setAttribute('title', $title);
+	}
+	
 	
 	private function addCorrectAnswerIdentifiers (DOMDocument $dom, DOMXPath $xpath, array $correctAnswerIdentifiers) {
 		
@@ -141,6 +182,14 @@ class EXP_Item_ONYX extends EXP_Item {
 			$correctResponse->appendChild  ($dom->createElement('value', $id));
 		}
 			
+	}
+	
+	
+	private function addOverallPoints (DOMDocument $dom, DOMXPath $xpath, int $points) {
+		// set points: we have to adjus the points since we only get points for checked answers
+		$maxScore = $xpath->evaluate('/x:assessmentItem/x:outcomeDeclaration[@identifier="MAXSCORE"]/x:defaultValue/x:value')[0];
+		assert ($maxScore instanceof DOMElement);
+		$maxScore->nodeValue = $points;
 	}
 	
 	private function addAnswersToPoints (DOMDocument $dom, DOMXPath $xpath, array $answersToPoints) {
@@ -155,7 +204,9 @@ class EXP_Item_ONYX extends EXP_Item {
 		}
 	}
 	
-	private function addQuestionAndAnswers (DOMDocument $dom, DOMXPath $xpath, string $descQuestion, array $answers) {
+	private function addQuestionAndAnswers (DOMDocument $dom, DOMXPath $xpath, string $description, string $question, array $answers) {
+		
+		$descQuestion = $this->processAllImages($description . '<br/>' . $question);
 		
 		$itemBody = $xpath->evaluate('/x:assessmentItem/x:itemBody')[0];
 		assert ($itemBody instanceof DOMElement);
@@ -167,7 +218,7 @@ class EXP_Item_ONYX extends EXP_Item {
 		$fragment = $dom->createDocumentFragment();
 		
 		libxml_use_internal_errors(true);
-		$isXML = simplexml_load_string("<?xml version='1.0'>" . $descQuestion);
+		$isXML = simplexml_load_string("<?xml version='1.0'?><p>" . $descQuestion . "</p>");
 		if ($isXML === FALSE) {
 			$fragment->appendChild($dom->createCDATASection($descQuestion));
 		} else {
@@ -185,9 +236,7 @@ class EXP_Item_ONYX extends EXP_Item {
 	}
 		
 	
-	private function createItemFileMC (EAL_ItemMC $item): DOMDocument {
-		
-	}
+
 	
 	
 	

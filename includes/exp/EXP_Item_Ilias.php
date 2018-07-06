@@ -22,8 +22,10 @@ class EXP_Item_Ilias extends EXP_Item {
 		 
 		// copy media files (e.g., images) -- array is filled during createQPL/QTI /*
 		foreach ($this->media as $key => $file) {
+			$contents = @file_get_contents($file);
+			if ($contents === FALSE) continue;
 			$fileshort = array_pop(explode ("/", $file));
-			$zip->addFromString("{$this->getDownloadFileName()}/objects/{$key}/{$fileshort}", file_get_contents($file));
+			$zip->addFromString("{$this->getDownloadFileName()}/objects/{$key}/{$fileshort}", $contents);
 		}
 		
 		$zip->close();

@@ -188,8 +188,11 @@ class EXP_Item_Moodle extends EXP_Item {
 	 */
 	protected function processImage(string $src): string {
 		
+		$contents = @file_get_contents($src);
+		if ($contents === FALSE) return '';
+		
 		$extension = substr ($src, -3);
-		return 'data:image/' . $extension . ';base64,' . base64_encode(file_get_contents($src));
+		return 'data:image/' . $extension . ';base64,' . base64_encode($contents);
 	}
 	
 	
