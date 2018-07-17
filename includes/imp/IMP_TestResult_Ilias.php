@@ -4,6 +4,10 @@ require_once 'IMP_TestResult.php';
 
 class IMP_TestResult_Ilias extends IMP_TestResult {
 	
+	public function getTestDataFromFile (array $file): array {
+		// not supported; test data is loaded from item files
+	}
+	
 	
 	public function parseTestResultFromTestData(array $testdata, array $mapItemIds): array {
 		

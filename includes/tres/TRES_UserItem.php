@@ -11,6 +11,12 @@ class TRES_UserItem {
 		return ($wpdb->prefix) . 'eal_testresult_useritem';
 	}
 	
+	
+	/**
+	 * 
+	 * @param int $testresult_id
+	 * @param array $user_item_result  [ ['user_id'=>..., 'item_id'=>..., 'points'=>...] ]
+	 */
 	public static function saveToDB (int $testresult_id, array $user_item_result) {
 		
 		global $wpdb;
@@ -26,7 +32,8 @@ class TRES_UserItem {
 		// replace answers
 		$query = "REPLACE INTO " . self::getTableName() . " (test_id, user_id, item_id, points) VALUES ";
 		$query .= implode(', ', $insert);
-		$wpdb->query( $wpdb->prepare("$query ", $values));
+		$a = $wpdb->query( $wpdb->prepare("$query ", $values));
+		$b = 7;
 	}
 	
 	

@@ -36,6 +36,7 @@ require_once 'includes/exp/EXP_Item_ONYX.php';
 require_once 'includes/exp/EXP_Item_JSON.php';
 require_once 'includes/exp/EXP_Term_TXT.php';
 require_once 'includes/exp/EXP_Term_JSON.php';
+require_once 'includes/exp/EXP_TestResult_CSV.php';
 
 
 
@@ -152,6 +153,11 @@ add_action('init', function () {
 	}
 	
 	
+	// upload testresults 
+	if ((in_array ($_POST['action'], ['Upload'])) && ($php_page == 'admin.php')) {
+		(new CPT_TestResult())->addHooks();
+	}
+	
 	if ($php_page == 'revision.php') {
 		(new CPT_ItemSC())->addHooks();
 		(new CPT_ItemMC())->addHooks(); 
@@ -185,7 +191,12 @@ add_action('init', function () {
 			exit();
 		}
 		
-		
+		if ($_REQUEST['type'] == 'testresult') {
+			switch ($_REQUEST['format']) {
+				case 'csv': (new EXP_TestResult_CSV())->downloadTestResult ($_REQUEST["testresultid"]); break;
+			}
+			exit();
+		}
 	}
 	
 	if ($_REQUEST["page"] == "index") {
@@ -325,6 +336,7 @@ function setAdminMenu() {
 		setAdminMenu_Download_Item ($wp_admin_bar);
 		setAdminMenu_Upload_Item ($wp_admin_bar);
 		setAdminMenu_Upload_TestResult( $wp_admin_bar);
+		setAdminMenu_Download_TestResult( $wp_admin_bar);
 		setAdminMenu_Download_and_Upload_Topic ($wp_admin_bar);
 
 		$wp_admin_bar->remove_menu('view');
@@ -480,8 +492,35 @@ function setAdminMenu_Upload_TestResult($wp_admin_bar) {
 		'title' => 'Ilias',
 		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s', 'import', 'testresult', 'ilias')
 	));
+	
+	$wp_admin_bar->add_menu( array(
+		'parent' => 'eal_upload_testresult',
+		'title' => 'CSV',
+		'href' => sprintf('admin.php?page=%s&post_type=%s&format=%s', 'import', 'testresult', 'csv')
+	));
 }
 
+
+function setAdminMenu_Download_TestResult($wp_admin_bar) {
+	
+	if (getCurrentPHPFile() != 'post.php') return;
+	if ($_REQUEST['action'] != 'edit') return;
+	
+	$postid = $_REQUEST['post']; 
+	if (get_post_type($postid) != 'testresult') return;
+	
+	$wp_admin_bar->add_menu( array(
+		'id' => 'eal_download_testresult',
+		'title' => sprintf("<div class='wp-menu-image dashicons-before dashicons-download'>&nbsp;%s</div>", 'Download'),
+		'href' => FALSE ) );
+	
+	$wp_admin_bar->add_menu( array(
+		'parent' => 'eal_download_testresult',
+		'title' => 'CSV',
+		'href' => sprintf('admin.php?page=%s&type=%s&format=%s&testresultid=%s', 'download', 'testresult', 'csv', $postid)
+	));
+	
+}
 
 function setAdminMenu_Download_and_Upload_Topic($wp_admin_bar) {
 	

@@ -3,10 +3,14 @@
 abstract class IMP_TestResult {
 	
 	
-	
+	/**
+	 * @param array $testdata
+	 * @param array $mapItemIds
+	 * @return array [ ['user_id'=>..., 'item_id'=>..., 'points'=>...] 
+	 */
 	abstract public function parseTestResultFromTestData (array $testdata, array $mapItemIds): array;
 	
-	
+	abstract public function getTestDataFromFile (array $file): array;
 		
 	
 	/**

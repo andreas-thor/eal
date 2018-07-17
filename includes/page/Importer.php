@@ -6,6 +6,7 @@ require_once __DIR__ . '/../imp/IMP_Item_JSON.php';
 require_once __DIR__ . '/../imp/IMP_Item_ONYX.php';
 require_once __DIR__ . '/../imp/IMP_Term_JSON.php';
 require_once __DIR__ . '/../imp/IMP_Term_TXT.php';
+require_once __DIR__ . '/../imp/IMP_TestResult_CSV.php';
 
 class Importer {
 
@@ -44,7 +45,20 @@ class Importer {
 				$formatImporter->importTerms($file, $_REQUEST['taxonomy'], $_REQUEST['termid']);
 			}
 
-			if (($_REQUEST['post_type']=='item') || ($_REQUEST['post_type']=='testresult')) {
+			
+			if (($_REQUEST['post_type']=='testresult') && ($_REQUEST['format']!='ilias')) {
+				
+				$formatImporter = NULL;
+				switch ($_REQUEST['format']) {
+					case 'csv': $formatImporter = new IMP_TestResult_CSV(); break;
+				}
+				
+				$testdata = $formatImporter->getTestDataFromFile($file);
+				$formatImporter->importTestResult($testdata, []);
+				
+			}
+				
+			if (($_REQUEST['post_type']=='item') || (($_REQUEST['post_type']=='testresult') && ($_REQUEST['format']=='ilias'))) {
 				
 				$formatImporter = NULL;
 				switch ($_REQUEST['format']) {
