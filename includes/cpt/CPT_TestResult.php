@@ -69,8 +69,8 @@ class CPT_TestResult extends CPT_Object {
 		print ('<style> #minor-publishing { display: none; } </style>');
 		
 		add_meta_box('mb_description', 'Beschreibung', array ($testresult->getHTMLPrinter(), 'metaboxDescription'), $this->type, 'normal', 'default' );
-	
 		add_meta_box('mb_user_item_table', 'User-Item-Table', array ($testresult->getHTMLPrinter(), 'metaboxUserItemTable'), $this->type, 'normal', 'default' );
+		add_meta_box('mb_item_item_table', 'Item-Item-Table', array ($testresult->getHTMLPrinter(), 'metaboxItemItemTable'), $this->type, 'normal', 'default' );
 	}	
 
 	

@@ -83,7 +83,7 @@ class HTML_TestResult extends HTML_Object {
 			<tr>
 				<th>Trennschärfe</th>
 <?php 			for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {   ?>	
-					<th><?php printf('%1.3f', $this->getTestResult()->getTrennschaerfe($itemIndex)); ?></th>
+					<th><?php printf('%1.3f', $this->getTestResult()->getItemTrennschaerfe($itemIndex)); ?></th>
 <?php			} ?>
 			</tr>			
 			
@@ -110,7 +110,48 @@ class HTML_TestResult extends HTML_Object {
 	}
 		
 	
-	
+	public function metaboxItemItemTable () {
+?>
+		<table id='customers' style='border-width:1px; border-color:#222222'>
+			<tr>
+				<th></th>
+		<?php 	for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {   ?>
+				<th>
+						<span>
+							<a style="vertical-align:middle" class="page-title-action" href="admin.php?page=view_item&itemid=<?= $this->getTestResult()->getItemId($itemIndex) ?>">
+								<?= $this->getTestResult()->getItemId($itemIndex) ?>
+							</a>
+						</span>
+					</th>
+<?php			} ?>
+			</tr>
+		
+		
+		<?php 	for ($itemIndex1 = 0; $itemIndex1 < $this->getTestResult()->getNumberOfItems(); $itemIndex1++) { ?>
+		<tr>
+			<td>
+						<span>
+							<a style="vertical-align:middle" class="page-title-action" href="admin.php?page=view_item&itemid=<?= $this->getTestResult()->getItemId($itemIndex) ?>">
+								<?= $this->getTestResult()->getItemId($itemIndex1) ?>
+							</a>
+						</span>
+					</td>
+					
+							<?php 	for ($itemIndex2 = 0; $itemIndex2 < $itemIndex1; $itemIndex2++) { ?>
+					<td>
+					<?php printf('%1.2f', $this->getTestResult()->getItemCorrelation($itemIndex1, $itemIndex2)); ?> 
+					</td>
+<?php			} ?>					
+					<td colspan="<?= $this->getTestResult()->getNumberOfItems()-$itemIndex1 ?>"></td>
+					
+
+
+		</tr>
+<?php			} ?>
+
+		</table>
+<?php 		
+	}
 	
 	
 }

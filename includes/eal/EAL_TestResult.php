@@ -66,7 +66,7 @@ class EAL_TestResult extends EAL_Object  {
 		}
 
 		// set points
- 		$this->points = array_fill (0, count($this->allItems), array_fill (0, count($this->allUsers), NULL));
+ 		$this->points = array_fill (0, count($this->allItems), array_fill (0, count($this->allUsers), 0));
 		foreach ($object as $row) {
 			$this->points [array_search($row['item_id'], $this->allItems)][array_search($row['user_id'], $this->allUsers)] = $row['points'];
 		}
@@ -137,40 +137,31 @@ class EAL_TestResult extends EAL_Object  {
 	}
 
 
-	public function getTrennschaerfe (int $itemIndex): float {
+	public function getItemTrennschaerfe (int $itemIndex): float {
 		
 		$dataTestWithoutItem = array_fill (0, count($this->allUsers), 0);
 		for ($index=0; $index<$this->getNumberOfItems(); $index++) {
 			if ($index == $itemIndex) continue;	// do not consider current item
 			foreach ($this->points[$index] as $userIndex => $points) {
-				if (!is_null($points)) {
-					$dataTestWithoutItem[$userIndex] = $dataTestWithoutItem[$userIndex] + $points;
-				}
+				$dataTestWithoutItem[$userIndex] = $dataTestWithoutItem[$userIndex] + $points;
 			}
 		}
 
-		// remove users that did non answer this particular item
-		$dataItem = [];
-		foreach ($this->points[$itemIndex] as $userIndex => $points) {
-			if (!is_null($points)) {
-				$dataItem[$userIndex] = $points;
-			} else {
-				unset ($dataTestWithoutItem[$userIndex]);
-			}
-		}
-		
-// 		$dataItem = [1,2,5,8,9,10,15];
-// 		$dataTestWithoutItem = [13,22,28,31,35,45,80];
-		
-// 		$N = count($dataItem);
-		$varItem = stats_variance (array_values($dataItem));
-		$varTest = stats_variance (array_values($dataTestWithoutItem));
-		$coVarIT = stats_covariance (array_values($dataItem), array_values($dataTestWithoutItem)); // *$N/($N-1);
-		$result = $coVarIT / (sqrt ($varItem) * sqrt ($varTest));
-		
-		return $result;
+		return $this->getCorrelation($this->points[$itemIndex], $dataTestWithoutItem);
+	}
+
+	
+	public function getItemCorrelation (int $itemIndex1, int $itemIndex2): float {
+		return $this->getCorrelation($this->points[$itemIndex1], $this->points[$itemIndex2]);
 	}
 	
+	private function getCorrelation (array $x, array $y): float {
+		$varX = stats_variance (array_values($x));
+		$varY = stats_variance (array_values($y));
+		$coVarXY = stats_covariance (array_values($x), array_values($y));
+		$result = $coVarXY / (sqrt ($varX) * sqrt ($varY));
+		return $result;
+	}
 	
 	private function getAverage (int $itemIndex): float {
 		
