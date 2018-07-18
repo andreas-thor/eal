@@ -72,6 +72,22 @@ class HTML_TestResult extends HTML_Object {
 					</th>
 <?php			} ?>
 			</tr>
+			
+			<tr>
+				<th>Difficulty</th>
+<?php 			for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {   ?>	
+					<th><?php printf('% 3.1f', $this->getTestResult()->getItemDifficulty($itemIndex)); ?></th>
+<?php			} ?>
+			</tr>			
+			
+			<tr>
+				<th>Trennschärfe</th>
+<?php 			for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {   ?>	
+					<th><?php printf('%1.3f', $this->getTestResult()->getTrennschaerfe($itemIndex)); ?></th>
+<?php			} ?>
+			</tr>			
+			
+			
 <?php 		for ($userIndex = 0; $userIndex < $this->getTestResult()->getNumberOfUsers(); $userIndex++) { ?>
 			<tr>
 				<td>

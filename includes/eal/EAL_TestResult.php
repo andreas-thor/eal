@@ -66,7 +66,7 @@ class EAL_TestResult extends EAL_Object  {
 		}
 
 		// set points
-		$this->points = array_fill (0, count($this->allItems), array_fill (0, count($this->allUsers), NULL));
+ 		$this->points = array_fill (0, count($this->allItems), array_fill (0, count($this->allUsers), NULL));
 		foreach ($object as $row) {
 			$this->points [array_search($row['item_id'], $this->allItems)][array_search($row['user_id'], $this->allUsers)] = $row['points'];
 		}
@@ -116,6 +116,76 @@ class EAL_TestResult extends EAL_Object  {
 		}
 		return $this->points[$itemIndex][$userIndex];
 	}
+	
+	
+	
+	public function getItemDifficulty (int $itemIndex): float {
+		
+		if (($itemIndex<0) || ($itemIndex>=count($this->allItems))) return -1;	// index out of range
+		
+		// load item
+		$itemId = $this->getItemId($itemIndex);
+		$post = get_post($itemId);
+		if ($post == null) return -1;	// item (post) does not exist
+		
+		$item = DB_Item::loadFromDB($itemId, $post->post_type);
+		$item->getPoints();		
+		
+ 		return 100*$this->getAverage($itemIndex)/$item->getPoints();
+		
+		
+	}
+
+
+	public function getTrennschaerfe (int $itemIndex): float {
+		
+		$dataTestWithoutItem = array_fill (0, count($this->allUsers), 0);
+		for ($index=0; $index<$this->getNumberOfItems(); $index++) {
+			if ($index == $itemIndex) continue;	// do not consider current item
+			foreach ($this->points[$index] as $userIndex => $points) {
+				if (!is_null($points)) {
+					$dataTestWithoutItem[$userIndex] = $dataTestWithoutItem[$userIndex] + $points;
+				}
+			}
+		}
+
+		// remove users that did non answer this particular item
+		$dataItem = [];
+		foreach ($this->points[$itemIndex] as $userIndex => $points) {
+			if (!is_null($points)) {
+				$dataItem[$userIndex] = $points;
+			} else {
+				unset ($dataTestWithoutItem[$userIndex]);
+			}
+		}
+		
+// 		$dataItem = [1,2,5,8,9,10,15];
+// 		$dataTestWithoutItem = [13,22,28,31,35,45,80];
+		
+// 		$N = count($dataItem);
+		$varItem = stats_variance (array_values($dataItem));
+		$varTest = stats_variance (array_values($dataTestWithoutItem));
+		$coVarIT = stats_covariance (array_values($dataItem), array_values($dataTestWithoutItem)); // *$N/($N-1);
+		$result = $coVarIT / (sqrt ($varItem) * sqrt ($varTest));
+		
+		return $result;
+	}
+	
+	
+	private function getAverage (int $itemIndex): float {
+		
+		$sum = 0;
+		$count = 0;
+		foreach ($this->points[$itemIndex] as $userIndex => $points) {
+			if ($points != NULL) {
+				$sum += $points;
+				$count++;
+			}
+		}
+		return $sum/$count;
+
+	}
+	
 	
 	
 
