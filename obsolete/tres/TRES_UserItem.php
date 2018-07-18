@@ -12,6 +12,39 @@ class TRES_UserItem {
 	}
 	
 	
+	public function getNumberOfUsers(): int {
+		return count($this->allUsers);
+	}
+	
+	public function getNumberOfItems(): int {
+		return count($this->allItems);
+	}
+	
+	public function getUserId (int $userIndex): int {
+		if (($userIndex<0) || ($userIndex>=count($this->allUsers))) {
+			return -1;
+		}
+		return $this->allUsers[$userIndex];
+	}
+	
+	public function getItemId (int $itemIndex): int {
+		if (($itemIndex<0) || ($itemIndex>=count($this->allItems))) {
+			return -1;
+		}
+		return $this->allItems[$itemIndex];
+	}
+	
+	public function getPoints (int $itemIndex, int $userIndex) {
+		if (($itemIndex<0) || ($itemIndex>=count($this->allItems))) {
+			return NULL;
+		}
+		if (($userIndex<0) || ($userIndex>=count($this->allUsers))) {
+			return NULL;
+		}
+		return $this->points[$itemIndex][$userIndex];
+	}
+	
+	
 	/**
 	 * 
 	 * @param int $testresult_id
@@ -46,7 +79,7 @@ class TRES_UserItem {
 		$result->allUsers = $wpdb->get_col( "SELECT DISTINCT user_id FROM " . self::getTableName() . " WHERE test_id = {$testresult_id}");
 		$result->allItems = $wpdb->get_col( "SELECT DISTINCT item_id FROM " . self::getTableName() . " WHERE test_id = {$testresult_id}");
 
-		$result->points = array_fill (0, count($result->allItems), array_fill (0, count($result->allUsers), ''));
+		$result->points = array_fill (0, count($result->allItems), array_fill (0, count($result->allUsers), NULL));
 		
 			
 		$sqlres = $wpdb->get_results("SELECT user_id, item_id, points FROM " . self::getTableName() . " WHERE test_id = {$testresult_id}", ARRAY_A);

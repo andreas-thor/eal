@@ -2,6 +2,7 @@
 
 
 require_once 'EXP_TestResult.php';
+require_once __DIR__ . '/../db/DB_TestResult.php';
 
 class EXP_TestResult_CSV extends EXP_TestResult {
 	
@@ -13,16 +14,23 @@ class EXP_TestResult_CSV extends EXP_TestResult {
 	protected function generateExportFile (int $testResultId) {
 		
 		
-		$testData = TRES_UserItem::loadFromDB($testResultId);
+		$testResult = DB_TestResult::loadFromDB($testResultId);
 		
 		$handle = fopen($this->getDownloadFullname(), 'w');
 
-		fputcsv($handle, array_merge([''], $testData->allItems));
+		// write first line: '' + list of all item ids
+		$header = [''];
+		for ($itemIndex = 0; $itemIndex<$testResult->getNumberOfItems(); $itemIndex++) {
+			$header[] = $testResult->getItemId($itemIndex);
+		}
+		fputcsv($handle, $header);
 		
-		foreach ($testData->allUsers as $userIndex => $userId) {
-			$row = [$userId];
-			for ($itemIndex = 0; $itemIndex<count($testData->allItems); $itemIndex++) {
-				$row[] = $testData->points[$itemIndex][$userIndex];
+		// write one row per user: userid + points per item
+		for ($userIndex = 0; $userIndex<$testResult->getNumberOfUsers(); $userIndex++) {
+			$row = [$testResult->getUserId($userIndex)];
+			for ($itemIndex = 0; $itemIndex<$testResult->getNumberOfItems(); $itemIndex++) {
+				$points = $testResult->getPoints($itemIndex, $userIndex);
+				$row[] = ($points === NULL) ? '' : $points;
 			}
 			fputcsv($handle, $row);
 			

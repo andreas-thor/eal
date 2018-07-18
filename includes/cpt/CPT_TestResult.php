@@ -20,7 +20,9 @@ class CPT_TestResult extends CPT_Object {
 		$this->table_columns = array (
 			'cb' => '<input type="checkbox" />',
 			'result_title' => 'Title',
-			'last_modified' => 'Date'
+			'last_modified' => 'Date',
+			'no_of_items_in_testresult' => 'Items',
+			'no_of_users_in_testresult' => 'Users'
 		);
 		
 		$this->bulk_actions = array (
@@ -88,6 +90,8 @@ class CPT_TestResult extends CPT_Object {
 			$array .= ", R.title AS result_title";
 			$array .= ", {$wpdb->posts}.post_author AS result_author_id";
 			$array .= ", U.user_login AS result_author";
+			$array .= ", R.no_of_items AS no_of_items_in_testresult";
+			$array .= ", R.no_of_users AS no_of_users_in_testresult";
 		}
 		return $array;
 	}
@@ -111,6 +115,19 @@ class CPT_TestResult extends CPT_Object {
 	
 	
 	public function WPCB_posts_orderby($orderby_statement) {
+		global $wpdb, $wp_query;
+		
+		if ($wp_query->query["post_type"] == $this->type) {
+			
+			// default: last modified DESC
+			$orderby_statement = "{$wpdb->posts}.post_modified DESC";
+			
+			if ($wp_query->get('orderby') == $this->table_columns['result_title'])	$orderby_statement = "result_title {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['last_modified'])		$orderby_statement = "{$wpdb->posts}.post_modified {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['no_of_items_in_testresult'])		$orderby_statement = "no_of_items {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['no_of_users_in_testresult'])		$orderby_statement = "no_of_users {$wp_query->get('order')}";
+		}
+		
 		return $orderby_statement;
 	}
 	

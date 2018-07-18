@@ -53,8 +53,7 @@ class Importer {
 					case 'csv': $formatImporter = new IMP_TestResult_CSV(); break;
 				}
 				
-				$testdata = $formatImporter->getTestDataFromFile($file);
-				$formatImporter->importTestResult($testdata, []);
+				$formatImporter->importTestResult($file);
 				
 			}
 				

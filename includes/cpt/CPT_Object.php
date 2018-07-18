@@ -326,8 +326,17 @@ abstract class CPT_Object {
 			
 			case 'change_level':
 				if ($post->change_level > 0) echo ('<div class="dashicons-before dashicons-warning" style="display:inline">&nbsp;</div>');
-				break;				
-	
+				break;
+				
+			case 'no_of_items_in_testresult':
+				if ($post->no_of_items_in_testresult != NULL) printf ($post->no_of_items_in_testresult);
+				break;
+				
+			case 'no_of_users_in_testresult':
+				if ($post->no_of_users_in_testresult != NULL) printf ($post->no_of_users_in_testresult);
+				break;
+				
+				
 		}
 	}
 	

@@ -4,13 +4,10 @@ abstract class IMP_TestResult {
 	
 	
 	/**
-	 * @param array $testdata
-	 * @param array $mapItemIds
 	 * @return array [ ['user_id'=>..., 'item_id'=>..., 'points'=>...] 
 	 */
-	abstract public function parseTestResultFromTestData (array $testdata, array $mapItemIds): array;
 	
-	abstract public function getTestDataFromFile (array $file): array;
+	abstract public function getUserItemDataFromFile (array $file): array;
 		
 	
 	/**
@@ -19,12 +16,13 @@ abstract class IMP_TestResult {
 	 * @param bool $updateMetadataOnly
 	 * @return array map of itemids that have been imported / updated; [new Item Id => old Item Id]
 	 */
-	public function importTestResult (array $testdata, array $mapItemIds) {
+	public function importTestResult (array $testdata) {
 		
 		global $testresultToImport;
 
 		date_default_timezone_set(get_option('timezone_string'));
 		$testresultToImport = EAL_TestResult::createFromArray(0, ['post_title'=>'Import from ' . date('Y-m-d H:i:s')]);
+		$testresultToImport->initUserItemFromArray($this->getUserItemDataFromFile ($testdata));
 		
 		$postarr = array ();
 		$postarr['ID'] = 0;	
@@ -34,10 +32,6 @@ abstract class IMP_TestResult {
 		$postarr['post_content'] = microtime();
 		$id = wp_insert_post ($postarr);
 		
-		$user_item_result = $this->parseTestResultFromTestData($testdata, $mapItemIds);
-		TRES_UserItem::saveToDB($id, $user_item_result);
-		
-
 		
 	}
 	

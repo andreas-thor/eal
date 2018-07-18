@@ -83,7 +83,6 @@ register_activation_hook(__FILE__, function () {
 	DB_Term::createTables();
 	DB_TestResult::createTables();
 	
-	RoleTaxonomy::init();
 	
 });
 
@@ -108,6 +107,7 @@ add_action('init', function () {
 	
 	
 // 	RoleTaxonomy::init();
+	RoleTaxonomy::init();
 	
 	
 	$php_page = getCurrentPHPFile();

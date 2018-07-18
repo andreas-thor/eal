@@ -45,11 +45,11 @@ class PAG_Item_Bulkviewer {
 				
 				$testResultImporter = NULL;
 				switch ($testData['format']) {
-					case 'ilias': $testResultImporter = new IMP_TestResult_Ilias(); break;
+					case 'ilias': $testResultImporter = new IMP_TestResult_Ilias($mapItemids); break;
 				}
 				
 				if ($testResultImporter != NULL) {
-					$testResultImporter->importTestResult($testData, $mapItemids);
+					$testResultImporter->importTestResult($testData);
 				}
 				
 				

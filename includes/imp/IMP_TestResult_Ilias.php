@@ -4,22 +4,26 @@ require_once 'IMP_TestResult.php';
 
 class IMP_TestResult_Ilias extends IMP_TestResult {
 	
-	public function getTestDataFromFile (array $file): array {
-		// not supported; test data is loaded from item files
+	
+	private $mapItemIds;
+	
+	public function __construct(array $mapItemIds) {
+		$this->mapItemIds = $mapItemIds;
 	}
 	
 	
-	public function parseTestResultFromTestData(array $testdata, array $mapItemIds): array {
+	
+	public function getUserItemDataFromFile(array $file): array {
 		
 		$result = [];
 		
 		$mapQuestionId2ItemId = [];
-		foreach ($mapItemIds as $new_item_id => $old_item_id) {
-			$mapQuestionId2ItemId [$testdata['mapitemid2xml'][$old_item_id]] = $new_item_id;
+		foreach ($this->mapItemIds as $new_item_id => $old_item_id) {
+			$mapQuestionId2ItemId [$file['mapitemid2xml'][$old_item_id]] = $new_item_id;
 		}
 		
 		
-		$xml = file_get_contents ($testdata['testxml']);
+		$xml = file_get_contents ($file['testxml']);
 		$doc = new DOMDocument();
 		$doc->loadXML($xml);
 		$xpath = new DOMXPath($doc);

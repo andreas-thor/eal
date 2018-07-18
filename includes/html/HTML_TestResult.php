@@ -3,7 +3,6 @@
 require_once 'HTML_Object.php';
 require_once __DIR__ . '/../eal/EAL_TestResult.php';
 
-require_once __DIR__ . '/../tres/TRES_UserItem.php';
 
 class HTML_TestResult extends HTML_Object {
 	
@@ -33,10 +32,7 @@ class HTML_TestResult extends HTML_Object {
 	}
 	
 	public function metaboxUserItemTable () {
-		
-		$userItem = TRES_UserItem::loadFromDB($this->testresult->getId());
 		?>
-			
 			
 		<style>
 #customers {
@@ -66,20 +62,25 @@ class HTML_TestResult extends HTML_Object {
 		<table id='customers' style='border-width:1px; border-color:#222222'>
 			<tr>
 				<th></th>
-<?php 			foreach ($userItem->allUsers as $u) {   ?>	
-					<th><?= $u ?></th>
+<?php 			for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {   ?>	
+					<th>
+						<span>
+							<a style="vertical-align:middle" class="page-title-action" href="admin.php?page=view_item&itemid=<?= $this->getTestResult()->getItemId($itemIndex) ?>">
+								<?= $this->getTestResult()->getItemId($itemIndex) ?>
+							</a>
+						</span>
+					</th>
 <?php			} ?>
 			</tr>
-<?php 		foreach ($userItem->points as $itemIndex => $itemrow) { ?>
+<?php 		for ($userIndex = 0; $userIndex < $this->getTestResult()->getNumberOfUsers(); $userIndex++) { ?>
 			<tr>
 				<td>
-					<span>
-						<a style="vertical-align:middle" class="page-title-action" href="admin.php?page=view_item&itemid=<?= $userItem->allItems[$itemIndex] ?>">
-						<?= $userItem->allItems[$itemIndex] ?></a>
-					</span>
-				
-<?php 			foreach ($itemrow as $points) { ?>				
-					<td><?= $points ?></td>
+					<?= $this->getTestResult()->getUserId($userIndex) ?>
+				</td>
+<?php 			for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {  ?>				
+					<td>
+						<?= $this->getTestResult()->getPoints($itemIndex, $userIndex)  ?>
+					</td>
 <?php 			} ?>			
 			</tr>			
 <?php 		} ?>
