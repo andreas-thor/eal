@@ -8,7 +8,8 @@ class EAL_TestResult extends EAL_Object  {
 	private $title;
 	private $description;
 	
-	private $allUsers = [];
+	private $allUserIds = [];
+	private $allItemIds = [];
 	private $allItems = [];
 	private $points = [];
 	
@@ -16,8 +17,9 @@ class EAL_TestResult extends EAL_Object  {
 		parent::__construct($id);
 		$this->title = '';
 		$this->description = '';
-		$this->allUsers = [];
-		$this->allItems = [];
+		$this->allUserIds = [];
+		$this->allItemIds = [];
+		$this->allItems = [];	// [item_id => EAL_Item]
 		$this->points = [];
 	}
 	
@@ -54,21 +56,28 @@ class EAL_TestResult extends EAL_Object  {
 	public function initUserItemFromArray (array $object) {
 		
 		// add all users and items
-		$this->allUsers = [];
-		$this->allItems = [];
+		$this->allUserIds = [];
+		$this->allItemIds = [];
 		foreach ($object as $row) {
-			if (array_search($row['item_id'], $this->allItems) === FALSE) {
-				$this->allItems[] = $row['item_id'];
+			if (array_search($row['item_id'], $this->allItemIds) === FALSE) {
+				$this->allItemIds[] = $row['item_id'];
 			}
-			if (array_search($row['user_id'], $this->allUsers) === FALSE) {
-				$this->allUsers[] = $row['user_id'];
+			if (array_search($row['user_id'], $this->allUserIds) === FALSE) {
+				$this->allUserIds[] = $row['user_id'];
 			}
 		}
 
+		foreach ($this->allItemIds as $itemId) {
+			// load item
+			$post = get_post($itemId);
+			if ($post == null) continue;	// item (post) does not exist
+			$this->allItems [$itemId] = DB_Item::loadFromDB($itemId, $post->post_type);
+		}
+		
 		// set points
- 		$this->points = array_fill (0, count($this->allItems), array_fill (0, count($this->allUsers), 0));
+ 		$this->points = array_fill (0, count($this->allItemIds), array_fill (0, count($this->allUserIds), 0));
 		foreach ($object as $row) {
-			$this->points [array_search($row['item_id'], $this->allItems)][array_search($row['user_id'], $this->allUsers)] = $row['points'];
+			$this->points [array_search($row['item_id'], $this->allItemIds)][array_search($row['user_id'], $this->allUserIds)] = $row['points'];
 		}
 		
 	}
@@ -86,60 +95,51 @@ class EAL_TestResult extends EAL_Object  {
 	}
 	
 	public function getNumberOfUsers(): int {
-		return count($this->allUsers);
+		return count($this->allUserIds);
 	}
 	
 	public function getNumberOfItems(): int {
-		return count($this->allItems);
+		return count($this->allItemIds);
 	}
 	
 	public function getUserId (int $userIndex): int {
-		if (($userIndex<0) || ($userIndex>=count($this->allUsers))) {
+		if (($userIndex<0) || ($userIndex>=count($this->allUserIds))) {
 			return -1;
 		}
-		return $this->allUsers[$userIndex];
+		return $this->allUserIds[$userIndex];
 	}
 	
 	public function getItemId (int $itemIndex): int {
-		if (($itemIndex<0) || ($itemIndex>=count($this->allItems))) {
+		if (($itemIndex<0) || ($itemIndex>=count($this->allItemIds))) {
 			return -1;
 		}
-		return $this->allItems[$itemIndex];
+		return $this->allItemIds[$itemIndex];
 	}
 	
 	public function getPoints (int $itemIndex, int $userIndex) {
-		if (($itemIndex<0) || ($itemIndex>=count($this->allItems))) {
+		if (($itemIndex<0) || ($itemIndex>=count($this->allItemIds))) {
 			return NULL;
 		}
-		if (($userIndex<0) || ($userIndex>=count($this->allUsers))) {
+		if (($userIndex<0) || ($userIndex>=count($this->allUserIds))) {
 			return NULL;
 		}
 		return $this->points[$itemIndex][$userIndex];
 	}
 	
-	
+	private function getItem (int $itemIndex): EAL_Item {
+		return $this->allItems[$this->allItemIds[$itemIndex]];
+	}
 	
 	public function getItemDifficulty (int $itemIndex): float {
 		
-		if (($itemIndex<0) || ($itemIndex>=count($this->allItems))) return -1;	// index out of range
-		
-		// load item
-		$itemId = $this->getItemId($itemIndex);
-		$post = get_post($itemId);
-		if ($post == null) return -1;	// item (post) does not exist
-		
-		$item = DB_Item::loadFromDB($itemId, $post->post_type);
-		$item->getPoints();		
-		
- 		return 100*$this->getAverage($itemIndex)/$item->getPoints();
-		
-		
+		if (($itemIndex<0) || ($itemIndex>=count($this->allItemIds))) return -1;	// index out of range
+		return 100*$this->getAverage($itemIndex)/$this->getItem($itemIndex)->getPoints();
 	}
 
 
-	public function getItemTrennschaerfe (int $itemIndex): float {
+	public function getItemTotalCorrelation (int $itemIndex): float {
 		
-		$dataTestWithoutItem = array_fill (0, count($this->allUsers), 0);
+		$dataTestWithoutItem = array_fill (0, count($this->allUserIds), 0);
 		for ($index=0; $index<$this->getNumberOfItems(); $index++) {
 			if ($index == $itemIndex) continue;	// do not consider current item
 			foreach ($this->points[$index] as $userIndex => $points) {
@@ -151,15 +151,60 @@ class EAL_TestResult extends EAL_Object  {
 	}
 
 	
-	public function getItemCorrelation (int $itemIndex1, int $itemIndex2): float {
-		return $this->getCorrelation($this->points[$itemIndex1], $this->points[$itemIndex2]);
+	public function getInterItemCorrelation (): array {
+		
+		$result = [];
+		for ($itemIndex1 = 0; $itemIndex1<$this->getNumberOfItems(); $itemIndex1++) {
+			for ($itemIndex2 = 0; $itemIndex2<$this->getNumberOfItems(); $itemIndex2++) {
+				if ($itemIndex1<$itemIndex2) {
+					$result[$itemIndex1][$itemIndex2] = $this->getCorrelation($this->points[$itemIndex1], $this->points[$itemIndex2]);
+					$result[$itemIndex2][$itemIndex1] = $result[$itemIndex1][$itemIndex2];
+				}
+			}
+		}
+		return $result;
 	}
 	
-	private function getCorrelation (array $x, array $y): float {
+	public function getItemIdsByCategory (string $cat): array {
+		return ItemExplorer::groupBy($this->allItems, $this->allItemIds, $cat);
+	}
+	
+	public function getItemCorrelationByCategory (string $cat): array {
+		
+		$result = [];
+		$data = [];
+		$group = ItemExplorer::groupBy($this->allItems, $this->allItemIds, $cat);
+		
+		foreach ($group as $name => $itemIds) {
+			$result[$name] = [];
+			$data[$name] = array_fill (0, count($this->allUserIds), 0);
+			foreach ($itemIds as $itemId) {
+				$itemIndex = array_search($itemId, $this->allItemIds);
+				foreach ($this->points[$itemIndex] as $userIndex => $points) {
+					$data[$name][$userIndex] = $data[$name][$userIndex] + $points;
+				}
+			}
+		}
+			
+		foreach ($data as $name1 => $d1) {
+			foreach ($data as $name2 => $d2) {
+				if ($name1<$name2) {
+					$result[$name1][$name2] = $this->getCorrelation($d1, $d2);
+					$result[$name2][$name1] = $result[$name1][$name2];
+				}
+			}
+		}
+		
+		return $result;		
+	}
+	
+	
+	private function getCorrelation (array $x, array $y) {
+		
 		$varX = stats_variance (array_values($x));
 		$varY = stats_variance (array_values($y));
 		$coVarXY = stats_covariance (array_values($x), array_values($y));
-		$result = $coVarXY / (sqrt ($varX) * sqrt ($varY));
+		$result = (($varX==0) || ($varY==0)) ? NULL : $coVarXY / (sqrt ($varX) * sqrt ($varY));
 		return $result;
 	}
 	

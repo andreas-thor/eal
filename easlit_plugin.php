@@ -600,9 +600,9 @@ function setDashboard() {
 		unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_plugins']);
 		
 		
-		wp_add_dashboard_widget('phpinfo', '<i>PHP Info</i>', function () {
-			phpinfo();
-		});
+// 		wp_add_dashboard_widget('phpinfo', '<i>PHP Info</i>', function () {
+// 			phpinfo();
+// 		});
 		
 		wp_add_dashboard_widget('dashboard_items', '<i>Item Overview</i>', function () {
 			

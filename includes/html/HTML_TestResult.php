@@ -36,7 +36,7 @@ class HTML_TestResult extends HTML_Object {
 			
 		<style>
 #customers {
-    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    xxxfont-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
     border-collapse: collapse;
     width: 100%;
 }
@@ -49,13 +49,14 @@ class HTML_TestResult extends HTML_Object {
 #customers tr:nth-child(even){background-color: #f2f2f2;}
 
 #customers tr:hover {background-color: #ddd;}
+#customers td:hover {background-color: #ddd;}
 
 #customers th {
     padding-top: 12px;
     padding-bottom: 12px;
-    text-align: left;
-    background-color: #4CAF50;
-    color: white;
+    text-align: center;
+    xxxbackground-color: #4CAF50;
+    xxxcolor: white;
 }
 </style>
 		
@@ -74,17 +75,19 @@ class HTML_TestResult extends HTML_Object {
 			</tr>
 			
 			<tr>
-				<th>Difficulty</th>
-<?php 			for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {   ?>	
-					<th><?php printf('% 3.1f', $this->getTestResult()->getItemDifficulty($itemIndex)); ?></th>
-<?php			} ?>
+				<th>Item Difficulty</th>
+<?php 			for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {    
+					$diff = $this->getTestResult()->getItemDifficulty($itemIndex);
+					printf('<th style="background-color:%s">% 3.1f</th>', (($diff>=20) && ($diff<=80)) ? '#99FF99' : '#FF9999', $diff ); 
+				} ?>
 			</tr>			
 			
 			<tr>
-				<th>Trennschärfe</th>
-<?php 			for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {   ?>	
-					<th><?php printf('%1.3f', $this->getTestResult()->getItemTrennschaerfe($itemIndex)); ?></th>
-<?php			} ?>
+				<th>Item Total Correlation</th>
+<?php 			for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {  	
+					$corr = $this->getTestResult()->getItemTotalCorrelation($itemIndex);
+					printf('<th style="background-color:%s">%1.3f</th>', ($corr>0.3) ? '#99FF99' : '#FF9999', $corr );
+			} ?>
 			</tr>			
 			
 			
@@ -111,48 +114,94 @@ class HTML_TestResult extends HTML_Object {
 		
 	
 	public function metaboxItemItemTable () {
+
+		$names = [];
+		$groupHeader = [];
+		for ($itemIndex=0; $itemIndex<$this->getTestResult()->getNumberOfItems(); $itemIndex++) {
+			$itemId = $this->getTestResult()->getItemId($itemIndex);
+			$names[] = $itemIndex;
+			$groupHeader[$itemIndex] = sprintf('
+				<span>
+					<a style="vertical-align:middle" class="page-title-action" href="admin.php?page=view_item&itemid=%d">%s</a>
+				</span>',
+				$itemId, $itemId
+			);
+		}
+	
+		$this->printCorrelationMatrix($names, $groupHeader, $this->getTestResult()->getInterItemCorrelation());
+		
+	}
+	
+	
+	public function metaboxCorrelationByItemType () {
+		$this->metaboxCorrelationByCategory('type');
+	}
+	
+	public function metaboxCorrelationByDimension () {
+		$this->metaboxCorrelationByCategory('dim');
+	}
+	public function metaboxCorrelationByLevel () {
+		$this->metaboxCorrelationByCategory('level');
+	}
+	
+	private function metaboxCorrelationByCategory (string $cat) {
+		
+		
+		$labels = ItemExplorer::getLabels($cat);
+		$names = array_keys ($labels);
+		$corrData = $this->getTestResult()->getItemCorrelationByCategory($cat);
+		$itemidsByType = $this->getTestResult()->getItemIdsByCategory($cat);
+		
+		$groupHeader = [];
+		foreach ($names as $name) {
+			$groupHeader[$name] = $labels[$name];	// default header (without items)
+			if ((isset ($itemidsByType[$name])) && (count($itemidsByType[$name])>0)) {
+				$groupHeader[$name] = sprintf('
+					<span>
+						<a style="vertical-align:middle" class="page-title-action" href="admin.php?page=view_item&itemids=%s">%s</a>
+					</span>',
+					implode(',', $itemidsByType[$name]), $labels[$name]);
+			}
+		}
+		
+		$this->printCorrelationMatrix($names, $groupHeader, $corrData);
+		
+	}
+	
+	
+	private function printCorrelationMatrix (array $names, array $groupHeader, array $corrData) {
 ?>
 		<table id='customers' style='border-width:1px; border-color:#222222'>
 			<tr>
 				<th></th>
-		<?php 	for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {   ?>
-				<th>
-						<span>
-							<a style="vertical-align:middle" class="page-title-action" href="admin.php?page=view_item&itemid=<?= $this->getTestResult()->getItemId($itemIndex) ?>">
-								<?= $this->getTestResult()->getItemId($itemIndex) ?>
-							</a>
-						</span>
-					</th>
-<?php			} ?>
+<?php 		for ($index=0; $index<count($names); $index++) {  ?>
+				<th><?= $groupHeader[$names[$index]] ?></th>	
+<?php 		}	?>
 			</tr>
 		
+<?php 	for ($index1=0; $index1<count($names); $index1++) { ?> 
+			
+			<tr>
+				<td><?= $groupHeader[$names[$index1]] ?></td>
 		
-		<?php 	for ($itemIndex1 = 0; $itemIndex1 < $this->getTestResult()->getNumberOfItems(); $itemIndex1++) { ?>
-		<tr>
-			<td>
-						<span>
-							<a style="vertical-align:middle" class="page-title-action" href="admin.php?page=view_item&itemid=<?= $this->getTestResult()->getItemId($itemIndex) ?>">
-								<?= $this->getTestResult()->getItemId($itemIndex1) ?>
-							</a>
-						</span>
-					</td>
-					
-							<?php 	for ($itemIndex2 = 0; $itemIndex2 < $itemIndex1; $itemIndex2++) { ?>
-					<td>
-					<?php printf('%1.2f', $this->getTestResult()->getItemCorrelation($itemIndex1, $itemIndex2)); ?> 
-					</td>
-<?php			} ?>					
-					<td colspan="<?= $this->getTestResult()->getNumberOfItems()-$itemIndex1 ?>"></td>
-					
-
-
-		</tr>
-<?php			} ?>
+<?php 		for ($index2 = 0; $index2 < $index1; $index2++) { 
+				$corr = $corrData[$names[$index1]][$names[$index2]];
+				if ($corr == NULL) {
+					printf ('<td></td>');
+				} else {
+					printf('<td style="background-color:%s">%1.2f</td>', (($corr>=0.15) && ($corr<=0.5)) ? '#99FF99' : '#FF9999', $corr );
+				}
+			} ?>					
+				
+				<td colspan="<?= count($names)-$index1 ?>"></td>
+			</tr>
+<?php	} ?>
 
 		</table>
 <?php 		
 	}
 	
 	
+
 }
 ?>
