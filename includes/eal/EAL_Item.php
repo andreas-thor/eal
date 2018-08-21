@@ -22,11 +22,11 @@ abstract class EAL_Item extends EAL_Object {
 	
 	public static $level_type = ["FW", "KW", "PW"];
 	
-	public static $category_value_label = [
-			"type" => ["itemsc" => "Single Choice", "itemmc" => "Multiple Choice"],
-			"level" => ["1" => "Erinnern", "2" => "Verstehen", "3" => "Anwenden", "4" => "Analysieren", "5" => "Evaluieren", "6" => "Erschaffen"],
-			"dim" => ["FW" => "FW", "KW" => "KW", "PW" => "PW"]
-	];
+// 	public static $category_value_label = [
+// 			"type" => [EAL_ItemSC::getType() => "Single Choice", EAL_ItemMC::getType() => "Multiple Choice", EAL_ItemFT::getType() => 'Free Text'],
+// 			"level" => ["1" => "Erinnern", "2" => "Verstehen", "3" => "Anwenden", "4" => "Analysieren", "5" => "Evaluieren", "6" => "Erschaffen"],
+// 			"dim" => ["FW" => "FW", "KW" => "KW", "PW" => "PW"]
+// 	];
 	
 	public static $category_label = [
 			"type" => "Item Typ",
@@ -60,8 +60,12 @@ abstract class EAL_Item extends EAL_Object {
 	
 	public static function createByTypeFromArray (int $id, string $item_type, array $object = NULL, string $prefix = ''): EAL_Item {
 			
-		if ($item_type == 'itemsc') return EAL_ItemSC::createFromArray($id, $object, $prefix);
-		if ($item_type == 'itemmc') return EAL_ItemMC::createFromArray($id, $object, $prefix);
+		switch ($item_type) {
+			case EAL_ItemSC::getType():	return EAL_ItemSC::createFromArray($id, $object, $prefix);
+			case EAL_ItemMC::getType(): return EAL_ItemMC::createFromArray($id, $object, $prefix);
+			case EAL_ItemFT::getType(): return EAL_ItemFT::createFromArray($id, $object, $prefix);
+		}
+
 		throw new Exception('Could not create item. Unknown item type ' . $item_type);
 	}
 	

@@ -12,7 +12,7 @@ class CPT_ItemMC extends CPT_Item {
 	
 		parent::__construct();
 	
-		$this->type = 'itemmc';
+		$this->type = EAL_ItemMC::getType();
 		$this->label = 'Multiple Choice';
 		$this->menu_pos = 0;
 		$this->dashicon = 'dashicons-forms';

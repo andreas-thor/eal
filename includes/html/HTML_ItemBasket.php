@@ -16,7 +16,7 @@ class HTML_ItemBasket  {
 		
 		$itemids = ItemExplorer::getItemIds($items);
 		
-		$labels = ["itemsc" => "Single Choice", "itemmc" => "Multiple Choice"];
+		$labels = [EAL_ItemSC::getType() => "Single Choice", EAL_ItemMC::getType() => "Multiple Choice", EAL_ItemFT::getType() => 'Free Text'];
 		$res_Type = sprintf ('<tr><td colspan="2"><b>%s</b></td></tr>', 'Item Typ');
 		foreach (ItemExplorer::groupBy($items, $itemids, 'type') as $key => $val) {
 			$res_Type .= sprintf ('<tr><td style="width:4em"><input type="text" value="%d" size="1" readonly /></td><td>%s</td></tr>', count($val), $labels[$key]);

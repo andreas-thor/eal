@@ -110,8 +110,8 @@ class IMP_Item_Ilias extends IMP_Item {
 			$item_id = $itemids [$itemXML->getAttribute("ident")];
 			$item_type = "";
 			foreach ($xpath->evaluate(".//qtimetadatafield[./fieldlabel='QUESTIONTYPE']/fieldentry", $itemXML) as $md) {
-				if ($md->nodeValue == "SINGLE CHOICE QUESTION")  	$item_type = "itemsc";
-				if ($md->nodeValue == "MULTIPLE CHOICE QUESTION")  	$item_type = "itemmc";
+				if ($md->nodeValue == "SINGLE CHOICE QUESTION")  	$item_type = EAL_ItemSC::getType();
+				if ($md->nodeValue == "MULTIPLE CHOICE QUESTION")  	$item_type = EAL_ItemMC::getType();
 			}
 				
 			// TODO: Handling if item type not found
@@ -128,8 +128,9 @@ class IMP_Item_Ilias extends IMP_Item {
 			} catch (Exception $e) {
 				// initialize new item
 				switch ($item_type) {
-					case 'itemsc': $item = new EAL_ItemSC(-$countItems); break;
-					case 'itemmc': $item = new EAL_ItemMC(-$countItems); break;
+					case EAL_ItemSC::getType(): $item = new EAL_ItemSC(-$countItems); break;
+					case EAL_ItemMC::getType(): $item = new EAL_ItemMC(-$countItems); break;
+					case EAL_ItemFT::getType(): $item = new EAL_ItemFT(-$countItems); break;
 					default: continue;
 				}
 			}

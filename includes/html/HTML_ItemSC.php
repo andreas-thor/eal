@@ -10,10 +10,10 @@ class HTML_ItemSC extends HTML_Item {
 		parent::__construct($item);
 		
 		$this->buttons_question = array (
-			'Wähle 1 aus 4' => 'Wählen Sie eine aus den vier Antwortoptionen aus.',
-			'Wähle 1 aus 5' => 'Wählen Sie eine aus den fünf Antwortoptionen aus.',
-			'Wähle 1 aus 6' => 'Wählen Sie eine aus den sechs Antwortoptionen aus.',
-			'Wähle korrekte' => 'Wählen Sie die korrekte aus den folgenden Antwortoptionen aus.'
+			'WÃ¤hle 1 aus 4' => 'WÃ¤hlen Sie eine aus den vier Antwortoptionen aus.',
+			'WÃ¤hle 1 aus 5' => 'WÃ¤hlen Sie eine aus den fÃ¼nf Antwortoptionen aus.',
+			'WÃ¤hle 1 aus 6' => 'WÃ¤hlen Sie eine aus den sechs Antwortoptionen aus.',
+			'WÃ¤hle korrekte' => 'WÃ¤hlen Sie die korrekte aus den folgenden Antwortoptionen aus.'
 		);
 	}
 	

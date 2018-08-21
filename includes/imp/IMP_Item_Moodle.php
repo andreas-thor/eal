@@ -80,10 +80,10 @@ class IMP_Item_Moodle extends IMP_Item {
 		
 		$points = intval($xpath->evaluate('./defaultgrade', $question)[0]->textContent);
 		
-		if ($item->getType()=="itemsc") {
+		if ($item instanceof EAL_ItemSC) {
 			$this->parse_XMLSingleChoiceAnswers ($dom, $question, $item, $points);
 		}
-		if ($item->getType()=="itemmc") {
+		if ($item instanceof EAL_ItemMC) {
 			$this->parse_XMLMultiChoiceAnswers ($dom, $question, $item, $points);
 		}
 		

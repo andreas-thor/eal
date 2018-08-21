@@ -36,7 +36,7 @@ class IMEX_Moodle extends IMEX_Item {
 			$item = DB_Item::loadFromDB($item_id, $post->post_type);
 
 			// add question of type 'MultiChoice' for this item
-			if (($item->getType()=='itemsc') || ($item->getType()=='itemmc')) {
+			if (($item instanceof EAL_ItemSC) || ($item instanceof EAL_ItemMC)) {
 				$dom->documentElement->appendChild ($this->create_XMLMultiChoiceQuestionElement ($dom, $item));
 			}
 		}
@@ -112,14 +112,14 @@ class IMEX_Moodle extends IMEX_Item {
 		$xmlQuestion->appendChild ($dom->createElement('defaultgrade', $item->getPoints()));
 		
 		// <answer>
-		$xmlAnswers = ($item->getType()=="itemsc") ? $this->create_XMLSingleChoiceAnswers ($dom, $item) : $this->create_XMLMultipleChoiceAnswers ($dom, $item);
+		$xmlAnswers = ($item instanceof EAL_ItemSC) ? $this->create_XMLSingleChoiceAnswers ($dom, $item) : $this->create_XMLMultipleChoiceAnswers ($dom, $item);
 		foreach ($xmlAnswers as $xmlAnswer) {
 			$xmlQuestion->appendChild($xmlAnswer);
 		}
 		
 
 		// in addition, an MC question has the following tags: single (values: true/false), shuffleanswers (values: 1/0), answernumbering (allowed values: 'none', 'abc', 'ABCD' or '123')
-		$xmlQuestion->appendChild($dom->createElement('single', ($item->getType()=='itemsc') ? 'true' : 'false'));
+		$xmlQuestion->appendChild($dom->createElement('single', ($item instanceof EAL_ItemSC) ? 'true' : 'false'));
 		$xmlQuestion->appendChild($dom->createElement('shuffleanswers', '0'));
 		$xmlQuestion->appendChild($dom->createElement('answernumbering', 'none'));
 		
@@ -141,10 +141,10 @@ class IMEX_Moodle extends IMEX_Item {
 		
 		$points = intval($xpath->evaluate('./defaultgrade', $question)[0]->textContent);
 		
-		if ($item->getType()=="itemsc") {
+		if ($item instanceof EAL_ItemSC) {
 			$this->parse_XMLSingleChoiceAnswers ($dom, $question, $item, $points);
 		}
-		if ($item->getType()=="itemmc") {
+		if ($item instanceof EAL_ItemMC) {
 			$this->parse_XMLMultiChoiceAnswers ($dom, $question, $item, $points);
 		}
 		

@@ -15,6 +15,7 @@ require_once 'includes/cpt/CPT_Item.php';
 require_once 'includes/cpt/CPT_ItemBasket.php';
 require_once 'includes/cpt/CPT_ItemSC.php';
 require_once 'includes/cpt/CPT_ItemMC.php';
+require_once 'includes/cpt/CPT_ItemFT.php';
 require_once 'includes/cpt/CPT_LearnOut.php';
 require_once 'includes/cpt/CPT_Review.php';
 require_once 'includes/cpt/CPT_TestResult.php';
@@ -78,6 +79,7 @@ register_activation_hook(__FILE__, function () {
 	DB_Item::createTables();
 	DB_ItemSC::createTables();
 	DB_ItemMC::createTables();
+	DB_ItemFT::createTables();
 	DB_Review::createTables();
 	DB_LearnOut::createTables();
 	DB_Term::createTables();
@@ -98,8 +100,9 @@ add_action('init', function () {
 	// register custom post types
 	(new CPT_Item())->registerType();
 	(new CPT_ItemBasket())->registerType();
-	(new CPT_ItemMC())->registerType();
 	(new CPT_ItemSC())->registerType();
+	(new CPT_ItemMC())->registerType();
+	(new CPT_ItemFT())->registerType();
 	(new CPT_Review())->registerType();
 	(new CPT_LearnOut())->registerType();
 	(new CPT_TestResult())->registerType();
@@ -121,22 +124,25 @@ add_action('init', function () {
 	// standard page
 	if ((in_array ($php_page, ['edit.php', 'post.php', 'post-new.php'])) && (!isset ($_REQUEST["page"]))) {
 		switch ($_REQUEST['post_type']) {
-			case 'itemsc':  
+			case EAL_ItemSC::getType():  
 				(new CPT_ItemSC())->addHooks(); 
 				break;
-			case 'itemmc': 
-				(new CPT_ItemMC())->addHooks(); 
+			case EAL_ItemMC::getType():
+				(new CPT_ItemMC())->addHooks();
 				break;
-			case 'learnout': 
+			case EAL_ItemFT::getType():
+				(new CPT_ItemFT())->addHooks();
+				break;
+			case EAL_LearnOut::getType(): 
 				(new CPT_LearnOut())->addHooks(); 
 				break;
-			case 'review': 
+			case EAL_Review::getType(): 
 				(new CPT_Review())->addHooks(); 
 				break;
-			case 'itembasket': 
+			case EAL_ItemBasket::getType(): 
 				(new CPT_ItemBasket())->addHooks(); 
 				break;
-			case 'testresult':
+			case EAL_TestResult::getType():
 				(new CPT_TestResult())->addHooks();
 				break;
 			default: 
@@ -149,6 +155,7 @@ add_action('init', function () {
 	if ((in_array ($_POST['action'], ['import', 'update'])) && ($php_page == 'admin.php')) {
 		(new CPT_ItemSC())->addHooks();
 		(new CPT_ItemMC())->addHooks();
+		(new CPT_ItemFT())->addHooks();
 		(new CPT_TestResult())->addHooks();
 	}
 	
@@ -160,7 +167,8 @@ add_action('init', function () {
 	
 	if ($php_page == 'revision.php') {
 		(new CPT_ItemSC())->addHooks();
-		(new CPT_ItemMC())->addHooks(); 
+		(new CPT_ItemMC())->addHooks();
+		(new CPT_ItemFT())->addHooks();
 	}
 	
 	
@@ -235,7 +243,7 @@ function setMainMenu() {
 		$menuslug = 'edit.php?post_type=item';
 		
 		add_menu_page('eal_page_items', 'Items', 'edit_posts', $menuslug, '', (new CPT_Item())->getDashIcon(), 31);
-		foreach ([new CPT_Item(), new CPT_ItemSC(), new CPT_ItemMC(), new CPT_Review() ] as $object) {
+		foreach ([new CPT_Item(), new CPT_ItemSC(), new CPT_ItemMC(), new CPT_ItemFT(), new CPT_Review() ] as $object) {
 			add_submenu_page($menuslug, $object->getLabel(), '<div class="dashicons-before ' . $object->getDashIcon() . '" style="display:inline">&nbsp;</div> ' . $object->getLabel(), 'edit_posts', "edit.php?post_type={$object->getType()}");
 		}
 // 		add_submenu_page($menuslug, 'Import', '<div class="dashicons-before dashicons-upload" style="display:inline">&nbsp;</div> Import', 'edit_posts', 'import', ['Importer', 'createPage']);
@@ -441,8 +449,9 @@ function setAdminMenu_Upload_Item($wp_admin_bar) {
 	
  	if (getCurrentPHPFile() != 'edit.php') return;
 	
-	if (($_REQUEST['post_type'] != 'item') && ($_REQUEST['post_type'] != 'itemsc') && ($_REQUEST['post_type'] != 'itemmc')) return;
-	
+ 	if (!in_array($_REQUEST['post_type'], ['item', EAL_ItemSC::getType(), EAL_ItemMC::getType(), EAL_ItemFT::getType()])) return;
+ 	
+ 	
 	$wp_admin_bar->add_menu( array(
 		'id' => 'eal_upload_item',
 		'title' => sprintf("<div class='wp-menu-image dashicons-before dashicons-upload'>&nbsp;%s</div>", 'Upload'),
@@ -611,7 +620,8 @@ function setDashboard() {
 			foreach ([
 				new CPT_Item(),
 				new CPT_ItemSC(),
-				new CPT_ItemMC()
+				new CPT_ItemMC(),
+				new CPT_ItemFT()
 			] as $object) {
 				$counts = $object->WPCB_count_posts(NULL, $object->getType(), NULL);
 				printf('
@@ -672,14 +682,23 @@ function setMainHeader() {
 		// standard page
 		if ((getCurrentPHPFile() == 'edit.php') && (!isset ($_REQUEST['page']))) {
 			
+			$add = [
+				EAL_ItemSC::getType() => '<a href="post-new.php?post_type=' . EAL_ItemSC::getType() . '" class="page-title-action">Add Single Choice</a>',
+				EAL_ItemMC::getType() => '<a href="post-new.php?post_type=' . EAL_ItemMC::getType() . '" class="page-title-action">Add Multiple Choice</a>',
+				EAL_ItemFT::getType() => '<a href="post-new.php?post_type=' . EAL_ItemFT::getType() . '" class="page-title-action">Add Free Text</a>',
+				EAL_LearnOut::getType() => '<a href="post-new.php?post_type=' . EAL_LearnOut::getType() . '" class="page-title-action">Add Learning Outcome</a>'
+			];
+			
+			
 			$title = '';
 			switch ($_REQUEST['post_type']) {
-				case 'item': 		$title = 'All Items <a href="post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a><a href="post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a>'; break;
-				case 'itemsc': 		$title = 'All Single Choice Items <a href="post-new.php?post_type=itemsc" class="page-title-action">Add Single Choice</a>'; break;
-				case 'itemmc': 		$title = 'All Multiple Choice Items <a href="post-new.php?post_type=itemmc" class="page-title-action">Add Multiple Choice</a>'; break;
-				case 'itembasket': 	$title = 'All Items in Basket'; break;
-				case 'review': 		$title = 'All Reviews'; break;
-				case 'learnout': 	$title = 'All Learning Outcomes <a href="post-new.php?post_type=learnout" class="page-title-action">Add Learning Outcome</a>'; break;
+				case 'item': 					$title = 'All Items ' . $add[EAL_ItemSC::getType()] . $add[EAL_ItemMC::getType()] . $add[EAL_ItemFT::getType()]; break;
+				case EAL_ItemSC::getType(): 	$title = 'All Single Choice Items ' . $add[EAL_ItemSC::getType()]; break;
+				case EAL_ItemMC::getType(): 	$title = 'All Multiple Choice Items ' . $add[EAL_ItemMC::getType()]; break;
+				case EAL_ItemFT::getType(): 	$title = 'All Free Text Items ' . $add[EAL_ItemFT::getType()]; break;
+				case EAL_ItemBasket::getType(): $title = 'All Items in Basket'; break;
+				case EAL_Review::getType(): 	$title = 'All Reviews'; break;
+				case EAL_LearnOut::getType(): 	$title = 'All Learning Outcomes ' . $add[EAL_LearnOut::getType()]; break;
 			}
 		
 			?>

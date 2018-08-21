@@ -51,8 +51,12 @@ class DB_Item {
 	
 	public static function loadFromDB (int $item_id, string $item_type): EAL_Item {
 		
-		if ($item_type == 'itemsc') return DB_ItemSC::loadFromDB($item_id);
-		if ($item_type == 'itemmc') return DB_ItemMC::loadFromDB($item_id);
+		switch ($item_type) {
+			case EAL_ItemSC::getType(): return DB_ItemSC::loadFromDB($item_id);
+			case EAL_ItemMC::getType(): return DB_ItemMC::loadFromDB($item_id);
+			case EAL_ItemFT::getType(): return DB_ItemFT::loadFromDB($item_id);
+		}
+		
 		throw new Exception('Could not load item. Unknown item type ' . $item_type);
 	}
 		

@@ -196,8 +196,9 @@ class Blueprint {
 				$link = "";
 				if (in_array($item->getId(), $pool)) {
 					$link = sprintf ("onClick='document.location.href=\"admin.php?page=view_item&itemid=%s\";'", $item->getId());
-					if ($item->getType() == "itemsc") $symbol = "<span class='dashicons dashicons-marker'></span>";
-					if ($item->getType() == "itemmc") $symbol = "<span class='dashicons dashicons-forms'></span>";
+					if ($item instanceof EAL_ItemSC) $symbol = "<span class='dashicons dashicons-marker'></span>";
+					if ($item instanceof EAL_ItemMC) $symbol = "<span class='dashicons dashicons-forms'></span>";
+					if ($item instanceof EAL_ItemFT) $symbol = "<span class='dashicons dashicons-media-text'></span>";
 				}
 				
 				$result .= sprintf ("<td %s valign='bottom' style='overflow: hidden; padding:0px; padding-top:0.83em;' >%s</td>", $link, $symbol);

@@ -1,23 +1,23 @@
 <?php
 
 require_once 'CPT_Item.php';
-require_once __DIR__ . '/../eal/EAL_ItemSC.php';
-require_once __DIR__ . '/../db/DB_ItemSC.php';
+require_once __DIR__ . '/../eal/EAL_ItemFT.php';
+require_once __DIR__ . '/../db/DB_ItemFT.php';
 
 
 
-class CPT_ItemSC extends CPT_Item {
+class CPT_ItemFT extends CPT_Item {
 	
-	
+	 
 	
 	public function __construct() {
 	
 		parent::__construct();
 	
-		$this->type = EAL_ItemSC::getType();
-		$this->label = 'Single Choice';
+		$this->type = 'itemft';
+		$this->label = 'Free Text';
 		$this->menu_pos = 0;
-		$this->dashicon = 'dashicons-marker';
+		$this->dashicon = 'dashicons-media-text';
 		
 		unset($this->table_columns['item_type']);
 	}
@@ -27,8 +27,8 @@ class CPT_ItemSC extends CPT_Item {
 
 		parent::addHooks();
 		
-		add_action ("save_post_{$this->type}", 'CPT_ItemSC::save_post', 10, 2);
-		add_action ("save_post_revision", 'CPT_ItemSC::save_post', 10, 2);
+		add_action ("save_post_{$this->type}", 'CPT_ItemFT::save_post', 10, 2);
+		add_action ("save_post_revision", 'CPT_ItemFT::save_post', 10, 2);
 	}
 	
 	
@@ -45,7 +45,7 @@ class CPT_ItemSC extends CPT_Item {
 		
 		$revision = wp_is_post_revision ($post_id);
 		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
-		if ($type != EAL_ItemSC::getType()) return;
+		if ($type != EAL_ItemFT::getType()) return;
 		
 		global $itemToImport;	// indicates save_post execution during bulk import/update
 		
@@ -53,14 +53,14 @@ class CPT_ItemSC extends CPT_Item {
 			$item = $itemToImport;
 		} else {
 			if ($post->post_status === 'auto-draft') {
-				$item = new EAL_ItemSC($post_id, intval ($_REQUEST['learnout_id']));
+				$item = new EAL_ItemFT($post_id, intval ($_REQUEST['learnout_id']));
 			} else {
-				$item = EAL_ItemSC::createFromArray($post_id, $_REQUEST);
+				$item = EAL_ItemFT::createFromArray($post_id, $_REQUEST);
 			}
 		}
 			
 		$item->setId($post_id);
-		DB_ItemSC::saveToDB($item);
+		DB_ItemFT::saveToDB($item);
 	}
 		
 	
@@ -68,15 +68,15 @@ class CPT_ItemSC extends CPT_Item {
 	public function filter_wp_get_revision_ui_diff (array $diff, $compare_from, $compare_to) {
 			
 		// default items to compare
-		$eal_From = new EAL_ItemSC();
-		$eal_To = new EAL_ItemSC();
+		$eal_From = new EAL_ItemFT();
+		$eal_To = new EAL_ItemFT();
 		
 		// check type and try to load item revision from database
 		if ($compare_from instanceof  WP_Post) {
 			if (get_post ($compare_from->post_parent)->post_type != $this->type) return $diff;
 			
 			try {
-				$eal_From = DB_ItemSC::loadFromDB($compare_from->ID);
+				$eal_From = DB_ItemFT::loadFromDB($compare_from->ID);
 			} catch (Exception $e) { 
 				// could not find revision in the database anymore
 			}
@@ -85,7 +85,7 @@ class CPT_ItemSC extends CPT_Item {
 			if (get_post ($compare_to->post_parent)->post_type != $this->type) return $diff;
 			
 			try {
-				$eal_To = DB_ItemSC::loadFromDB($compare_to->ID);
+				$eal_To = DB_ItemFT::loadFromDB($compare_to->ID);
 			} catch (Exception $e) {
 				// could not find revision in the database anymore
 			}
@@ -94,7 +94,7 @@ class CPT_ItemSC extends CPT_Item {
 		$diff[0] = HTML_Item::compareTitle($eal_From, $eal_To);
 		$diff[1] = HTML_Item::compareDescription($eal_From, $eal_To);
 		$diff[2] = HTML_Item::compareQuestion($eal_From, $eal_To);
-		$diff[3] = HTML_ItemSC::compareAnswers($eal_From, $eal_To);
+		$diff[3] = HTML_ItemFT::comparePoints($eal_From, $eal_To);
 		$diff[4] = HTML_Item::compareLevel($eal_From, $eal_To);
 		$diff[5] = HTML_Item::compareNoteFlag($eal_From, $eal_To);
 		$diff[6] = HTML_Item::compareLearningOutcome($eal_From, $eal_To);
@@ -107,10 +107,10 @@ class CPT_ItemSC extends CPT_Item {
 	public function WPCB_register_meta_box_cb () {
 		
 		global $post, $item;
-		$item = DB_ItemSC::loadFromDB($post->ID);
+		$item = DB_ItemFT::loadFromDB($post->ID);
 		parent::WPCB_register_meta_box_cb();
 		
-		add_meta_box("mb_answers", "Antwortoptionen",	array ($item->getHTMLPrinter(), metaboxAnswers), $this->type, 'normal', 'default');
+		add_meta_box("mb_points", "Punkte",	array ($item->getHTMLPrinter(), metaboxPoints), $this->type, 'normal', 'default');
 		
 	}
 	

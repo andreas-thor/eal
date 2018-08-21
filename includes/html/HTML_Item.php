@@ -14,6 +14,7 @@ abstract class HTML_Item extends HTML_Object {
 	
 	function __construct(EAL_Item $item) {
 		$this->item = $item;
+		$this->buttons_question = [];
 	}
 	
 	

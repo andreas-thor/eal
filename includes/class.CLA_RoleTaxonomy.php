@@ -103,7 +103,7 @@ class RoleTaxonomy {
 				// 					'rewrite' => false
 			);
 			
-			register_taxonomy ( $name, array ('itemsc', 'itemmc', 'learnout') , $args );
+			register_taxonomy ( $name, [EAL_ItemSC::getType(), EAL_ItemMC::getType(), EAL_ItemFT::getType(), EAL_LearnOut::getType()] , $args );
 		}
 	}
 

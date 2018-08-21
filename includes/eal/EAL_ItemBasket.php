@@ -5,6 +5,10 @@ require_once(__DIR__ . "/../class.CLA_RoleTaxonomy.php");
 class EAL_ItemBasket {
 	
 	
+	public static function getType(): string {
+		return 'itembasket';
+	}
+	
 	/**
 	 * @return array of item ids
 	 */

@@ -76,7 +76,6 @@ class EAL_ItemMC extends EAL_Item {
 		}
 		$object[$prefix . 'item_minnumber'] = $this->minnumber;
 		$object[$prefix . 'item_maxnumber'] = $this->maxnumber;
-		$object[$prefix . 'post_type'] = 'itemmc';
 		return $object;
 	}
 	

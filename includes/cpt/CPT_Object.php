@@ -446,20 +446,26 @@ abstract class CPT_Object {
 		if( $typenow == $this->type ){
 
 			if (($this->type == "item") || ($this->type == "itembasket")) { 
-				$selected = $_REQUEST["item_type"] ?? "0";
-				printf ('<select class="postform" name="item_type">');
-				printf ('<option value="0" %1$s>All Item Types</option>', 		($selected=="0") ? "selected" : "");
-				printf ('<option value="itemsc" %1$s>Single Choice</option>', 	($selected=="itemsc") ? "selected" : "");
-				printf ('<option value="itemmc" %1$s>Multiple Choice</option>', ($selected=="itemmc") ? "selected" : "");
-				printf ('</select>');
-				
-				$selected = $_REQUEST["post_status"] ?? "0";
-				printf ('<select class="postform" name="post_status">');
-				printf ('<option value="0" %1$s>All Item Statuses</option>', 		($selected=="0") ? "selected" : "");
-				printf ('<option value="draft" %1$s>Draft</option>', 		($selected=="draft") ? "selected" : "");
-				printf ('<option value="pending" %1$s>Pending</option>', ($selected=="pending") ? "selected" : "");
-				printf ('<option value="publish" %1$s>Published</option>', ($selected=="publish") ? "selected" : "");
-				printf ('</select>');
+				$selectedType 	= $_REQUEST['item_type'] ?? '0';
+?>				
+				<select class="postform" name="item_type">
+					<option value="0" <?= ($selectedType =='0') ? 'selected' : '' ?>>All Item Types</option> 	
+					<option value="<?= EAL_ItemSC::getType() ?>" <?= ($selectedType == EAL_ItemSC::getType()) ? 'selected' : '' ?>>Single Choice</option>
+					<option value="<?= EAL_ItemMC::getType() ?>" <?= ($selectedType == EAL_ItemMC::getType()) ? 'selected' : '' ?>>Multiple Choice</option>
+					<option value="<?= EAL_ItemFT::getType() ?>" <?= ($selectedType == EAL_ItemFT::getType()) ? 'selected' : '' ?>>Free Text</option>
+				</select>
+<?php 	}
+
+			if (substr ($this->type, 0, 4) == 'item') {
+				$selectedStatus = $_REQUEST['post_status'] ?? '0';
+?>				
+				<select class="postform" name="post_status">
+					<option value="0" 		<?= ($selectedStatus=='0') 		 ? 'selected' : '' ?>>All Item Statuses</option>
+					<option value="draft" 	<?= ($selectedStatus=='draft') 	 ? 'selected' : '' ?>>Draft</option>
+					<option value="pending" <?= ($selectedStatus=='pending') ? 'selected' : '' ?>>Pending</option>
+					<option value="publish" <?= ($selectedStatus=='publish') ? 'selected' : '' ?>>Published</option>
+				</select>
+<?php 				
 			}
 			
 			wp_dropdown_categories(array(
@@ -487,15 +493,14 @@ abstract class CPT_Object {
 			}
 			
 			if (substr ($this->type, 0, 4) == 'item') {
-				
-				$flag == 0;
-				if (isset ($_REQUEST["flag"])) $flag = $_REQUEST["flag"];
-				
-				printf ("<select class='postform' name='flag'>");
-				printf ("<option value='0' %s>All Flags</option>", ($flag==0) ? "selected" : "");
-				printf ("<option value='1' %s>Marked</option>", ($flag==1) ? "selected" : "");
-				printf ("<option value='2' %s>Unmarked</option>", ($flag==2) ? "selected" : "");
-				printf ("</select>");
+				$selectedFlag = $_REQUEST['flag'] ?? 0;
+?>				
+				<select class="postform" name="flag">
+					<option value="0" <?= ($selectedFlag == 0) ? 'selected' : ''?>>All Flags</option>
+					<option value="1" <?= ($selectedFlag == 1) ? 'selected' : ''?>>Marked</option>
+					<option value="2" <?= ($selectedFlag == 2) ? 'selected' : ''?>>Unmarked</option>
+				</select>
+<?php 
 			}
 			
 		}

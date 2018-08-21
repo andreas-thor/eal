@@ -29,9 +29,9 @@ class ItemExplorer {
 			return $result;
 		}
 		
-		// group by item type (single choice, multiple choice)
+		// group by item type (single choice, multiple choice, free text)
 		if ($cat == 'type') {	
-			$result = ['itemsc' => array(), 'itemmc' => array()];
+			$result = [EAL_ItemSC::getType() => array(), EAL_ItemMC::getType() => array(), EAL_ItemFT::getType() => array()];
 			foreach ($itemids as $item_id) {
 				$item = $items[$item_id];
 				array_push ($result[$item->getType()], $item_id);
@@ -184,7 +184,7 @@ class ItemExplorer {
 		}
 		
 		switch ($cat) {
-			case 'type': 	return ["itemsc" => "Single Choice", "itemmc" => "Multiple Choice"];
+			case 'type': 	return [EAL_ItemSC::getType() => "Single Choice", EAL_ItemMC::getType() => "Multiple Choice", EAL_ItemFT::getType() => 'Free Text'];
 			case 'level': 	return EAL_Level::LABEL; // EAL_Item::$category_value_label["level"]; // array_merge ([""], EAL_Item::$level_label); // add empty value for index=0 because labels are enumerated 1..6
 			case 'dim': 	return ["FW"=>"FW", "KW"=>"KW", "PW"=>"PW"];
 		}

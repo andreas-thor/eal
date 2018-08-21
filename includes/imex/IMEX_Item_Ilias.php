@@ -83,14 +83,14 @@ class IMEX_Item_Ilias extends IMEX_Item {
 			$item = DB_Item::loadFromDB($item_id, $post->post_type);
 			assert( ($item instanceof EAL_ItemSC) || ($item instanceof EAL_ItemMC) );
 			
-			if ($item->getType() == 'itemsc') {
+			if ($item instanceof EAL_ItemSC) {
 				$item_data = array (
 						"questiontype" => "SINGLE CHOICE QUESTION",
 						"ident" => "MCSR",
 						"rcardinality" => "Single"
 				);
 			}
-			if ($item->getType() == 'itemmc') {
+			if ($item instanceof EAL_ItemMC) {
 				$item_data = array (
 						"questiontype" => "MULTIPLE CHOICE QUESTION",
 						"ident" => "MCMR",
@@ -143,7 +143,7 @@ class IMEX_Item_Ilias extends IMEX_Item {
 			$xml_RC = $dom->createElement("render_choice");
 			$xml_RC->setAttribute("shuffle", "Yes");
 
-			if ($item->getType() == "itemmc") {
+			if ($item instanceof EAL_ItemMC) {
 				$xml_RC->setAttribute("minnumber", $item->minnumber);
 				$xml_RC->setAttribute("maxnumber", $item->maxnumber);
 			}			
@@ -349,8 +349,8 @@ class IMEX_Item_Ilias extends IMEX_Item {
 			$item_id = $itemids [$itemXML->getAttribute("ident")];
 			$item_type = "";
 			foreach ($xpath->evaluate(".//qtimetadatafield[./fieldlabel='QUESTIONTYPE']/fieldentry", $itemXML) as $md) {
-				if ($md->nodeValue == "SINGLE CHOICE QUESTION")  	$item_type = "itemsc";
-				if ($md->nodeValue == "MULTIPLE CHOICE QUESTION")  	$item_type = "itemmc";
+				if ($md->nodeValue == "SINGLE CHOICE QUESTION")  	$item_type = EAL_ItemSC::getType();
+				if ($md->nodeValue == "MULTIPLE CHOICE QUESTION")  	$item_type = EAL_ItemMC::getType();
 			}
 				
 			// TODO: Handling if item type not found
@@ -367,8 +367,9 @@ class IMEX_Item_Ilias extends IMEX_Item {
 			} catch (Exception $e) {
 				// initialize new item
 				switch ($item_type) {
-					case 'itemsc': $item = new EAL_ItemSC(-$countItems); break;
-					case 'itemmc': $item = new EAL_ItemMC(-$countItems); break;
+					case EAL_ItemSC::getType(): $item = new EAL_ItemSC(-$countItems); break;
+					case EAL_ItemMC::getType(): $item = new EAL_ItemMC(-$countItems); break;
+					case EAL_ItemFT::getType(): $item = new EAL_ItemFT(-$countItems); break;
 					default: continue;
 				}
 			}

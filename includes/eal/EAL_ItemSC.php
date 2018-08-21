@@ -59,8 +59,6 @@ class EAL_ItemSC extends EAL_Item {
 			$object[$prefix . 'answer'][$index] =  $this->getAnswer($index);
 			$object[$prefix . 'points'][$index] = $this->getPointsChecked($index);
 		}
-
-		$object[$prefix . 'post_type'] = 'itemsc';
 		return $object;
 	}
 	
