@@ -21,6 +21,7 @@ class CPT_TestResult extends CPT_Object {
 			'cb' => '<input type="checkbox" />',
 			'result_title' => 'Title',
 			'last_modified' => 'Date',
+			'date_of_test' => 'Date of Test', 
 			'no_of_items_in_testresult' => 'Items',
 			'no_of_users_in_testresult' => 'Users'
 		);
@@ -67,7 +68,8 @@ class CPT_TestResult extends CPT_Object {
 		
 		// remove visibility and status options
 		print ('<style> #minor-publishing { display: none; } </style>');
-		
+
+		add_meta_box('mb_date', 'Test-Datum', array ($testresult->getHTMLPrinter(), 'metaboxDate'), $this->type, 'side', 'default' );
 		add_meta_box('mb_description', 'Beschreibung', array ($testresult->getHTMLPrinter(), 'metaboxDescription'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_user_item_table', 'User-Item-Table', array ($testresult->getHTMLPrinter(), 'metaboxUserItemTable'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_item_item_table', 'Inter-Item-Correlation', array ($testresult->getHTMLPrinter(), 'metaboxItemItemTable'), $this->type, 'normal', 'default' );
@@ -93,6 +95,7 @@ class CPT_TestResult extends CPT_Object {
 			$array .= ", R.title AS result_title";
 			$array .= ", {$wpdb->posts}.post_author AS result_author_id";
 			$array .= ", U.user_login AS result_author";
+			$array .= ", R.date_of_test AS date_of_test";
 			$array .= ", R.no_of_items AS no_of_items_in_testresult";
 			$array .= ", R.no_of_users AS no_of_users_in_testresult";
 		}
@@ -113,6 +116,13 @@ class CPT_TestResult extends CPT_Object {
 	
 
 	public function WPCB_posts_where($where, $checktype = TRUE) {
+		
+		global $wp_query, $wpdb;
+		
+		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
+			if (isset ($_REQUEST['itemids']))	$where .= " AND R.id IN (SELECT test_id FROM {$wpdb->prefix}eal_testresult_useritem WHERE item_id IN ({$_REQUEST['itemids']})) ";
+			
+		}
 		return $where;
 	}
 	
@@ -127,6 +137,7 @@ class CPT_TestResult extends CPT_Object {
 			
 			if ($wp_query->get('orderby') == $this->table_columns['result_title'])	$orderby_statement = "result_title {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['last_modified'])		$orderby_statement = "{$wpdb->posts}.post_modified {$wp_query->get('order')}";
+			if ($wp_query->get('orderby') == $this->table_columns['date_of_test'])	$orderby_statement = "date_of_test {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['no_of_items_in_testresult'])		$orderby_statement = "no_of_items {$wp_query->get('order')}";
 			if ($wp_query->get('orderby') == $this->table_columns['no_of_users_in_testresult'])		$orderby_statement = "no_of_users {$wp_query->get('order')}";
 		}

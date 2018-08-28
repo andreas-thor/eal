@@ -17,7 +17,13 @@ class HTML_TestResult extends HTML_Object {
 		return $this->testresult;
 	}
 	
-	
+
+	public function metaboxDate () {
+?>		
+		<input type="date" name="testresult_date" value="<?= $this->getTestResult()->getDateOfTest() ?>"/>
+<?php 	
+	}
+		
 	public function metaboxDescription () {
 		
 		$this->printEditor('testresult_description', $this->getTestResult()->getDescription());

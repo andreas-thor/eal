@@ -199,7 +199,9 @@ abstract class CPT_Object {
 				break;
 			
 				
-			case 'last_modified': echo (get_post_modified_time(get_option('date_format') . ' ' . get_option('time_format'), false, $post, true)); break; 
+			case 'last_modified': echo (get_post_modified_time(get_option('date_format') . ' ' . get_option('time_format'), false, $post, true)); break;
+			
+			case 'date_of_test': echo ($post->date_of_test); break;
 			
 			case 'item_title':
 				printf ($post->item_title);
@@ -264,7 +266,11 @@ abstract class CPT_Object {
 				break;
 					
 			case 'difficulty': 
-				printf ($post->difficulty); 
+				printf ('%01.1f%% (%d)', 100*$post->difficulty, $post->no_of_testresults);
+				printf ('<div class="row-actions">');
+				printf ("<span class='view'><a href='edit.php?post_type=testresult&itemids={$post->ID}' title='List All Test Results'>List</a></span>");
+				printf ('<span class="inline hide-if-no-js"></span></div>');
+				
 				break;
 				
 			case 'item_points':

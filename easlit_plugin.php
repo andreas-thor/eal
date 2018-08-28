@@ -46,6 +46,7 @@ require_once(__DIR__ . "/../../../wp-admin/includes/screen.php");
 
 
 
+
 /* add JQuery */
 add_action("admin_enqueue_scripts", function () {
 	wp_enqueue_script("jquery");
@@ -56,6 +57,8 @@ add_action("admin_enqueue_scripts", function () {
 	// for modal dialogs (e.g., automatic annotation)
 	wp_enqueue_script( 'jquery-ui-dialog' );
 	wp_enqueue_style( 'wp-jquery-ui-dialog' );
+	
+	
 });
 
 	

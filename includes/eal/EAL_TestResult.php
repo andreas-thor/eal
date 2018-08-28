@@ -7,6 +7,7 @@ class EAL_TestResult extends EAL_Object  {
 
 	private $title;
 	private $description;
+	private $dateOfTest; 
 	
 	private $allUserIds = [];
 	private $allItemIds = [];
@@ -17,6 +18,7 @@ class EAL_TestResult extends EAL_Object  {
 		parent::__construct($id);
 		$this->title = '';
 		$this->description = '';
+		$this->dateOfTest = '';
 		$this->allUserIds = [];
 		$this->allItemIds = [];
 		$this->allItems = [];	// [item_id => EAL_Item]
@@ -46,6 +48,11 @@ class EAL_TestResult extends EAL_Object  {
 		if (isset ($object[$prefix . 'testresult_description'])) {
 			$this->description = html_entity_decode (stripslashes($object[$prefix . 'testresult_description']));
 		}
+		
+		if (isset ($object[$prefix . 'testresult_date'])) {
+			$this->dateOfTest = $object[$prefix . 'testresult_date'];
+		}
+		
 	}
 	
 	
@@ -136,6 +143,11 @@ class EAL_TestResult extends EAL_Object  {
 		return 100*$this->getAverage($itemIndex)/$this->getItem($itemIndex)->getPoints();
 	}
 
+	
+	public function getDateOfTest (): string {
+		return $this->dateOfTest;
+	}
+	
 
 	public function getItemTotalCorrelation (int $itemIndex): float {
 		

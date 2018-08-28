@@ -18,7 +18,7 @@ class HTML_ItemFT extends HTML_Item {
 	public function printItem (bool $isPreview, bool $isEditable, bool $isImport, string $prefix="") {
 		$this->printDescription($isImport, $prefix);
 		$this->printQuestion($isImport, $prefix);
-		$this->printPoints($isPreview, $isEditable, $isImport, $prefix);
+		$this->printPoints($isEditable, $prefix);
 	}
 	
 	

@@ -163,7 +163,11 @@ class PAG_Item_Bulkviewer {
 					<?php } ?>
 				<?php } else { ?>
 					<a href="admin.php?page=view_item&itemids=<?php echo $listOfItemIds ?>&action=edit" class="page-title-action">Edit All <?php echo count($items) ?> Items</a>
+					<a href="edit.php?post_type=item&itemids=<?php echo $listOfItemIds ?>" class="page-title-action">Table View</a>
 				<?php } ?>
+				
+				
+				
 				
 				
 				</h1>

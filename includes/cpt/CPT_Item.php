@@ -244,6 +244,7 @@ class CPT_Item extends CPT_Object{
 			$array .= ", L.title AS learnout_title";
 			$array .= ", L.id AS learnout_id ";
 			$array .= ", I.difficulty as difficulty ";
+			$array .= ", I.no_of_testresults as no_of_testresults ";
 			$array .= ", I.note as note ";
 			$array .= ", I.flag as flag ";
 		}
@@ -299,9 +300,13 @@ class CPT_Item extends CPT_Object{
 				$where .= "AND ({$wpdb->posts}.post_status != 'draft' OR {$wpdb->posts}.post_author = " . get_current_user_id() . ")";
 			}
 			
+				
+			
+			
 			if (isset ($_REQUEST["item_type"])  && ($_REQUEST['item_type'] != "0")) 		$where .= " AND I.type = '{$_REQUEST['item_type']}'";
 			if (isset ($_REQUEST["post_status"]) && ($_REQUEST['post_status'] != "all") && ($_REQUEST['post_status'] != "0") ) 		$where .= " AND {$wpdb->posts}.post_status = '" . $_REQUEST['post_status'] . "'";
 			
+			if (isset ($_REQUEST['itemids']))											$where .= " AND I.id IN ({$_REQUEST['itemids']}) ";
 			if (isset ($_REQUEST["learnout_id"])) 										$where .= " AND L.id = {$_REQUEST['learnout_id']}";
 			if (isset ($_REQUEST['item_author'])) 										$where .= " AND {$wpdb->posts}.post_author 			= " . $_REQUEST['item_author'];
 			if (isset ($_REQUEST['item_points'])) 										$where .= " AND I.points  	= " . $_REQUEST['item_points'];
@@ -323,6 +328,8 @@ class CPT_Item extends CPT_Object{
 					$wpdb->posts , $wpdb->term_taxonomy, $wpdb->term_relationships, implode(', ', $children));
 				
 			}
+			
+			
 			
 			if ($this->type == "itembasket") {
 			

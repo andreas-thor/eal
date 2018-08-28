@@ -5,7 +5,7 @@
 class DB_Item {
 	
 	
-	private static function getTableName (): string {
+	public static function getTableName (): string {
 		global $wpdb;
 		return ($wpdb->prefix) . 'eal_item';
 	}
@@ -91,6 +91,7 @@ class DB_Item {
 		
 		// FIXME: when is this used
 		$object['difficulty'] = $sqlres['difficulty'] ?? 0;
+		$object['no_of_testresults'] = $sqlres['no_of_testresults'] ?? 0;
 		
 		return $object;
 	}
@@ -132,7 +133,8 @@ class DB_Item {
 			level_KW tinyint unsigned,
 			level_PW tinyint unsigned,
 			points smallint,
-			difficulty decimal(10,1),
+			difficulty decimal(10,5),
+			no_of_testresults bigint(20) unsigned,
 			learnout_id bigint(20) unsigned,
 			type varchar(20) NOT NULL,
 			domain varchar(50) NOT NULL,
