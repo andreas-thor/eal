@@ -16,7 +16,9 @@ Abhängigkeiten von Reviews
 Abhängigkeiten von Learning Outcome
 * zugeordnete Items => Item Löschen, aktualisiert #Items
 
-	
+Vorgehen
+(1) bei Plugin-Aktivierung: SQL-Skript, der alle abgeleiteten Werte neu berechnet
+(2) bei Löschoperationen (siehe oben 1-3): SQL-Skript, was nur für beteiligten CPT die Werte berechnet	
 
 
 
