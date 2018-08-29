@@ -29,6 +29,8 @@ class CPT_ItemSC extends CPT_Item {
 		
 		add_action ("save_post_{$this->type}", 'CPT_ItemSC::save_post', 10, 2);
 		add_action ("save_post_revision", 'CPT_ItemSC::save_post', 10, 2);
+// 		add_action ("delete_post", array ($this, 'delete_post'), 10, 2);
+		
 	}
 	
 	
@@ -63,6 +65,14 @@ class CPT_ItemSC extends CPT_Item {
 		DB_ItemSC::saveToDB($item);
 	}
 		
+	
+	public function delete_post (int $post_id) {
+		
+// 		$revision = wp_is_post_revision ($post_id);		/* brauchen revision nicht */
+		DB_ItemSC::deleteFromDB($post_id);
+	}
+		
+	
 	
 	
 	public function filter_wp_get_revision_ui_diff (array $diff, $compare_from, $compare_to) {

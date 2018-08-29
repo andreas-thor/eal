@@ -29,6 +29,7 @@ class CPT_ItemFT extends CPT_Item {
 		
 		add_action ("save_post_{$this->type}", 'CPT_ItemFT::save_post', 10, 2);
 		add_action ("save_post_revision", 'CPT_ItemFT::save_post', 10, 2);
+		
 	}
 	
 	

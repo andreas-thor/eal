@@ -74,6 +74,8 @@ class CPT_Item extends CPT_Object{
 		add_filter('pre_get_shortlink', '__return_empty_string' );
 		
 		
+
+		
 		
 // 		add_filter ('wp_ajax_get_revision_diffs', array ($this, 'X'), 10, 3 );
 // 		add_filter( 'revision_text_diff_options', array ($this, 'Y'), 10, 3);

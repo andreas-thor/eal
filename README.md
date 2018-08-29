@@ -12,7 +12,7 @@
 * Set date / time format and time zone 
 * Set Start Page
 
-* PHP Extension: STATS
+* PHP Extension: STATS (für die Korrelationen bei der Testanalyse)
 
 (braucht es doch nicht: php extensions: ds, gmp)
 

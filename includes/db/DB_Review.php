@@ -44,6 +44,28 @@ class DB_Review {
 					$replaceType
 					)
 				);
+		
+		
+		// update number of reviews for item
+		
+// 		$review->getItemId()
+		$sql = "
+			UPDATE {DB_Item::getTableName()} I
+			SET no_of_reviews = (
+				SELECT COUNT(*) 
+				FROM {DB_Review::getTableName()} AS R 
+				JOIN {$wpdb->posts} AS RP ON (R.ID=RP.ID) 
+				WHERE RP.post_parent=0 
+				AND RP.post_status IN ('publish', 'pending', 'draft')
+				AND R.item_id = {$review->getItemId()}
+			)
+			WHERE I.id = {$review->getItemId()}";
+		
+		
+		
+// 		$array .= ", (select count(*) from {$wpdb->prefix}eal_review AS R join {$wpdb->posts} AS RP ON (R.ID=RP.ID) where RP.post_parent=0 AND I.id = R.item_id AND RP.post_status IN ('publish', 'pending', 'draft')) AS ";
+		
+		
 	}
 	
 	

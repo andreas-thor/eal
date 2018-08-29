@@ -100,6 +100,12 @@ abstract class CPT_Object {
 			return $views;
 		} );
 		
+		
+		add_action ("delete_post", array ($this, 'delete_post'), 10, 2);
+		add_action ("delete_post_revision", array ($this, 'delete_post'), 10, 2);
+		
+		
+		
 	}
 	
 	
@@ -136,6 +142,11 @@ abstract class CPT_Object {
 		// quick edit is currently not supported
 		// add_action( 'quick_edit_custom_box', array ($this , 'WPCB_quick_edit_custom_box'), 10, 2 );
 	}		
+	
+	public function delete_post (int $post_id) {
+			
+	}
+	
 	
 	public function WPCB_register_meta_box_cb () {
 		remove_meta_box( 'slugdiv', $this->type, 'normal' );
