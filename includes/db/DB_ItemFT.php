@@ -17,17 +17,8 @@ class DB_ItemFT {
 		DB_Item::saveToDB($item);
 		
 		global $wpdb;
-
-		$wpdb->replace(
-			self::getTableName(),
-			array(
-				'item_id' => $item->getId(),
-				'points'   => $item->getPoints()
-			),
-			array('%d','%d')
-		);
-		
-		
+		$wpdb->delete(self::getTableName(), ['item_id' => $item->getId()], ['%d']);
+		$wpdb->insert(self::getTableName(), ['item_id' => $item->getId(), 'points' => $item->getPoints()], ['%d','%d']);
 	}
 	
 	
@@ -36,8 +27,7 @@ class DB_ItemFT {
 		DB_Item::deleteFromDB($item_id);
 		
 		global $wpdb;
-		$wpdb->delete( self::getTableName(), array( 'item_id' => $item_id ), array( '%d' ) );
-		
+		$wpdb->delete(self::getTableName(), ['item_id' => $item->getId()], ['%d']);
 	}
 	
 	
@@ -51,7 +41,9 @@ class DB_ItemFT {
 		
 		global $wpdb;
 		
-		$sqlres = $wpdb->get_row( "SELECT * FROM " . self::getTableName() . " WHERE item_id = {$item_id}", ARRAY_A);
+		$sqlres = $wpdb->get_row($wpdb->prepare(
+			'SELECT * FROM ' . self::getTableName() . ' WHERE item_id = %d', $item_id), ARRAY_A);
+		
 		$object['item_points'] = $sqlres['points'];
 		
 		return EAL_ItemFT::createFromArray($item_id, $object);

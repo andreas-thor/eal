@@ -13,29 +13,65 @@ class DB_Item {
 	public static function saveToDB (EAL_Item $item) {
 		
 		global $wpdb;
-		
-		$wpdb->replace(
-			self::getTableName(),
-			array(
-				'id' => $item->getId(),
-				'title' => $item->getTitle(),
-				'description' => $item->getDescription(),
-				'question' => $item->getQuestion(),
-				'level_FW' => $item->getLevel()->get('FW'),
-				'level_KW' => $item->getLevel()->get('KW'),
-				'level_PW' => $item->getLevel()->get('PW'),
-				'points'   => $item->getPoints(),
-				'difficulty' => $item->getDifficulty(),
-				'learnout_id' => $item->getLearnOutId(),
-				'type' => $item->getType(),
-				'domain' => $item->getDomain(),
-				'note' => $item->getNote(),
-				'flag' => $item->getFlag(),
-				'minnumber' => $item->getMinNumber(),
-				'maxnumber' => $item->getMaxNumber()
-			),
-			array('%d','%s','%s','%s','%d','%d','%d','%d','%f','%d','%s','%s','%s','%d','%d','%d')
-			);
+
+		// check if item is already in DB
+		$dbId = $wpdb->get_var('SELECT id FROM ' . self::getTableName() . ' WHERE id = ' . $item->getId());
+		if ($dbId === NULL) {
+			// new item --> INSERT			
+			$wpdb->insert(
+				self::getTableName(),
+				array(
+					'id' => $item->getId(),
+					'title' => $item->getTitle(),
+					'description' => $item->getDescription(),
+					'question' => $item->getQuestion(),
+					'level_FW' => $item->getLevel()->get('FW'),
+					'level_KW' => $item->getLevel()->get('KW'),
+					'level_PW' => $item->getLevel()->get('PW'),
+					'points'   => $item->getPoints(),
+					'difficulty' => $item->getDifficulty(),
+					'no_of_testresults' => $item->getNoOfTestResults(),
+					'learnout_id' => $item->getLearnOutId(),
+					'no_of_reviews' => $item->getNoOfReviews(), 
+					'type' => $item->getType(),
+					'domain' => $item->getDomain(),
+					'note' => $item->getNote(),
+					'flag' => $item->getFlag(),
+					'minnumber' => $item->getMinNumber(),
+					'maxnumber' => $item->getMaxNumber()
+				),
+				array('%d','%s','%s','%s','%d','%d','%d','%d','%f', '%d','%d', '%d', '%s','%s','%s','%d','%d','%d')
+				);
+			 
+		} else {
+			
+			/* update all values except: 
+			 * - static values: Id, Type, Domain
+			 * - derived values: Difficulty, #TestResults, #Reviews
+			 */ 
+			
+			$wpdb->update(
+				self::getTableName(),
+				array(
+					'title' => $item->getTitle(),
+					'description' => $item->getDescription(),
+					'question' => $item->getQuestion(),
+					'level_FW' => $item->getLevel()->get('FW'),
+					'level_KW' => $item->getLevel()->get('KW'),
+					'level_PW' => $item->getLevel()->get('PW'),
+					'points'   => $item->getPoints(),
+					'learnout_id' => $item->getLearnOutId(),
+					'note' => $item->getNote(),
+					'flag' => $item->getFlag(),
+					'minnumber' => $item->getMinNumber(),
+					'maxnumber' => $item->getMaxNumber()
+				),
+				array('id' => $item->getId()), 
+				array('%s','%s','%s','%d','%d','%d','%d','%d','%s','%d','%d','%d'),
+				array('%d') 
+				);
+			
+		}
 	}
 	
 	
@@ -43,8 +79,8 @@ class DB_Item {
 		
 		global $wpdb;
 		
-		$wpdb->delete( self::getTableName(), array( 'id' => $item_id ), array( '%d' ) );
-		$wpdb->delete( "{$wpdb->prefix}eal_review", array( 'item_id' => $item_id ), array( '%d' ) );
+		$wpdb->delete( DB_Item::getTableName(), array( 'id' => $item_id ), array( '%d' ) );
+		DB_Review::deleteAllItemReviewsFromDB($item_id);
 	}
 	
 	
@@ -59,7 +95,91 @@ class DB_Item {
 		
 		throw new Exception('Could not load item. Unknown item type ' . $item_type);
 	}
+	
+	/**
+	 * @param int $item_id if ==-1 --> #reviews will be updated for all items 
+	 */
+	public static function updateNumberOfReviews (int $item_id) {
 		
+		global $wpdb;
+		
+		if ($item_id < 0) {		// update for all items
+
+			$sql = sprintf('
+				UPDATE %1$s I
+				JOIN (
+					SELECT R.item_id, COUNT(*) AS no_of_reviews
+					FROM %2$s AS R
+					JOIN %3$s AS RP ON (R.ID = RP.ID)
+					WHERE RP.post_parent = 0
+					AND RP.post_status = \'publish\' 
+					GROUP BY R.item_id
+				) AS T
+				ON (I.id = T.item_id)
+				SET I.no_of_reviews = T.no_of_reviews',
+				DB_Item::getTableName(), DB_Review::getTableName(), $wpdb->posts);
+			
+		} else {
+				
+			$sql = sprintf('
+				UPDATE %1$s I
+				SET no_of_reviews = (
+					SELECT COUNT(*)
+					FROM %2$s AS R
+					JOIN %3$s AS RP ON (R.ID = RP.ID)
+					WHERE RP.post_parent = 0
+					AND RP.post_status = \'publish\' 
+					AND R.item_id = %4$d
+				)
+				WHERE I.id = %4$d',
+				DB_Item::getTableName(), DB_Review::getTableName(), $wpdb->posts, $item_id);
+		}
+		
+		$wpdb->query($sql);
+	}
+	
+	
+	public static function updateDifficultyAndNumberOfTestResults (array $itemIds) {
+		
+		global $wpdb;
+		
+		if (count($itemIds) == 0) {
+
+			// reset all values to default
+			$sql = 'UPDATE ' . DB_Item::getTableName() . ' SET difficulty = NULL, no_of_testresults = 0';
+			$wpdb->query($sql);
+			
+			// no item filter
+			$itemFilter = '';
+		} else {
+			$itemFilter = 'AND t.item_id IN (' . implode(',', $itemids) . ') ';
+		}
+		
+		$sql = sprintf ('
+			UPDATE %1$s AS U
+			INNER JOIN (
+				SELECT t.item_id, (avg(t.points) / i.points) as difficulty, count(distinct t.test_id) as no_of_testresults
+				FROM %2$s T
+				JOIN %1$s I on (T.item_id=I.id)
+				JOIN %3$s TP ON (T.test_id = TP.ID)
+				WHERE TP.post_parent = 0
+				AND TP.post_status = \'publish\' 
+				%4$s
+				group by t.item_id
+			) AS J ON (U.id = J.item_id)
+			SET 
+				U.difficulty = J.difficulty, 
+				U.no_of_testresults = J.no_of_testresults',
+			
+			DB_Item::getTableName(), 
+			DB_TestResult::getTableName() . '_useritem',  
+			$wpdb->posts, 
+			$itemFilter);
+		
+		$wpdb->query($sql);
+		
+	}
+	
 	
 	/**
 	 */
@@ -90,8 +210,10 @@ class DB_Item {
 		$object['domain'] = $sqlres['domain'] ?? 0;
 		
 		// FIXME: when is this used
-		$object['difficulty'] = $sqlres['difficulty'] ?? 0;
+		$object['difficulty'] = $sqlres['difficulty'] ?? -1;
 		$object['no_of_testresults'] = $sqlres['no_of_testresults'] ?? 0;
+		$object['no_of_reviews'] = $sqlres['no_of_reviews'] ?? 0;
+		
 		
 		return $object;
 	}
@@ -136,6 +258,7 @@ class DB_Item {
 			difficulty decimal(10,5),
 			no_of_testresults bigint(20) unsigned,
 			learnout_id bigint(20) unsigned,
+			no_of_reviews bigint(20) unsigned,
 			type varchar(20) NOT NULL,
 			domain varchar(50) NOT NULL,
 			note text,

@@ -79,6 +79,8 @@ add_action('wp_ajax_getMostSimilarTerms', array(
 
 /* Plugin Activation --> Create Database Tables for all data types */
 register_activation_hook(__FILE__, function () {
+	
+	/* Create Database Tables */
 	DB_Item::createTables();
 	DB_ItemSC::createTables();
 	DB_ItemMC::createTables();
@@ -87,6 +89,10 @@ register_activation_hook(__FILE__, function () {
 	DB_LearnOut::createTables();
 	DB_Term::createTables();
 	DB_TestResult::createTables();
+	
+	/* Update derived values */
+	DB_Item::updateNumberOfReviews(-1);
+	DB_Item::updateDifficultyAndNumberOfTestResults([]);
 	
 	
 });

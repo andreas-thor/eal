@@ -1,6 +1,6 @@
 <?php
 
-require_once (__DIR__ . "/../class.CLA_RoleTaxonomy.php");
+require_once __DIR__ . '/../class.CLA_RoleTaxonomy.php';
 require_once 'EAL_Object.php';
 
 
@@ -10,17 +10,20 @@ abstract class EAL_Item extends EAL_Object {
 	private $description;	// description (e.g., vignette, use case, scenarion)
 	private $question;		// actual question
 	
-	private $learnout;
-	private $learnout_id;
+	private $learnout_id;	// id of learning outcome
+	private $learnout;		// learning outcome; LAZY LOADING
 	
-	private $note;
-	private $flag;
+	private $note;			// note (text)
+	private $flag;			// flag (int)
 	
-	private $difficulty;
+	private $no_of_reviews;	// number of reviews; DERIVED
+	private $difficulty;	// difficulty; DERIVED
+	private $no_of_testresults;	// number of test results; DERIVED
+	
 	public $minnumber;	// FIXME minnumber/maxnumber: range of correct answers (relevant for MC only)
 	public $maxnumber;
 	
-	public static $level_type = ["FW", "KW", "PW"];
+// 	public static $level_type = ["FW", "KW", "PW"];
 	
 // 	public static $category_value_label = [
 // 			"type" => [EAL_ItemSC::getType() => "Single Choice", EAL_ItemMC::getType() => "Multiple Choice", EAL_ItemFT::getType() => 'Free Text'],
@@ -50,8 +53,9 @@ abstract class EAL_Item extends EAL_Object {
 		$this->learnout = NULL;
 		$this->note = '';
 		$this->flag = 0;
-		
+		$this->no_of_reviews = 0;
 		$this->difficulty = -1;
+		$this->no_of_testresults = 0;
 		$this->minnumber = -1;
 		$this->maxnumber = -1;
 	}
@@ -103,6 +107,18 @@ abstract class EAL_Item extends EAL_Object {
 		if (isset ($object[$prefix . 'item_flag'])) {
 			$this->flag = intval ($object[$prefix . 'item_flag']);
 		}
+		
+		if (isset ($object[$prefix . 'no_of_reviews'])) {
+			$this->no_of_reviews = intval($object[$prefix . 'no_of_reviews']);
+		}
+		
+		if (isset ($object[$prefix . 'difficulty'])) {
+			$this->difficulty = floatval($object[$prefix . 'difficulty']);
+		}
+		
+		if (isset ($object[$prefix . 'no_of_testresults'])) {
+			$this->no_of_testresults = intval($object[$prefix . 'no_of_testresults']);
+		}
 	}
 
 	
@@ -114,6 +130,9 @@ abstract class EAL_Item extends EAL_Object {
 		$object[$prefix . 'learnout_id'] = $this->learnout_id;
 		$object[$prefix . 'item_note'] = $this->note;
 		$object[$prefix . 'item_flag'] = $this->flag;
+		$object[$prefix . 'no_of_reviews'] = $this->no_of_reviews;
+		$object[$prefix . 'difficulty'] = $this->difficulty;
+		$object[$prefix . 'no_of_testresults'] = $this->no_of_testresults;
 		return $object;
 	}
 	
@@ -151,39 +170,12 @@ abstract class EAL_Item extends EAL_Object {
 		return $this->question;
 	}
 	
-	public function getNote(): string {
-		return $this->note;
-	}
-	
-	public function getFlag(): int {
-		return $this->flag;
-	}
-	
-	public function getDifficulty (): float {
-		return $this->difficulty;
-	}
-	
-	public function getMinNumber(): int {
-		return $this->minnumber;
-	}
-	
-	public function getMaxNumber(): int {
-		return $this->maxnumber;
-	}
-	
-	
-	public abstract function getHTMLPrinter (): HTML_Item;
-	
-
-	
 	public function getLearnOutId(): int {
 		return $this->learnout_id;
 	}
 	
-
-	
 	/**
-	 * Implements lazy loading of learning outcome 
+	 * Implements lazy loading of learning outcome
 	 */
 	public function getLearnOut () {
 		
@@ -198,12 +190,36 @@ abstract class EAL_Item extends EAL_Object {
 		return $this->learnout;
 	}
 	
+	public function getNote(): string {
+		return $this->note;
+	}
+	
+	public function getFlag(): int {
+		return $this->flag;
+	}
+	
+	public function getNoOfReviews (): int {
+		return $this->no_of_reviews;
+	}
+	
+	public function getDifficulty (): float {
+		return $this->difficulty;
+	}
+	
+	public function getNoOfTestResults (): int {
+		return $this->no_of_testresults;
+	}
+	
+	public function getMinNumber(): int {
+		return $this->minnumber;
+	}
+	
+	public function getMaxNumber(): int {
+		return $this->maxnumber;
+	}
 	
 	
-	
-
-
-	
+	public abstract function getHTMLPrinter (): HTML_Item;
 	
 	
 	public abstract function getPoints(): int;

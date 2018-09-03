@@ -5,7 +5,7 @@
 class DB_TestResult {
 	
 	
-	private static function getTableName (): string {
+	public static function getTableName (): string {
 		global $wpdb;
 		return ($wpdb->prefix) . 'eal_testresult';
 	}
@@ -34,7 +34,7 @@ class DB_TestResult {
 				array('%d','%s','%s','%s','%s','%d','%d')
 			);
 			
-			self::updateItemStatistics($testresult->getId());
+// FIXME: needed?			self::updateItemStatistics($testresult->getId());
 			return;
 		}
 		
@@ -84,8 +84,7 @@ class DB_TestResult {
 		$query .= implode(', ', $insert);
 		$wpdb->query( $wpdb->prepare("$query ", $values));
 
-		self::updateItemStatistics($testresult->getId());
-		
+		DB_Item::updateDifficultyAndNumberOfTestResults($testresult->getAllItemsIds());
 
 	}
 	
@@ -129,13 +128,16 @@ class DB_TestResult {
 		
 		global $wpdb;
 
-		self::updateItemStatistics($testresult_id, FALSE);
+		// get all item ids of test --> their difficulty and no_of_testresults need to be updated 
+		$itemids = $wpdb->get_col('
+			SELECT DISTINCT item_id 
+			FROM ' . self::getTableName() . '_useritem 
+			WHERE test_id = ' . $testresult_id);
 		
 		$wpdb->delete( self::getTableName(), array( 'id' => $testresult_id ), array( '%d' ) );
 		$wpdb->delete( self::getTableName() . '_useritem', array( 'test_id' => $testresult_id ), array( '%d' ) );
 		
-		
-		
+		DB_Item::updateDifficultyAndNumberOfTestResults($itemIds);
 	}
 	
 	

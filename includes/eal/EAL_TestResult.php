@@ -123,6 +123,11 @@ class EAL_TestResult extends EAL_Object  {
 		return $this->allItemIds[$itemIndex];
 	}
 	
+	
+	public function getAllItemsIds (): array {
+		return $this->allItemIds;
+	}
+	
 	public function getPoints (int $itemIndex, int $userIndex) {
 		if (($itemIndex<0) || ($itemIndex>=count($this->allItemIds))) {
 			return NULL;

@@ -16,28 +16,24 @@ class DB_ItemMC {
 		
 		global $wpdb;
 		
-		/** TODO: Sanitize all values */
+		// delete old answers
+		$wpdb->delete(self::getTableName(), ['item_id' => $item->getId()], ['%d']);
 		
 		if ($item->getNumberOfAnswers()>0) {
 			
+			// insert all answers
 			$values = array();
-			$insert = array();
+			$values_format = array();
 			for ($index=0; $index<$item->getNumberOfAnswers(); $index++) {
 				array_push($values, $item->getId(), $index+1, $item->getAnswer($index), $item->getPointsPos($index), $item->getPointsNeg($index));
-				array_push($insert, "(%d, %d, %s, %d, %d)");
+				array_push($values_format, "(%d, %d, %s, %d, %d)");
 			}
 			
-			
-			// replace or insert answers
-			$query = "REPLACE INTO " . self::getTableName() . " (item_id, id, answer, positive, negative) VALUES ";
-			$query .= implode(', ', $insert);
-			$wpdb->query( $wpdb->prepare("$query ", $values));
-			
+			$query = 'INSERT INTO ' . self::getTableName() . ' (item_id, id, answer, positive, negative) VALUES ';
+			$query .= implode(', ', $values_format);
+			$wpdb->query($wpdb->prepare($query, $values));
 		}
-		
-		// delete remaining answers
-		$wpdb->query( $wpdb->prepare("DELETE FROM " . self::getTableName() . " WHERE item_id=%d AND id>%d", array ($item->getId(), $item->getNumberOfAnswers())));
-		
+
 	}
 	
 	
@@ -46,7 +42,7 @@ class DB_ItemMC {
 		DB_Item::deleteFromDB($item_id);
 		
 		global $wpdb;
-		$wpdb->delete( self::getTableName(), array( 'item_id' => $item_id ), array( '%d' ) );
+		$wpdb->delete( self::getTableName(), ['item_id' => $item_id], ['%d'] );
 		
 	}
 	
@@ -65,7 +61,9 @@ class DB_ItemMC {
 		$object['positive'] = [];
 		$object['negative'] = [];
 		
-		$sqlres = $wpdb->get_results( "SELECT * FROM " . self::getTableName() . " WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
+		$sqlres = $wpdb->get_results($wpdb->prepare(
+			'SELECT * FROM ' . self::getTableName() . ' WHERE item_id = %d ORDER BY id', $item_id), ARRAY_A);
+		
 		foreach ($sqlres as $a) {
 			$object['answer'][] = $a['answer'] ?? '';
 			$object['positive'][] = $a['positive'] ?? 1;

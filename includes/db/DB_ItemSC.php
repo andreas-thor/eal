@@ -21,26 +21,25 @@ class DB_ItemSC {
 		
 		global $wpdb;
 		
-		/** TODO: Sanitize all values */
+		// delete old answers
+		$wpdb->delete(self::getTableName(), ['item_id' => $item->getId()], ['%d']);
 		
 		if ($item->getNumberOfAnswers()>0) {
 			
+			// insert all answers
 			$values = array();
-			$insert = array();
+			$values_format = array();
 			
 			for ($index=0; $index<$item->getNumberOfAnswers(); $index++) {
 				array_push($values, $item->getId(), $index+1, $item->getAnswer($index), $item->getPointsChecked($index));
-				array_push($insert, "(%d, %d, %s, %d)");
+				array_push($values_format, '(%d, %d, %s, %d)');
 			}
 			
-			// replace answers
-			$query = "REPLACE INTO " . self::getTableName() . " (item_id, id, answer, points) VALUES ";
-			$query .= implode(', ', $insert);
-			$wpdb->query( $wpdb->prepare("$query ", $values));
+			$query = 'INSERT INTO ' . self::getTableName() . ' (item_id, id, answer, points) VALUES ';
+			$query .= implode(', ', $values_format);
+			$wpdb->query($wpdb->prepare($query, $values));
 		}
 		
-		// delete remaining answers
-		$wpdb->query( $wpdb->prepare("DELETE FROM " . self::getTableName() . " WHERE item_id=%d AND id>%d", array ($item->getId(), $item->getNumberOfAnswers())));
 		
 
 	}
@@ -51,7 +50,7 @@ class DB_ItemSC {
 		DB_Item::deleteFromDB($item_id);
 		
 		global $wpdb;
-		$wpdb->delete( self::getTableName(), array( 'item_id' => $item_id ), array( '%d' ) );
+		$wpdb->delete( self::getTableName(), ['item_id' => $item_id], ['%d'] );
 		
 	}
 	
@@ -68,7 +67,10 @@ class DB_ItemSC {
 		$object['points'] = [];
 		
 		global $wpdb;
-		$sqlres = $wpdb->get_results( "SELECT * FROM " . self::getTableName() . " WHERE item_id = {$item_id} ORDER BY id", ARRAY_A);
+		
+		$sqlres = $wpdb->get_results($wpdb->prepare(
+			'SELECT * FROM ' . self::getTableName() . ' WHERE item_id = %d ORDER BY id', $item_id), ARRAY_A);
+		
 		foreach ($sqlres as $a) {
 			$object['answer'][] = $a['answer'] ?? '';
 			$object['points'][] = $a['points'] ?? 0;

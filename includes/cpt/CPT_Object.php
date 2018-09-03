@@ -1,6 +1,7 @@
 <?php
 
 require_once(__DIR__ . "/../eal/EAL_ItemBasket.php");
+require_once __DIR__ . '/../eal/EAL_Level.php';
 
 abstract class CPT_Object {
 	
@@ -418,7 +419,7 @@ abstract class CPT_Object {
 	
 		global $wp_query, $wpdb;
 		if (($wp_query->query["post_type"] == $this->type) || (!$checktype)) {
-			foreach (EAL_Item::$level_type as $lt) {
+			foreach (EAL_Level::TYPE as $lt) {
 				if (isset($_REQUEST["level_{$lt}"]) && ($_REQUEST["level_{$lt}"] != '0')) {
 					$where .= " AND ({$wpdb->prefix}eal_{$this->type}.level_{$lt} = {$_REQUEST["level_{$lt}"]})";
 				}
@@ -499,7 +500,7 @@ abstract class CPT_Object {
 			));
 				
 			
-			foreach (EAL_Item::$level_type as $lt) {
+			foreach (EAL_Level::TYPE as $lt) {
 				$selected = (isset($_REQUEST["level_{$lt}"]) && ($_REQUEST["level_{$lt}"] != '0')) ? $_REQUEST["level_{$lt}"] : 0;
 				echo ("<select class='postform' name='level_{$lt}'>");
 				echo ("<option value='0'>All {$lt}</option>");

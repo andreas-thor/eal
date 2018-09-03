@@ -7,11 +7,7 @@ abstract class EAL_Object {
 	
 	private $id;		// set/get make sure that integer values are stored only
 	private $domain;	// each item belongs to a domain (when newly created: domain = current user's role domain)
-	
-	/**
-	 * @var EAL_Level 
-	 */
-	private $level;			
+	private $level;		// level of type EAL_Level	
 	
 	
 	function __construct (int $id) {
@@ -35,8 +31,6 @@ abstract class EAL_Object {
 			$this->id = intval ($object[$prefix . 'post_ID']);
 		}
 		
-		$this->level->initFromArray($object, $prefix . $levelPrefix);
-		
 		if (isset($object[$prefix . 'domain'])) {
 			$this->domain = $object[$prefix . 'domain'];
 		}
@@ -48,6 +42,9 @@ abstract class EAL_Object {
 				break;
 			}
 		}
+		
+		$this->level->initFromArray($object, $prefix . $levelPrefix);
+		
 	}
 	
 	
