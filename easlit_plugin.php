@@ -135,6 +135,8 @@ add_action('init', function () {
 		switch ($_REQUEST['post_type']) {
 			case EAL_ItemSC::getType():  
 				(new CPT_ItemSC())->addHooks(); 
+				(new CPT_ItemMC())->addHooks();
+				
 				break;
 			case EAL_ItemMC::getType():
 				(new CPT_ItemMC())->addHooks();

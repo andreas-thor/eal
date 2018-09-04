@@ -15,14 +15,16 @@ class DB_ItemSC {
 	}
 	
 	
-	public static function saveToDB (EAL_ItemSC $item) {
+	public static function saveToDB (EAL_ItemSC $item, bool $update) {
 		
-		DB_Item::saveToDB($item);
+		DB_Item::saveToDB($item, $update);
 		
 		global $wpdb;
 		
-		// delete old answers
-		$wpdb->delete(self::getTableName(), ['item_id' => $item->getId()], ['%d']);
+		if ($update) {
+			// delete old answers
+			$wpdb->delete(self::getTableName(), ['item_id' => $item->getId()], ['%d']);
+		}
 		
 		if ($item->getNumberOfAnswers()>0) {
 			

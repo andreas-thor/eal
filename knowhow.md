@@ -6,7 +6,7 @@
 (3) Trash -> Undo
 
 Abgeleiteten Kennzahlen bzw. Abhängigkeiten von Items
-+ * Anzahl der Reviews: Review save/delete => update #Reviews
++ * Anzahl der Reviews: Review save/delete/(un)trash => update #Reviews
 + * Schwierigkeit + Anzahl TestResults: TestResult save/delete => update 
 + * Learning Outcome: delete Learning Outcome löschen => SET NULL
 

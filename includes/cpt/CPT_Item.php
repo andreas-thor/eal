@@ -59,6 +59,11 @@ class CPT_Item extends CPT_Object{
 		
 		parent::addHooks();
 
+		add_action ('save_post_' . $this->getType(), array ($this, 'save_post'), 10, 3);
+		add_action ('save_post_revision', array ($this, 'save_post_revision'), 10, 3);
+		
+		
+		
 		add_action('contextual_help', array ($this, 'WPCB_contextual_help' ), 10, 3);
 		
 

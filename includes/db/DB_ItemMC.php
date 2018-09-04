@@ -10,14 +10,16 @@ class DB_ItemMC {
 		return ($wpdb->prefix) . 'eal_itemmc';
 	}
 	
-	public static function saveToDB (EAL_ItemMC $item) {
+	public static function saveToDB (EAL_ItemMC $item, bool $update) {
 		
-		DB_Item::saveToDB($item);
+		DB_Item::saveToDB($item, $update);
 		
 		global $wpdb;
 		
-		// delete old answers
-		$wpdb->delete(self::getTableName(), ['item_id' => $item->getId()], ['%d']);
+		if ($update) {
+			// delete old answers
+			$wpdb->delete(self::getTableName(), ['item_id' => $item->getId()], ['%d']);
+		}
 		
 		if ($item->getNumberOfAnswers()>0) {
 			

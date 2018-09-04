@@ -12,13 +12,17 @@ class DB_ItemFT {
 	}
 	 
 	
-	public static function saveToDB (EAL_ItemFT $item) {
+	public static function saveToDB (EAL_ItemFT $item, bool $update) {
 		
-		DB_Item::saveToDB($item);
+		DB_Item::saveToDB($item, $update);
 		
 		global $wpdb;
-		$wpdb->delete(self::getTableName(), ['item_id' => $item->getId()], ['%d']);
-		$wpdb->insert(self::getTableName(), ['item_id' => $item->getId(), 'points' => $item->getPoints()], ['%d','%d']);
+		
+		if ($update) {
+			$wpdb->update(self::getTableName(), ['points' => $item->getPoints()], ['item_id' => $item->getId()], ['%d'], ['%d']);
+		} else {
+			$wpdb->insert(self::getTableName(), ['item_id' => $item->getId(), 'points' => $item->getPoints()], ['%d','%d']);
+		}
 	}
 	
 	

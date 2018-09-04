@@ -10,13 +10,33 @@ class DB_Item {
 		return ($wpdb->prefix) . 'eal_item';
 	}
 	
-	public static function saveToDB (EAL_Item $item) {
+	public static function saveToDB (EAL_Item $item, bool $update) {
 		
 		global $wpdb;
 
-		// check if item is already in DB
-		$dbId = $wpdb->get_var('SELECT id FROM ' . self::getTableName() . ' WHERE id = ' . $item->getId());
-		if ($dbId === NULL) {
+		if ($update) {
+			// update all values except static values (Id, Type, Domain) and derived values (Difficulty, #TestResults, #Reviews)
+			$wpdb->update(
+				self::getTableName(),
+				array(
+					'title' => $item->getTitle(),
+					'description' => $item->getDescription(),
+					'question' => $item->getQuestion(),
+					'level_FW' => $item->getLevel()->get('FW'),
+					'level_KW' => $item->getLevel()->get('KW'),
+					'level_PW' => $item->getLevel()->get('PW'),
+					'points'   => $item->getPoints(),
+					'learnout_id' => $item->getLearnOutId(),
+					'note' => $item->getNote(),
+					'flag' => $item->getFlag(),
+					'minnumber' => $item->getMinNumber(),
+					'maxnumber' => $item->getMaxNumber()
+				),
+				array('id' => $item->getId()),
+				array('%s','%s','%s','%d','%d','%d','%d','%d','%s','%d','%d','%d'),
+				array('%d')
+				);
+		} else {
 			// new item --> INSERT			
 			$wpdb->insert(
 				self::getTableName(),
@@ -42,36 +62,6 @@ class DB_Item {
 				),
 				array('%d','%s','%s','%s','%d','%d','%d','%d','%f', '%d','%d', '%d', '%s','%s','%s','%d','%d','%d')
 				);
-			
-		} else {
-			
-			/* update all values except: 
-			 * - static values: Id, Type, Domain
-			 * - derived values: Difficulty, #TestResults, #Reviews
-			 */ 
-			
-			$wpdb->update(
-				self::getTableName(),
-				array(
-					'title' => $item->getTitle(),
-					'description' => $item->getDescription(),
-					'question' => $item->getQuestion(),
-					'level_FW' => $item->getLevel()->get('FW'),
-					'level_KW' => $item->getLevel()->get('KW'),
-					'level_PW' => $item->getLevel()->get('PW'),
-					'points'   => $item->getPoints(),
-					'learnout_id' => $item->getLearnOutId(),
-					'note' => $item->getNote(),
-					'flag' => $item->getFlag(),
-					'minnumber' => $item->getMinNumber(),
-					'maxnumber' => $item->getMaxNumber()
-				),
-				array('id' => $item->getId()), 
-				array('%s','%s','%s','%d','%d','%d','%d','%d','%s','%d','%d','%d'),
-				array('%d') 
-				);
-			
-			
 		}
 		
 		if ($item->getLearnOutId()>0) {

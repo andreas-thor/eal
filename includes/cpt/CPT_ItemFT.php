@@ -23,15 +23,6 @@ class CPT_ItemFT extends CPT_Item {
 	}
 	
 
-	public function addHooks() {
-
-		parent::addHooks();
-		
-		add_action ("save_post_{$this->type}", 'CPT_ItemFT::save_post', 10, 2);
-		add_action ("save_post_revision", 'CPT_ItemFT::save_post', 10, 2);
-		
-	}
-	
 	
 	/**
 	 * $item to store might already be loaed (e.g., during import); otherwise loaded from $_POST data
@@ -42,7 +33,7 @@ class CPT_ItemFT extends CPT_Item {
 	 * @param WP_Post $post
 	 */
 	
-	public static function save_post (int $post_id, WP_Post $post) {
+	public function save_post (int $post_id, WP_Post $post, bool $update) {
 		
 		$revision = wp_is_post_revision ($post_id);
 		$type = ($revision === FALSE) ? $post->post_type : get_post_type($revision);
@@ -60,10 +51,13 @@ class CPT_ItemFT extends CPT_Item {
 			}
 		}
 			
-		$item->setId($post_id);
-		DB_ItemFT::saveToDB($item);
+		$item->setId($post_id); 
+		DB_ItemFT::saveToDB($item, $update);
 	}
 		
+	public function save_post_revision (int $post_id, WP_Post $post, bool $update) {
+		$this->save_post($post_id, $post, $update);
+	}
 	
 	
 	public function filter_wp_get_revision_ui_diff (array $diff, $compare_from, $compare_to) {
