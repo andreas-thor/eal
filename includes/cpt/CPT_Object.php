@@ -104,6 +104,9 @@ abstract class CPT_Object {
 		
 		add_action ("delete_post", array ($this, 'delete_post'), 10, 2);
 		add_action ("delete_post_revision", array ($this, 'delete_post'), 10, 2);
+
+		add_action ("trashed_post", array ($this, 'trashed_post'), 10, 2);
+		add_action ("untrashed_post", array ($this, 'untrashed_post'), 10, 2);
 		
 		
 		
@@ -146,6 +149,14 @@ abstract class CPT_Object {
 	
 	public function delete_post (int $post_id) {
 			
+	}
+	
+	public function trashed_post (int $post_id) {
+		
+	}
+	
+	public function untrashed_post (int $post_id) {
+		
 	}
 	
 	

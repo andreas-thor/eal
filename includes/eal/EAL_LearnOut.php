@@ -7,11 +7,13 @@ class EAL_LearnOut extends EAL_Object  {
 
 	private $title;
 	private $description;
+	private $no_of_items;
 	
 	function __construct(int $id = -1, array $object = NULL, string $prefix = '', string $level_prefix = '') {
 		parent::__construct($id, $object, $prefix, $level_prefix);
 		$this->title = '';
 		$this->description = 'Die Studierenden sind nach Abschluss der Lehrveranstaltung in der Lage ...';
+		$this->no_of_items = 0;
 	}
 	
 	public static function createFromArray (int $id, array $object, string $prefix = ''): EAL_LearnOut {
@@ -37,6 +39,10 @@ class EAL_LearnOut extends EAL_Object  {
 		if (isset ($object[$prefix . 'learnout_description'])) {
 			$this->description = html_entity_decode (stripslashes($object[$prefix . 'learnout_description']));
 		}
+		
+		if (isset ($object[$prefix . 'no_of_items'])) {
+			$this->no_of_items = intval($object[$prefix . 'no_of_items']);
+		}
 	}
 	
 	
@@ -53,7 +59,9 @@ class EAL_LearnOut extends EAL_Object  {
 		return $this->description;
 	}
 	
-	
+	public function getNoOfItems (): int {
+		return $this->no_of_items;
+	}
 
 	
 	public function copyMetadata (EAL_LearnOut $sourceLO) {

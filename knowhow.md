@@ -6,15 +6,17 @@
 (3) Trash -> Undo
 
 Abgeleiteten Kennzahlen bzw. Abhängigkeiten von Items
-* Anzahl der Reviews => Review löschen, aktualisiert #Reviews
-* Schwierigkeit => TestResult löschen, aktualisiert Schwierigkeit
-* Learning Outcome => Learning Outcome löschen, setzt LO auf NULL
++ * Anzahl der Reviews: Review save/delete => update #Reviews
++ * Schwierigkeit + Anzahl TestResults: TestResult save/delete => update 
++ * Learning Outcome: delete Learning Outcome löschen => SET NULL
+
+Abhängigkeiten von Learning Outcome
+* zugeordnete Items => Item Löschen, aktualisiert #Items
+
 
 Abhängigkeiten von Reviews
 * zugeordnetes Item  => Item Löschen, löscht Review
 
-Abhängigkeiten von Learning Outcome
-* zugeordnete Items => Item Löschen, aktualisiert #Items
 
 Vorgehen
 (1) bei Plugin-Aktivierung: SQL-Skript, der alle abgeleiteten Werte neu berechnet

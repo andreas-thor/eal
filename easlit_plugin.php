@@ -93,7 +93,7 @@ register_activation_hook(__FILE__, function () {
 	/* Update derived values */
 	DB_Item::updateNumberOfReviews(-1);
 	DB_Item::updateDifficultyAndNumberOfTestResults([]);
-	
+	DB_Learnout::updateNumberOfItems(-1);
 	
 });
 

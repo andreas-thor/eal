@@ -42,7 +42,7 @@ class DB_Item {
 				),
 				array('%d','%s','%s','%s','%d','%d','%d','%d','%f', '%d','%d', '%d', '%s','%s','%s','%d','%d','%d')
 				);
-			 
+			
 		} else {
 			
 			/* update all values except: 
@@ -71,6 +71,11 @@ class DB_Item {
 				array('%d') 
 				);
 			
+			
+		}
+		
+		if ($item->getLearnOutId()>0) {
+			DB_Learnout::updateNumberOfItems($item->getLearnOutId());
 		}
 	}
 	
@@ -79,11 +84,31 @@ class DB_Item {
 		
 		global $wpdb;
 		
+		
+		$learnout_id = $wpdb->get_var( 'SELECT learnout_id FROM ' . self::getTableName() . ' WHERE id = ' . $item_id);
+		
 		$wpdb->delete( DB_Item::getTableName(), array( 'id' => $item_id ), array( '%d' ) );
 		DB_Review::deleteAllItemReviewsFromDB($item_id);
+		
+		if ($learnout_id != NULL) {
+			DB_Learnout::updateNumberOfItems($learnout_id);
+		}
 	}
 	
 	
+	public static function trashFromDB (int $item_id) {
+
+		global $wpdb;
+		$learnout_id = $wpdb->get_var( 'SELECT learnout_id FROM ' . self::getTableName() . ' WHERE id = ' . $item_id);
+		if ($learnout_id != NULL) {
+			DB_Learnout::updateNumberOfItems($learnout_id);
+		}
+	}
+	
+	public static function untrashFromDB (int $item_id) {
+		self::trashFromDB($item_id);
+	}
+		
 	
 	public static function loadFromDB (int $item_id, string $item_type): EAL_Item {
 		
@@ -180,6 +205,12 @@ class DB_Item {
 		
 	}
 	
+	
+	public static function updateLearningOutcomeAfterRemoval (int $learnout_id) {
+		
+		global $wpdb;
+		$wpdb->query('UPDATE ' . self::getTableName() . ' SET learnout_id = NULL WHERE learnout_id = ' . $learnout_id);
+	}
 	
 	/**
 	 */

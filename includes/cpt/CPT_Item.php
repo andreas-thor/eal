@@ -86,7 +86,15 @@ class CPT_Item extends CPT_Object{
 	}
 
 
-
+	public function trashed_post (int $post_id) {
+		DB_Item::trashFromDB($post_id);
+	}
+	
+	public function untrashed_post (int $post_id) {
+		DB_Item::untrashFromDB($post_id);	
+	}
+	
+	
 	/**
 	 * 
 	 * @param array $actions An array of row action links. Defaults are 'Edit', 'Quick Edit', 'Restore, 'Trash', 'Delete Permanently', 'Preview', and 'View'.

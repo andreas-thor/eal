@@ -18,23 +18,18 @@ class DB_TestResult {
 		if ($testresult->getNumberOfItems() == 0) {
 
 			// update core meta data only; remain user-item data incl. number of items/users
-			$sqlres = $wpdb->get_row( sprintf('SELECT no_of_items, no_of_users FROM %s WHERE id = %d', self::getTableName(), $testresult->getId()), ARRAY_A);
-
-			$wpdb->replace(
+			$wpdb->update(
 				self::getTableName(),
 				array(
-					'id' => $testresult->getId(),
 					'title' => $testresult->getTitle(),
 					'description' => $testresult->getDescription(),
-					'domain' => $testresult->getDomain(),
-					'date_of_test' => $testresult->getDateOfTest(), 
-					'no_of_items' => ($sqlres != NULL) ? $sqlres['no_of_items'] : NULL,
-					'no_of_users' => ($sqlres != NULL) ? $sqlres['no_of_users'] : NULL
+					'date_of_test' => $testresult->getDateOfTest() 
 				),
-				array('%d','%s','%s','%s','%s','%d','%d')
+				array('id' => $testresult->getId()),
+				array('%s','%s','%s'),
+				array('%d')
 			);
 			
-// FIXME: needed?			self::updateItemStatistics($testresult->getId());
 			return;
 		}
 		
@@ -56,14 +51,7 @@ class DB_TestResult {
 		
 		// user-item-table ...
 		// (1) delete old values
-		
-		$wpdb->delete( 
-			self::getTableName() . '_useritem', 
-			array( 
-				'test_id' => $testresult->getId() 
-			), 
-			array( '%d' ) 
-		);
+		$wpdb->delete(self::getTableName() . '_useritem', ['test_id' => $testresult->getId()], ['%d']);
 		
 		// (2) collect user-item-points 
 		$values = array();
@@ -80,48 +68,14 @@ class DB_TestResult {
 		}
 		
 		// (3) insert points
-		$query = "INSERT INTO " . self::getTableName() . "_useritem (test_id, user_id, item_id, points) VALUES ";
+		$query = 'INSERT INTO ' . self::getTableName() . '_useritem (test_id, user_id, item_id, points) VALUES ';
 		$query .= implode(', ', $insert);
-		$wpdb->query( $wpdb->prepare("$query ", $values));
+		$wpdb->query( $wpdb->prepare($query, $values));
 
 		DB_Item::updateDifficultyAndNumberOfTestResults($testresult->getAllItemsIds());
 
 	}
 	
-	
-	
-	private static function updateItemStatistics (int $testresult_id, bool $includeCurrentTestResult = TRUE) {
-		
-		global $wpdb;
-		
-		$removeCurrentTestResult = '';
-		if ($includeCurrentTestResult === FALSE) {
-			$removeCurrentTestResult = sprintf (' and t.test_id != %d', $testresult_id);
-		}
-		
-		
-		// Update Difficulty for all items in this test
-		$sql = sprintf ('
-		UPDATE %2$s AS U
-		INNER JOIN (
-			SELECT t.item_id, (avg(t.points) / i.points) as difficulty, count(distinct t.test_id) as no_of_testresults
-			from %1$s t
-			join %2$s i
-			on (t.item_id=i.id)
-			where t.item_id in (SELECT item_id FROM %1$s WHERE test_id = %3$d)
-			%4$s 
-			group by t.item_id
-		) AS J ON (U.id = J.item_id)
-		SET U.difficulty = J.difficulty, U.no_of_testresults = J.no_of_testresults',
-			self::getTableName() . '_useritem', DB_Item::getTableName(), $testresult_id, $removeCurrentTestResult);
-		 
-		 
-		 $wpdb->query ($sql);
-	}
-
-	
-
-
 	
 	
 	public static function deleteFromDB (int $testresult_id) {
@@ -134,8 +88,8 @@ class DB_TestResult {
 			FROM ' . self::getTableName() . '_useritem 
 			WHERE test_id = ' . $testresult_id);
 		
-		$wpdb->delete( self::getTableName(), array( 'id' => $testresult_id ), array( '%d' ) );
-		$wpdb->delete( self::getTableName() . '_useritem', array( 'test_id' => $testresult_id ), array( '%d' ) );
+		$wpdb->delete( self::getTableName(), ['id' => $testresult_id], ['%d'] );
+		$wpdb->delete( self::getTableName() . '_useritem', ['test_id' => $testresult_id], ['%d']);
 		
 		DB_Item::updateDifficultyAndNumberOfTestResults($itemIds);
 	}
@@ -148,17 +102,16 @@ class DB_TestResult {
 			
 		global $wpdb;
 		
-		$sqlres = $wpdb->get_row( "SELECT * FROM " . self::getTableName() . " WHERE id = {$testresult_id}", ARRAY_A);
+		$sqlres = $wpdb->get_row('SELECT * FROM ' . self::getTableName() . ' WHERE id = ' . $testresult_id, ARRAY_A);
 		
 		$object = [];
 		$object['post_title'] = $sqlres['title'] ?? '';
 		$object['testresult_description'] = $sqlres['description'] ?? '';
 		$object['domain'] = $sqlres['domain'] ?? '';
 		$object['testresult_date'] = $sqlres['date_of_test'] ?? '';
-		
 		$result = EAL_TestResult::createFromArray($testresult_id, $object);
 		
-		$userItemData = $wpdb->get_results(sprintf ('SELECT user_id, item_id, points FROM %s WHERE test_id = %d', self::getTableName() . '_useritem', $testresult_id), ARRAY_A);
+		$userItemData = $wpdb->get_results('SELECT user_id, item_id, points FROM ' . self::getTableName() . '_useritem WHERE test_id = ' . $testresult_id, ARRAY_A);
 		$result->initUserItemFromArray($userItemData);
 		
 		return $result;

@@ -95,7 +95,7 @@ class CPT_LearnOut extends CPT_Object {
 			$array .= ", L.level_FW AS level_FW";
 			$array .= ", L.level_PW AS level_PW";
 			$array .= ", L.level_KW AS level_KW";			
-			$array .= ", (SELECT COUNT(*) FROM {$wpdb->prefix}eal_item AS X JOIN {$wpdb->posts} AS Y ON (X.id = Y.ID) WHERE Y.post_parent=0 AND X.learnout_id = L.id AND Y.post_status IN ('publish', 'pending', 'draft')) AS no_of_items";
+			$array .= ", L.no_of_items AS no_of_items";
 		}
 		return $array;
 	}
