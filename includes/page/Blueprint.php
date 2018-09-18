@@ -23,7 +23,7 @@ class Blueprint {
 			$_SESSION[$sk] = isset($_REQUEST[$sk]) ? max (min ($_REQUEST[$sk], 30000), 1) : 10;
 			
 			$dimensions = [];
-			foreach (['number', 'type', 'dim', 'level', 'topic1', 'topic2', 'topic3', 'lo'] as $category) {
+			foreach (['number', 'type', 'dim', 'level', 'topic1', 'topic2', 'topic3', 'lo', 'difficulty'] as $category) {
 				
 				$sk = 'tpg_set_' . $category;
 				$_SESSION[$sk] = $_REQUEST[$sk] ?? "off";
@@ -125,7 +125,7 @@ class Blueprint {
 				</div>', $html_box);
 		
 		
-		foreach (['type', 'dim', 'level', 'topic1', 'topic2', 'topic3', 'lo'] as $category) {
+		foreach (['type', 'dim', 'level', 'topic1', 'topic2', 'topic3', 'lo', 'difficulty'] as $category) {
 			
 			$html_box = "";
 			$groups = ItemExplorer::groupBy($items, $itemids, $category);		// [key => [itemids]]

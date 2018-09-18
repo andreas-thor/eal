@@ -145,7 +145,7 @@ class EAL_TestResult extends EAL_Object  {
 	public function getItemDifficulty (int $itemIndex): float {
 		
 		if (($itemIndex<0) || ($itemIndex>=count($this->allItemIds))) return -1;	// index out of range
-		return 100*$this->getAverage($itemIndex)/$this->getItem($itemIndex)->getPoints();
+		return $this->getAverage($itemIndex)/$this->getItem($itemIndex)->getPoints();
 	}
 
 	

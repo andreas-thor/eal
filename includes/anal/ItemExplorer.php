@@ -39,6 +39,23 @@ class ItemExplorer {
 			return $result;
 		}
 		
+		// group by difficulty level
+		if ($cat == 'difficulty') {
+			$result = array();
+			for ($i=0; $i<=10; $i++) {
+				$result [$i] = array();
+			}
+			
+			// group: 0=not available; 1= [0,10%], 2=(10%,20%], ..., 10=(90%,100%]; für diff=0 brauche ich das max, um es auch in 1 einzuordnen 
+			foreach ($itemids as $item_id) {
+				$item = self::getItem($items, $item_id);
+				$group = ($item->getDifficulty() < 0) ? 0 : max (1, intval(ceil ($item->getDifficulty()*10)));
+				$result[$group][] = $item_id;
+			}
+			return $result;
+		}
+		
+		
 		// group by level 		
 		if ($cat == 'level') {
 			$result = [1 => array(), 2 => array(), 3 => array(), 4 => array(), 5 => array(), 6 => array()];
@@ -187,6 +204,7 @@ class ItemExplorer {
 			case 'type': 	return [EAL_ItemSC::getType() => "Single Choice", EAL_ItemMC::getType() => "Multiple Choice", EAL_ItemFT::getType() => 'Free Text'];
 			case 'level': 	return EAL_Level::LABEL; // EAL_Item::$category_value_label["level"]; // array_merge ([""], EAL_Item::$level_label); // add empty value for index=0 because labels are enumerated 1..6
 			case 'dim': 	return ["FW"=>"FW", "KW"=>"KW", "PW"=>"PW"];
+			case 'difficulty':	return [0=>'NA', 1=>'0%-10%', 2=>'10%-20%', 3=>'20%-30%', 4=>'30%-40%', 5=>'40%-50%', 6=>'50%-60%', 7=>'60%-70%', 8=>'70%-80%', 9=>'80%-90%', 10=>'90%-100%'];
 		}
 		return [];
 	}

@@ -72,10 +72,13 @@ class CPT_TestResult extends CPT_Object {
 		add_meta_box('mb_date', 'Test-Datum', array ($testresult->getHTMLPrinter(), 'metaboxDate'), $this->type, 'side', 'default' );
 		add_meta_box('mb_description', 'Beschreibung', array ($testresult->getHTMLPrinter(), 'metaboxDescription'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_user_item_table', 'User-Item-Table', array ($testresult->getHTMLPrinter(), 'metaboxUserItemTable'), $this->type, 'normal', 'default' );
+		add_meta_box('mb_difficulty_correlation', 'Difficulty-Correlation-Table', array ($testresult->getHTMLPrinter(), 'metaboxDifficultyCorrelation'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_item_item_table', 'Inter-Item-Correlation', array ($testresult->getHTMLPrinter(), 'metaboxItemItemTable'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_correlation_by_itemtype', 'Item-Correlation By Item Type', array ($testresult->getHTMLPrinter(), 'metaboxCorrelationByItemType'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_correlation_by_dimension', 'Item-Correlation By Dimension', array ($testresult->getHTMLPrinter(), 'metaboxCorrelationByDimension'), $this->type, 'normal', 'default' );
 		add_meta_box('mb_correlation_by_level', 'Item-Correlation By Level', array ($testresult->getHTMLPrinter(), 'metaboxCorrelationByLevel'), $this->type, 'normal', 'default' );
+		
+		
 	}	
 
 	

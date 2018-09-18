@@ -37,6 +37,56 @@ class HTML_TestResult extends HTML_Object {
 <?php 		
 	}
 	
+	
+	
+	public function metaboxDifficultyCorrelation () {
+		
+		$corrLabel = [0 => 'Schlecht <=0.1', 1 => 'Mittel 0.1-0.3', 2 => 'Gut >0.3' ];
+		$matrix = [0 => [0 => [], 1 => [], 2 => []], 1 => [0 => [], 1 => [], 2 => []], 2 => [0 => [], 1 => [], 2 => []]];
+		
+		for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {
+			$diff = $this->getTestResult()->getItemDifficulty($itemIndex);
+			$diffGroup = 0;
+			if ($diff > 0.5) $diffGroup = 1;
+			if ($diff > 0.85) $diffGroup = 2;
+			
+			$corr = $this->getTestResult()->getItemTotalCorrelation($itemIndex);
+			$corrGroup = 0;
+			if ($corr > 0.1) $corrGroup = 1;
+			if ($corr > 0.3) $corrGroup = 2;
+			
+			$matrix[$corrGroup][$diffGroup][] = $this->getTestResult()->getItemId($itemIndex);
+		}
+		
+		
+		?>
+		<table id='customers' style='border-width:1px; border-color:#222222'>
+			<tr>
+				<th></th>
+				<th>Schwer (0%-50%)</th>
+				<th>Mittel (50%-85%)</th>
+				<th>Leicht (85%-100%)</th>
+			</tr>
+		
+<?php 		for ($corrGroup=0; $corrGroup<3; $corrGroup++) { ?> 
+			<tr>
+				<td><?= $corrLabel[$corrGroup] ?></td>
+<?php 			for ($diffGroup = 0; $diffGroup < 3; $diffGroup++) { 
+					if (count($matrix[$corrGroup][$diffGroup]) > 0) {
+						printf ('<td> <a href="edit.php?post_type=item&itemids=%s">%d</a></td>', implode(',', $matrix[$corrGroup][$diffGroup]), count($matrix[$corrGroup][$diffGroup]));
+					} else {
+						printf ('<td></td>');
+					}
+				} ?>					
+			</tr>
+<?php	} ?>
+
+		</table>
+<?php 
+		
+	}
+	
+	
 	public function metaboxUserItemTable () {
 		?>
 			
@@ -84,7 +134,11 @@ class HTML_TestResult extends HTML_Object {
 				<th>Item Difficulty</th>
 <?php 			for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {    
 					$diff = $this->getTestResult()->getItemDifficulty($itemIndex);
-					printf('<th style="background-color:%s">% 3.1f</th>', (($diff>=20) && ($diff<=80)) ? '#99FF99' : '#FF9999', $diff ); 
+					
+					$rgb_red = round (255*abs(0.7-$diff)/0.7);
+					$rgb_green = round (255*(1-abs(0.7-$diff)/0.7));
+					printf('<th style="background-color:rgb(%d,%d,0)">% 3.1f</th>', $rgb_red, $rgb_green, 100*$diff );
+// 					printf('<th style="background-color:%s">% 3.1f</th>', (($diff>=20) && ($diff<=80)) ? '#99FF99' : '#FF9999', 100*$diff ); 
 				} ?>
 			</tr>			
 			
@@ -92,7 +146,12 @@ class HTML_TestResult extends HTML_Object {
 				<th>Item Total Correlation</th>
 <?php 			for ($itemIndex = 0; $itemIndex < $this->getTestResult()->getNumberOfItems(); $itemIndex++) {  	
 					$corr = $this->getTestResult()->getItemTotalCorrelation($itemIndex);
-					printf('<th style="background-color:%s">%1.3f</th>', ($corr>0.3) ? '#99FF99' : '#FF9999', $corr );
+					
+					$rgb_red = round (255* (1-max (min(0.3, $corr), 0)/0.3));
+					$rgb_green = round (255*max (min(0.3, $corr), 0)/0.3);
+					printf('<th style="background-color:rgb(%d,%d,0)">%1.3f</th>', $rgb_red, $rgb_green, $corr );
+					
+// 					printf('<th style="background-color:%s">%1.3f</th>', ($corr>0.3) ? '#99FF99' : '#FF9999', $corr );
 			} ?>
 			</tr>			
 			
@@ -146,6 +205,7 @@ class HTML_TestResult extends HTML_Object {
 	public function metaboxCorrelationByDimension () {
 		$this->metaboxCorrelationByCategory('dim');
 	}
+	
 	public function metaboxCorrelationByLevel () {
 		$this->metaboxCorrelationByCategory('level');
 	}

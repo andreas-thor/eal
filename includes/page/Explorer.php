@@ -78,7 +78,7 @@ class Explorer {
 				$btn_html['y'] .= sprintf ('<input class="button" readonly value="%2$s" style="margin:0.2em;" id="%1$s" draggable="true" ondragstart="drag(event)" />', $id, EAL_Item::$category_label[$id]);
 			}
 		}
-		foreach (['type', 'dim', 'level', 'topic1', 'topic2', 'topic3', 'lo'] as $id) {
+		foreach (['type', 'dim', 'level', 'topic1', 'topic2', 'topic3', 'lo', 'difficulty'] as $id) {
 			if ((is_array($_SESSION["drag_x"])) && (in_array($id, $_SESSION["drag_x"]))) continue;
 			if ((is_array($_SESSION["drag_y"])) && (in_array($id, $_SESSION["drag_y"]))) continue;
 			$btn_html['all'] .= sprintf ('<input class="button" readonly value="%2$s" style="margin:0.2em;" id="%1$s" draggable="true" ondragstart="drag(event)" />', $id, EAL_Item::$category_label[$id]);

@@ -38,7 +38,8 @@ abstract class EAL_Item extends EAL_Object {
 			"topic1" => "Topic Stufe 1",
 			"topic2" => "Topic Stufe 2",
 			"topic3" => "Topic Stufe 3",
-			"lo" => "Learning Outcome"
+			"lo" => "Learning Outcome",
+			'difficulty' => 'Difficulty'
 	];
 	
 	
