@@ -30,7 +30,9 @@ services:
   #     - nginx
 
   wordpress:
-    image: wordpress:4.9
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
     # restart: always
     environment:
       # - VIRTUAL_HOST=example.org
@@ -38,6 +40,7 @@ services:
       # - LETSENCRYPT_EMAIL=example@mail.example.org
       - WORDPRESS_DB_HOST=db:3306
       - WORDPRESS_DB_PASSWORD=WEig3MNl
+    # exclude ports section and include expose section when using nginx
     ports:
       - "8080:80"
     # expose:
