@@ -14,6 +14,8 @@ To set up a new wordpress instance for testing purposes with the plugin installe
 6. login as admin and activate the EAs.LiT plugin + create a new user with role author
 7. logout & login as this new user to use the plugin
 
+EAs.LiT will print all warnings and errors by default to the page. See [Production](#production) for information an how to change this behaviour.
+
 ## Production
 
 To deploy EAs.LiT as a new wordpress instance, do:
@@ -26,6 +28,8 @@ To deploy EAs.LiT as a new wordpress instance, do:
 6. wait some seconds to get letsencypt certificates (HTTPS)
 7. navigate to the URL you added to VIRTUAL_HOST and set up Wordpress
 8. follow steps 6. and 7. of the [Testing](#testing) section
+
+**Errors and Warnings** are printed by default to the page. To disable this, add `error_reporting(0);` to easlit_plugin.php, e.g. after the inital comment, and continue with step 3.
 
 ## TODO
 
